@@ -1,8 +1,10 @@
 # Clipmkr Cloud.ru deployment — 2026-10-28
 
 Deployment is NOT live. VM `805df7cc-ec31-4c77-bd8f-2ac78256b9ef`
-(`clipmkr-20261028`, IP `87.242.87.168`) remains `creating`; disk/interface
-also creating. Do not repeat deploy_apply or create a second VM.
+(`clipmkr-20261028`, IP `87.242.87.168`) is now `running`; disk is `in_use`, interface is `created` and the floating IP is `in_use`.
+SSH still times out despite the existing ingress TCP 22 rule. The generated serial
+console hostname `iaas-serial-pd34.evolution.cloud.ru` returns NXDOMAIN through
+system DNS and two public resolvers. Guest OS boot/network state is not verified. Do not repeat deploy_apply or create a second VM.
 
 Cloudru Hub 0.1.15 installed; all five self-tests passed. Approved plan
 `plan-b5324b32bd7d`, cap 3,000 RUB/month. Official tariff estimate for
@@ -13,9 +15,10 @@ Tariff: https://cdn.cloud.ru/docs/legal/tariffs/evolution/current-version/evolut
 
 ## Pending prerequisites
 
-1. Cloud.ru must finish provisioning the VM. If stuck, inspect the console
-   or contact provider support using the VM ID above. API credentials cannot
-   inspect organization quotas or billing balance. Cause is unconfirmed.
+1. Restore SSH connectivity or inspect guest boot in the virtual console.
+   Compute now reports running, but SSH times out. The generated serial console
+   endpoint is not resolvable. Cause is unconfirmed; do not assume the VM is
+   still provisioning.
 2. Proposed app hostname `c.clipmkr.ru` requires its owner's DNS A record
    pointing to `87.242.87.168`. Do NOT change the existing `clipmkr.ru` record.
    Media hostname `media-clipmkr.87.242.87.168.sslip.io` already resolves.

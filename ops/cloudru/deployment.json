@@ -23,7 +23,7 @@
   "source_commit": "1551c8e5cc2ad2fb686e14dd7b86bbee41ce44cb",
   "public_url": "https://c.clipmkr.ru",
   "storage": "private local MinIO on same VM; not managed Cloud.ru S3",
-  "status": "blocked_cloud_vm_creating_and_short_domain_dns_pending",
+  "status": "vm_running_ssh_timeout_serial_console_dns_nxdomain",
   "providers": {
     "LLM": "Cloud.ru FM deepseek-ai/DeepSeek-V4-Pro",
     "STT": "Yandex SpeechKit v3"
@@ -54,5 +54,14 @@
       "upstream_commit": "9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a"
     }
   },
-  "public_url_status": "PROPOSED_REQUIRES_OWNER_DNS_CHANGE"
+  "public_url_status": "PROPOSED_REQUIRES_OWNER_DNS_CHANGE",
+  "access_checks": {
+    "compute_state": "running",
+    "disk_state": "in_use",
+    "floating_ip_state": "in_use",
+    "ingress_tcp_22": "allowed_0.0.0.0/0_existing_shared_security_group",
+    "ssh": "connection_timeout",
+    "serial_console_host": "iaas-serial-pd34.evolution.cloud.ru",
+    "serial_console_dns": "NXDOMAIN_system_and_two_public_resolvers"
+  }
 }
