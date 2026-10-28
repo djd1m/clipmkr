@@ -1,5 +1,27 @@
 # Clipmkr Cloud.ru deployment
 
+## Latest attempt: r3, 2026-10-28
+
+Retry explicitly requested after the owner removed surplus VMs to release quota.
+Cloudru Hub plan `plan-bd93e3be1739` created VM
+`b63d0198-0d92-498d-af7f-34149844dd09` (`clipmkr-20261028-r3`),
+`ru.AZ-2`, IP `87.242.87.61`. The task
+`5aa4ceb9-03ac-421b-8a3d-df8e549b13d1` FAILED. Both VM and boot disk
+`4ad59abf-fbaa-4065-b264-086cf081a085` are `error_creating`.
+
+The API exposes no error reason. Quota exhaustion is a hypothesis, not confirmed.
+Earlier failed/deleting resources remain visible, so deletion requests alone do
+not establish that their quotas have been released. No application or secrets
+were transferred to r3. Local containers remain running. See `deployment-r3.json`.
+
+Provider support should inspect the failed task and actual compute/storage/IP
+quotas and finish cleanup of stuck resources. No further creation is pending.
+DNS still points to r2 (`c.clipmkr.ru -> 87.242.86.84`); it was intentionally
+not changed to another failed VM. The preview origin also requires adding CORS
+permission in the existing S3 bucket while preserving the old production origin;
+that change has not been made.
+
+
 ## Current attempt: r2, 2026-10-28
 
 VM `ea206b2d-ad99-4f1f-a91c-b039bb8e203d` (`clipmkr-20261028-r2`),

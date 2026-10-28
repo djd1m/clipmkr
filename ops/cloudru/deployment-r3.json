@@ -12,7 +12,7 @@
   "disk_gb": 80,
   "budget_rub_per_month": 3000,
   "estimated_rub_31_days": 1835.03,
-  "status": "CREATING",
+  "status": "PROVIDER_CREATE_FAILED",
   "cloud_containers_started": false,
   "dns_hostname": "c.clipmkr.ru",
   "dns_current_ip": "87.242.86.84",
@@ -20,5 +20,23 @@
   "s3_cors_preview_origin": "not_permitted_yet_no_change_made",
   "reason_for_retry": "owner reports removing surplus VMs to release quota; cause of prior failure unconfirmed",
   "runtime_settings_file_local": ".env.cloudru-r3",
-  "original_private_files_preserved": true
+  "original_private_files_preserved": true,
+  "checked_at": "2026-10-28T22:18:56.825345+00:00",
+  "failure": {
+    "vm_state": "error_creating",
+    "disk_states": [
+      {
+        "id": "4ad59abf-fbaa-4065-b264-086cf081a085",
+        "state": "error_creating"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "5aa4ceb9-03ac-421b-8a3d-df8e549b13d1",
+        "name": "Create VM",
+        "status": "failed"
+      }
+    ],
+    "reason": "not exposed by Compute API; quota cause unconfirmed"
+  }
 }
