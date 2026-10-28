@@ -4,8 +4,11 @@
 
 VM `ea206b2d-ad99-4f1f-a91c-b039bb8e203d` (`clipmkr-20261028-r2`),
 zone `ru.AZ-2`, IP `87.242.86.84`. Provisioning requested via Cloudru Hub MCP
-with approved plan `plan-a04d0fe77d77`. Initially `creating`; see
-`deployment-r2.json` for verification state. Do not replay deploy_apply.
+with approved plan `plan-a04d0fe77d77`. Creation FAILED: VM, disk and interface are `error_creating`. Task
+`3d3a9493-e4af-4209-811c-439d6a7bb7c8` is `failed`; no reason is exposed
+by the API. Application transfer has NOT happened. See `deployment-r2.json`.
+SSH/deployment polling was stopped after confirming the failed task. Do not replay
+deploy_apply or create more VMs before understanding the provider failure.
 
 Sizing and estimated cost remain 2 vCPU / 4 GB RAM (10% CPU guarantee),
 80 GB SSD and public IP: about 1,835 RUB for 31 days. Inference/STT, existing
@@ -22,7 +25,8 @@ The latter uses base Compose + `compose.images.yml` + `compose.cloudru-managed.y
 The original four settings files must be copied separately with mode 600. On the
 VM, `.env` should contain `.env.cloudru-deploy`, not the unmodified old origin.
 No DB/Redis/app ports are published. Caddy publishes 80/443; the IP serves only
-`/health` until the owner configures A record `c.clipmkr.ru -> 87.242.86.84`.
+`/health` for service diagnostics. A record `c.clipmkr.ru -> 87.242.86.84` is now
+confirmed, but the failed VM cannot serve traffic.
 No DNS change to the existing production `clipmkr.ru` has been performed.
 
 Local acceptance: all six services running, Cloud.ru S3 HeadBucket authorized,
