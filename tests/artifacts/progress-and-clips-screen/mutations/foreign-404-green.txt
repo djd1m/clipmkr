@@ -1,0 +1,2 @@
+{"exit":0,"failed":0,"passed":1}
+JSON report written to /tmp/n5-progress-mutations-cOfBHm/report-foreign-404-green.json

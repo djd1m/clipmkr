@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.next/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.p-replicator/source-path-capture/
+.turbo/
+# сборочные артефакты пакетов (собираются npm run build)
+packages/*/dist/
+apps/worker/dist/
+# референсная кодовая база январского клона: читается при реализации, в git не дублируется
+.reference/
+
+# Responsive evidence and local credentials
+.responsive-artifacts/
+.responsive-fixture/

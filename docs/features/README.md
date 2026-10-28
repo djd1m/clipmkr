@@ -1,0 +1,91 @@
+# Фичи «КлипМейкера» — указатель
+
+Все тридцать — `done` на 28.09.2026 и выложены на стенд `https://clipmkr.ru` (у фичи 30 оплата выключена — магазина нет).
+Двенадцать — MVP по плану; восемнадцать (13–30) появились после первого живого прогона 23.09.2026 и в замороженной
+спецификации отсутствуют или уточняют её (их требования — `../Specification-addendum.md`). Где каждая фича описана в
+SPARC-документах и какими тестами закреплена — таблица «Состав фич и где описаны» в `../REPRODUCE.md`.
+
+У фич 1–24 (кроме 13 и 15 — у них только квитанция `05_completion.md`) есть постановка `00_brief_codex.md` (исполнитель — Codex, семейство OpenAI) и отчёты
+исполнителя; ревью — семейство Anthropic (`../reviews/`). С фичи 25 код пишет Opus 5.5, ревью — Sonnet 5 (OWN-017);
+фичи 25–29 и 30 затем прошли кросс-семейное ревью Codex 28.09 (`../reviews/2026-09-28-review-25-29-codex.md`,
+`payments/08_review.md`). В столбце «Доказательство» — **последний**
+отчёт или квитанция фичи: он описывает итоговое состояние, включая мутации обеими строками и то, что
+фича НЕ доказывает.
+
+| № | Фича | Что делает | Приоритет | Доказательство |
+|---|---|---|---|---|
+| 1 | `foundation` | Монорепо, схема БД, отказ старта при ненастроенной конфигурации, вход по почте | mvp | [10_fix_report.md](foundation/10_fix_report.md) |
+| 2 | `upload-and-quota` | Приём загрузки, идемпотентность и шесть ключей квоты | mvp | [13_fix_report.md](upload-and-quota/13_fix_report.md) |
+| 3 | `queue-and-probe` | Очередь с фенсом попыток, probe длительности и сторож | mvp | [11_integration_verdict.md](queue-and-probe/11_integration_verdict.md) |
+| 4 | `transcription` | Транскрипция с таймкодами слов, чанкинг и журнал расхода | mvp | [21_fix_report_word_order.md](transcription/21_fix_report_word_order.md) |
+| 5 | `selection-and-score` | Выделение 3–8 самодостаточных фрагментов и объяснённая оценка | mvp | [10_fix_report.md](selection-and-score/10_fix_report.md) |
+| 6 | `render-and-watermark` | Кроп 9:16, вшитые субтитры и метка free с короткой ссылкой | mvp | [11_integration_verdict.md](render-and-watermark/11_integration_verdict.md) |
+| 7 | `progress-and-clips-screen` | Экран прогресса с тремя состояниями и экран клипов | mvp | [10_fix_report.md](progress-and-clips-screen/10_fix_report.md) |
+| 8 | `short-link` | Короткая ссылка /c/{code} и счётчик уникальных переходов | mvp | [16_fix_report.md](short-link/16_fix_report.md) |
+| 9 | `guest-pack` | Клипы для гостя: галочки, согласие, гостевая страница без входа | mvp | [07_code_report.md](guest-pack/07_code_report.md) |
+| 10 | `partner-codes-and-dashboard` | Коды блогеров, атрибуция трёх источников, кабинет и анти-фрод | mvp | [07_code_report.md](partner-codes-and-dashboard/07_code_report.md) |
+| 11 | `limits-ui-and-pro-interest` | Понятные отказы по потолкам и экран интереса «Pro скоро» | mvp | [07_code_report.md](limits-ui-and-pro-interest/07_code_report.md) |
+| 12 | `retention-and-erasure` | Срок хранения клипов, истечение гостевой страницы и удаление аккаунта | mvp | [10_fix_report.md](retention-and-erasure/10_fix_report.md) |
+| 13 | `transcript-tolerance` | Погрешность таймкодов исправляется, а не отвергает запись | post-mvp | [05_completion.md](transcript-tolerance/05_completion.md) |
+| 14 | `framing` | Кадр следует за лицом | post-mvp | [05_completion.md](framing/05_completion.md) |
+| 15 | `subtitles-and-glossary` | Субтитры без мигания, крупнее, английские термины латиницей | post-mvp | [05_completion.md](subtitles-and-glossary/05_completion.md) |
+| 16 | `music-bed` | Фоновая CC0-музыка по галочке, уровень из речи клипа | post-mvp | [05_completion.md](music-bed/05_completion.md) |
+| 17 | `pack-shot` | Финальный акцент: CC0-удар и вспышка наложением | post-mvp | [05_completion.md](pack-shot/05_completion.md) |
+| 18 | `music-library` | 9 CC0-треков, выбор по номеру клипа | post-mvp | [05_completion.md](music-library/05_completion.md) |
+| 19 | `teaser-headline` | Заголовок клипа крупно в первые 2,5 с | post-mvp | [05_completion.md](teaser-headline/05_completion.md) |
+| 20 | `partner-fairness` | Блокировка по людям, разблокировка, обезличивание атрибуций | post-mvp | [05_completion.md](partner-fairness/05_completion.md) |
+| 21 | `pause-compaction` | Уплотнение пауз | post-mvp | [05_completion.md](pause-compaction/05_completion.md) |
+| 22 | `clip-music-choice` | Выбор и смена музыки у готового клипа | post-mvp | [05_completion.md](clip-music-choice/05_completion.md) |
+| 23 | `responsive-check` | Автоматическая проверка мобильной вёрстки (прибор + навык) | post-mvp | [05_completion.md](responsive-check/05_completion.md) |
+| 24 | `mobile-audit-fixes` | Исправления мобильной вёрстки по прибору + правило R9 (первый экран) | post-mvp | [05_completion.md](mobile-audit-fixes/05_completion.md) |
+| 25 | `dark-theme` | Тёмная тема по умолчанию, светлая по выбору; прибор в двух темах | post-mvp | [05_completion.md](dark-theme/05_completion.md) |
+| 26 | `clip-card` | Карточка клипа: плашка оценки, объяснения раскрытием, «Скачать · Ссылка · Гостю» | post-mvp | [05_completion.md](clip-card/05_completion.md) |
+| 27 | `clip-cta` | Призыв в конце клипа: выбор, кнопка «Смотреть полный выпуск» на /c/, надпись в кадре, пересборка | post-mvp | [05_completion.md](clip-cta/05_completion.md) |
+| 28 | `landing-demo` | Лендинг с демо-клипом витрины (CTDUUG), третий путь к файлу только для витрины | post-mvp | [05_completion.md](landing-demo/05_completion.md) |
+| 29 | `progress-ribbon` | Лента стадий и первый экран экрана записи (FR-GROWTH-001 закрыт) | post-mvp | [05_completion.md](progress-ribbon/05_completion.md) |
+| 30 | `payments` | Оплата ЮKassa: тариф Pro 990 ₽ / 30 дней, режим off·fake·live, тракт из N6 (ADR-019, OWN-019) | post-mvp | [05_completion.md](payments/05_completion.md) |
+
+## Подготовка запуска на Cloud.ru
+
+[Acquisition analytics](acquisition-analytics/05_completion.md): исследование аналога,
+экономика выбранного пилота, связка 1-1-1-1 и наблюдательная воронка.
+Код по умолчанию выключен; собственный счётчик и получение целей в отчёте
+проверяются при запуске на Cloud.ru. Новые контуры26.10.2026 готовятся в отдельной рабочей ветке; текущий production
+не обновлялся:
+
+- [credit-packages](credit-packages/05_completion.md): opt-in кредитный учёт,
+ 30 кредитов один раз, три пакета; локальные проверки, холодное ревью и браузерная приёмка пройдены
+ с сохранёнными предупреждениями. По умолчанию сохраняется legacy.
+- [cloudru-provider-foundation](cloudru-provider-foundation/05_completion.md):
+ DeepSeek FM, атрибуция поставщика и общий S3; foundation-код принят.
+ Cloud.ru STT и реальное хранилище требуют отдельной целевой приёмки.
+
+- [support-access](support-access/05_completion.md): подтверждение почты, восстановление,
+  только читающая карточка оператора и официальный Libredesk bridge;
+  локальная приёмка и целевая интеграция имеют раздельные статусы в квитанции.
+
+[Актуальный порядок запуска и ограничения](../cloudru-launch-plan.md).
+
+## Сквозные документы, без которых фичи не читаются
+
+| Документ | О чём |
+|---|---|
+| `../REPRODUCE.md` | как поднять заново в другом окружении; расхождения с замыслом |
+| `../pipeline-walkthrough.md` | конвейер по шагам: акторы, инструменты, ресурсы |
+| `../measurements/2026-09-23-first-long-recording.md` | первый живой прогон 88 минут и пять вскрытых им отказов |
+| `../reviews/` | ревью семейства Anthropic и отчёты исправлений по деньгам, конкурентности, границам доверия, живым находкам |
+| `../ADR.md` | девятнадцать решений (ADR-001…019), у каждого — проверка, обязанная упасть при нарушении |
+| `../canon.md` | имена и числа; источник для кода и документов |
+
+## Порядок, если повторять с нуля
+
+По зависимостям из `.claude/feature-roadmap.json`: `foundation` → `upload-and-quota` →
+`queue-and-probe` → `transcription` → `selection-and-score` → `render-and-watermark` →
+`progress-and-clips-screen` → `short-link` → `guest-pack` → `partner-codes-and-dashboard` →
+`limits-ui-and-pro-interest` → `retention-and-erasure` → `transcript-tolerance` → `framing` →
+`subtitles-and-glossary`, затем фичи 16–30 в порядке номеров (каждая опирается на предыдущие: музыка → пэк-шот →
+каталог → заголовок; пересборка готового клипа (22) — основа призыва 27b; прибор вёрстки (23) — приёмка фич 24–30).
+
+Три последние стоит делать **сразу**, а не после живого прогона: все они — ответ на свойства
+настоящих данных, которых синтетические фикстуры не имели. Если повторять проект, начать живую
+приёмку длинным файлом на фиче `transcription`, а не в конце.
