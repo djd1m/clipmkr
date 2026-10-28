@@ -1,0 +1,13 @@
+# Use with docker-compose.yml and compose.images.yml; storage is external Cloud.ru S3.
+services:
+  proxy:
+    ports: !override
+      - "${CLIPMKR_BIND_IP:-0.0.0.0}:80:80"
+      - "${CLIPMKR_BIND_IP:-0.0.0.0}:443:443"
+    environment:
+      CLIPMKR_HOST: ${CLIPMKR_HOST:?public hostname required}
+      CLIPMKR_IP: ${CLIPMKR_IP:?VM public IP required}
+    volumes: !override
+      - ./ops/cloudru/Caddyfile.managed:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+    mem_limit: 96m

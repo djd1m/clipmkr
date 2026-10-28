@@ -1,3 +1,44 @@
+# Clipmkr Cloud.ru deployment
+
+## Current attempt: r2, 2026-10-28
+
+VM `ea206b2d-ad99-4f1f-a91c-b039bb8e203d` (`clipmkr-20261028-r2`),
+zone `ru.AZ-2`, IP `87.242.86.84`. Provisioning requested via Cloudru Hub MCP
+with approved plan `plan-a04d0fe77d77`. Initially `creating`; see
+`deployment-r2.json` for verification state. Do not replay deploy_apply.
+
+Sizing and estimated cost remain 2 vCPU / 4 GB RAM (10% CPU guarantee),
+80 GB SSD and public IP: about 1,835 RUB for 31 days. Inference/STT, existing
+object storage, traffic and the previous stuck resources are outside this figure.
+
+Four original private settings files were imported from the old server and
+preserved byte-for-byte. Their ordered merge is local `.env`. Additional target
+settings are in private `.env.cloudru-deploy`. Neither belongs in Git or images.
+External Cloud.ru S3 is used; MinIO is not deployed in this attempt. Old database
+accounts/media metadata have not been migrated. A fresh database is initialized.
+
+Target startup: `bootstrap-vm.sh`, `docker load`, then `start-managed-vm.sh`.
+The latter uses base Compose + `compose.images.yml` + `compose.cloudru-managed.yml`.
+The original four settings files must be copied separately with mode 600. On the
+VM, `.env` should contain `.env.cloudru-deploy`, not the unmodified old origin.
+No DB/Redis/app ports are published. Caddy publishes 80/443; the IP serves only
+`/health` until the owner configures A record `c.clipmkr.ru -> 87.242.86.84`.
+No DNS change to the existing production `clipmkr.ru` has been performed.
+
+Local acceptance: all six services running, Cloud.ru S3 HeadBucket authorized,
+Chromium registration reaches authenticated dashboard, 390px dashboard has no
+horizontal overflow. These checks do not prove remote VM deployment or paid
+processing of a real recording. Snapshots: `/tmp/clipmkr-stage-{desktop,mobile}.png`.
+
+If direct SSH port 22 is unreachable, the user's source VPS SSH port 2222 is an
+available jump transport; the Cloud.ru private key stays on this VPS. Do not close
+the temporary source port until remote provisioning and transfer are finished.
+
+The earlier VM remains `error_deleting`; its disk is `error`. The owner/provider
+must finish cleanup. No unrelated VMs, disks or security groups are modified.
+
+## Earlier attempt (historical evidence)
+
 # Clipmkr Cloud.ru deployment — 2026-10-28
 
 Deployment is NOT live. VM `805df7cc-ec31-4c77-bd8f-2ac78256b9ef`

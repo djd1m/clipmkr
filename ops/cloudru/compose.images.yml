@@ -1,0 +1,17 @@
+services:
+  web:
+    image: clipmkr:20261028-web
+    mem_limit: 768m
+  worker-stt:
+    image: clipmkr:20261028-worker
+    mem_limit: 512m
+  worker-llm:
+    image: clipmkr:20261028-worker
+    mem_limit: 384m
+  worker-video:
+    image: clipmkr:20261028-worker
+    mem_limit: 1200m
+  db:
+    mem_limit: 384m
+  redis:
+    mem_limit: 128m

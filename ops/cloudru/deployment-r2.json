@@ -1,0 +1,41 @@
+{
+  "name": "clipmkr-20261028-r2",
+  "vm_id": "ea206b2d-ad99-4f1f-a91c-b039bb8e203d",
+  "zone": "ru.AZ-2",
+  "public_ip": "87.242.86.84",
+  "subnet_id": "dd0559e9-ae4d-4fcd-affe-4cedcd7bbfc4",
+  "plan_id": "plan-a04d0fe77d77",
+  "cloudru_hub": "0.1.15",
+  "flavor": "lowcost10-2-4",
+  "vcpus": 2,
+  "ram_gb": 4,
+  "guaranteed_cpu_percent": 10,
+  "disk_gb": 80,
+  "budget_rub_per_month": 3000,
+  "estimated_rub_31_days": 1835.03,
+  "cost_scope": "VM + 80GB SSD + one public IP only; excludes old stuck deletion, AI/STT, object storage and traffic",
+  "proposed_hostname": "c.clipmkr.ru",
+  "hostname_dns_status": "awaiting_owner",
+  "status": "VM_CREATING",
+  "storage": "existing external Cloud.ru S3; local MinIO not deployed",
+  "settings_import": "four private source files, preserved in order; deployment overrides in private .env.cloudru-deploy",
+  "local_acceptance": {
+    "all_six_services_running": true,
+    "web_health": true,
+    "browser_registration_and_dashboard": true,
+    "mobile_390px_no_horizontal_overflow": true,
+    "cloud_s3_head_bucket": true,
+    "old_production_database_changed": false
+  },
+  "cloud_acceptance": {
+    "ssh": false,
+    "containers_transferred": false,
+    "public_browser_ui": false
+  },
+  "prior_vm": {
+    "id": "805df7cc-ec31-4c77-bd8f-2ac78256b9ef",
+    "state": "error_deleting",
+    "boot_disk_state": "error",
+    "requires_provider_cleanup": true
+  }
+}

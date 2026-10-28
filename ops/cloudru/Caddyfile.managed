@@ -1,0 +1,26 @@
+{$CLIPMKR_HOST} {
+    encode zstd gzip
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+    reverse_proxy web:3000 {
+        header_up X-Forwarded-For "{http.request.remote.host}, 127.0.0.1"
+        transport http {
+            read_timeout 360s
+            write_timeout 60s
+        }
+    }
+}
+# IP endpoint exposes health only while the owner configures the application DNS.
+http://{$CLIPMKR_IP} {
+    @health path /health
+    handle @health {
+        reverse_proxy web:3000
+    }
+    handle {
+        respond "Clipmkr: use the configured HTTPS application hostname." 503
+    }
+}

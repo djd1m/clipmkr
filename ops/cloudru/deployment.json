@@ -62,6 +62,10 @@
     "ingress_tcp_22": "allowed_0.0.0.0/0_existing_shared_security_group",
     "ssh": "connection_timeout",
     "serial_console_host": "iaas-serial-pd34.evolution.cloud.ru",
-    "serial_console_dns": "NXDOMAIN_system_and_two_public_resolvers"
-  }
+    "serial_console_dns": "NXDOMAIN_system_and_two_public_resolvers",
+    "vnc_console_host": "iaas-pd34.evolution.cloud.ru",
+    "vnc_console_dns": "NXDOMAIN_two_public_resolvers",
+    "after_owner_reboot": "SSH_connection_timeout"
+  },
+  "last_access_check_utc": "2026-10-28T21:03:50.557691+00:00"
 }
