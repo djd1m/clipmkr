@@ -1,0 +1,26 @@
+{$CLIPMKR_HOST} {
+    encode zstd gzip
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+    reverse_proxy web:3000 {
+        # App expects the client followed by one trusted proxy hop. Replace untrusted input.
+        header_up X-Forwarded-For "{http.request.remote.host}, 127.0.0.1"
+        transport http {
+            read_timeout 360s
+            write_timeout 60s
+        }
+    }
+}
+{$CLIPMKR_STORAGE_HOST} {
+    header -Server
+    reverse_proxy minio:9000 {
+        transport http {
+            read_timeout 360s
+            write_timeout 360s
+        }
+    }
+}

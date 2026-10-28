@@ -1,0 +1,15 @@
+# Official MinIO community release, pinned to source commit 9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a.
+# Build context contains source.tar.gz fetched from that immutable GitHub commit.
+FROM golang:1.24-alpine AS build
+RUN apk add --no-cache ca-certificates git
+WORKDIR /src
+COPY source.tar.gz /tmp/source.tar.gz
+RUN tar -xzf /tmp/source.tar.gz --strip-components=1 -C /src
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/minio .
+FROM alpine:3.22
+RUN apk add --no-cache ca-certificates curl
+COPY --from=build /out/minio /usr/local/bin/minio
+COPY --from=build /src/LICENSE /licenses/MINIO-AGPL.txt
+EXPOSE 9000
+ENTRYPOINT ["/usr/local/bin/minio"]
+CMD ["server", "/data"]

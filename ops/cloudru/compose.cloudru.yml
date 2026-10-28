@@ -1,0 +1,38 @@
+services:
+  web:
+    image: clipmkr:20261028-web
+    mem_limit: 768m
+  worker-stt:
+    image: clipmkr:20261028-worker
+    mem_limit: 512m
+  worker-llm:
+    image: clipmkr:20261028-worker
+    mem_limit: 384m
+  worker-video:
+    image: clipmkr:20261028-worker
+    mem_limit: 1200m
+  db:
+    mem_limit: 384m
+  redis:
+    mem_limit: 128m
+  proxy:
+    ports: !override
+      - "${CLIPMKR_BIND_IP:-0.0.0.0}:80:80"
+      - "${CLIPMKR_BIND_IP:-0.0.0.0}:443:443"
+    environment:
+      CLIPMKR_HOST: ${CLIPMKR_HOST:?public hostname required}
+      CLIPMKR_STORAGE_HOST: ${CLIPMKR_STORAGE_HOST:?storage hostname required}
+    volumes: !override
+      - ./ops/cloudru/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+    mem_limit: 96m
+  minio:
+    image: clipmkr:20261028-minio
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/ready"]
+    profiles: !override ["storage"]
+    restart: unless-stopped
+    environment:
+      MINIO_API_CORS_ALLOW_ORIGIN: ${N5_PUBLIC_ORIGIN:?public origin required}
+      GOMEMLIMIT: 256MiB
+    mem_limit: 384m

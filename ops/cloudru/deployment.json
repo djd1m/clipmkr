@@ -1,0 +1,58 @@
+{
+  "name": "clipmkr-20261028",
+  "vm_id": "805df7cc-ec31-4c77-bd8f-2ac78256b9ef",
+  "public_ip": "87.242.87.168",
+  "zone": "ru.AZ-1",
+  "flavor": "lowcost10-2-4",
+  "vcpus": 2,
+  "ram_gb": 4,
+  "guaranteed_cpu_percent": 10,
+  "root_ssd_gb": 80,
+  "monthly_budget_rub": 3000,
+  "cost_basis": "Official tariff261014 VAT22%, 744h/31days; not a bill",
+  "rates_rub_per_hour": {
+    "compute": "0.99023334",
+    "disk": "1.26880",
+    "public_ip": "0.2074",
+    "total": "2.46643334"
+  },
+  "estimated_31day_rub": "1835.03",
+  "estimated_30day_rub": "1775.83",
+  "scope": "VM+root disk+one public IP only; inference and STT usage additional",
+  "tariff": "https://cdn.cloud.ru/docs/legal/tariffs/evolution/current-version/evolution-compute.pdf",
+  "source_commit": "1551c8e5cc2ad2fb686e14dd7b86bbee41ce44cb",
+  "public_url": "https://c.clipmkr.ru",
+  "storage": "private local MinIO on same VM; not managed Cloud.ru S3",
+  "status": "blocked_cloud_vm_creating_and_short_domain_dns_pending",
+  "providers": {
+    "LLM": "Cloud.ru FM deepseek-ai/DeepSeek-V4-Pro",
+    "STT": "Yandex SpeechKit v3"
+  },
+  "acceptance": {
+    "public_ui": "NOT_RUN_VM_CREATING_AND_DNS_PENDING",
+    "upload_processing": "NOT_RUN",
+    "local_web_health": "PASS",
+    "local_registration_and_authenticated_dashboard": "PASS",
+    "local_private_s3_put_get_delete_and_anonymous_denial": "PASS",
+    "local_all_workers_start": "PASS",
+    "caddy_config_validation": "PASS",
+    "published_infrastructure_ports": "NONE"
+  },
+  "images": {
+    "web": {
+      "tag": "clipmkr:20261028-web",
+      "image_id": "sha256:d89db2145e3809c8c94421229d8f1cd636d48b9bfd9aa399a06f6f6b2e8fb70e",
+      "size_bytes": 1201988891
+    },
+    "worker": {
+      "tag": "clipmkr:20261028-worker",
+      "image_id": "sha256:38950de230478c9f08c1299ac97e427947ad897e1244ff018b88ade53e24aa93",
+      "size_bytes": 1955908231
+    },
+    "minio": {
+      "tag": "clipmkr:20261028-minio",
+      "upstream_commit": "9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a"
+    }
+  },
+  "public_url_status": "PROPOSED_REQUIRES_OWNER_DNS_CHANGE"
+}
