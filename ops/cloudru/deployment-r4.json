@@ -1,0 +1,20 @@
+{
+  "name": "clipmkr-20261029-r4",
+  "vm_id": "4a07fec2-e017-4f2c-bea8-3cf7069c2b99",
+  "zone": "ru.AZ-1",
+  "plan_id": "plan-f905ac5c9409",
+  "cloudru_hub": "0.1.16",
+  "engine": "0.2.7-20261029",
+  "vcpus": 2,
+  "ram_gb": 4,
+  "guaranteed_cpu_percent": 10,
+  "disk_gb": 80,
+  "estimated_rub_31_days_with_one_public_ip": 1835.03,
+  "budget_rub_per_month": 3000,
+  "status": "CREATING",
+  "public_ip": null,
+  "private_ip": "10.0.0.8",
+  "cloud_containers_started": false,
+  "private_settings_preserved": true,
+  "note": "Public IP allocation pending; no free floating IP reported by hub. Existing working vm-c0a888 inspected read-only and left unchanged."
+}
