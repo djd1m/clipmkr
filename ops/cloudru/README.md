@@ -18,9 +18,10 @@ reaches the authenticated dashboard on the remote VM through a private SSH tunne
 390px dashboard has no horizontal overflow. Remote S3 HeadBucket succeeds. Public
 5432/6379/3000/9000/2019 are unreachable. No paid recording processing test run.
 
-**Pending public HTTPS:** set A record `c.clipmkr.ru -> 176.109.111.98`.
-It still resolved to the old failed r2 IP when last checked. Caddy will obtain TLS
-when DNS points to this server. Existing `clipmkr.ru` is unchanged. S3 CORS now
+**Public HTTPS verified:** https://c.clipmkr.ru/ resolves to `176.109.111.98`,
+returns 200 with a valid certificate. Registration reaches the authenticated
+dashboard over the public HTTPS address; 390px mobile view has no overflow and
+Chromium reports no page errors. Existing `clipmkr.ru` is unchanged. S3 CORS now
 also permits `https://c.clipmkr.ru`; old production origins preserved, backup
 stored privately under `/root/.config/clipmkr/` on the source VPS.
 
@@ -30,6 +31,10 @@ via `passwd -l user1`. Password and keyboard-interactive SSH authentication are
 disabled; key-based login re-verified. Temporary password file and diagnostic
 screenshot removed. Console access revealed a booted Ubuntu login screen; SSH
 became available during diagnostics and the transfer proceeded normally.
+A later SSH check from the source VPS again timed out; this administration-access
+issue remains unresolved. Public HTTPS/UI checks pass. Guest console/Compute Agent
+remain available. Latest receipt changes are in GitHub; optional documentation
+SCP refresh timed out after the full source/runtime transfer had succeeded.
 
 Resources: 2 vCPU / 4GB RAM (10% CPU guarantee), 80GB SSD, 4GB swap, approximately
 1,835 RUB per 31 days including public IP. Object storage, inference/STT, traffic
