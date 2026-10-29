@@ -1,5 +1,43 @@
 # Clipmkr Cloud.ru deployment
 
+## Current working deployment: r4, 2026-10-29
+
+**Application is running on Cloud.ru.** VM `clipmkr-20261029-r4`, ID
+`4a07fec2-e017-4f2c-bea8-3cf7069c2b99`, zone `ru.AZ-1`, public IP
+`176.109.111.98`, private IP `10.0.0.8`. Cloudru Hub upgraded to 0.1.16 /
+engine 0.2.7-20261029; all five self-tests pass. Plan `plan-f905ac5c9409`.
+
+Seven containers run in `/home/user1/clipmkr`: web, STT/LLM/video workers,
+PostgreSQL, Redis and Caddy. Original four private config files transferred
+byte-for-byte; remote `.env` is the dedicated target override. SHA256 checks
+match. Models are Cloud.ru FM / Yandex SpeechKit, storage is external Cloud.ru S3.
+No old user database was migrated. Code archive is a full Git archive including docs.
+
+Verified: public `http://176.109.111.98/health` returns 200. Chromium registration
+reaches the authenticated dashboard on the remote VM through a private SSH tunnel;
+390px dashboard has no horizontal overflow. Remote S3 HeadBucket succeeds. Public
+5432/6379/3000/9000/2019 are unreachable. No paid recording processing test run.
+
+**Pending public HTTPS:** set A record `c.clipmkr.ru -> 176.109.111.98`.
+It still resolved to the old failed r2 IP when last checked. Caddy will obtain TLS
+when DNS points to this server. Existing `clipmkr.ru` is unchanged. S3 CORS now
+also permits `https://c.clipmkr.ru`; old production origins preserved, backup
+stored privately under `/root/.config/clipmkr/` on the source VPS.
+
+A temporary console password was set to diagnose boot/network access. It was
+inadvertently visible in a diagnostic screenshot, then immediately invalidated
+via `passwd -l user1`. Password and keyboard-interactive SSH authentication are
+disabled; key-based login re-verified. Temporary password file and diagnostic
+screenshot removed. Console access revealed a booted Ubuntu login screen; SSH
+became available during diagnostics and the transfer proceeded normally.
+
+Resources: 2 vCPU / 4GB RAM (10% CPU guarantee), 80GB SSD, 4GB swap, approximately
+1,835 RUB per 31 days including public IP. Object storage, inference/STT, traffic
+and prior stuck resources are outside this estimate. See `deployment-r4.json`.
+
+### Previous attempts (historical evidence)
+
+
 ## Latest attempt: r3, 2026-10-28
 
 Retry explicitly requested after the owner removed surplus VMs to release quota.

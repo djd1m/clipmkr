@@ -11,10 +11,42 @@
   "disk_gb": 80,
   "estimated_rub_31_days_with_one_public_ip": 1835.03,
   "budget_rub_per_month": 3000,
-  "status": "CREATING",
-  "public_ip": null,
+  "status": "APPLICATION_RUNNING_DNS_PENDING",
+  "public_ip": "176.109.111.98",
   "private_ip": "10.0.0.8",
-  "cloud_containers_started": false,
+  "cloud_containers_started": true,
   "private_settings_preserved": true,
-  "note": "Public IP allocation pending; no free floating IP reported by hub. Existing working vm-c0a888 inspected read-only and left unchanged."
+  "note": "Public IP allocation pending; no free floating IP reported by hub. Existing working vm-c0a888 inspected read-only and left unchanged.",
+  "checked_at": "2026-10-29T20:10:13.590341+00:00",
+  "application_directory": "/home/user1/clipmkr",
+  "source_commit": "1c23c4f",
+  "settings_checksums": "four original files and merged target .env match local SHA256",
+  "acceptance": {
+    "seven_services_running": true,
+    "public_http_health": 200,
+    "browser_registration_and_dashboard_over_private_ssh_tunnel": "PASS",
+    "mobile_390px_no_horizontal_overflow": true,
+    "remote_s3_head_bucket": "PASS",
+    "public_database_and_redis_ports": "UNREACHABLE",
+    "direct_web_minio_caddy_admin_ports": "UNREACHABLE",
+    "public_https": "PENDING_DNS_CHANGE",
+    "paid_recording_processing": "NOT_RUN"
+  },
+  "preview_cors": {
+    "origin": "https://c.clipmkr.ru",
+    "permitted": true,
+    "existing_production_origin_preserved": true
+  },
+  "ssh_security": {
+    "temporary_console_password": "LOCKED_AFTER_DIAGNOSTICS",
+    "password_authentication": false,
+    "keyboard_interactive_authentication": false,
+    "key_auth_verified": true
+  },
+  "dns": {
+    "hostname": "c.clipmkr.ru",
+    "observed_ip": "87.242.86.84",
+    "required_ip": "176.109.111.98"
+  },
+  "database_migration": "NOT_PERFORMED; new empty DB initialized, only synthetic UI smoke account created"
 }
