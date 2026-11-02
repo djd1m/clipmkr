@@ -52,6 +52,14 @@ AM-11 (расширенный браузерный QE): существующая
 
 AM-12 (независимая проверка без coding-контекста): потеря ответа complete не должна блокировать форму, если обработка уже ушла из queued. Повтор для того же владельца и уже принятой записи возвращает подтверждение без повторных S3/публикации/расходов, включая гонку с первым complete. Чужой аккаунт/удалённая запись по-прежнему404; первичный отказ файла не превращается в успех. Confirmation: потерянный ответ после начала обработки → test `RU-004: complete retry after processing advanced acknowledges without side effects` in `tests/upload-fix.integration.test.ts` (fails if reverted).
 
+AM-13 (cross-model review): подтверждённый платёж должен оставаться исходному блогеру после разрешённой смены referral источника. В existing payment_intent сохранить nullable referral_partner_code_id при первом create в той же транзакции/под account-lock; повтор не пересчитывает источник. Миграция027 только добавляющая: старым intent назначить код лишь при доказуемой текущей attribution, существовавшей до intent; неоднозначные истории не выдумывать. Отчёты owner и native PartnerService используют снимок вместо изменяемой attribution для финансов, сохраняя все verified payment/intent/sku/refund/self filters. Удаление кода не блокирует стирание пользователя. Confirmation: старые деньги остаются первому источнику после cookie→explicit → test `historical payment stays with its original blogger after source replacement` in `tests/blogger-report.integration.test.ts` (fails if reverted).
+
+Уточнение AM-13: один плательщик по двум ссылкам одного блогера считается одним человеком в общей сводке, даже после исторической смены источника. Confirmation: межссылочный DISTINCT → test `one payer across two codes of the same blogger counts once` in `tests/blogger-report.integration.test.ts` (fails if reverted).
+
+AM-14 (отдельная тестовая среда): в общем layout тестового магазина явно показывать, что деньги/выручка/оценка учебные. Test/live работают с разными БД и Redis; переносить тестовую БД в боевую без отдельной проверки запрещено. Нативная проверка raw.test==configured mode сохраняется. Confirmation: баннер тестовой оплаты → test `test payment environment is explicitly labelled` in `tests/billing.unit.test.ts` (fails if reverted).
+
+AM-15 (типизация общего QE): импорт настоящего Next layout в SSR-проверке подключает тип ProcessEnv с обязательным NODE_ENV. Существующая fixture CLI разблокировки задаёт явный NODE_ENV=test; поведение CLI не меняется. Confirmation: прежние проверки разблокировки → test `RT-002 operator CLI without DATABASE_URL exits 2; invalid arguments exit 1` in `tests/partner-unblock.test.ts`; runtime assertions не меняются, откат fixture воспроизводит ошибку typecheck без ослабления типов.
+
 ## Gates
 
 До реализации: реальный QCSD (качество, риск, тестируемость), подтверждение M-плана владельцем,
@@ -111,3 +119,11 @@ EXPECTED_CODE_TARGETS:
 - tests/browser/video-screen.test.ts
 - apps/web/src/app/globals.css
 - tests/upload-fix.integration.test.ts
+- packages/db/migrations/027_payment_referral_snapshot.sql
+- packages/db/src/payments.ts
+- apps/web/src/server/partner.ts
+- tests/billing.integration.test.ts
+- tests/partner.integration.test.ts
+- apps/web/src/app/layout.tsx
+- tests/billing.unit.test.ts
+- tests/partner-unblock.test.ts
