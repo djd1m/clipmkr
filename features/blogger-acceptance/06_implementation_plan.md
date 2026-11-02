@@ -50,6 +50,8 @@ AM-10 (исходное замечание владельца об UI): длит
 
 AM-11 (расширенный браузерный QE): существующая панель действий на 375×667 выходит за сгиб на 4 px в обоих движках. Уменьшить только промежуток над секцией клипов на телефоне с существующими токенами; сохранить размеры кнопок и отрицательный контроль. Confirmation: панель действий первой карточки в первом экране → test `R9 dark 375x667: «Скачать · Ссылка · Гостю» первой карточки в первом экране` in `tests/browser/video-screen.test.ts` (fails if reverted).
 
+AM-12 (независимая проверка без coding-контекста): потеря ответа complete не должна блокировать форму, если обработка уже ушла из queued. Повтор для того же владельца и уже принятой записи возвращает подтверждение без повторных S3/публикации/расходов, включая гонку с первым complete. Чужой аккаунт/удалённая запись по-прежнему404; первичный отказ файла не превращается в успех. Confirmation: потерянный ответ после начала обработки → test `RU-004: complete retry after processing advanced acknowledges without side effects` in `tests/upload-fix.integration.test.ts` (fails if reverted).
+
 ## Gates
 
 До реализации: реальный QCSD (качество, риск, тестируемость), подтверждение M-плана владельцем,
@@ -108,3 +110,4 @@ EXPECTED_CODE_TARGETS:
 - tests/progress-screen.test.ts
 - tests/browser/video-screen.test.ts
 - apps/web/src/app/globals.css
+- tests/upload-fix.integration.test.ts
