@@ -126,6 +126,16 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
     expect(entry.codes.find(row => row.id === code)?.counters).toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
     expect(entry.codes.find(row => row.id === campaign)?.counters).toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
   });
+  it('verified payment survives provider clock skew', async () => {
+    await attribute();
+    await pay(visitor, { created: '2026-11-10T12:00:14Z', at: '2026-11-10T12:00:00Z' });
+    expect((await report()).bloggers.find(row => row.account_id === blogger)?.counters)
+      .toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
+    await pay(another, { created: '2026-11-10T12:00:14Z', at: '2026-11-10T12:00:00Z' });
+    await attribute(another, code, '2026-11-11');
+    expect((await report()).bloggers.find(row => row.account_id === blogger)?.counters)
+      .toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
+  });
   it('commission estimate uses explicit rate and integer floor', async () => {
     await attribute(); await pay();
     for (const [rate, expected] of [[null, null], [20, 19800], [30, 29700]] as const) {

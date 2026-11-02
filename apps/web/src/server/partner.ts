@@ -134,7 +134,7 @@ export class PartnerService {
       WHERE i.referral_partner_code_id=ANY($1::uuid[]) AND pt.account_id<>p.account_id
         AND p.provider='yookassa' AND p.status='succeeded' AND p.needs_review=false
         AND i.status='succeeded' AND i.fulfilled_at IS NOT NULL
-        AND i.sku IN ('start_v1','pro_v1','addon_v1') AND p.paid_at>=i.created_at`, [ids])).rows[0]!;
+        AND i.sku IN ('start_v1','pro_v1','addon_v1')`, [ids])).rows[0]!;
     const purchases = Number(financial.purchases), revenue_minor = Number(financial.revenue_minor);
     return { codes: codes.filter(c => !codeId || c.id === codeId), counters: { visits, registrations, uploaded, shared, guests, purchases, revenue_minor }, statuses };
   }

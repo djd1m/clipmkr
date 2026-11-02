@@ -72,7 +72,6 @@ export async function bloggerReport(pool: Pool, actorAccountId: string, month: s
         WHERE p.provider='yookassa' AND p.status='succeeded' AND p.needs_review=false
           AND i.status='succeeded' AND i.fulfilled_at IS NOT NULL
           AND i.sku IN ('start_v1','pro_v1','addon_v1')
-          AND p.paid_at>=i.created_at
           AND p.paid_at>=b.lo AND p.paid_at<b.hi
       ), sales AS (
         SELECT partner_code_id,count(DISTINCT account_id) AS people,count(*) AS payments,sum(amount_minor) AS revenue

@@ -60,6 +60,8 @@ AM-14 (отдельная тестовая среда): в общем layout т�
 
 AM-15 (типизация общего QE): импорт настоящего Next layout в SSR-проверке подключает тип ProcessEnv с обязательным NODE_ENV. Существующая fixture CLI разблокировки задаёт явный NODE_ENV=test; поведение CLI не меняется. Confirmation: прежние проверки разблокировки → test `RT-002 operator CLI without DATABASE_URL exits 2; invalid arguments exit 1` in `tests/partner-unblock.test.ts`; runtime assertions не меняются, откат fixture воспроизводит ошибку typecheck без ослабления типов.
 
+AM-16 (живая оплата нового пакета): реальная тестовая ЮKassa подтвердила addon1490р. и штатное начисление, но paid_at оказался на13,94с раньше merchant intent.created_at из-за разных часов. Новый фильтр paid_at>=intent.created_at ошибочно скрывает такую выручку. Убрать сравнение часов провайдера и приложения в owner/native financial: принадлежность защищает сохранённый источник intent и проверенная идентичность payment/intent, а не сравнение чужих часов. Границы месяца по provider paid_at, проверки статуса/суммы/SKU/возврата и self сохраняются; NULL snapshot не получает ретроактивной привязки. Confirmation: подтверждённая оплата при рассинхронизации часов → test `verified payment survives provider clock skew` in `tests/blogger-report.integration.test.ts` (fails if reverted).
+
 ## Gates
 
 До реализации: реальный QCSD (качество, риск, тестируемость), подтверждение M-плана владельцем,

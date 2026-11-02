@@ -305,7 +305,7 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
       return intent;
     };
     const first = await pay(); await pay();
-    for (const options of [{ provider: 'fake' }, { status: 'refunded' }, { review: true }, { old: true }, { identity: false }, { fulfilled: false }, { amount: 123 }, { paidOld: true }, { intentStatus: 'canceled' }]) await pay(options);
+    for (const options of [{ provider: 'fake' }, { status: 'refunded' }, { review: true }, { old: true }, { identity: false }, { fulfilled: false }, { amount: 123 }, { intentStatus: 'canceled' }]) await pay(options);
     expect((await service.dashboard(other)).counters).toMatchObject({ purchases: 2, revenue_minor: 198000 });
     expect((await service.dashboard(owner)).counters).toMatchObject({ purchases: 0, revenue_minor: 0 });
     await pool.query("UPDATE payment SET status='refunded' WHERE intent_id=$1", [first]);
@@ -333,6 +333,22 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
     await apply('CODE123', 'cookie'); const before = await attribution();
     await apply('CODE123', 'explicit');
     expect((await attribution()).assigned_at).toEqual(before.assigned_at);
+  });
+  it('verified payment survives provider clock skew and unknown attribution stays unknown', async () => {
+    const intent = randomUUID(), providerId = randomUUID();
+    await seed('cookie');
+    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+      VALUES($1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,'2026-09-22T12:00:14Z','2026-09-22T12:00:14Z',$4)`, [intent, visitor, providerId, otherCode]);
+    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES($1,$2,'yookassa',$3,99000,'2026-09-22T12:00:00Z')`, [intent, visitor, providerId]);
+    await pool.query('DELETE FROM attribution WHERE account_id=$1', [visitor]);
+    const unknown = randomUUID(), unknownProvider = randomUUID();
+    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at)
+      VALUES($1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,'2026-09-22T12:00:14Z','2026-09-22T12:00:14Z')`, [unknown, visitor, unknownProvider]);
+    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES($1,$2,'yookassa',$3,99000,'2026-09-22T12:00:00Z')`, [unknown, visitor, unknownProvider]);
+    await seed('cookie');
+    expect((await service.dashboard(other)).counters).toMatchObject({ purchases: 1, revenue_minor: 99000 });
   });
 
 });
