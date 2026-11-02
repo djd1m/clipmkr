@@ -1,3 +1,4 @@
+import { MAX_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 import { lockCreditAccountForVideo, finalizeVideoCreditsTx } from './credits.js';
 import type { Pool, PoolClient } from 'pg';
 import type { SttExecutionProvider, Limits } from '@clipmaker/shared/config';
@@ -40,7 +41,7 @@ export async function transcriptionDeadline(pool: Pool, attempt: Attempt): Promi
 export async function authorizeSttCall(pool: Pool, attempt: Attempt, limits: Limits, chunkIndex: number,
   duration: number, now = new Date(), expectedPrevious = 0, provider: SttExecutionProvider = 'openrouter', model = 'openai/whisper-large-v3'): Promise<number | null> {
   if (!['openrouter', 'yandex', 'fake'].includes(provider) || typeof model !== 'string' || !model.trim()) throw new Error('Непригодный поставщик STT');
-  if (!Number.isSafeInteger(chunkIndex) || chunkIndex < 0 || !Number.isFinite(duration) || duration <= 0 || duration > 5400) throw new Error('Непригодный чанк');
+  if (!Number.isSafeInteger(chunkIndex) || chunkIndex < 0 || !Number.isFinite(duration) || duration <= 0 || duration > MAX_SOURCE_SECONDS) throw new Error('Непригодный чанк');
   if (!Number.isSafeInteger(expectedPrevious) || expectedPrevious < 0 || expectedPrevious > STT_MAX_ATTEMPTS) throw new Error('Непригодный номер вызова');
   return transaction(pool, async tx => {
     const row = await lockCurrent(tx, attempt);

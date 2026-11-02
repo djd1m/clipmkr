@@ -4,8 +4,9 @@ import type { Limits } from '@clipmaker/shared/config';
 import type { VideoFailureReason } from '@clipmaker/shared/enums';
 import { transaction, checkAndConsumeQuota, refundUploadSlot } from './quota.js';
 import { auditAttempt, type Attempt, type Audit } from './attempts.js';
+import { MAX_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 export interface ProbeSourceRow { id: string; account_id: string; object_key: string; actual_bytes: string; upload_day: string;
-  status: string; fence: number; duration_seconds: string | null }
+  status: string; fence: number; duration_seconds: string | null; source_limit_seconds: number }
 export async function getProbeSource(pool: Pool, attempt: Attempt): Promise<ProbeSourceRow | null> {
   const rows = await pool.query<ProbeSourceRow>(`SELECT v.*, v.upload_day::text FROM video v JOIN account a ON a.id=v.account_id
     JOIN job_attempt j ON j.video_id=v.id AND j.fence=$2
@@ -52,9 +53,13 @@ export async function deferProbe(pool: Pool, attempt: Attempt, now = new Date(),
 }
 export async function acceptProbe(pool: Pool, attempt: Attempt, limits: Limits, duration: number, now = new Date(),
   audit: Audit = auditAttempt): Promise<'transcribing' | 'failed' | 'stale'> {
-  if (!Number.isFinite(duration) || duration < 120 || duration > 5400) throw new Error('Непригодная длительность');
+  if (!Number.isFinite(duration) || duration < 120 || duration > MAX_SOURCE_SECONDS) throw new Error('Непригодная длительность');
   const result = await transaction(pool, async tx => {
     const row = await lockProbe(tx, attempt); if (!row) return 'stale' as const;
+    if (duration > row.source_limit_seconds) {
+      await failProbeTx(tx, attempt, row, limits, 'too_long', now);
+      return 'failed' as const;
+    }
     await tx.query('SAVEPOINT credit_probe');
     const reservation=await reserveVideoCreditsTx(tx,attempt.video_id,duration,now);
     if (reservation==='shortage') {

@@ -29,8 +29,14 @@ describe.skipIf(!url)('PostgreSQL limits and interest', () => {
       ('user_minutes',$1,'2026-09-23',12),('user_minutes',$2,'2026-09-23',90),
       ('user_uploads',$1,'2026-09-22',2),('user_upload_refunds',$1,'2026-09-23',2),('global_minutes','all','2026-09-23',600)`, [owner, other]);
     const limits = loadLimits(environment());
-    expect(await remainingLimits(pool, limits, owner, now)).toEqual({ owner_unlimited: false, uploads: 2, minutes: 78, selections: 2, resets_at: '2026-09-23T21:00:00.000Z' });
-    expect(await remainingLimits(pool, limits, owner, new Date('2026-09-23T21:00:00Z'))).toEqual({ owner_unlimited: false, uploads: 2, minutes: 90, selections: 2, resets_at: '2026-09-24T21:00:00.000Z' });
+    expect(await remainingLimits(pool, limits, owner, now)).toEqual({ owner_unlimited: false, max_source_seconds: 5400, uploads: 2, minutes: 78, selections: 2, resets_at: '2026-09-23T21:00:00.000Z' });
+    expect(await remainingLimits(pool, limits, owner, new Date('2026-09-23T21:00:00Z'))).toEqual({ owner_unlimited: false, max_source_seconds: 5400, uploads: 2, minutes: 90, selections: 2, resets_at: '2026-09-24T21:00:00.000Z' });
+    await pool.query('UPDATE account SET is_blogger=true WHERE id=$1', [owner]);
+    expect((await remainingLimits(pool, limits, owner, now)).max_source_seconds).toBe(7200);
+    await pool.query('UPDATE account SET blogger_source_limit_seconds=9000 WHERE id=$1', [owner]);
+    expect((await remainingLimits(pool, limits, owner, now)).max_source_seconds).toBe(9000);
+    await pool.query('UPDATE account SET is_blogger=false WHERE id=$1', [owner]);
+    expect((await remainingLimits(pool, limits, owner, now)).max_source_seconds).toBe(5400);
   });
   it('20 simultaneous presses produce one interest per account and count every source separately', async () => {
     const sources = ['clip_card', 'guest_page', 'partner_dashboard'];

@@ -1,3 +1,4 @@
+import { MAX_SOURCE_SECONDS } from './upload.js';
 // Тариф `paid` и режим оплаты (фича 30 payments, OWN-019, ADR-019). Числа — решение владельца 28.09.2026:
 // 990 ₽ за 30 дней, разовая оплата без автопродления; повторная продлевает от большего из (срок, сейчас).
 // Цена и срок — КОНСТАНТЫ КОДА, не окружения: цена, приехавшая пустой или с опечаткой, стала бы чужими деньгами
@@ -22,7 +23,7 @@ export interface CreditPurchaseWindows {
 }
 export const isCreditSku = (sku: unknown): sku is CreditSku => typeof sku === 'string' && Object.hasOwn(CREDIT_SKUS, sku);
 export function inputCreditSeconds(duration: number): number {
-  if (!Number.isFinite(duration) || duration <= 0 || duration > 5400) throw new Error('Непригодная длительность');
+  if (!Number.isFinite(duration) || duration <= 0 || duration > MAX_SOURCE_SECONDS) throw new Error('Непригодная длительность');
   return Math.ceil(duration);
 }
 

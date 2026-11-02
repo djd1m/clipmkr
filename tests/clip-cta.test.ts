@@ -65,7 +65,8 @@ describe('разбор адреса призыва', () => {
 function createPool(row: Record<string, unknown> = {}) {
   const inserts: unknown[][] = [];
   const query = vi.fn(async (sql: string, params?: unknown[]) => {
-    if (sql.includes('SELECT id FROM account')) return { rowCount: 1, rows: [{ id: 'account' }] };
+    if (sql.includes('SELECT is_blogger,blogger_source_limit_seconds FROM account'))
+      return { rowCount: 1, rows: [{ is_blogger: false, blogger_source_limit_seconds: null }] };
     if (sql.includes('INSERT INTO video')) { inserts.push(params ?? []); return { rowCount: 0, rows: [] }; }
     if (sql.includes('FROM video')) return { rowCount: 1, rows: [{ id: 'video', declared_bytes: '24', status: 'uploading', failure_reason: null,
       music: false, teaser: false, compact: false, cta_kind: 'none', cta_url: null, upload_id: 'upload', object_key: 'source',
@@ -102,7 +103,7 @@ describe('video.create с призывом', () => {
       const { pool, inserts } = createPool({ cta_kind: kind, cta_url: url });
       const service = new VideoService(pool as never, loadLimits(environment()), storage(), async () => {});
       await expect(service.create('account', randomUUID(), { ...upload, ...input })).resolves.toMatchObject({ video_id: 'video' });
-      expect(inserts[0]?.slice(10)).toEqual([kind, url]);
+      expect(inserts[0]?.slice(10)).toEqual([kind, url, 5400]);
     }
   });
   it('идемпотентность: тот же ключ с другим призывом — 409 до S3', async () => {

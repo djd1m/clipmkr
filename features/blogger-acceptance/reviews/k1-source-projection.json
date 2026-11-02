@@ -1165,6 +1165,15 @@
       "exit": 1,
       "output": "{\"outcome\":\"taken\",\"exit\":1,\"results\":[{\"kind\":\"export\",\"name\":\"createS3Client\",\"verdict\":\"taken\",\"where\":\"source-4/src/client.ts\"}],\"reason\":\"1 of 1 name(s) already spoken for — rename before writing, not after the build goes red\"}\n",
       "stderr": ""
+    },
+    {
+      "args": [
+        "--export",
+        "createBloggerOwnerHandler"
+      ],
+      "exit": 0,
+      "output": "{\"outcome\":\"free\",\"exit\":0,\"results\":[{\"kind\":\"export\",\"name\":\"createBloggerOwnerHandler\",\"verdict\":\"free\",\"where\":\"\"}],\"reason\":\"all 1 name(s) are free\"}\n",
+      "note": "Повтор исходного успешного K1-вызова на сохранённой проекции до реализации; новая проверка в рабочем дереве уже увидела бы собственное объявление."
     }
   ]
 }

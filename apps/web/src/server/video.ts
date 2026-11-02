@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { transaction, checkAndConsumeQuota, refundUploadSlot, type Pool, type PoolClient } from '@clipmaker/db';
 import type { Limits } from '@clipmaker/shared/config';
 import type { VideoFailureReason, VideoStatus } from '@clipmaker/shared/enums';
-import { MAX_UPLOAD_BYTES, moscowDay } from '@clipmaker/shared/upload';
+import { MAX_UPLOAD_BYTES, moscowDay, sourceLimitSeconds } from '@clipmaker/shared/upload';
 import { calculatePartSize, UploadTooLarge, type SignedPart, type CompletedPart } from '@clipmaker/s3';
 import { createVideoSchema, completeUploadSchema, UploadError, quotaError } from './upload-contract';
 import { isAllowedMedia } from './media-type';
@@ -42,16 +42,17 @@ export class VideoService {
     catch (error) { if (error instanceof CtaError) throw new UploadError('invalid', error.message, 422, { field: 'cta_url' }); throw error; }
     // Заявка и квота фиксируются до сети. upload_id=NULL — восстанавливаемая инициализация.
     const claimed = await transaction(this.pool, async (tx) => {
-      const active = await tx.query("SELECT id FROM account WHERE id=$1 AND status='active' FOR SHARE", [account]);
+      const active = await tx.query<{is_blogger:boolean; blogger_source_limit_seconds:number|null}>(
+        "SELECT is_blogger,blogger_source_limit_seconds FROM account WHERE id=$1 AND status='active' FOR SHARE", [account]);
       if (!active.rowCount) throw new UploadError('not_found', 'Аккаунт не найден', 404);
       const id = randomUUID();
       const ext = body.filename.split('.').pop()?.toLowerCase();
       const objectKey = `videos/${account}/${id}/source.${ext && ['mp4', 'mov', 'webm', 'm4a', 'mp3'].includes(ext) ? ext : 'bin'}`;
       const claim = await tx.query<VideoRow>(`INSERT INTO video
-        (id, account_id, idempotency_key, status, source, declared_bytes, upload_day, object_key, upload_part_size, music, teaser, compact, cta_kind, cta_url)
-        VALUES ($1, $2, $3, 'uploading', 'upload', $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        (id, account_id, idempotency_key, status, source, declared_bytes, upload_day, object_key, upload_part_size, music, teaser, compact, cta_kind, cta_url, source_limit_seconds)
+        VALUES ($1, $2, $3, 'uploading', 'upload', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING *, upload_day::text AS upload_day`,
-      [id, account, key, BigInt(body.declared_bytes), moscowDay(now), objectKey, calculatePartSize(body.declared_bytes), body.music ?? false, body.teaser ?? false, body.compact ?? false, cta.kind, cta.url]);
+      [id, account, key, BigInt(body.declared_bytes), moscowDay(now), objectKey, calculatePartSize(body.declared_bytes), body.music ?? false, body.teaser ?? false, body.compact ?? false, cta.kind, cta.url, sourceLimitSeconds(active.rows[0]!)]);
       if (claim.rowCount) {
         const quota = await checkAndConsumeQuota(tx, this.limits, account, 'upload', 1, now);
         if (!quota.granted) {

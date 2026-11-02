@@ -23,3 +23,6 @@ export * from './support-email.js';
 export * from './support-admin.js';
 
 export * from './owner-entitlement.js';
+
+export { getBloggerPolicy, setBloggerPolicy } from './blogger-policy.js';
+export { bloggerReport } from './blogger-report.js';

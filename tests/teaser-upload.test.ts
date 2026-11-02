@@ -7,10 +7,12 @@ import { environment } from './fixtures/environment';
 it('default false persists in SQL parameter, true passes; changed flag is 409 before S3', async () => {
   for (const teaser of [undefined, false, true]) {
     const query = vi.fn(async (sql: string, params?: unknown[]) => {
-      if (sql.includes('SELECT id FROM account')) return { rowCount: 1, rows: [{ id: 'account' }] };
+      if (sql.includes('SELECT is_blogger,blogger_source_limit_seconds FROM account'))
+        return { rowCount: 1, rows: [{ is_blogger: false, blogger_source_limit_seconds: null }] };
       if (sql.includes('INSERT INTO video')) {
-        expect(sql).toMatch(/music, teaser, compact, cta_kind, cta_url\)/); expect(sql).toContain('$8, $9, $10, $11, $12)');
+        expect(sql).toMatch(/music, teaser, compact, cta_kind, cta_url, source_limit_seconds\)/); expect(sql).toContain('$8, $9, $10, $11, $12, $13)');
         expect(params?.[8]).toBe(teaser ?? false);
+        expect(params?.[12]).toBe(5400);
         return { rowCount: 0, rows: [] };
       }
       if (sql.includes('FROM video')) return { rowCount: 1, rows: [{ id: 'video', declared_bytes: '24',

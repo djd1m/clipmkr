@@ -1,3 +1,4 @@
+import { NORMAL_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 import { acceptProbe, deferProbe, failProbe, getProbeSource, auditAttempt, heartbeatTranscription, type Attempt, type Pool } from '@clipmaker/db';
 import type { SttExecutionProvider, Limits } from '@clipmaker/shared/config';
 import type { VideoFailureReason } from '@clipmaker/shared/enums';
@@ -12,10 +13,10 @@ import { splitAudio } from '../stt/chunker.js';
 import { ProviderError, type Transcriber } from '../stt/client.js';
 import { mergeWords, TranscriptMergeError } from '../stt/merge.js';
 import { recordModelSpend, type SpendEvent } from '../stt/spend.js';
-export function fileFailure(probe: ProbeResult): VideoFailureReason | null {
+export function fileFailure(probe: ProbeResult, sourceLimit = NORMAL_SOURCE_SECONDS): VideoFailureReason | null {
   if (!probe.hasAudio) return 'no_audio';
   if (probe.durationSec < 120) return 'too_short';
-  if (probe.durationSec > 5400) return 'too_long';
+  if (probe.durationSec > sourceLimit) return 'too_long';
   return null;
 }
 
@@ -110,7 +111,7 @@ export async function probeSource(attempt: Attempt, deps: ProbeDependencies): Pr
         return 'continued' as const;
       }
       const measured = await (deps.probe ?? probeFile)(file);
-      const failure = fileFailure(measured);
+      const failure = fileFailure(measured, row.source_limit_seconds ?? NORMAL_SOURCE_SECONDS);
       if (failure) {
         return await failProbe(deps.pool, attempt, deps.limits, failure, now()) ? 'failed' as const : 'stale' as const;
       }

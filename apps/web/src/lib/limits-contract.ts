@@ -16,6 +16,7 @@ export function resetLabel(at: string): string {
 }
 export interface RemainingLimits {
   owner_unlimited?: boolean;
+  max_source_seconds?: number;
   credits?: { available_seconds: number; reserved_seconds: number; recovery_seconds?: number; next_expiry: string | null };
   uploads: number; minutes: number; selections: number; resets_at: string;
 }

@@ -1,0 +1,51 @@
+# Code/spec anti-drift: кабинет блогера
+
+Дата: 02.11.2026. Сверены актуальные FR-1…FR-6/C-1 из
+`features/blogger-acceptance/01_requirements.md`, ADR-001, согласованный план и
+`openspec/changes/blogger-acceptance/specs/blogger-cabinet/spec.md` с итоговым кодом.
+Это трассировка реализации и локальных проверок, а не объявление полной живой приёмки.
+
+| Требование | Реализация | Проверка и граница доказательства |
+|---|---|---|
+| FR-1: 90/120 минут и индивидуальный лимит | `packages/shared/src/upload.ts`: 5400/7200, `sourceLimitSeconds`; `packages/db/src/probe.ts`: реальная проверка снимка; `apps/worker/src/workers/stt.ts`: `fileFailure` получает снимок. Технический максимум 86400 применяется в tariff/chunker/transcription, а не выдаёт роль. `apps/web/src/server/limits.ts` передаёт лимит в Uploader. | `tests/blogger-policy.test.ts`: 16 unit PASS, границы 5400/7200/9000/86400 и +0.1; возврат прежнего технического ограничения 5400 вызывает 4 падения. Реальный 120-минутный путь до клипа этим не доказан. |
+| FR-2: снимок до расходов, стабильность старых записей | `apps/web/src/server/video.ts`: профиль читается под FOR SHARE и снимок сохраняется в INSERT; повтор idempotency_key возвращает существующую запись. `packages/db/src/probe.ts`: ограничение проверяется до reserveVideoCreditsTx и квоты. | `tests/blogger-policy.integration.test.ts`: `idempotent create preserves source limit`, `probe enforces snapshot boundary %s before credit or quota expense`; фактический общий Node22-прогон фиксирует root, не подменяется чтением SQL. |
+| FR-3: владелец управляет, блогер и пользователь не могут | `packages/db/src/blogger-policy.ts`: hasOwnerUnlimited внутри транзакции, operator_action атомарно; `apps/web/src/server/blogger-owner-handler.ts`: сессия, owner, Origin, rate limit, strict body; `/dashboard/bloggers` и owner-only навигация. | `tests/browser/blogger-cabinet.test.ts`: реальный HTTP/AuthService/PgAuthStore/PostgreSQL/Redis, сохранение и повторная загрузка; гостю 401, normal/blogger 403, foreign Origin 403, лишние поля 422. DB-тест проверяет отказ audit с откатом. |
+| FR-4: нативные ссылки сохранены, месячная статистика владельца | Существующие `apps/web/src/server/partner.ts` и `PartnerPanel.tsx` сохраняются; `packages/db/src/blogger-report.ts` использует native payment/intent/attribution фильтры, независимые агрегаты, уникальных людей, границы Москвы, отчёт по блогеру и его кодам. Новый affiliate-сервис не добавлен. | `tests/blogger-report.integration.test.ts`: unique people/verified payments, возвраты/review/legacy/подменённая идентичность, месяц, готовая запись с клипом, замена источника. Браузер owner UI проверен; полный живой трёхконтекстный referral→регистрация→клип→оплата требует отдельного E2E. |
+| FR-5: null/20/30, целые копейки, предварительная оценка | `packages/db/src/blogger-report.ts`: BigInt умножение и целочисленное деление; null сохраняется; UI явно пишет текущая ставка, предварительная оценка, до комиссий, не задолженность. Автовыплат нет. | `commission estimate uses explicit rate and integer floor` в `tests/blogger-report.integration.test.ts`; UI отображает отсутствие ставки отдельно от нулевой суммы. |
+| FR-6: настоящая интеграция магазина | Существующая платежная реализация переиспользована; владелец разрешил тестовый магазин ЮKassa. Не заменять его fake/off. | Живые статусы checkout/webhook/payment подтверждает root отдельным протоколом. До подтверждённого уведомления и начисленных прав сценарий НЕ принят. Тестовый магазин не доказывает боевую оплату. |
+| C-1: совместимость и действующие ограничения | `026_blogger_policy.sql` добавляет поля с defaults/CHECK, старые video получают 5400. Квоты, баланс, 2 ГБ, fencing и бюджеты стадий не отменены. | `migration preserves legacy source limits`, существующие probe/credit/queue тесты и полный изолированный Node22-прогон. При откате нельзя запускать старый worker с 5400 поверх уже допущенных длинных задач. |
+
+## UI/QE
+
+- Тестовый UI использует настоящую гидратацию React и настоящий HTTP handler, БД и Redis.
+  Только локальный HTTP-хост переводит fixture-cookie в production __Host-cookie;
+  HTTPS/Secure поведение должно проверяться живым CJM отдельно.
+- Добавлен отрицательный сценарий: настройки реально записаны и audit сохранён, последующее
+  обновление отчёта возвращает 503; UI сохраняет сообщение успешного сохранения и отдельно
+  предлагает повторить загрузку статистики.
+- Проверки адаптивности расширены нативными `domRules`, `axeRule`, `textZoomRule` из
+  `scripts/responsive/rules.mjs`: Chromium/WebKit, 320/375/1440, обе темы.
+  R8 обнаружил немасштабируемый vw-заголовок; исправлен локально на owner-странице.
+  Полный `scripts/check-responsive.mjs` по всем публичным маршрутам этим не заменён.
+- TypeScript `apps/web` и `tests` прошёл; общие build/lint/Node22 tests фиксирует root.
+
+## Документальные расхождения
+
+`01_requirements.md` ещё содержит старую фразу «checkpoint ожидается», а раздел рисков —
+«оплата требует ответа о магазине». Владелец уже подтвердил план и тестовый магазин настроен;
+root должен актуализировать статусы документов, сохранив историю реальных checkpoints.
+Кодовых расхождений в перечисленных основных инвариантах при чтении не найдено.
+Не закрыты живым протоколом: 120 минут до готового клипа, подтверждённая тестовая оплата
+с начисленными правами и полный трёхролевой сценарий блогера/клиента/владельца.
+
+Финальный browser-прогон после исправлений: 6/6 PASS без пропусков, 18:34:59 UTC,
+29,51 с, Playwright 1.60 в изолированном runner. Все 12 сочетаний движок/тема/ширина
+прошли domRules (R1/R2/R3/R5/R6), axe R4 без ошибок serious/critical и R8 при 200%.
+Скриншоты: `tests/artifacts/blogger-cabinet/`; ошибки уровня warning этим не объявляются
+отсутствующими. Node браузерного image — 24; Node22 suite — отдельная проверка.
+
+## Независимые ревью
+
+Политика и снимок: blogger_report_impl — блокирующих/HIGH/MEDIUM нет. Worker/shared и отчёт: blogger_policy_impl — блокирующих/HIGH нет. Owner API/UI: оба независимых рецензента — блокирующих замечаний нет. LOW о неверной ошибке после сохранения исправлен и проверен реальным отрицательным HTTP-сценарием.
+
+Общий прогон выявил рассогласования старых SQL mock fixtures/ответа limits и центрального перечня enum; они включены в AM-7/AM-8 и исправлены. Ревью AM-7 выявило потерю знака numeric CHECK в стражe; parser теперь строго разбирает целые литералы со знаком, мутации 20→25 и20→-20 отвергаются. Фокусный Node22+PostgreSQL прогон после исправлений86/86 PASS,0skips. В QE-образ добавлен OpenSSL для четырёх настоящих TLS-тестов, отсутствовавший в исходном worker image.

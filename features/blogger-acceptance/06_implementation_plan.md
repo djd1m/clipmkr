@@ -38,6 +38,10 @@ AM-5 (QCSD risk): все новые поля имеют DB CHECK и defaults д�
 
 AM-6 (QCSD testability): браузерная приёмка разделяет статическую вёрстку и настоящий localhost API/session; 88 минут не доказывают 120. Настоящая оплата и трёхролевой платёжный CJM остаются BLOCKED до магазина. Confirmation: авторизованный owner endpoint/отказ чужим ролям → test `owner policy changes require active owner and audit` in `tests/blogger-policy.integration.test.ts` (fails if reverted); отдельные реальные E2E протоколы сохраняют собственные ограничения.
 
+AM-7 (общий QE): обновить существующий OPERATOR_ACTION и SQL_ENUMS для нового действия и числовых ставок; страж SQL_ENUMS должен строго сравнивать числовые литералы наряду со строковыми. Существующий integration-тест remainingLimits проверяет добавленное поле max_source_seconds и смену профиля без изменения квот. Эти поправки согласуют существующие контракты, не расширяют продуктовую архитектуру. Confirmation: несовпадение нового CHECK или лимита обнаруживается → test `Каждый CHECK равен массиву единственного источника` in `tests/enums.test.ts` (fails if reverted); test `quota display isolates account and Moscow day and omits global/refund counters` in `tests/limits.integration.test.ts` (fails if reverted).
+
+AM-8 (общий QE): обновить существующие фикстуры запросов VideoService и ожидания remainingLimits после добавления снимка политики. Не ослаблять проверки отказов/идемпотентности и не менять поведение старых флагов. Confirmation: существующая регрессия флага → test `default false persists in SQL parameter, true passes; changed flag is 409 before S3` in `tests/teaser-upload.test.ts` (fails if reverted).
+
 ## Gates
 
 До реализации: реальный QCSD (качество, риск, тестируемость), подтверждение M-плана владельцем,
@@ -45,6 +49,10 @@ K1, K2 --tier=M --require-requirements и поддерживаемые dz receip
 этапам. S-план навигации — отдельная уже подготовленная работа; его приёмка не закрывает M.
 Миграция только через существующий migrator. Выкладка с миграцией и смена payment mode
 не подменяются успешной локальной сборкой.
+
+Уточнение AM-4: искусственная дробная копейка не создаётся обходом CHECK цены пакета. Проверка 20/30/null проходит на допустимых платежах; реализация использует целочисленное округление вниз.
+
+
 
 EXPECTED_CODE_TARGETS:
 - packages/db/migrations/026_blogger_policy.sql
@@ -71,5 +79,11 @@ EXPECTED_CODE_TARGETS:
 - tests/blogger-policy.integration.test.ts
 - tests/blogger-report.integration.test.ts
 - tests/browser/blogger-cabinet.test.ts
-
-Уточнение AM-4: искусственная дробная копейка не создаётся обходом CHECK цены пакета. Проверка 20/30/null проходит на допустимых платежах; реализация использует целочисленное округление вниз.
+- packages/shared/src/enums.ts
+- tests/enums.test.ts
+- tests/limits.integration.test.ts
+- tests/limits.test.ts
+- tests/teaser-upload.test.ts
+- tests/compaction-upload.test.ts
+- tests/clip-cta.test.ts
+- tests/watchdog-diagnostics.test.ts

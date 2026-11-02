@@ -1,6 +1,6 @@
 import { readCreditBalance,effectivePlanSql, type Pool } from '@clipmaker/db';
 import type { Limits } from '@clipmaker/shared/config';
-import { moscowDay, quotaResetAt } from '@clipmaker/shared/upload';
+import { moscowDay, quotaResetAt, sourceLimitSeconds } from '@clipmaker/shared/upload';
 import type { RemainingLimits } from '../lib/limits-contract';
 
 export async function remainingLimits(pool: Pool, limits: Limits, account: string, now = new Date()): Promise<RemainingLimits> {
@@ -9,12 +9,13 @@ export async function remainingLimits(pool: Pool, limits: Limits, account: strin
   [account, moscowDay(now)])).rows;
   const used = new Map(rows.map(row => [row.scope, row.used]));
   // OWN-019: остаток минут тарифа paid считается от его потолка — тем же выражением плана, что и списание.
-  const entitlement = (await pool.query<{ plan: string; owner_unlimited: boolean }>(`SELECT ${effectivePlanSql('a')} AS plan, (a.owner_unlimited=true AND a.status='active') AS owner_unlimited FROM account a WHERE a.id::text=$1`, [account])).rows[0];
+  const entitlement = (await pool.query<{ plan: string; owner_unlimited: boolean; is_blogger:boolean; blogger_source_limit_seconds:number|null }>(`SELECT ${effectivePlanSql('a')} AS plan, (a.owner_unlimited=true AND a.status='active') AS owner_unlimited, a.is_blogger,a.blogger_source_limit_seconds FROM account a WHERE a.id::text=$1`, [account])).rows[0];
   const plan = entitlement?.plan;
   const minutesLimit = plan === 'paid' ? limits.N5_LIMIT_PAID_USER_MINUTES : limits.N5_LIMIT_USER_MINUTES;
   const credits=await readCreditBalance(pool,account,now);
   return {
     owner_unlimited: entitlement?.owner_unlimited === true,
+    max_source_seconds: sourceLimitSeconds(entitlement ?? {is_blogger:false,blogger_source_limit_seconds:null}),
     ...(credits?{credits:{...credits,next_expiry:credits.next_expiry?.toISOString() ?? null}}:{}),
     uploads: Math.max(0, limits.N5_LIMIT_USER_UPLOADS - (used.get('user_uploads') ?? 0)),
     minutes: Math.max(0, minutesLimit - (used.get('user_minutes') ?? 0)),

@@ -1,3 +1,4 @@
+import { MAX_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 // Adapted from jan-clone/apps/worker/lib/audio-chunker.ts (180s MP3 chunks).
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -5,7 +6,7 @@ import { STT_CHUNK_SECONDS, STT_MAX_BYTES, STT_OVERLAP_SECONDS } from '@clipmake
 import { runFfmpeg, type ExtractedAudio } from './extract.js';
 export interface AudioChunk { path: string; offsetSeconds: number; durationSeconds: number; hardCut: boolean; index: number }
 export function chunkBoundaries(duration: number, pauses: number[]) {
-  if (!Number.isFinite(duration) || duration <= 0 || duration > 5400) throw new Error('Непригодная длительность');
+  if (!Number.isFinite(duration) || duration <= 0 || duration > MAX_SOURCE_SECONDS) throw new Error('Непригодная длительность');
   const chunks: Omit<AudioChunk, 'path'>[] = [];
   let offset = 0;
   while (offset < duration) {

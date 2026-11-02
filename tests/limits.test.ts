@@ -41,7 +41,7 @@ it('global refusal hides named global ceilings on both request and progress surf
 it('remaining values use configured limits, never used counts, and clamp to zero', async () => {
   const query = vi.fn().mockResolvedValue({ rows: [{ scope: 'user_uploads', used: 1 }, { scope: 'user_minutes', used: 12 }, { scope: 'user_llm', used: 3 }] });
   const remaining = await remainingLimits({ query } as unknown as Pool, limits, 'session-owner', now);
-  expect(remaining).toEqual({ owner_unlimited: false, uploads: 1, minutes: 78, selections: 0, resets_at: '2026-09-23T21:00:00.000Z' });
+  expect(remaining).toEqual({ owner_unlimited: false, max_source_seconds: 5400, uploads: 1, minutes: 78, selections: 0, resets_at: '2026-09-23T21:00:00.000Z' });
   expect(query.mock.calls[0]?.[1]).toEqual(['session-owner', '2026-09-23']);
   const html = renderToStaticMarkup(createElement(LimitsPanel, { remaining }));
   expect(html).toContain('Осталось на сегодня'); expect(html).toContain('78');
@@ -50,7 +50,7 @@ it('remaining values use configured limits, never used counts, and clamp to zero
 it('absent counters start full; midnight changes both query day and reset; storage errors are not full quota', async () => {
   const query = vi.fn().mockResolvedValue({ rows: [] });
   expect(await remainingLimits({ query } as unknown as Pool, { ...limits, N5_LIMIT_USER_MINUTES: 42 }, 'a', new Date('2026-09-23T21:00:00Z')))
-    .toEqual({ owner_unlimited: false, uploads: 2, minutes: 42, selections: 2, resets_at: '2026-09-24T21:00:00.000Z' });
+    .toEqual({ owner_unlimited: false, max_source_seconds: 5400, uploads: 2, minutes: 42, selections: 2, resets_at: '2026-09-24T21:00:00.000Z' });
   expect(query.mock.calls[0]?.[1]).toEqual(['a', '2026-09-24']);
   query.mockRejectedValue(new Error('offline'));
   await expect(remainingLimits({ query } as unknown as Pool, limits, 'a', now)).rejects.toThrow('offline');

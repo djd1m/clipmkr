@@ -45,7 +45,7 @@ export const PAYMENT_PROVIDER = ['yookassa', 'fake'] as const;
 export type PaymentProviderName = typeof PAYMENT_PROVIDER[number];
 export const PAYMENT_STATUS = ['succeeded', 'refunded'] as const;
 export const PAYMENT_REVIEW_REASON = ['amount_mismatch', 'refund', 'unknown_intent', 'account_erasing','intent_already_fulfilled','payment_identity_mismatch'] as const;
-export const OPERATOR_ACTION = ['set_plan','credit_opt_in','set_owner_unlimited'] as const;
+export const OPERATOR_ACTION = ['set_plan','credit_opt_in','set_owner_unlimited','set_blogger_policy'] as const;
 
 export function isEnumValue<T extends string>(values: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && values.includes(value as T);
@@ -97,5 +97,6 @@ export const SQL_ENUMS = {
   'account.plan_source': PLAN_SOURCE, 'payment_intent.status': PAYMENT_INTENT_STATUS,
   'payment_event.provider': PAYMENT_PROVIDER, 'payment.provider': PAYMENT_PROVIDER, 'payment.status': PAYMENT_STATUS,
   'payment.review_reason': PAYMENT_REVIEW_REASON, 'operator_action.action': OPERATOR_ACTION,
+  'account.blogger_commission_percent': ['20','30'],
   'operator_action.plan_before': ACCOUNT_PLAN, 'operator_action.plan_after': ACCOUNT_PLAN,
 } as const;

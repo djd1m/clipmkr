@@ -11,7 +11,11 @@ export function checkSqlEnums(sql: string): void {
       .flatMap(m => [...m[2]!.matchAll(new RegExp(`CHECK\\s*\\(\\s*${column}\\s+IN\\s*\\(([^)]+)\\)\\s*\\)`, 'g'))]);
     const check = definitions.at(-1)?.[1];
     expect(check, key).toBeDefined();
-    const actual = [...(check ?? '').matchAll(/'([^']+)'/g)].map((m) => m[1]);
+    const actual = (check ?? '').split(',').map(token => {
+      const literal = /^(?:'([^']*)'|(-?\d+))$/.exec(token.trim());
+      if (!literal) throw new Error(`Неизвестный литерал CHECK ${key}: ${token}`);
+      return literal[1] ?? literal[2];
+    });
     expect(actual.sort(), key).toEqual([...values].sort());
   }
 }
@@ -45,5 +49,7 @@ describe('Закрытые перечисления', () => {
   it('Мутация CHECK обнаруживается стражем', () => {
     const sql = migrations();
     expect(() => checkSqlEnums(sql.replace("'free', 'paid'", "'free', 'premium'"))).toThrow();
+    expect(() => checkSqlEnums(sql.replace('blogger_commission_percent IN (20,30)', 'blogger_commission_percent IN (25,30)'))).toThrow();
+    expect(() => checkSqlEnums(sql.replace('blogger_commission_percent IN (20,30)', 'blogger_commission_percent IN (-20,30)'))).toThrow();
   });
 });

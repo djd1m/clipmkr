@@ -6,11 +6,12 @@ import { uploadParts } from '../../lib/upload-parts';
 import { rpc } from '../../lib/rpc';
 import type { UploadData } from '../../server/video';
 import { readCtaKind, type CtaKind } from '@clipmaker/shared/enums';
+import { NORMAL_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 import { CtaFields, ctaProblem } from '../videos/CtaFields';
 interface Resume { key: string; fingerprint: string; music: boolean; teaser: boolean; compact: boolean; ctaKind: CtaKind; ctaUrl: string | null; videoId?: string; parts?: { part_number: number; etag: string }[] }
 const storageKey = 'n5-upload-resume';
 // Adapted VideoUploader: same file selection, abort, error and resume flow; existing feature-2 transport owns multipart.
-export function VideoUploader({creditMode=false}:{creditMode?:boolean}={}) {
+export function VideoUploader({creditMode=false,maxSourceSeconds=NORMAL_SOURCE_SECONDS}:{creditMode?:boolean;maxSourceSeconds?:number}={}) {
   const router = useRouter();
   const [estimatedSeconds,setEstimatedSeconds]=useState<number|null>(null);
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [videoId, setVideoId] = useState<string | null>(null);
@@ -66,7 +67,7 @@ export function VideoUploader({creditMode=false}:{creditMode?:boolean}={}) {
       <input id="source-file" type="file" accept=".mp4,.mov,.webm,.m4a,.mp3" disabled={busy} onChange={e => { const selected = e.target.files?.[0] ?? null; setFile(selected);
         const previous = selected && resume.current?.fingerprint === `${selected.name}:${selected.size}:${selected.lastModified}` ? resume.current : null;
         if (previous) { setMusic(previous.music); setTeaser(previous.teaser); setCompact(previous.compact); setCtaKind(previous.ctaKind); setCtaUrl(previous.ctaUrl ?? ''); } setMessage(''); }} />
-      <p className="muted">MP4, MOV, WebM, M4A, MP3 · 2–90 минут · до 2 ГБ</p>
+      <p className="muted">MP4, MOV, WebM, M4A, MP3 · 2–{Math.floor(maxSourceSeconds / 60)} минут · до 2 ГБ</p>
       {creditMode && <p className="muted">1 кредит = 60 секунд записи.{estimatedSeconds!==null ? ` Предварительно: ${(estimatedSeconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов (${estimatedSeconds} секунд).` : ''} Точный резерв определим по файлу на сервере до обработки. При техническом отказе без готовых клипов резерв вернётся.</p>}
       <label className="check"><input type="checkbox" checked={music} disabled={busy || !!(file && resume.current?.fingerprint === `${file.name}:${file.size}:${file.lastModified}`)}
         onChange={e => setMusic(e.target.checked)} /> Добавить музыку и финальный акцент</label>
