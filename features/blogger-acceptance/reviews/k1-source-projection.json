@@ -1,0 +1,1170 @@
+{
+  "method": "Временная проекция неизменённых исходников .ts/.tsx для ограниченного layout сканера dz 0.8.58; не прямой скан репозитория. Расширение tsx нормализовано только для сканера. Последний вызов — положительный контроль существующего экспорта.",
+  "manifest": [
+    {
+      "original": "packages/s3/src/operations.ts",
+      "projected": "packages/@dzhechkov/source-0/src/operations.ts",
+      "sha256": "ecf5a0a284d6f3b833cf31adb48d15ee344dca0db1823a1eb69ba686bdb5e0fe"
+    },
+    {
+      "original": "packages/s3/src/presign.ts",
+      "projected": "packages/@dzhechkov/source-1/src/presign.ts",
+      "sha256": "ff846c390cb8ff77689723377a539013022aa99fd23c0a5fb532da049c930776"
+    },
+    {
+      "original": "packages/s3/src/index.ts",
+      "projected": "packages/@dzhechkov/source-2/src/index.ts",
+      "sha256": "50ebf509561e0bcf45b51288616443b9ab1989b764ea63dad088da8d011afb62"
+    },
+    {
+      "original": "packages/s3/src/multipart.ts",
+      "projected": "packages/@dzhechkov/source-3/src/multipart.ts",
+      "sha256": "df54a2e345d6c98672b28e1bab5ae71b19754f4752a6025521a021f31959a481"
+    },
+    {
+      "original": "packages/s3/src/client.ts",
+      "projected": "packages/@dzhechkov/source-4/src/client.ts",
+      "sha256": "8734febdd7c9905b8e529e76a585210a5b4e120c54317447b3134f82d92148be"
+    },
+    {
+      "original": "packages/s3/src/erasure.ts",
+      "projected": "packages/@dzhechkov/source-5/src/erasure.ts",
+      "sha256": "4b9e759aaa00f019ab633368590319ff639f6a05901aa45051911fda22ac9937"
+    },
+    {
+      "original": "packages/shared/src/enums.ts",
+      "projected": "packages/@dzhechkov/source-6/src/enums.ts",
+      "sha256": "85a29202dbca857191804dce00b084c59dd996875e473b2d95d7e1dbb83757ed"
+    },
+    {
+      "original": "packages/shared/src/config.ts",
+      "projected": "packages/@dzhechkov/source-7/src/config.ts",
+      "sha256": "435e955546caed2009577498ba91dac5794d6f6267c40b34f35e28eaee2598de"
+    },
+    {
+      "original": "packages/shared/src/support-config.ts",
+      "projected": "packages/@dzhechkov/source-8/src/support-config.ts",
+      "sha256": "2e7df5aba88f37068f6ec6ed72841e2e867acd1970a11c4063a32be13501370f"
+    },
+    {
+      "original": "packages/shared/src/tariff.ts",
+      "projected": "packages/@dzhechkov/source-9/src/tariff.ts",
+      "sha256": "9b35dcf59994ef4596d0fc7229b9e1a4d7646ba6791436f4492f49039d8385fb"
+    },
+    {
+      "original": "packages/shared/src/clip-code.ts",
+      "projected": "packages/@dzhechkov/source-10/src/clip-code.ts",
+      "sha256": "bd20e9047c3175cc6f6ff5da19bb8fb5655dfffdc87800844020ae1f39118e8c"
+    },
+    {
+      "original": "packages/shared/src/index.ts",
+      "projected": "packages/@dzhechkov/source-11/src/index.ts",
+      "sha256": "e02a74b6c350ec2989cd9538d24399ed39df84553e99bfdd407e53d00ed4f8d6"
+    },
+    {
+      "original": "packages/shared/src/cta.ts",
+      "projected": "packages/@dzhechkov/source-12/src/cta.ts",
+      "sha256": "6b3356bad53140f004b6215c9eeb75bcee62d12f10de45bcef83df17dd55d752"
+    },
+    {
+      "original": "packages/shared/src/showcase.ts",
+      "projected": "packages/@dzhechkov/source-13/src/showcase.ts",
+      "sha256": "6ae8727200df1d671819add65c7e62581f7224c3661dfbe9f9b06f21bd0421d4"
+    },
+    {
+      "original": "packages/shared/src/fragments.ts",
+      "projected": "packages/@dzhechkov/source-14/src/fragments.ts",
+      "sha256": "42aaed57c3520b8b9a65b66c6d9bf20d261907f42716b795f8d0b44296069ea1"
+    },
+    {
+      "original": "packages/shared/src/watermark.ts",
+      "projected": "packages/@dzhechkov/source-15/src/watermark.ts",
+      "sha256": "21776cb12282dbd090d63b0697926c03ae1af236818fb96a4c54516f2f0fc603"
+    },
+    {
+      "original": "packages/shared/src/music-catalog.ts",
+      "projected": "packages/@dzhechkov/source-16/src/music-catalog.ts",
+      "sha256": "1f59fce4c7fd88e3521d9ba30803adf7060e547205afa7831155ebb984ebc483"
+    },
+    {
+      "original": "packages/shared/src/transcript.ts",
+      "projected": "packages/@dzhechkov/source-17/src/transcript.ts",
+      "sha256": "2471bb6ddd58e5b12003fd2b96c461449cf2f0c9ec0092c36153379ee034c2ab"
+    },
+    {
+      "original": "packages/shared/src/upload.ts",
+      "projected": "packages/@dzhechkov/source-18/src/upload.ts",
+      "sha256": "95192199f0e5cbca8978fcb0eb3a8b9a243008e8ab76d4d64be36c3159f131b6"
+    },
+    {
+      "original": "packages/shared/src/formats.ts",
+      "projected": "packages/@dzhechkov/source-19/src/formats.ts",
+      "sha256": "f2a93e74f6cfcda9c7481166126be9d00c86ad09ee6e137516586fec82bb5177"
+    },
+    {
+      "original": "packages/queue/src/queues.ts",
+      "projected": "packages/@dzhechkov/source-20/src/queues.ts",
+      "sha256": "33d9fb6b833677aa31f473bf4203c47dff7c851d244a9f8ea319079a3b8958e7"
+    },
+    {
+      "original": "packages/queue/src/index.ts",
+      "projected": "packages/@dzhechkov/source-21/src/index.ts",
+      "sha256": "74e342d7d86729e563e28d4bc5c1f64f9bcf96ec9b4d2a12fab73295a1851651"
+    },
+    {
+      "original": "packages/queue/src/constants.ts",
+      "projected": "packages/@dzhechkov/source-22/src/constants.ts",
+      "sha256": "2a3aff14d91cb3c4ffd0cbe2bd14322a2fd2966a0617e508a2351390ec51c0eb"
+    },
+    {
+      "original": "apps/worker/workers/render.ts",
+      "projected": "packages/@dzhechkov/source-23/src/render.ts",
+      "sha256": "9038bc39da29e31f56be59e524eb2b080029c66b104132dded73018155955590"
+    },
+    {
+      "original": "apps/worker/workers/select.ts",
+      "projected": "packages/@dzhechkov/source-24/src/select.ts",
+      "sha256": "1ed280150550a858928cfad9d38cbe86cbe21c6791c9cc3d3254901f8c7f7aaa"
+    },
+    {
+      "original": "apps/worker/workers/stt.ts",
+      "projected": "packages/@dzhechkov/source-25/src/stt.ts",
+      "sha256": "6dac10410d7f12f4778e30c513cecb89706c1eaa76fbe5815e7aa3009dbaa733"
+    },
+    {
+      "original": "apps/worker/src/runtime.ts",
+      "projected": "packages/@dzhechkov/source-26/src/runtime.ts",
+      "sha256": "b826885f3f8b328926a90c480b7cab3629972c6b25477e85464bc6aacf79d21b"
+    },
+    {
+      "original": "apps/worker/src/stt/yandex-protocol.ts",
+      "projected": "packages/@dzhechkov/source-27/src/yandex-protocol.ts",
+      "sha256": "136b27cc9958bde6ba7c0ea0d60e1b4b3680a9c704a60b7f406d35275a94dac8"
+    },
+    {
+      "original": "apps/worker/src/stt/spend.ts",
+      "projected": "packages/@dzhechkov/source-28/src/spend.ts",
+      "sha256": "007544fc8e270dbc2108b1823c1a18a5efc63846f54295c46340302326b210c2"
+    },
+    {
+      "original": "apps/worker/src/stt/yandex.ts",
+      "projected": "packages/@dzhechkov/source-29/src/yandex.ts",
+      "sha256": "f791f8ff304b92ee741e5813b991e55a43142e25e576d367eab9dfc31ca3c831"
+    },
+    {
+      "original": "apps/worker/src/stt/merge.ts",
+      "projected": "packages/@dzhechkov/source-30/src/merge.ts",
+      "sha256": "4fd7273ff5980a0f6c38ffb65b4f0d7eb0affbd0dc94de307726b3d2c2b3494d"
+    },
+    {
+      "original": "apps/worker/src/stt/client.ts",
+      "projected": "packages/@dzhechkov/source-31/src/client.ts",
+      "sha256": "7eaa49ccffcb4aa7a5aa83c4b694885ce51db93c8e9b33401c28777748a49385"
+    },
+    {
+      "original": "apps/worker/src/stt/chunker.ts",
+      "projected": "packages/@dzhechkov/source-32/src/chunker.ts",
+      "sha256": "cbb6fe7e7d06a6018a30d438ca17fff2c15abc4ecd52f12f81ed277d1af53dbb"
+    },
+    {
+      "original": "apps/worker/src/stt/extract.ts",
+      "projected": "packages/@dzhechkov/source-33/src/extract.ts",
+      "sha256": "bb01907c2996b64eaad21dec86eafc5c5be6d563d6596f0d84e02bd27878ae12"
+    },
+    {
+      "original": "apps/worker/src/workers/render.ts",
+      "projected": "packages/@dzhechkov/source-34/src/render.ts",
+      "sha256": "edb48ae12d515440c0e094a744b75b9f56541f1c32c2df1f4db47e87b48b3ffd"
+    },
+    {
+      "original": "apps/worker/src/workers/select.ts",
+      "projected": "packages/@dzhechkov/source-35/src/select.ts",
+      "sha256": "18fc4b9cd7ce9b70c179caa20a044f11b8ffec13cb0d4d148b8a574b6aa58d89"
+    },
+    {
+      "original": "apps/worker/src/workers/stt.ts",
+      "projected": "packages/@dzhechkov/source-36/src/stt.ts",
+      "sha256": "1550d1e95b182dcdd0db81b0c21f1a0f2741163ea72787d2ea5952116d94d2df"
+    },
+    {
+      "original": "packages/db/src/attempts.ts",
+      "projected": "packages/@dzhechkov/source-37/src/attempts.ts",
+      "sha256": "1ea18327be1e2f2b405576b5b8a3dc3f5a518dcd4131a93652816c77b7181855"
+    },
+    {
+      "original": "packages/db/src/credits.ts",
+      "projected": "packages/@dzhechkov/source-38/src/credits.ts",
+      "sha256": "18c6cc11409933017b60784b55eeecc838e3da936ca6ff8c9d0aabec7916a1e7"
+    },
+    {
+      "original": "packages/db/src/render.ts",
+      "projected": "packages/@dzhechkov/source-39/src/render.ts",
+      "sha256": "9c4c5cf8f31887188f46f8412e1aeab2b184bbbf2173e29baffc0438863bd5a5"
+    },
+    {
+      "original": "packages/db/src/migrate.ts",
+      "projected": "packages/@dzhechkov/source-40/src/migrate.ts",
+      "sha256": "811b03ea40ec002f99c872744eb8a45410c5d5ad508d2395e23078b4b29ab7a3"
+    },
+    {
+      "original": "packages/db/src/ops-set-plan.ts",
+      "projected": "packages/@dzhechkov/source-41/src/ops-set-plan.ts",
+      "sha256": "85925993577f966bd51c549292fc7dbb946d4dfacc181130f199703509be3099"
+    },
+    {
+      "original": "packages/db/src/ops-owner-unlimited.ts",
+      "projected": "packages/@dzhechkov/source-42/src/ops-owner-unlimited.ts",
+      "sha256": "f63a3c0d91d43dad39345be9aec941d800f13f3ab3c12f533dd682ac49b3df12"
+    },
+    {
+      "original": "packages/db/src/support-email.ts",
+      "projected": "packages/@dzhechkov/source-43/src/support-email.ts",
+      "sha256": "9331ef138369d427219d5cbcd519f9a8ca2c083bcdc59949976be5ca3fbb2506"
+    },
+    {
+      "original": "packages/db/src/clip-link.ts",
+      "projected": "packages/@dzhechkov/source-44/src/clip-link.ts",
+      "sha256": "94f521e64acac4aacdbf2300dbed5701a2c39459ed74ea01482a17d569d7f52f"
+    },
+    {
+      "original": "packages/db/src/selection.ts",
+      "projected": "packages/@dzhechkov/source-45/src/selection.ts",
+      "sha256": "a3d57395186256d8e6581df946a3c0f06f2e2043a36e62db91b6b2faad24adab"
+    },
+    {
+      "original": "packages/db/src/quota.ts",
+      "projected": "packages/@dzhechkov/source-46/src/quota.ts",
+      "sha256": "da1d10660fb84a78dbab490853230f0b00fe3267071b22ddfd8c6c1b3e3dd78e"
+    },
+    {
+      "original": "packages/db/src/ops-support-operator.ts",
+      "projected": "packages/@dzhechkov/source-47/src/ops-support-operator.ts",
+      "sha256": "11367b4ff5b9b9e21e94a11bd03d82e37aa48a28141abc3b23698e8a4eaf57cb"
+    },
+    {
+      "original": "packages/db/src/index.ts",
+      "projected": "packages/@dzhechkov/source-48/src/index.ts",
+      "sha256": "0006a28218603b918cb8c54c42c7cc3223c9e0ba2bd7a9fb7f002ad15d3d8543"
+    },
+    {
+      "original": "packages/db/src/owner-entitlement.ts",
+      "projected": "packages/@dzhechkov/source-49/src/owner-entitlement.ts",
+      "sha256": "acdc902ad86215cdef71edd4019f89ab562ef0e9c17b558cc0aa6fe69702b8ae"
+    },
+    {
+      "original": "packages/db/src/plan.ts",
+      "projected": "packages/@dzhechkov/source-50/src/plan.ts",
+      "sha256": "99a81e24cf14a0df20d8efd3300b191aada6d280465b076c186d52e35157c841"
+    },
+    {
+      "original": "packages/db/src/probe.ts",
+      "projected": "packages/@dzhechkov/source-51/src/probe.ts",
+      "sha256": "176d389a806542d34e93e57a873bf3f513c5f0cd4246947015466ba7e595f757"
+    },
+    {
+      "original": "packages/db/src/payments.ts",
+      "projected": "packages/@dzhechkov/source-52/src/payments.ts",
+      "sha256": "f59f940953f234256083966b958ef4b30fe60b28498c41d970e48eadb31646e2"
+    },
+    {
+      "original": "packages/db/src/support-admin.ts",
+      "projected": "packages/@dzhechkov/source-53/src/support-admin.ts",
+      "sha256": "a9fc1743a33dc553e1685d8822cdf785215b5f7d8527a88eef09089fd6905841"
+    },
+    {
+      "original": "packages/db/src/transcription.ts",
+      "projected": "packages/@dzhechkov/source-54/src/transcription.ts",
+      "sha256": "e2469ce0a09a6b2df38fcb96eaddb8dc37a8679b8d225e3f2ff0de9a09e5519a"
+    },
+    {
+      "original": "apps/worker/src/render/exec.ts",
+      "projected": "packages/@dzhechkov/source-55/src/exec.ts",
+      "sha256": "5e5ec11ce5890d0a5e43946a724c6e9b5dd8bc8fefaed0b1a667545a91c9a9aa"
+    },
+    {
+      "original": "apps/worker/src/render/escape.ts",
+      "projected": "packages/@dzhechkov/source-56/src/escape.ts",
+      "sha256": "00d65e6b82d65bda28d000ce845e3596df9ac831f460270db5565a7b1850d8db"
+    },
+    {
+      "original": "apps/worker/src/render/ffmpeg.ts",
+      "projected": "packages/@dzhechkov/source-57/src/ffmpeg.ts",
+      "sha256": "9a0d8a32a043726a2f33cefbf4915e77412fbed170006da1693cf6eeca2205e9"
+    },
+    {
+      "original": "apps/worker/src/render/subtitles.ts",
+      "projected": "packages/@dzhechkov/source-58/src/subtitles.ts",
+      "sha256": "cb016dd0e066531fba15aa9d5e3ba20e33e17e2c844e9205849f6baa614be2f6"
+    },
+    {
+      "original": "apps/worker/src/render/probe.ts",
+      "projected": "packages/@dzhechkov/source-59/src/probe.ts",
+      "sha256": "4097fadf763a2347ae42a3c07585aedbf5fbed15bcf035776acc47ad09363935"
+    },
+    {
+      "original": "apps/worker/src/render/glossary.ts",
+      "projected": "packages/@dzhechkov/source-60/src/glossary.ts",
+      "sha256": "6ce01571a94252f3b538a6a1a659ef08a3878b32c3283c89f5d4ce8ee11e6f5f"
+    },
+    {
+      "original": "apps/worker/src/render/envelope.ts",
+      "projected": "packages/@dzhechkov/source-61/src/envelope.ts",
+      "sha256": "1de7f170c8aab2d5fbde5e0f7e42843f942b47fae59efba48c6dffc950a3e609"
+    },
+    {
+      "original": "apps/worker/src/render/teaser.ts",
+      "projected": "packages/@dzhechkov/source-62/src/teaser.ts",
+      "sha256": "af40a762b702d6929ea935abe27b493a2213bb74a5e59c3d8f58bdbc51ef37bd"
+    },
+    {
+      "original": "apps/worker/src/render/compaction.ts",
+      "projected": "packages/@dzhechkov/source-63/src/compaction.ts",
+      "sha256": "46746ffff26b3b46339fa121cf7fc298f547c840a76d8cb80c24c82ce0024b03"
+    },
+    {
+      "original": "apps/worker/src/render/music.ts",
+      "projected": "packages/@dzhechkov/source-64/src/music.ts",
+      "sha256": "be4f2c535cfe2b3dbe0b571791276556863da28ea93c9e157a437c3320de53ef"
+    },
+    {
+      "original": "apps/worker/src/render/cta-overlay.ts",
+      "projected": "packages/@dzhechkov/source-65/src/cta-overlay.ts",
+      "sha256": "826822336e155f98e0acbe75d43d99b4e8b85297458649b977b5e6289224f37d"
+    },
+    {
+      "original": "apps/worker/src/render/faces.ts",
+      "projected": "packages/@dzhechkov/source-66/src/faces.ts",
+      "sha256": "a557399d9cc4550b5ddbb277707114439d8571ac421f887e8ee6e54c07933fea"
+    },
+    {
+      "original": "apps/worker/src/render/framing-plan.ts",
+      "projected": "packages/@dzhechkov/source-67/src/framing-plan.ts",
+      "sha256": "cb173f98cc2e69416c7f4cbe875411090bd62eb2f698177bb238b605e495384c"
+    },
+    {
+      "original": "apps/worker/src/llm/fake.ts",
+      "projected": "packages/@dzhechkov/source-68/src/fake.ts",
+      "sha256": "0fef0ff1fd6eb0e34ad12b40e33b79821fc6a4a25401aee4b0f8915a004d084d"
+    },
+    {
+      "original": "apps/worker/src/quota-environment.ts",
+      "projected": "packages/@dzhechkov/source-69/src/quota-environment.ts",
+      "sha256": "98677ceb6c2fde2dca8b1df291e6aac7fc4243f35fba3b2b66a826dba77e1de7"
+    },
+    {
+      "original": "apps/worker/src/render/watermark.ts",
+      "projected": "packages/@dzhechkov/source-70/src/watermark.ts",
+      "sha256": "7e3ca04a091d8626c8c815c8ec539cdeda2584d8c0f0a64de084f8615a6c0e5d"
+    },
+    {
+      "original": "apps/worker/src/render/loudness.ts",
+      "projected": "packages/@dzhechkov/source-71/src/loudness.ts",
+      "sha256": "9587d1b470939ff6e3ba7ac8fb98ad918b2df22ca792b7fa7cfa24fc6bab7e0c"
+    },
+    {
+      "original": "apps/worker/src/render/format.ts",
+      "projected": "packages/@dzhechkov/source-72/src/format.ts",
+      "sha256": "492b13ab405bb98afcb796cc837e118e7910e2fa40f803ef570bf763eaaa77f1"
+    },
+    {
+      "original": "apps/worker/src/render/packshot.ts",
+      "projected": "packages/@dzhechkov/source-73/src/packshot.ts",
+      "sha256": "662698ba5954274e3ada9c1be14028b62e65609a28d7317bf5fc7acacf673b37"
+    },
+    {
+      "original": "apps/worker/src/render/storage.ts",
+      "projected": "packages/@dzhechkov/source-74/src/storage.ts",
+      "sha256": "be2deb188c91059bba0885be7caad8538c25477981ed74669104ee5f78863493"
+    },
+    {
+      "original": "apps/worker/src/render/diagnostics.ts",
+      "projected": "packages/@dzhechkov/source-75/src/diagnostics.ts",
+      "sha256": "2fe7fb0e6f34aae22a79e836156661645f980261b5291096e8d2569da7e0a51d"
+    },
+    {
+      "original": "apps/worker/src/llm/cloudru-transport.ts",
+      "projected": "packages/@dzhechkov/source-76/src/cloudru-transport.ts",
+      "sha256": "cfe729224e70a584f33eab0ed0a1e27fee3562ba024f4b09afbc5eabb000294b"
+    },
+    {
+      "original": "apps/worker/src/llm/spend.ts",
+      "projected": "packages/@dzhechkov/source-77/src/spend.ts",
+      "sha256": "c0182b3e3c917f41618f71dd173160e44aa33c37c3a5c78a50c394241f8c2f3c"
+    },
+    {
+      "original": "apps/worker/src/llm/provider.ts",
+      "projected": "packages/@dzhechkov/source-78/src/provider.ts",
+      "sha256": "dde39fd7264a5a765c4452908757b836921c020f66a8a2946c42e4fd21929f48"
+    },
+    {
+      "original": "apps/worker/src/media/download.ts",
+      "projected": "packages/@dzhechkov/source-79/src/download.ts",
+      "sha256": "de8a67ec163e477bef692ad0baae1db5b24f9cb35c95e6b9211bf6d50daee774"
+    },
+    {
+      "original": "apps/worker/src/media/probe.ts",
+      "projected": "packages/@dzhechkov/source-80/src/probe.ts",
+      "sha256": "5b5096a8542b634e9b47033a1c13f168daf26e66f8a44d26ccee3f9090b793ad"
+    },
+    {
+      "original": "apps/worker/src/retry.ts",
+      "projected": "packages/@dzhechkov/source-81/src/retry.ts",
+      "sha256": "6c14eb3460ffdb9a5128e40d5f2917e8e0080ea4eb5b18295507852fdceb1bb1"
+    },
+    {
+      "original": "apps/worker/src/wait.ts",
+      "projected": "packages/@dzhechkov/source-82/src/wait.ts",
+      "sha256": "d35b9c2882b0d89f614bf2a3a073df4d738e03a0e2f17cd402b55bff5f3221d8"
+    },
+    {
+      "original": "apps/web/next.config.ts",
+      "projected": "packages/@dzhechkov/source-83/src/next.config.ts",
+      "sha256": "b8977b7015ce1b164292e0bf462fb3a3b685f94fbc59553340b707d886f806ee"
+    },
+    {
+      "original": "apps/web/src/preflight.ts",
+      "projected": "packages/@dzhechkov/source-84/src/preflight.ts",
+      "sha256": "b02acbae7c59bde881b483c5a22b837ac2302de464a8f387280708469b7ced8f"
+    },
+    {
+      "original": "apps/web/src/lib/rpc.ts",
+      "projected": "packages/@dzhechkov/source-85/src/rpc.ts",
+      "sha256": "adffbadad5718859694ee99cf2693041b45e6416ca65866f66adde1e7a498d71"
+    },
+    {
+      "original": "apps/web/src/lib/progress-ribbon.ts",
+      "projected": "packages/@dzhechkov/source-86/src/progress-ribbon.ts",
+      "sha256": "ddc7882c3ff7fc13e1a5c9307d65b0c884494c492a9339ebab165f621fc8908a"
+    },
+    {
+      "original": "apps/web/src/lib/limits-contract.ts",
+      "projected": "packages/@dzhechkov/source-87/src/limits-contract.ts",
+      "sha256": "e6189924da25e668dc64a239a59de59c8dd9371521b75aa91848958db101470f"
+    },
+    {
+      "original": "apps/web/src/lib/support-client.ts",
+      "projected": "packages/@dzhechkov/source-88/src/support-client.ts",
+      "sha256": "eb4ed3b3694bbbcf9d2976105890c0c7fa3983c6a04bb93e32be57f6e480aa22"
+    },
+    {
+      "original": "apps/web/src/lib/acquisition-analytics.ts",
+      "projected": "packages/@dzhechkov/source-89/src/acquisition-analytics.ts",
+      "sha256": "0661870d10960e52d636de9168fd3bc393f0e5e517d53896ee70c67f0094e51c"
+    },
+    {
+      "original": "apps/web/src/lib/screen-contract.ts",
+      "projected": "packages/@dzhechkov/source-90/src/screen-contract.ts",
+      "sha256": "5e104855ad7cb25bb4f56ff1ea88a6dfb1eec2340dcea42dd20abe91e122c746"
+    },
+    {
+      "original": "apps/web/src/lib/guest-contract.ts",
+      "projected": "packages/@dzhechkov/source-91/src/guest-contract.ts",
+      "sha256": "c2690772f569c69138dd1f670d59e4a82ba367f8068476a97051bbc4d7dc9188"
+    },
+    {
+      "original": "apps/web/src/lib/legal-footer.ts",
+      "projected": "packages/@dzhechkov/source-92/src/legal-footer.ts",
+      "sha256": "9a823b29f1111653d668271a8484b8406c4112ff6cec93312ac8dd3f5b4c00b2"
+    },
+    {
+      "original": "apps/web/src/lib/partner-referral.ts",
+      "projected": "packages/@dzhechkov/source-93/src/partner-referral.ts",
+      "sha256": "49e4f5969b1a47c468c5337d1dc27ed2fc9009a01f04eecc28043f64de78e456"
+    },
+    {
+      "original": "apps/web/src/lib/theme.ts",
+      "projected": "packages/@dzhechkov/source-94/src/theme.ts",
+      "sha256": "b491c3cf80deead2f8f90dab47843a69c643236ed8a7869682fb2be9fd5a3703"
+    },
+    {
+      "original": "apps/web/src/lib/upload-parts.ts",
+      "projected": "packages/@dzhechkov/source-95/src/upload-parts.ts",
+      "sha256": "4d7d33d6bde4db41ae7ac87740b574225acfd5a359df1791083e32b7302605b9"
+    },
+    {
+      "original": "apps/web/src/lib/plural-ru.ts",
+      "projected": "packages/@dzhechkov/source-96/src/plural-ru.ts",
+      "sha256": "405a5d1cd93449ef5a09e339a060b4fea65bfefd198de2f69f8f94ac0a26108a"
+    },
+    {
+      "original": "apps/web/src/lib/legal-documents.ts",
+      "projected": "packages/@dzhechkov/source-97/src/legal-documents.ts",
+      "sha256": "47d8b5a108d00c8c8a8f1f0eac2fe003f04d03c16c9f61a8ec1cfd2e7b19902f"
+    },
+    {
+      "original": "apps/web/src/lib/payment-return.ts",
+      "projected": "packages/@dzhechkov/source-98/src/payment-return.ts",
+      "sha256": "5c9bf31bd3918e0c08d1d0bd0c9d35b7041993faf355265aa571d531d9223268"
+    },
+    {
+      "original": "apps/web/src/instrumentation.ts",
+      "projected": "packages/@dzhechkov/source-99/src/instrumentation.ts",
+      "sha256": "63ce9e83d69bc72a92179b13e3e8163c50fae82d9a12945f79178557c3f14541"
+    },
+    {
+      "original": "apps/web/src/server/guest-page.ts",
+      "projected": "packages/@dzhechkov/source-100/src/guest-page.ts",
+      "sha256": "00379aefd906d5081e0772381e8d72a51c3f87eafb87c9959a5262fe42aef254"
+    },
+    {
+      "original": "apps/web/src/server/route.ts",
+      "projected": "packages/@dzhechkov/source-101/src/route.ts",
+      "sha256": "266d450015830a2aed78055f1521f0aaca5306d0255ece43a559bbc0aed23543"
+    },
+    {
+      "original": "apps/web/src/server/rate-limit.ts",
+      "projected": "packages/@dzhechkov/source-102/src/rate-limit.ts",
+      "sha256": "d2f563e44884de73ea1291816880da8605b3aa795bd1cbcc36909f05d6d5c90a"
+    },
+    {
+      "original": "apps/web/src/server/showcase-file.ts",
+      "projected": "packages/@dzhechkov/source-103/src/showcase-file.ts",
+      "sha256": "2ffabb14461e9fd636d6ec3ca669ac71d197275b92f261e75cc603d16806b9e7"
+    },
+    {
+      "original": "apps/web/src/server/upload-runtime.ts",
+      "projected": "packages/@dzhechkov/source-104/src/upload-runtime.ts",
+      "sha256": "60f4132a35b2301cdcc87838e4aad1c1d683e27cb35bdedec865a3cb920ccdd6"
+    },
+    {
+      "original": "apps/web/src/server/runtime.ts",
+      "projected": "packages/@dzhechkov/source-105/src/runtime.ts",
+      "sha256": "7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb"
+    },
+    {
+      "original": "apps/web/src/server/partner-code.ts",
+      "projected": "packages/@dzhechkov/source-106/src/partner-code.ts",
+      "sha256": "44719f6d3920f820657cf590bf05d6e6ec4cf248dcee699ea2bd39f3adcbb16e"
+    },
+    {
+      "original": "apps/web/src/server/environment.ts",
+      "projected": "packages/@dzhechkov/source-107/src/environment.ts",
+      "sha256": "5d31fa5cb8968d711fc5f86e6d157c53507118916073bb5b293e942e25936081"
+    },
+    {
+      "original": "apps/web/src/server/watchdog.ts",
+      "projected": "packages/@dzhechkov/source-108/src/watchdog.ts",
+      "sha256": "654ec86dd88a33db30f1be7a836adc22f92b8d03e4f69af8ef9e4493c4f390a2"
+    },
+    {
+      "original": "apps/web/src/server/page-account.ts",
+      "projected": "packages/@dzhechkov/source-109/src/page-account.ts",
+      "sha256": "f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713"
+    },
+    {
+      "original": "apps/web/src/server/trpc.ts",
+      "projected": "packages/@dzhechkov/source-110/src/trpc.ts",
+      "sha256": "86df44e453228375806f2145a9dcc2976920932557f3eebf8a4e0979dd6acd2d"
+    },
+    {
+      "original": "apps/web/src/server/guest-file.ts",
+      "projected": "packages/@dzhechkov/source-111/src/guest-file.ts",
+      "sha256": "19bd437dfd3b53dca0611a95cca8eac23639c2fe9a872de8289b61dacae07590"
+    },
+    {
+      "original": "apps/web/src/server/auth.ts",
+      "projected": "packages/@dzhechkov/source-112/src/auth.ts",
+      "sha256": "699076bf660eee46cfc1a3e67258cfc438219eabe958ce9d4b319816b438ead3"
+    },
+    {
+      "original": "apps/web/src/server/short-link.ts",
+      "projected": "packages/@dzhechkov/source-113/src/short-link.ts",
+      "sha256": "4e3e38fea28d7888e07f397dbea27fefe51fa36602b92fb87ce6c678b937dcaf"
+    },
+    {
+      "original": "apps/web/src/server/limits.ts",
+      "projected": "packages/@dzhechkov/source-114/src/limits.ts",
+      "sha256": "6cac76676810a6c8114e9eb34a8ca9454df7738a084c3ce53c39392172c1a7d2"
+    },
+    {
+      "original": "apps/web/src/server/partner-landing.ts",
+      "projected": "packages/@dzhechkov/source-115/src/partner-landing.ts",
+      "sha256": "c941d988c6e825b8ec37eba919e20cb52ddf22f8514089a923084d107e2ab745"
+    },
+    {
+      "original": "apps/web/src/server/screen-runtime.ts",
+      "projected": "packages/@dzhechkov/source-116/src/screen-runtime.ts",
+      "sha256": "1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb"
+    },
+    {
+      "original": "apps/web/src/server/short-link-handler.ts",
+      "projected": "packages/@dzhechkov/source-117/src/short-link-handler.ts",
+      "sha256": "7e5b78cf886610d3898f27cdc4a0836acba2b4b5fd203f6e8f90eff2e7ed92d3"
+    },
+    {
+      "original": "apps/web/src/server/auth-handler.ts",
+      "projected": "packages/@dzhechkov/source-118/src/auth-handler.ts",
+      "sha256": "03033f61d0d383580d902d12fe8d6ffb9c64ef488c0628a9e74b50d1e5dc2bd5"
+    },
+    {
+      "original": "apps/web/src/server/upload-handler.ts",
+      "projected": "packages/@dzhechkov/source-119/src/upload-handler.ts",
+      "sha256": "15049962bac9d98a63074183a1a53ae83ae8b7c4194608db81721d98f67eafc0"
+    },
+    {
+      "original": "apps/web/src/server/video-retry.ts",
+      "projected": "packages/@dzhechkov/source-120/src/video-retry.ts",
+      "sha256": "877a14356712af4f6e312b0e3ed9d831f1ee19f9de5bc9564d7008dc7c74d977"
+    },
+    {
+      "original": "apps/web/src/server/screen.ts",
+      "projected": "packages/@dzhechkov/source-121/src/screen.ts",
+      "sha256": "94d45a23144e22663319c9eb19c1c35c362e5de90edc8d861e71f19cfca2ab87"
+    },
+    {
+      "original": "apps/web/src/server/ip.ts",
+      "projected": "packages/@dzhechkov/source-122/src/ip.ts",
+      "sha256": "af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301"
+    },
+    {
+      "original": "apps/web/src/server/erasure.ts",
+      "projected": "packages/@dzhechkov/source-123/src/erasure.ts",
+      "sha256": "72d5978883584e85a2d39c04492dc064361a16b4431f01d5728edda59e6b4bd2"
+    },
+    {
+      "original": "apps/web/src/server/partner.ts",
+      "projected": "packages/@dzhechkov/source-124/src/partner.ts",
+      "sha256": "c3eef91f0a9c4a3c14495f3ad7aeeeae8f3bf82fabe2ce7ae465fcdbd82c58e4"
+    },
+    {
+      "original": "apps/web/src/server/guest-pack.ts",
+      "projected": "packages/@dzhechkov/source-125/src/guest-pack.ts",
+      "sha256": "671e6fd06c902dec26f5361aaac3bd78a21d4abe845c3c5813e3c481d66e694d"
+    },
+    {
+      "original": "apps/web/src/server/queue-runtime.ts",
+      "projected": "packages/@dzhechkov/source-126/src/queue-runtime.ts",
+      "sha256": "58bb6eda462cc395d3fecc5c183e30c55da84ec7c4ee0ab467576d48d9eb19f2"
+    },
+    {
+      "original": "apps/web/src/server/erasure-receipt.ts",
+      "projected": "packages/@dzhechkov/source-127/src/erasure-receipt.ts",
+      "sha256": "4ff330cf733929550e63c8d6e21af209c26cf6026e095dffdd12a579b2e1d294"
+    },
+    {
+      "original": "apps/web/src/server/auth-store.ts",
+      "projected": "packages/@dzhechkov/source-128/src/auth-store.ts",
+      "sha256": "84744406a808cefddf657f7a1be607517888e5ae7ecd85743e2c5b86e0821d8f"
+    },
+    {
+      "original": "apps/web/src/server/clip-file.ts",
+      "projected": "packages/@dzhechkov/source-129/src/clip-file.ts",
+      "sha256": "a3a3a59d24d7521722083cdfe2b0a052f9c339c925a69585eaa2a37c1c94b536"
+    },
+    {
+      "original": "apps/web/src/server/retention.ts",
+      "projected": "packages/@dzhechkov/source-130/src/retention.ts",
+      "sha256": "6bb4b884313471fc95937eabded73d188d76803510ed26df48478c4158ab28f8"
+    },
+    {
+      "original": "apps/web/src/server/media-type.ts",
+      "projected": "packages/@dzhechkov/source-131/src/media-type.ts",
+      "sha256": "898fa78965975961dec0e208966a4dbc5f795f4e7406b07b344c2097cd59d15b"
+    },
+    {
+      "original": "apps/web/src/server/erasure-page.ts",
+      "projected": "packages/@dzhechkov/source-132/src/erasure-page.ts",
+      "sha256": "f0769958d720c26af84b51fcd35b3792c738006a3c519a7f1666c663d1aae4d2"
+    },
+    {
+      "original": "apps/web/src/server/billing-deps.ts",
+      "projected": "packages/@dzhechkov/source-133/src/billing-deps.ts",
+      "sha256": "21d0491af11a30fb21498d2fef9d7a962dff6363784a2e0345733e710ed8e2c6"
+    },
+    {
+      "original": "apps/web/src/server/video.ts",
+      "projected": "packages/@dzhechkov/source-134/src/video.ts",
+      "sha256": "8f967aa3de8f6174de4c3ba84ae585d3d90e2d024ccc13db16335d23cabc465e"
+    },
+    {
+      "original": "apps/web/src/server/billing-handler.ts",
+      "projected": "packages/@dzhechkov/source-135/src/billing-handler.ts",
+      "sha256": "8ebcfe23ad4e69e086fe451a7ab6ad7696da4c07b0ceb15b6e1de3b9dcb075f3"
+    },
+    {
+      "original": "apps/web/src/server/interest.ts",
+      "projected": "packages/@dzhechkov/source-136/src/interest.ts",
+      "sha256": "f572709d32ff5aa63c4fcb9c2eeb91e641640ee2636cfd2e352386d875f1f65b"
+    },
+    {
+      "original": "apps/web/src/server/clip-music.ts",
+      "projected": "packages/@dzhechkov/source-137/src/clip-music.ts",
+      "sha256": "4c9642ca5f05c7f0b526f1f83cdc1d7fd1716d8f7f1cf78b8630b5629177732b"
+    },
+    {
+      "original": "apps/web/src/server/billing-runtime.ts",
+      "projected": "packages/@dzhechkov/source-138/src/billing-runtime.ts",
+      "sha256": "afd263c98c21a8fbd67dbcd6a0aab3dc9d2fcb17bbde4eb8808cca9827fd4193"
+    },
+    {
+      "original": "apps/web/src/server/video-cta.ts",
+      "projected": "packages/@dzhechkov/source-139/src/video-cta.ts",
+      "sha256": "467a33f576bcb40fd47e67f242e822258a85bf6bfecfd4b0c1343472d88109bf"
+    },
+    {
+      "original": "apps/web/src/server/upload-contract.ts",
+      "projected": "packages/@dzhechkov/source-140/src/upload-contract.ts",
+      "sha256": "27aa766e0d3658e0ab0069db6c18551b75aed1c5230d39f8b61df915c2b262aa"
+    },
+    {
+      "original": "apps/web/src/app/AuthForm.tsx",
+      "projected": "packages/@dzhechkov/source-141/src/AuthForm.ts",
+      "sha256": "081f53c78b981b7a6dbc7572a7de74ed4fab3076e13cda94df832a3a1be6016e"
+    },
+    {
+      "original": "apps/web/src/app/theme-server.ts",
+      "projected": "packages/@dzhechkov/source-142/src/theme-server.ts",
+      "sha256": "5839b728e544ad7cba65a4407d3fdc17f5137b5c90fd5c0db5fb9392569edfb9"
+    },
+    {
+      "original": "apps/web/src/server/payments/provider.ts",
+      "projected": "packages/@dzhechkov/source-143/src/provider.ts",
+      "sha256": "85feb77cbcbeb96de5f495048533971ac483d9e9be08624917c9d82c2f47ad5d"
+    },
+    {
+      "original": "apps/web/src/server/payments/config.ts",
+      "projected": "packages/@dzhechkov/source-144/src/config.ts",
+      "sha256": "74cb871d1437faa690b35d6b85e4f473cc20a871c3cbe9e11cc20aeb1946af9b"
+    },
+    {
+      "original": "apps/web/src/server/payments/cidr-match.ts",
+      "projected": "packages/@dzhechkov/source-145/src/cidr-match.ts",
+      "sha256": "90e95cf42d9877b09670b43d19df717096e480187282c9e8cd4b593420d83832"
+    },
+    {
+      "original": "apps/web/src/server/payments/fake.ts",
+      "projected": "packages/@dzhechkov/source-146/src/fake.ts",
+      "sha256": "3292189b0cfa8cde563d680a576173ac26f4a275d085b9a2e5b3f24d5cfb2efa"
+    },
+    {
+      "original": "apps/web/src/server/payments/yookassa.ts",
+      "projected": "packages/@dzhechkov/source-147/src/yookassa.ts",
+      "sha256": "eeaaef4bcd60f011b21fb20831c7f4f412cd9bbcd7ab8d6ca19914aa5cbaf4e5"
+    },
+    {
+      "original": "apps/web/src/server/payments/origin.ts",
+      "projected": "packages/@dzhechkov/source-148/src/origin.ts",
+      "sha256": "45a0310f7b6b081cdd5760c7327d87ccd34a41f41a3b61337312a6a03e4236d1"
+    },
+    {
+      "original": "apps/web/src/app/SupportLauncher.tsx",
+      "projected": "packages/@dzhechkov/source-149/src/SupportLauncher.ts",
+      "sha256": "a727d000677c2fadfe2b1f083669761f5e9eb48daac5942ea82dbaef77aa2571"
+    },
+    {
+      "original": "apps/web/src/app/LandingCta.tsx",
+      "projected": "packages/@dzhechkov/source-150/src/LandingCta.ts",
+      "sha256": "d816ddf41a1a06a2d844ac2e260ae43a04166e78bbe52fb838fe4f5246e1de88"
+    },
+    {
+      "original": "apps/web/src/app/verify-email/page.tsx",
+      "projected": "packages/@dzhechkov/source-151/src/page.ts",
+      "sha256": "341406e6c9feeb99c3a3749b423aaf69b79225d5ecddfce88c2da2cac362e72c"
+    },
+    {
+      "original": "apps/web/src/app/Landing.tsx",
+      "projected": "packages/@dzhechkov/source-152/src/Landing.ts",
+      "sha256": "20d74d3cfa4f289f55757d10dcab366d9e9f5a66e9cb056e4e68e100a6aa8c8b"
+    },
+    {
+      "original": "apps/web/src/app/ThemeToggle.tsx",
+      "projected": "packages/@dzhechkov/source-153/src/ThemeToggle.ts",
+      "sha256": "a88311683654de78f91bbf77b1a7d3b9d915094e09472dc0e911b200cfafac5f"
+    },
+    {
+      "original": "apps/web/src/app/upload/Uploader.tsx",
+      "projected": "packages/@dzhechkov/source-154/src/Uploader.ts",
+      "sha256": "d9c0de858c01a63fbc1f419c11e3c213e0ae4545f781b518e24b2d4fc1465d34"
+    },
+    {
+      "original": "apps/web/src/app/c/[code]/route.ts",
+      "projected": "packages/@dzhechkov/source-155/src/route.ts",
+      "sha256": "fe2d9a925f1d2f5d841a19d72c90b8b8294657e0b9c00da52b52b7d309c4ec98"
+    },
+    {
+      "original": "apps/web/src/app/LandingDemo.tsx",
+      "projected": "packages/@dzhechkov/source-156/src/LandingDemo.ts",
+      "sha256": "11305b2c835de511045cc85eb47fb47bf6194328cc6453774580852f3facfd48"
+    },
+    {
+      "original": "apps/web/src/app/health/route.ts",
+      "projected": "packages/@dzhechkov/source-157/src/route.ts",
+      "sha256": "ff3e3540a06f8c9737a044c066d4662185fe6da859cf20408a072f1752122492"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/AccountDeletion.tsx",
+      "projected": "packages/@dzhechkov/source-158/src/AccountDeletion.ts",
+      "sha256": "913096a7a43e7656b3be6b8b937b35b0b7a4531cc54c3d1c8455e8e790f966fd"
+    },
+    {
+      "original": "apps/web/src/server/support/boundary.ts",
+      "projected": "packages/@dzhechkov/source-159/src/boundary.ts",
+      "sha256": "239b6ad9f1fea6bf4eae320dc97e37fccc99d70dd9be46b2bc141beccc5ec470"
+    },
+    {
+      "original": "apps/web/src/server/support/page-state.ts",
+      "projected": "packages/@dzhechkov/source-160/src/page-state.ts",
+      "sha256": "b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145"
+    },
+    {
+      "original": "apps/web/src/server/support/mail.ts",
+      "projected": "packages/@dzhechkov/source-161/src/mail.ts",
+      "sha256": "6fd6184b019f457c3ba49b9cf677564f36dc597c8d35bd564af6904523e5d009"
+    },
+    {
+      "original": "apps/web/src/server/support/routes.ts",
+      "projected": "packages/@dzhechkov/source-162/src/routes.ts",
+      "sha256": "08f24d7dae010e699836d7d081ca3fdf3bb0794204e0ea49156f372631c403d9"
+    },
+    {
+      "original": "apps/web/src/server/support/context.ts",
+      "projected": "packages/@dzhechkov/source-163/src/context.ts",
+      "sha256": "6fda9523bcb61133fbc1dfbf669739d90904ab0f4ae680b5f77b13f22ae7d82c"
+    },
+    {
+      "original": "apps/web/src/server/support/widget.ts",
+      "projected": "packages/@dzhechkov/source-164/src/widget.ts",
+      "sha256": "35ff2a0f953d4976654d2cf3e3c0b456f8ce4140b267fb7877c1ac2728f9994c"
+    },
+    {
+      "original": "apps/web/src/server/support/email-handler.ts",
+      "projected": "packages/@dzhechkov/source-165/src/email-handler.ts",
+      "sha256": "cbf8817e25ed581049e8beb9b1fa3c468ab0635b2c8e92b3601dfdd718b6a42f"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/LimitsPanel.tsx",
+      "projected": "packages/@dzhechkov/source-166/src/LimitsPanel.ts",
+      "sha256": "9caadd9dfd676a8406b9d42fd37637118b4dd550e5ec917c5d75666896c67006"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/ProInterest.tsx",
+      "projected": "packages/@dzhechkov/source-167/src/ProInterest.ts",
+      "sha256": "18ad9c8eec45d5314ce6d2e93005990d4420b43e8ef224911e45ef82686dc6f0"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/layout.tsx",
+      "projected": "packages/@dzhechkov/source-168/src/layout.ts",
+      "sha256": "954b74df9eacd2c0761af2e35091ed780eab8ae871113e7738afd4aa05d94be4"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+      "projected": "packages/@dzhechkov/source-169/src/PartnerPanel.ts",
+      "sha256": "816a770d3e3b6a207b608f8ff87a730ff9832c90940153eaa0d58d231d114539"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/error.tsx",
+      "projected": "packages/@dzhechkov/source-170/src/error.ts",
+      "sha256": "281527ccf7fae2e488ded4e745e59db9f6eca3e3c7d1133b972a0b4f2ad03dcc"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/page.tsx",
+      "projected": "packages/@dzhechkov/source-171/src/page.ts",
+      "sha256": "b77c18355865ba60eaceed0d337513e05a888e100aea7e990db9ff6f8d0270a6"
+    },
+    {
+      "original": "apps/web/src/app/admin/support/accounts/page.tsx",
+      "projected": "packages/@dzhechkov/source-172/src/page.ts",
+      "sha256": "59ba20ca68bea0de1adb753e22fd88d3f6e0e5301a55e727e597c1ad3d1f8899"
+    },
+    {
+      "original": "apps/web/src/app/videos/VideoList.tsx",
+      "projected": "packages/@dzhechkov/source-173/src/VideoList.ts",
+      "sha256": "1d98d11073bcf47a4957bd1f839ea5cf57b994049619467ff0466fb5911e5356"
+    },
+    {
+      "original": "apps/web/src/app/videos/CtaFields.tsx",
+      "projected": "packages/@dzhechkov/source-174/src/CtaFields.ts",
+      "sha256": "d90cb1cae74de04389cd6c8d13ad7bdc1c5c1862d468ac5144b46e15103a7870"
+    },
+    {
+      "original": "apps/web/src/app/page.tsx",
+      "projected": "packages/@dzhechkov/source-175/src/page.ts",
+      "sha256": "2e8485f47b56a77acb7271becac92b187194005561064d6278f5e9a06050481a"
+    },
+    {
+      "original": "apps/web/src/app/upgrade/page.tsx",
+      "projected": "packages/@dzhechkov/source-176/src/page.ts",
+      "sha256": "44e9de2bfafc88a7ffb1aeb580069c43d178dc3c3f15c921c0588a651b1b88cf"
+    },
+    {
+      "original": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "projected": "packages/@dzhechkov/source-177/src/VideoDetail.ts",
+      "sha256": "cc55c854dddc211be6a233f68b71e88be622f93ea827f797b609589164b529c1"
+    },
+    {
+      "original": "apps/web/src/app/admin/support/accounts/Accounts.tsx",
+      "projected": "packages/@dzhechkov/source-178/src/Accounts.ts",
+      "sha256": "15fb0dc0c5777311164563679fdab426f3b015ecca1f60edd32fc01fb19b954a"
+    },
+    {
+      "original": "apps/web/src/app/forgot/page.tsx",
+      "projected": "packages/@dzhechkov/source-179/src/page.ts",
+      "sha256": "42fef88dfcad75cab474129cb39953ce923f095f228f4564ce5fa3a6160b1a87"
+    },
+    {
+      "original": "apps/web/src/app/admin/support/accounts/[id]/AccountCard.tsx",
+      "projected": "packages/@dzhechkov/source-180/src/AccountCard.ts",
+      "sha256": "10e2949db2f54ddedb2cd1c73945cf78bcbd839bcfdc20928ce14d0e82e35927"
+    },
+    {
+      "original": "apps/web/src/app/admin/support/accounts/[id]/page.tsx",
+      "projected": "packages/@dzhechkov/source-181/src/page.ts",
+      "sha256": "4e2491439c64b9308e13feed5b674731c15f689ad0deb9cdf4a75e707c844999"
+    },
+    {
+      "original": "apps/worker/src/llm/prompts/selection.ts",
+      "projected": "packages/@dzhechkov/source-182/src/selection.ts",
+      "sha256": "195ea5863530deb76683783bdcf49a6088a68d02010d00f38cc5042081f0a4e5"
+    },
+    {
+      "original": "apps/web/src/app/upgrade/UpgradeScreen.tsx",
+      "projected": "packages/@dzhechkov/source-183/src/UpgradeScreen.ts",
+      "sha256": "d8263992ef96336d1295fd103a52415850b09c8825b8d27b39d20d9ed33f6c86"
+    },
+    {
+      "original": "apps/web/src/app/api/showcase/[code]/file/route.ts",
+      "projected": "packages/@dzhechkov/source-184/src/route.ts",
+      "sha256": "c2cdd7a987c0f002ebed37b329e2c804face56ef154b9a7df89002efacf83de2"
+    },
+    {
+      "original": "apps/web/src/app/layout.tsx",
+      "projected": "packages/@dzhechkov/source-185/src/layout.ts",
+      "sha256": "93980938f57c8f5060e073966c092a2a983d1aacefc9b5e0ce5fce1cf82e40ec"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/forgot/route.ts",
+      "projected": "packages/@dzhechkov/source-186/src/route.ts",
+      "sha256": "6c95ec4a1689efabf80a4e6ab430e197cf35e09de349172bfccf3bd8ba4d303e"
+    },
+    {
+      "original": "apps/web/src/app/reset/page.tsx",
+      "projected": "packages/@dzhechkov/source-187/src/page.ts",
+      "sha256": "db423c10b5b9a8aeb956126d0693ad8c37e59b5b3e7f4d24dd9ba736a0e68ed3"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/videos/[videoId]/not-found.tsx",
+      "projected": "packages/@dzhechkov/source-188/src/not-found.ts",
+      "sha256": "3f64668c8c38cb87f72981931079b78210795e4e7e08b4c11926c3f0d29d01a3"
+    },
+    {
+      "original": "apps/web/src/app/dashboard/videos/[videoId]/page.tsx",
+      "projected": "packages/@dzhechkov/source-189/src/page.ts",
+      "sha256": "6e333dd37796c5cd484c37549f1240b8c60fd2f047cab4ac73dae2b25a04e7c9"
+    },
+    {
+      "original": "apps/web/src/app/legal/LegalDocument.tsx",
+      "projected": "packages/@dzhechkov/source-190/src/LegalDocument.ts",
+      "sha256": "efdb9578c3985ff795b677193e9f54bd10d9e80e47aa5e94ca58a27c57014447"
+    },
+    {
+      "original": "apps/web/src/app/support/page.tsx",
+      "projected": "packages/@dzhechkov/source-191/src/page.ts",
+      "sha256": "ad8917976adc9af16ecabd31b4f907e30ab71070bd355cb4f2703148e25497ed"
+    },
+    {
+      "original": "apps/web/src/app/support/RecoveryForm.tsx",
+      "projected": "packages/@dzhechkov/source-192/src/RecoveryForm.ts",
+      "sha256": "ed1bfd516f319e92edc4d5eb30c3fcbc8f42c0a898a3dbd958dd74bddcabf6ed"
+    },
+    {
+      "original": "apps/web/src/app/support/SignOut.tsx",
+      "projected": "packages/@dzhechkov/source-193/src/SignOut.ts",
+      "sha256": "54b3397981e916a3eda571e7b937dc2f6cd1afb44fcc358f7fb2e318ff9d0436"
+    },
+    {
+      "original": "apps/web/src/app/support/SupportPanel.tsx",
+      "projected": "packages/@dzhechkov/source-194/src/SupportPanel.ts",
+      "sha256": "c7bcf6b6bf13eb55ecb2d146b4343f57156888bd6e5b4c4e15c5152f3b2ef010"
+    },
+    {
+      "original": "apps/web/src/app/clips/useClipDownload.ts",
+      "projected": "packages/@dzhechkov/source-195/src/useClipDownload.ts",
+      "sha256": "7ea8cddd4d04b4e24911a8c401a2218268163218aac794f257c0c852c5327664"
+    },
+    {
+      "original": "apps/web/src/app/clips/ClipCard.tsx",
+      "projected": "packages/@dzhechkov/source-196/src/ClipCard.ts",
+      "sha256": "0c268185f53c213e457d63f70d3ab855656b595c5fce847516e3dc79d7c12293"
+    },
+    {
+      "original": "apps/web/src/app/clips/GuestPacks.tsx",
+      "projected": "packages/@dzhechkov/source-197/src/GuestPacks.ts",
+      "sha256": "c4b90612bfb2b2adb6e3dbccb59700885b00b3c700f4a3bebf343f8dce45abc5"
+    },
+    {
+      "original": "apps/web/src/app/clips/ClipMusicChoice.tsx",
+      "projected": "packages/@dzhechkov/source-198/src/ClipMusicChoice.ts",
+      "sha256": "51b351fee98a33b70abdc587ae6fb05e7a03d19e45da535570cc85a962b8de85"
+    },
+    {
+      "original": "apps/web/src/app/api/showcase/[code]/thumbnail/route.ts",
+      "projected": "packages/@dzhechkov/source-199/src/route.ts",
+      "sha256": "34ee99ab40a8b191e3290a05e041c86de96b1f84470c2fa1f7cf2bcf5e15aacc"
+    },
+    {
+      "original": "apps/web/src/app/legal/terms/page.tsx",
+      "projected": "packages/@dzhechkov/source-200/src/page.ts",
+      "sha256": "569b77314db3e726ad390d27b6c4efb352a614ef48c78c92d29b2ae5ca1697ab"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/logout/route.ts",
+      "projected": "packages/@dzhechkov/source-201/src/route.ts",
+      "sha256": "92a3cd7d484ae726b365bc9df0dba18d71cdc7fb8f4a1728259cb8f18a7e681a"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/register/route.ts",
+      "projected": "packages/@dzhechkov/source-202/src/route.ts",
+      "sha256": "9e74fec53dd54e103ce01154ade4547f936c7a1ddc159804b7eb117182f0cc0d"
+    },
+    {
+      "original": "apps/web/src/app/api/trpc/[trpc]/route.ts",
+      "projected": "packages/@dzhechkov/source-203/src/route.ts",
+      "sha256": "3467c24915a1c2cad47ea29420530e564009329678f6ce42a041c9e22a2f46f9"
+    },
+    {
+      "original": "apps/web/src/app/legal/privacy/page.tsx",
+      "projected": "packages/@dzhechkov/source-204/src/page.ts",
+      "sha256": "b4bde94bd64c0b1ed8abcd49e9b2bbfba6f818dc6777ab772946dbf30ffa6765"
+    },
+    {
+      "original": "apps/web/src/app/AcquisitionAnalytics.tsx",
+      "projected": "packages/@dzhechkov/source-205/src/AcquisitionAnalytics.ts",
+      "sha256": "909a62a6a7aa3e9ee47c26673b4ba263b10a3e8039ecb5c1e4200ed0c0af1fc7"
+    },
+    {
+      "original": "apps/web/src/app/upgrade/return/page.tsx",
+      "projected": "packages/@dzhechkov/source-206/src/page.ts",
+      "sha256": "8fd8a1703a9fe820f178ec4d035d040e61e5f2caf486a33fa1c244bcf6d906f9"
+    },
+    {
+      "original": "apps/web/src/app/upgrade/return/ReturnScreen.tsx",
+      "projected": "packages/@dzhechkov/source-207/src/ReturnScreen.ts",
+      "sha256": "45315b8c1687e852dbe5b2978cba780ab7f72b1d7e32c055dd99d4ed3340c109"
+    },
+    {
+      "original": "apps/web/src/app/api/clips/[clipId]/file/route.ts",
+      "projected": "packages/@dzhechkov/source-208/src/route.ts",
+      "sha256": "55c6d9d89eb287681eb47f0ff7b8ede714e6eecd07bbefd41b5e4c7210b2a16e"
+    },
+    {
+      "original": "apps/web/src/app/api/support/context/route.ts",
+      "projected": "packages/@dzhechkov/source-209/src/route.ts",
+      "sha256": "41c05f4a2a255302c8027fe1f6bb0475ccef6fbbbf8379c7ca4f518064b559a9"
+    },
+    {
+      "original": "apps/web/src/app/api/checkout/route.ts",
+      "projected": "packages/@dzhechkov/source-210/src/route.ts",
+      "sha256": "1424afe5329b05ef1ca7e2813941ada12db35ffe0bae815bb02125b254374f5e"
+    },
+    {
+      "original": "apps/web/src/app/api/clips/[clipId]/thumbnail/route.ts",
+      "projected": "packages/@dzhechkov/source-211/src/route.ts",
+      "sha256": "81725e0f71a49608a240a5b07cf373abb9aecdc13e1ab8cba14bbb7f80c62746"
+    },
+    {
+      "original": "apps/web/src/app/api/support/session/route.ts",
+      "projected": "packages/@dzhechkov/source-212/src/route.ts",
+      "sha256": "0f9c7bf381d3c83f766b4f9ea89b3898964b863b88ef0d3ee116adb8ec3c57a0"
+    },
+    {
+      "original": "apps/web/src/app/api/checkout/[intentId]/route.ts",
+      "projected": "packages/@dzhechkov/source-213/src/route.ts",
+      "sha256": "1c02d8b631761d44fe82ce2e439092a30c0afdfa3289e2d433f71b4a681de9a9"
+    },
+    {
+      "original": "apps/web/src/app/api/admin/support/search/route.ts",
+      "projected": "packages/@dzhechkov/source-214/src/route.ts",
+      "sha256": "9ee11246cde507192fdfe8013ac15073fbfac35c04da5a666a44add5ca21bfb8"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/login/route.ts",
+      "projected": "packages/@dzhechkov/source-215/src/route.ts",
+      "sha256": "4cc0f75b86acd7ddabc14b05a99e654c4387a166f548530a8ab72e987cb9d292"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/email/send/route.ts",
+      "projected": "packages/@dzhechkov/source-216/src/route.ts",
+      "sha256": "e844325b2e91a2a368e20de9f61fde21abad9216e492f35ff69dcf5a6dfddddb"
+    },
+    {
+      "original": "apps/web/src/app/r/[code]/route.ts",
+      "projected": "packages/@dzhechkov/source-217/src/route.ts",
+      "sha256": "259a30fae35d20137fff779a3029c7483e7abb0f6d28442eb6589cf48df10aa4"
+    },
+    {
+      "original": "apps/web/src/app/api/admin/support/accounts/route.ts",
+      "projected": "packages/@dzhechkov/source-218/src/route.ts",
+      "sha256": "92f519318c8918e6dc81cef5f2314bd8a8627845be2dd40bc932b36679c4e2ad"
+    },
+    {
+      "original": "apps/web/src/app/g/[guest_code]/route.ts",
+      "projected": "packages/@dzhechkov/source-219/src/route.ts",
+      "sha256": "302b0d1e5ef73887c53c52f7f31a26b6a027174fc00da8389cea807f16d36d7f"
+    },
+    {
+      "original": "apps/web/src/app/api/upload/complete/route.ts",
+      "projected": "packages/@dzhechkov/source-220/src/route.ts",
+      "sha256": "3c1b44d91e18ebda628345ca14d297fffec3e71d9653ab9587bcd94dbf0e1db0"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/email/confirm/route.ts",
+      "projected": "packages/@dzhechkov/source-221/src/route.ts",
+      "sha256": "4446d981f2be806a317f0c928b4e81a1313532dedc5a691d4f6b7d9df1a176d7"
+    },
+    {
+      "original": "apps/web/src/app/api/auth/reset/route.ts",
+      "projected": "packages/@dzhechkov/source-222/src/route.ts",
+      "sha256": "17e802f16815d8b56d5974f3b05c3877e7cba2da67571142445534cd5272a253"
+    },
+    {
+      "original": "apps/web/src/app/api/webhooks/yookassa/route.ts",
+      "projected": "packages/@dzhechkov/source-223/src/route.ts",
+      "sha256": "b8814be303fa9dade01da5438b32832bfbdcf5d6402ba887e50119c21a292a2e"
+    },
+    {
+      "original": "apps/web/src/app/api/admin/support/accounts/[accountId]/route.ts",
+      "projected": "packages/@dzhechkov/source-224/src/route.ts",
+      "sha256": "9a3bc1147bc102f443f7c491fc6335bfc960f5e6bb9544ac587a7fbac3c2a158"
+    }
+  ],
+  "results": [
+    {
+      "args": [
+        "--module",
+        "blogger-policy",
+        "--export",
+        "NORMAL_SOURCE_SECONDS,BLOGGER_SOURCE_SECONDS,MAX_SOURCE_SECONDS,sourceLimitSeconds,getBloggerPolicy,setBloggerPolicy,bloggerReport"
+      ],
+      "exit": 0,
+      "output": "{\"outcome\":\"free\",\"exit\":0,\"results\":[{\"kind\":\"module\",\"name\":\"blogger-policy\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"NORMAL_SOURCE_SECONDS\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"BLOGGER_SOURCE_SECONDS\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"MAX_SOURCE_SECONDS\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"sourceLimitSeconds\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"getBloggerPolicy\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"setBloggerPolicy\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"bloggerReport\",\"verdict\":\"free\",\"where\":\"\"}],\"reason\":\"all 8 name(s) are free\"}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "--module",
+        "blogger-report"
+      ],
+      "exit": 0,
+      "output": "{\"outcome\":\"free\",\"exit\":0,\"results\":[{\"kind\":\"module\",\"name\":\"blogger-report\",\"verdict\":\"free\",\"where\":\"\"}],\"reason\":\"all 1 name(s) are free\"}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "--module",
+        "blogger-owner-handler"
+      ],
+      "exit": 0,
+      "output": "{\"outcome\":\"free\",\"exit\":0,\"results\":[{\"kind\":\"module\",\"name\":\"blogger-owner-handler\",\"verdict\":\"free\",\"where\":\"\"}],\"reason\":\"all 1 name(s) are free\"}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "--export",
+        "createS3Client"
+      ],
+      "exit": 1,
+      "output": "{\"outcome\":\"taken\",\"exit\":1,\"results\":[{\"kind\":\"export\",\"name\":\"createS3Client\",\"verdict\":\"taken\",\"where\":\"source-4/src/client.ts\"}],\"reason\":\"1 of 1 name(s) already spoken for — rename before writing, not after the build goes red\"}\n",
+      "stderr": ""
+    }
+  ]
+}
