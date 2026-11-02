@@ -79,5 +79,5 @@ export function VideoUploader({creditMode=false}:{creditMode?:boolean}={}) {
         onKind={setCtaKind} onUrl={setCtaUrl} />
       <button disabled={busy || !file} onClick={() => void upload()}>{busy ? 'Загружаем…' : resume.current ? 'Начать / продолжить загрузку' : 'Создать клипы →'}</button>
       {busy && <button className="secondary" onClick={() => controller.current?.abort()}>Приостановить</button>}
-      <p role="status">{message}</p>{videoId && <p className="video-id">video_id: <a href={`/dashboard/videos/${videoId}`}>{videoId}</a></p>}</div></section>;
+      <p role="status">{message}</p>{videoId && <p className="video-id">video_id: <code>{videoId}</code></p>}</div></section>;
 }
