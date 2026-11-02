@@ -4,9 +4,11 @@
 // повтор (дважды и 20 одновременных), перестановка; security-operation-order: недоступность ЮKassa → 503 без записи →
 // повтор проходит полным путём.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { createPool, type Pool } from '../packages/db/src/index';
 import { migrate } from '../packages/db/src/migrate';
+import { createPaymentIntent } from '../packages/db/src/payments';
 import { createBillingDependencies } from '../apps/web/src/server/billing-deps';
 import { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhookHandler } from '../apps/web/src/server/billing-handler';
 import { createYooKassaProvider } from '../apps/web/src/server/payments/yookassa';
@@ -89,6 +91,60 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     yk.pay(payment.id);
     return { intent, paymentId: payment.id };
   }
+
+  it('snapshots valid referral once under the account lock and excludes self, rejected and unknown', async () => {
+    const a = await account(), first = await account(), second = await account();
+    const makeCode = async (id: string) => (await pool.query(`WITH p AS (INSERT INTO partner(account_id,display_name) VALUES($1,'test') RETURNING id)
+      INSERT INTO partner_code(partner_id,code,status) SELECT id,$2,'active' FROM p RETURNING id`, [id, randomBytes(5).toString('hex')])).rows[0].id as string;
+    const one = await makeCode(first.id), two = await makeCode(second.id), self = await makeCode(a.id);
+    await pool.query("INSERT INTO attribution(account_id,partner_code_id,source,status) VALUES($1,$2,'cookie','pending')", [a.id, one]);
+    const create = (idempotencyKey: string) => createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey });
+    const holder = await pool.connect();
+    try {
+      await holder.query('BEGIN');
+      await holder.query('SELECT id FROM account WHERE id=$1 FOR NO KEY UPDATE', [a.id]);
+      await holder.query('UPDATE attribution SET partner_code_id=$2 WHERE account_id=$1', [a.id, two]);
+      const pending = create('snapshot-lock');
+      await waitForLockWaiter();
+      await holder.query('COMMIT');
+      const result = await pending;
+      if (result.kind !== 'created') throw new Error('expected intent');
+      const saved = async (id: string) => (await pool.query('SELECT referral_partner_code_id FROM payment_intent WHERE id=$1', [id])).rows[0].referral_partner_code_id;
+      expect(await saved(result.intent.id)).toBe(two);
+      await pool.query('UPDATE attribution SET partner_code_id=$2 WHERE account_id=$1', [a.id, one]);
+      const retry = await create('snapshot-lock');
+      expect(retry.kind).toBe('existing'); expect(await saved(result.intent.id)).toBe(two);
+      for (const [code, status] of [[self, 'pending'], [one, 'rejected']] as const) {
+        await pool.query('UPDATE attribution SET partner_code_id=$2,status=$3 WHERE account_id=$1', [a.id, code, status]);
+        const next = await create(randomUUID()); if (next.kind !== 'created') throw new Error('expected intent');
+        expect(await saved(next.intent.id)).toBeNull();
+      }
+      await pool.query('DELETE FROM attribution WHERE account_id=$1', [a.id]);
+      const unknown = await create(randomUUID()); if (unknown.kind !== 'created') throw new Error('expected intent');
+      expect(await saved(unknown.intent.id)).toBeNull();
+      await pool.query('DELETE FROM partner_code WHERE id=$1', [two]);
+      expect(await saved(result.intent.id)).toBeNull();
+    } finally { await holder.query('ROLLBACK'); holder.release(); }
+  });
+
+  it('migration backfills only attribution known before the intent', async () => {
+    const name = `snapshot_backfill_${randomBytes(8).toString('hex')}`;
+    const isolated = createPool(databaseUrl!, name);
+    try {
+      await isolated.query(`CREATE SCHEMA ${name}`); await migrate(isolated);
+      await isolated.query('ALTER TABLE payment_intent DROP COLUMN referral_partner_code_id');
+      const a = randomUUID(), owner = randomUUID(), code = randomUUID();
+      await isolated.query("INSERT INTO account(id,email,password_hash) VALUES($1,$3,'x'),($2,$4,'x')", [a, owner, `${a}@test.invalid`, `${owner}@test.invalid`]);
+      await isolated.query(`WITH p AS (INSERT INTO partner(account_id,display_name) VALUES($1,'test') RETURNING id)
+        INSERT INTO partner_code(id,partner_id,code,status) SELECT $2,id,'BACKFILL','active' FROM p`, [owner, code]);
+      await isolated.query("INSERT INTO attribution(account_id,partner_code_id,source,status,assigned_at) VALUES($1,$2,'cookie','pending','2026-02-01')", [a, code]);
+      await isolated.query(`INSERT INTO payment_intent(account_id,price_minor,idempotency_key,created_at)
+        VALUES($1,99000,'old-key-1','2026-01-01'),($1,99000,'new-key-1','2026-03-01')`, [a]);
+      await isolated.query(readFileSync('packages/db/migrations/027_payment_referral_snapshot.sql', 'utf8'));
+      const rows = (await isolated.query('SELECT idempotency_key,referral_partner_code_id FROM payment_intent ORDER BY idempotency_key')).rows;
+      expect(rows).toEqual([{ idempotency_key: 'new-key-1', referral_partner_code_id: code }, { idempotency_key: 'old-key-1', referral_partner_code_id: null }]);
+    } finally { await isolated.query(`DROP SCHEMA IF EXISTS ${name} CASCADE`); await isolated.end(); }
+  });
 
   it('AC-1: оплата выключена — оформление, опрос и вебхук 404, намерений нет', async () => {
     const w = wire(null);

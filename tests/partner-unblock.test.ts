@@ -35,7 +35,7 @@ it('RT-002 operator CLI without DATABASE_URL exits 2; invalid arguments exit 1',
   const log = vi.spyOn(console, 'error').mockImplementation(() => {});
   try {
     for (const args of [['CODE123'], ['CODE123', ''], ['CODE123', '   '], ['CODE123', 'x'.repeat(501)]]) {
-      expect(await main(args, { DATABASE_URL: 'postgresql://unused:unused@127.0.0.1:1/unused_test' })).toBe(1);
+      expect(await main(args, { NODE_ENV: 'test', DATABASE_URL: 'postgresql://unused:unused@127.0.0.1:1/unused_test' })).toBe(1);
     }
   } finally { log.mockRestore(); }
 });

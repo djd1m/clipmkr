@@ -27,8 +27,11 @@ export async function createPaymentIntent(pool: Pool, input: { accountId: string
   return transaction(pool,async tx=>{
     const owner=(await tx.query<{status:string}>('SELECT status FROM account WHERE id=$1 FOR SHARE',[input.accountId])).rows[0];
     if(owner?.status!=='active') return {kind:'account_inactive'} as const;
-  const inserted = (await tx.query<IntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds)
-    SELECT id, $2, $3, $4, $5, $6 FROM account WHERE id = $1 AND status = 'active'
+  const inserted = (await tx.query<IntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,referral_partner_code_id)
+    SELECT id, $2, $3, $4, $5, $6, (SELECT a.partner_code_id FROM attribution a
+      JOIN partner_code c ON c.id=a.partner_code_id JOIN partner p ON p.id=c.partner_id
+      WHERE a.account_id=account.id AND a.status IN ('pending','activated') AND p.account_id<>account.id)
+    FROM account WHERE id = $1 AND status = 'active'
     AND (($4='legacy_pro990_v1' AND billing_policy='legacy_daily_v1') OR ($4<>'legacy_pro990_v1' AND billing_policy='credits_v1'))
     ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds`,
   [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0])).rows[0];

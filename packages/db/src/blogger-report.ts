@@ -14,7 +14,7 @@ type Blogger = {
 type ReportRow = {
   account_id: string; email: string; commission_percent: 20 | 30 | null;
   code_id: string | null; code: string | null; code_status: 'active' | 'blocked' | null;
-  registrations: string; active_users: string; paying_users: string; payments: string; revenue_minor: string;
+  registrations: string; active_users: string; paying_users: string; blogger_paying_users: string; payments: string; revenue_minor: string;
 };
 const emptyCounters = (): Counters => ({ registrations: 0, active_users: 0, paying_users: 0,
   payments: 0, revenue_minor: 0, commission_estimate_minor: null });
@@ -64,24 +64,28 @@ export async function bloggerReport(pool: Pool, actorAccountId: string, month: s
           AND v.finished_at>=a.assigned_at
           AND EXISTS (SELECT 1 FROM clip cl WHERE cl.video_id=v.id AND cl.status='done')
         GROUP BY a.partner_code_id
-      ), sales AS (
-        SELECT a.partner_code_id,count(DISTINCT p.account_id) AS people,count(*) AS payments,
-          sum(p.amount_minor) AS revenue
+      ), verified_sales AS (
+        SELECT c.account_id AS blogger_id,i.referral_partner_code_id AS partner_code_id,p.account_id,p.amount_minor
         FROM payment p JOIN payment_intent i ON i.id=p.intent_id AND i.account_id=p.account_id
           AND i.provider_payment_id=p.provider_payment_id AND i.price_minor=p.amount_minor
-        JOIN attributed a ON a.account_id=p.account_id CROSS JOIN bounds b
+        JOIN codes c ON c.code_id=i.referral_partner_code_id AND c.account_id<>p.account_id CROSS JOIN bounds b
         WHERE p.provider='yookassa' AND p.status='succeeded' AND p.needs_review=false
           AND i.status='succeeded' AND i.fulfilled_at IS NOT NULL
           AND i.sku IN ('start_v1','pro_v1','addon_v1')
-          AND i.created_at>=a.assigned_at AND p.paid_at>=a.assigned_at
+          AND p.paid_at>=i.created_at
           AND p.paid_at>=b.lo AND p.paid_at<b.hi
-        GROUP BY a.partner_code_id
+      ), sales AS (
+        SELECT partner_code_id,count(DISTINCT account_id) AS people,count(*) AS payments,sum(amount_minor) AS revenue
+        FROM verified_sales GROUP BY partner_code_id
+      ), blogger_payers AS (
+        SELECT blogger_id,count(DISTINCT account_id) AS people FROM verified_sales GROUP BY blogger_id
       )
       SELECT c.*,coalesce(r.n,0)::text AS registrations,coalesce(a.n,0)::text AS active_users,
-        coalesce(s.people,0)::text AS paying_users,coalesce(s.payments,0)::text AS payments,
+        coalesce(s.people,0)::text AS paying_users,coalesce(bp.people,0)::text AS blogger_paying_users,coalesce(s.payments,0)::text AS payments,
         coalesce(s.revenue,0)::text AS revenue_minor
       FROM codes c LEFT JOIN registrations r ON r.partner_code_id=c.code_id
         LEFT JOIN active a ON a.partner_code_id=c.code_id LEFT JOIN sales s ON s.partner_code_id=c.code_id
+        LEFT JOIN blogger_payers bp ON bp.blogger_id=c.account_id
       ORDER BY c.email,c.account_id,c.code,c.code_id`, [`${month}-01`])).rows;
     const bloggers = new Map<string, Blogger>();
     for (const row of rows) {
@@ -92,13 +96,14 @@ export async function bloggerReport(pool: Pool, actorAccountId: string, month: s
         bloggers.set(row.account_id, blogger);
       }
       if (!row.code_id) continue;
+      blogger.counters.paying_users = integer(row.blogger_paying_users);
       const counters: Counters = { registrations: integer(row.registrations), active_users: integer(row.active_users),
         paying_users: integer(row.paying_users), payments: integer(row.payments), revenue_minor: integer(row.revenue_minor),
         commission_estimate_minor: null };
       counters.commission_estimate_minor = estimate(counters.revenue_minor, blogger.commission_percent);
       blogger.codes.push({ id: row.code_id, code: row.code!, status: row.code_status!, counters });
-      // attribution.account_id UNIQUE: один человек относится ровно к одной текущей ссылке.
-      for (const key of ['registrations', 'active_users', 'paying_users', 'payments', 'revenue_minor'] as const) {
+      // Paying users are distinct across the blogger's links; other counters are additive.
+      for (const key of ['registrations', 'active_users', 'payments', 'revenue_minor'] as const) {
         blogger.counters[key] += counters[key];
         if (!Number.isSafeInteger(blogger.counters[key])) throw new RangeError('Сумма отчёта вне точного целого диапазона');
       }

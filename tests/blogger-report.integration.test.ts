@@ -45,8 +45,9 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
   const pay = async (account = visitor, options: PayOptions = {}) => {
     const intent = randomUUID(), providerId = randomUUID();
     await pool.query(`INSERT INTO payment_intent
-      (id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at)
-      VALUES($1::uuid,$2,99000,$1::text,$3,$4,$5,$6,$7,$8,$9)`, [intent, options.intentAccount ?? account, providerId,
+      (id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+      VALUES($1::uuid,$2,99000,$1::text,$3,$4,$5,$6,$7,$8,$9,
+        (SELECT partner_code_id FROM attribution WHERE account_id=$2 AND assigned_at<=$9::timestamptz AND status IN ('pending','activated')))`, [intent, options.intentAccount ?? account, providerId,
       options.intentStatus ?? 'succeeded', options.legacy ? 'legacy_pro990_v1' : 'start_v1',
       options.legacy ? 'legacy_v1' : 'credits_v1_d00', options.legacy ? 0 : 18000,
       options.fulfilled === false ? null : paid, options.created ?? paid]);
@@ -90,10 +91,10 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
   });
   it('uses Moscow inclusive month start and exclusive month end', async () => {
     await attribute(visitor, code, '2026-10-01');
-    await pay(visitor, { at: '2026-10-31T20:59:59.999Z' });
-    await pay(visitor, { at: '2026-10-31T21:00:00Z' });
-    await pay(visitor, { at: '2026-11-30T20:59:59.999Z' });
-    await pay(visitor, { at: '2026-11-30T21:00:00Z' });
+    await pay(visitor, { created: '2026-10-02', at: '2026-10-31T20:59:59.999Z' });
+    await pay(visitor, { created: '2026-10-02', at: '2026-10-31T21:00:00Z' });
+    await pay(visitor, { created: '2026-10-02', at: '2026-11-30T20:59:59.999Z' });
+    await pay(visitor, { created: '2026-10-02', at: '2026-11-30T21:00:00Z' });
     await video(visitor, '2026-11-30T21:00:00Z');
     expect((await report()).bloggers.find(row => row.account_id === blogger)?.counters)
       .toMatchObject({ registrations: 0, active_users: 0, payments: 2, revenue_minor: 198000 });
@@ -106,13 +107,24 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
     await video();
     expect((await report()).bloggers.find(row => row.account_id === blogger)?.counters.active_users).toBe(1);
   });
-  it('replacement cannot move historical payments to the new source', async () => {
+  it('historical payment stays with its original blogger after source replacement', async () => {
     await attribute(); await pay();
     await pool.query("UPDATE attribution SET partner_code_id=$2,assigned_at='2026-11-11' WHERE account_id=$1", [visitor, foreign]);
     const result = await report();
-    expect(result.bloggers.every(row => row.counters.revenue_minor === 0)).toBe(true);
+    expect(result.bloggers.find(row => row.account_id === blogger)?.counters.revenue_minor).toBe(99000);
+    expect(result.bloggers.find(row => row.account_id === second)?.counters.revenue_minor).toBe(0);
     await pay(visitor, { at: '2026-11-12', created: '2026-11-12' });
     expect((await report()).bloggers.find(row => row.account_id === second)?.counters.revenue_minor).toBe(99000);
+    expect((await report()).bloggers.find(row => row.account_id === blogger)?.counters.revenue_minor).toBe(99000);
+  });
+  it('one payer across two codes of the same blogger counts once', async () => {
+    await attribute(); await pay();
+    await pool.query("UPDATE attribution SET partner_code_id=$2,assigned_at='2026-11-11' WHERE account_id=$1", [visitor, campaign]);
+    await pay(visitor, { created: '2026-11-12', at: '2026-11-12' });
+    const entry = (await report()).bloggers.find(row => row.account_id === blogger)!;
+    expect(entry.counters).toMatchObject({ paying_users: 1, payments: 2, revenue_minor: 198000 });
+    expect(entry.codes.find(row => row.id === code)?.counters).toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
+    expect(entry.codes.find(row => row.id === campaign)?.counters).toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
   });
   it('commission estimate uses explicit rate and integer floor', async () => {
     await attribute(); await pay();

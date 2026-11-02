@@ -23,12 +23,15 @@ export interface UploadData {
   video_id: string; upload_id: string; part_size: number; parts: SignedPart[]; completed_parts?: CompletedPart[];
 }
 interface VideoRow {
-  id: string; account_id: string; upload_id: string | null; object_key: string; declared_bytes: string;
+  id: string; account_id: string; upload_id: string | null; object_key: string; declared_bytes: string; actual_bytes: string | null;
   status: VideoStatus; failure_reason: VideoFailureReason | null; upload_parts: SignedPart[] | null;
   music: boolean; teaser: boolean; compact: boolean; cta_kind: CtaKind; cta_url: string | null; upload_part_size: number; upload_day: string; upload_enqueued_at: Date | null;
 }
 const selectVideo = `SELECT *, upload_day::text AS upload_day FROM video`;
 const unavailable = () => new UploadError('unavailable', 'Хранилище временно недоступно. Повторите завершение этой загрузки', 503);
+const admitted = (row: VideoRow) => ['transcribing', 'selecting', 'rendering', 'done'].includes(row.status)
+  || (row.status !== 'uploading' && Boolean(row.upload_enqueued_at))
+  || (row.status === 'failed' && Number(row.actual_bytes) > 0);
 export class VideoService {
   constructor(private readonly pool: Pool, private readonly limits: Limits, private readonly storage: UploadStorage,
     private readonly enqueue: (videoId: string, fence: number) => Promise<void>, private readonly clock = () => new Date()) {}
@@ -129,10 +132,11 @@ export class VideoService {
     const body = parsed.data;
     const row = (await this.pool.query<VideoRow>(`${selectVideo} WHERE id=$1 AND account_id=$2 AND deleted_at IS NULL`, [body.video_id, account])).rows[0];
     if (!row) throw new UploadError('not_found', 'Запись не найдена', 404);
-    if (row.status === 'queued') return row.upload_enqueued_at ? { video_id: row.id, status: 'queued' } : this.publish(row.id);
     if (row.status === 'failed' && (row.failure_reason === 'too_large' || row.failure_reason === 'not_media')) {
       await this.cleanupFile(row); throw this.fileError(row.failure_reason);
     }
+    if (admitted(row)) return { video_id: row.id, status: 'queued' };
+    if (row.status === 'queued') return this.publish(row.id);
     if (row.status !== 'uploading') throw new UploadError('conflict', 'Загрузка уже завершена', 409);
     if (!row.upload_id) throw unavailable();
     let reason: 'too_large' | 'not_media' | undefined, bytes: bigint | undefined;
@@ -157,16 +161,18 @@ export class VideoService {
     const outcome = await transaction(this.pool, async (tx) => {
       const current = (await tx.query<VideoRow>(`${selectVideo} WHERE id=$1 AND account_id=$2 AND deleted_at IS NULL FOR UPDATE`, [row.id, account])).rows[0];
       if (!current) throw new UploadError('not_found', 'Запись не найдена', 404);
-      if (current.status === 'queued') return current.id;
       if (current.status === 'failed' && (current.failure_reason === 'too_large' || current.failure_reason === 'not_media')) {
         return { row: current, reason: current.failure_reason };
       }
+      if (admitted(current)) return null;
+      if (current.status === 'queued') return current.id;
       if (current.status !== 'uploading' || current.upload_id !== row.upload_id) throw new UploadError('conflict', 'Состояние загрузки изменилось', 409);
       if (bytes !== undefined) await tx.query('UPDATE video SET actual_bytes=$2 WHERE id=$1', [row.id, bytes]);
       if (reason) return this.failFile(tx, current, reason);
       await tx.query("UPDATE video SET status='queued', updated_at=now() WHERE id=$1", [row.id]);
       return row.id;
     });
+    if (outcome === null) return { video_id: row.id, status: 'queued' };
     if (typeof outcome !== 'string') {
       await this.cleanupFile(outcome.row); throw this.fileError(outcome.reason);
     }

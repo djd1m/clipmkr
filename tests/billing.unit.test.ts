@@ -19,9 +19,22 @@ import { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhoo
 import { RETURN_DEADLINE_MS, RETURN_MAX_ATTEMPTS, decideReturnState, safeNextPath } from '../apps/web/src/lib/payment-return';
 import { ProInterest } from '../apps/web/src/app/dashboard/ProInterest';
 import { environment } from './fixtures/environment';
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/' }));
+vi.mock('../apps/web/src/app/theme-server', () => ({ requestTheme: async () => 'light' }));
 
 const LIVE = { N5_PAYMENTS_MODE: 'live', YOOKASSA_SHOP_ID: '123456', YOOKASSA_SECRET_KEY: 'test_secret', YOOKASSA_TEST_MODE: 'true' };
+
+it('test payment environment is explicitly labelled', async () => {
+  const { default: Layout } = await import('../apps/web/src/app/layout');
+  const label = 'Тестовый стенд ЮKassa. Реальных списаний нет. Суммы и расчёты в кабинетах — учебные.';
+  try {
+    for (const [mode, testMode, visible] of [['live', 'true', true], ['live', 'false', false], ['off', 'true', false]] as const) {
+      for (const [name, value] of Object.entries({ ...LIVE, N5_PAYMENTS_MODE: mode, YOOKASSA_TEST_MODE: testMode })) vi.stubEnv(name, value);
+      const html = renderToStaticMarkup(await Layout({ children: createElement('main', null, 'Контент') }));
+      expect(html.includes(label)).toBe(visible);
+    }
+  } finally { vi.unstubAllEnvs(); }
+});
 
 describe('режим оплаты и потолок минут paid (AC-14, AC-15)', () => {
   it('не задан или off → off, провайдера нет', () => {

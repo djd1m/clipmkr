@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { randomUUID, randomBytes } from 'node:crypto';
-import { createPool, type Pool } from '../packages/db/src/index';
+import { createPool, ensureInitialAttempt, acceptProbe, failTranscription, type Pool } from '../packages/db/src/index';
 import { migrate } from '../packages/db/src/migrate';
 import { transaction, checkAndConsumeQuota, refundUploadSlot } from '../packages/db/src/quota';
 import { loadLimits } from '../packages/shared/src/config';
@@ -104,6 +104,121 @@ describe.skipIf(!dbUrl)('RU fixes: real PostgreSQL', () => {
     expect(resumed.parts.map((p) => p.part_number)).toEqual([2, 3]);
     expect(vi.mocked(s.sign).mock.calls.at(-1)?.[2]).toEqual([2, 3]);
     expect(s.initiate).toHaveBeenCalledTimes(1); expect(await used(id)).toBe(1);
+  });
+  it('RU-004: complete retry after processing advanced acknowledges without side effects', async () => {
+    const s = storage(), enqueue = vi.fn(async () => {}), id = await account();
+    const run = new VideoService(pool, limits, s, enqueue, () => now);
+    const upload = await run.create(id, randomUUID(), input);
+    await run.complete(id, completion(upload.video_id));
+    for (const [status, marked] of [
+      ...['transcribing', 'selecting', 'rendering', 'done'].flatMap((status) => [[status, true], [status, false]] as const),
+      ['failed', true] as const,
+    ]) {
+      await pool.query('UPDATE video SET status=$2, upload_enqueued_at=CASE WHEN $3 THEN now() ELSE NULL END WHERE id=$1', [upload.video_id, status, marked]);
+      const before = (await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0];
+      vi.clearAllMocks();
+      expect(await run.complete(id, completion(upload.video_id))).toEqual({ video_id: upload.video_id, status: 'queued' });
+      expect((await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0]).toEqual(before);
+      for (const fn of Object.values(s)) expect(fn).not.toHaveBeenCalled();
+      expect(enqueue).not.toHaveBeenCalled(); expect(await used(id)).toBe(1);
+    }
+  });
+  it('RU-004: concurrent advancement during complete acknowledges without republishing', async () => {
+    const s = storage(), enqueue = vi.fn(async () => {}), id = await account();
+    const run = new VideoService(pool, limits, s, enqueue, () => now);
+    const upload = await run.create(id, randomUUID(), input), gate = barrier(1);
+    vi.mocked(s.bytes).mockImplementation(async () => { await gate.hold(); return valid; });
+    const pending = run.complete(id, completion(upload.video_id));
+    try {
+      await gate.all;
+      await pool.query("UPDATE video SET status='transcribing' WHERE id=$1", [upload.video_id]);
+      const before = (await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0];
+      gate.release();
+      expect(await pending).toEqual({ video_id: upload.video_id, status: 'queued' });
+      expect((await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0]).toEqual(before);
+      expect(enqueue).not.toHaveBeenCalled(); expect(await used(id)).toBe(1);
+    } finally { gate.release(); await pending.catch(() => {}); }
+  });
+  it('RU-004: worker advances before publication marker and retry acknowledges', async () => {
+    const s = storage(), id = await account();
+    const enqueue = vi.fn(async (videoId: string) => {
+      await pool.query("UPDATE video SET status='transcribing' WHERE id=$1", [videoId]);
+    });
+    const run = new VideoService(pool, limits, s, enqueue, () => now);
+    const upload = await run.create(id, randomUUID(), input);
+    await expect(run.complete(id, completion(upload.video_id))).resolves.toEqual({ video_id: upload.video_id, status: 'queued' });
+    const before = (await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0];
+    expect(before).toMatchObject({ status: 'transcribing', upload_enqueued_at: null });
+    vi.clearAllMocks();
+    await expect(run.complete(id, completion(upload.video_id))).resolves.toEqual({ video_id: upload.video_id, status: 'queued' });
+    expect((await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0]).toEqual(before);
+    for (const fn of Object.values(s)) expect(fn).not.toHaveBeenCalled();
+    expect(enqueue).not.toHaveBeenCalled(); expect(await used(id)).toBe(1);
+  });
+  it('RU-004: worker fails after admission before publication marker', async () => {
+    const s = storage(), id = await account();
+    let attempt: Awaited<ReturnType<typeof ensureInitialAttempt>>;
+    const enqueue = vi.fn(async (videoId: string) => {
+      attempt = await ensureInitialAttempt(pool, videoId);
+      if (!attempt) throw new Error('missing attempt');
+      expect(await acceptProbe(pool, attempt, limits, 120)).toBe('transcribing');
+    });
+    const run = new VideoService(pool, limits, s, enqueue, () => now);
+    const upload = await run.create(id, randomUUID(), input);
+    await run.complete(id, completion(upload.video_id));
+    expect((await pool.query('SELECT status,upload_enqueued_at FROM video WHERE id=$1', [upload.video_id])).rows[0])
+      .toEqual({ status: 'transcribing', upload_enqueued_at: null });
+    if (!attempt!) throw new Error('missing attempt');
+    expect(await failTranscription(pool, attempt, 'stt_failed')).toBe(true);
+    const before = (await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0];
+    expect(before).toMatchObject({ status: 'failed', failure_reason: 'stt_failed', actual_bytes: '24', upload_enqueued_at: null });
+    vi.clearAllMocks();
+    expect(await run.complete(id, completion(upload.video_id))).toEqual({ video_id: upload.video_id, status: 'queued' });
+    expect((await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0]).toEqual(before);
+    for (const fn of Object.values(s)) expect(fn).not.toHaveBeenCalled();
+    expect(enqueue).not.toHaveBeenCalled(); expect(await used(id)).toBe(1);
+  });
+  it('RU-004: failure after initial read acknowledges at locked read', async () => {
+    const s = storage(), enqueue = vi.fn(async () => {}), id = await account();
+    const run = new VideoService(pool, limits, s, enqueue, () => now);
+    const upload = await run.create(id, randomUUID(), input), gate = barrier(1);
+    vi.mocked(s.bytes).mockImplementation(async () => { await gate.hold(); return valid; });
+    const pending = run.complete(id, completion(upload.video_id));
+    try {
+      await gate.all;
+      await pool.query("UPDATE video SET status='failed', failure_reason='stt_failed', actual_bytes=24 WHERE id=$1", [upload.video_id]);
+      const before = (await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0];
+      gate.release();
+      expect(await pending).toEqual({ video_id: upload.video_id, status: 'queued' });
+      expect((await pool.query('SELECT * FROM video WHERE id=$1', [upload.video_id])).rows[0]).toEqual(before);
+      expect(enqueue).not.toHaveBeenCalled();
+    } finally { gate.release(); await pending.catch(() => {}); }
+  });
+  it('RU-004: queued without marker still retries failed publication', async () => {
+    const s = storage(), id = await account(), enqueue = vi.fn(async () => {});
+    enqueue.mockRejectedValueOnce(new Error('queue unavailable'));
+    const run = new VideoService(pool, limits, s, enqueue, () => now);
+    const upload = await run.create(id, randomUUID(), input);
+    await expect(run.complete(id, completion(upload.video_id))).rejects.toThrow('queue unavailable');
+    expect((await pool.query('SELECT status,actual_bytes,upload_enqueued_at FROM video WHERE id=$1', [upload.video_id])).rows[0])
+      .toEqual({ status: 'queued', actual_bytes: '24', upload_enqueued_at: null });
+    expect(await run.complete(id, completion(upload.video_id))).toEqual({ video_id: upload.video_id, status: 'queued' });
+    expect(enqueue).toHaveBeenCalledTimes(2);
+  });
+  it('RU-004: complete retains ownership, deletion and invalid-file errors', async () => {
+    const s = storage(), run = service(s), id = await account(), other = await account();
+    const upload = await run.create(id, randomUUID(), input);
+    await run.complete(id, completion(upload.video_id));
+    await pool.query("UPDATE video SET status='done' WHERE id=$1", [upload.video_id]);
+    await expect(run.complete(other, completion(upload.video_id))).rejects.toMatchObject({ status: 404 });
+    await pool.query('UPDATE video SET deleted_at=now() WHERE id=$1', [upload.video_id]);
+    await expect(run.complete(id, completion(upload.video_id))).rejects.toMatchObject({ status: 404 });
+    for (const reason of ['too_large', 'not_media']) {
+      await pool.query("UPDATE video SET deleted_at=NULL, status='failed', failure_reason=$2 WHERE id=$1", [upload.video_id, reason]);
+      await expect(run.complete(id, completion(upload.video_id))).rejects.toMatchObject({ status: 422, details: { reason } });
+    }
+    await pool.query("UPDATE video SET status='failed', failure_reason='stalled', upload_enqueued_at=NULL, actual_bytes=NULL WHERE id=$1", [upload.video_id]);
+    await expect(run.complete(id, completion(upload.video_id))).rejects.toMatchObject({ status: 409 });
   });
   it('RU-004: midnight refund uses upload day; empty decrement consumes no allowance', async () => {
     const id = await account(), tomorrow = new Date('2026-09-22T21:01:00Z');
