@@ -50,5 +50,19 @@ ID — metadata инструмента, не runtime attestation. Reviewer сн�
 
 ## Выкладка
 
-Ожидаются публикация проверенного образа и native-click всех четырёх клипов на n5.
-Worker, схема и режимы оплаты не меняются.
+Выложен web `clipmkr:20261102-52e794d-web` на n5 и main;
+image `sha256:5975ca0bffbf339841060a02e161989a6d06d7c0c18e4396f1983fa9e01e59e3`.
+Image guard: dev0,prod109/109. Оба web running/0restarts, /health HTTP200.
+После выкладки четыре клипа проблемной страницы запущены обычным кликом по центру:
+время0,21–0,24с,декодировано10–11кадров у каждого,error=null; программный play не вызывался.
+Main payments off/testfalse; n5 live/testtrue. Worker, схема и режимы оплаты не менялись.
+Старая версия образа сохранена для отката.
+
+## Code/spec anti-drift
+
+| Требование | Реализация | Доказательство |
+|---|---|---|
+| FR-1 | preload=metadata в настоящем ClipCard | v3 native-click GREEN/поведенческий RED при откате;4/4 live native-click |
+| FR-2 | остальные атрибуты/URL/действия без изменения | независимый diff review;57 связанных тестов;40 проверок экрана |
+| C-1 | штатный HTML media, без новой библиотеки | одна строка product diff, image guard |
+

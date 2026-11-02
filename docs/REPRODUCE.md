@@ -828,6 +828,6 @@ FR-TARIFF-001…003), — `docs/Specification-addendum.md` (сама специ�
 `/api/webhooks/yookassa` — основному. В магазине нужны события `payment.succeeded` и
 `refund.succeeded`; включение боевого магазина не подтверждено тестовым прогоном.
 Runtime compose для этого выпуска: `.env.n5-blogger-release-20261102/compose.private.json`
-(main) и `.env.n5-blogger-test-20261102/compose.4d70860.private.json` (test).
+(main) и `.env.n5-blogger-test-20261102/compose.52e794d.private.json` (test).
 Включение реальной оплаты требует применения изменённого профиля к нужному web;
 одного редактирования файла недостаточно. Не публиковать содержимое профилей/compose/backup.
