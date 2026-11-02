@@ -32,7 +32,7 @@ Metadata разрешает раннее сетевое чтение, но не 
   до проверки readyState. Логи автора: /tmp/clipmkr-playback-{green,mutation-red}-v3.log.
   Финальный тест отдельно выполнен координатором и независимым reviewer.
 - Браузерные проверки41/41 PASS:40 адаптивных проверок экрана Chromium/WebKit
-  и Chromium native-click; после усиления отрицательного контроля тест повторён1/1 PASS.
+  и Chromium native-click; после усиления отрицательного контроля тест повторён 1/1 PASS.
 - Связанные Node22 тесты57/57 PASS в4 файлах: карточка, экран, музыка и версии.
 - Полная сборка Node22, typecheck с tests, lint: exit0.
 - K2: S, PASS2 target/0 warnings,3 легитимных skip ADR/confirmation/acid.
@@ -52,7 +52,7 @@ ID — metadata инструмента, не runtime attestation. Reviewer сн�
 
 Выложен web `clipmkr:20261102-52e794d-web` на n5 и main;
 image `sha256:5975ca0bffbf339841060a02e161989a6d06d7c0c18e4396f1983fa9e01e59e3`.
-Image guard: dev0,prod109/109. Оба web running/0restarts, /health HTTP200.
+Image guard: dev 0, prod 109/109. Оба web running/0restarts, /health HTTP200.
 После выкладки четыре клипа проблемной страницы запущены обычным кликом по центру:
 время0,21–0,24с,декодировано10–11кадров у каждого,error=null; программный play не вызывался.
 Main payments off/testfalse; n5 live/testtrue. Worker, схема и режимы оплаты не менялись.
@@ -65,4 +65,3 @@ Main payments off/testfalse; n5 live/testtrue. Worker, схема и режим�
 | FR-1 | preload=metadata в настоящем ClipCard | v3 native-click GREEN/поведенческий RED при откате;4/4 live native-click |
 | FR-2 | остальные атрибуты/URL/действия без изменения | независимый diff review;57 связанных тестов;40 проверок экрана |
 | C-1 | штатный HTML media, без новой библиотеки | одна строка product diff, image guard |
-
