@@ -42,6 +42,14 @@ AM-7 (общий QE): обновить существующий OPERATOR_ACTION 
 
 AM-8 (общий QE): обновить существующие фикстуры запросов VideoService и ожидания remainingLimits после добавления снимка политики. Не ослаблять проверки отказов/идемпотентности и не менять поведение старых флагов. Confirmation: существующая регрессия флага → test `default false persists in SQL parameter, true passes; changed flag is 409 before S3` in `tests/teaser-upload.test.ts` (fails if reverted).
 
+
+
+AM-9 (совместимость инструмента с Next.js): исходный K2 ошибочно отклоняет реальный файл маршрута с [videoId] как markdown residue. Хранить воспроизводимую минимальную patch для pinned OSS skill, применять native git apply при process:install, сохранить оригинальные проверки traversal/markdown и выполнить положительный Next-path и отрицательные malformed/traversal контроли. Только после этого менять сообщения UI. Confirmation: положительный Next-path и отрицательные malformed/traversal контроли → test `K2 accepts Next routes and rejects malformed or traversing paths` in `tests/feature-adr-paths.test.mjs` (fails if reverted).
+
+AM-10 (исходное замечание владельца об UI): длительное отсутствие изменения статуса не является подтверждённым отказом. Показывать «Обновляем статус» с пояснением, не меняя backend watchdog и пятиминутный индикатор. Ошибка too_long не утверждает 90 минут для блогера с иным лимитом. Confirmation: нейтральный индикатор без ложной ошибки → test `лента: молчание пять минут — проверяем статус` in `tests/progress-screen.test.ts` (fails if reverted).
+
+AM-11 (расширенный браузерный QE): существующая панель действий на 375×667 выходит за сгиб на 4 px в обоих движках. Уменьшить только промежуток над секцией клипов на телефоне с существующими токенами; сохранить размеры кнопок и отрицательный контроль. Confirmation: панель действий первой карточки в первом экране → test `R9 dark 375x667: «Скачать · Ссылка · Гостю» первой карточки в первом экране` in `tests/browser/video-screen.test.ts` (fails if reverted).
+
 ## Gates
 
 До реализации: реальный QCSD (качество, риск, тестируемость), подтверждение M-плана владельцем,
@@ -51,6 +59,8 @@ K1, K2 --tier=M --require-requirements и поддерживаемые dz receip
 не подменяются успешной локальной сборкой.
 
 Уточнение AM-4: искусственная дробная копейка не создаётся обходом CHECK цены пакета. Проверка 20/30/null проходит на допустимых платежах; реализация использует целочисленное округление вниз.
+
+
 
 
 
@@ -87,3 +97,14 @@ EXPECTED_CODE_TARGETS:
 - tests/compaction-upload.test.ts
 - tests/clip-cta.test.ts
 - tests/watchdog-diagnostics.test.ts
+- scripts/install-process.sh
+- patches/feature-adr-next-paths.patch
+- package.json
+- tests/feature-adr-paths.test.mjs
+- apps/web/src/lib/screen-contract.ts
+- apps/web/src/server/screen.ts
+- apps/web/src/lib/progress-ribbon.ts
+- apps/web/src/app/videos/[videoId]/VideoDetail.tsx
+- tests/progress-screen.test.ts
+- tests/browser/video-screen.test.ts
+- apps/web/src/app/globals.css

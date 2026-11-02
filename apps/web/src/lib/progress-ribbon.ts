@@ -13,7 +13,7 @@ export interface RibbonStep { key: RibbonStage; label: string; view: StepView; d
 export interface Ribbon { tone: RibbonTone; steps: RibbonStep[] }
 
 export const STEP_STATE_TEXT: Record<StepView, string> = {
-  done: 'сделано', running: 'идёт', silent: 'нет ответа', failed: 'отказ', pending: 'впереди',
+  done: 'сделано', running: 'идёт', silent: 'проверяем статус', failed: 'отказ', pending: 'впереди',
 };
 const STATUS_STAGE: Record<Exclude<VideoScreen['status'], 'done' | 'failed'>, RibbonStage> = {
   uploading: 'upload', queued: 'upload', transcribing: 'transcribe', selecting: 'select', rendering: 'render',

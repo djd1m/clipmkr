@@ -32,7 +32,7 @@ const STATES: Record<string, { video: VideoScreen; clips: ClipScreen[] }> = {
   done: { video: video(), clips: [clip(1), clip(2), clip(3)] },
   running: { video: video({ status: 'rendering', user_state: 'выполняется', stage_label: 'Режем: готово 1 из 3', stage_progress: 40, clips_done: 1 }),
     clips: [clip(1), clip(2, false), clip(3, false)] },
-  silent: { video: video({ status: 'selecting', user_state: 'выполняется', stage_label: 'Нет ответа от обработки, проверяем', stage_progress: null, clips_done: 0, clips_total: 0, no_response: true }), clips: [] },
+  silent: { video: video({ status: 'selecting', user_state: 'выполняется', stage_label: 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.', stage_progress: null, clips_done: 0, clips_total: 0, no_response: true }), clips: [] },
   failure: { video: video({ status: 'failed', user_state: 'отказ', stage_label: 'Обработка не завершена', stage_progress: null, clips_done: 0, clips_total: 0,
     failure_reason: 'Обработка перестала отвечать.', next_action: 'retry', failed_stage: 'select' }), clips: [] },
 };

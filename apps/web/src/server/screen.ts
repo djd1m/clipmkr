@@ -48,7 +48,7 @@ export function presentVideo(row: VideoRow, now = new Date()): VideoScreen {
   const cta = readStoredCta(row.cta_kind, row.cta_url);
   return { ...(row.billable_seconds?{credit_charge_seconds:row.billable_seconds}:{}),video_id: row.id, status: row.status, cta_kind: cta.kind, cta_url: cta.url, created_at: row.created_at.toISOString(), updated_at: row.updated_at.toISOString(),
     duration_seconds: row.duration_seconds === null ? null : Number(row.duration_seconds), user_state: state,
-    stage_label: noResponse ? 'Нет ответа от обработки, проверяем' : row.wait_reason === 'no_disk' && state === 'выполняется' ? 'Ждём свободного места' : stages[row.status],
+    stage_label: noResponse ? 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.' : row.wait_reason === 'no_disk' && state === 'выполняется' ? 'Ждём свободного места' : stages[row.status],
     stage_progress: row.stage_progress, clips_done: row.clips_done ?? 0, clips_total: row.clips_total ?? 0,
     no_response: noResponse, failure_reason: row.failure_reason ? failureMessages[row.failure_reason] : null, next_action: nextAction,
     retry_after: row.failure_reason !== 'refused_credit_balance' && row.failure_reason?.startsWith('refused_') ? quotaResetAt(row.updated_at) : null, poll_after_seconds: 5,

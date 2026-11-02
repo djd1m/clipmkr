@@ -17,7 +17,7 @@ export function VideoHeader({ video }: { video: VideoScreen }) {
     <details className="video-meta"><summary>Подробнее</summary><p className="video-id">video_id: <code>{video.video_id}</code></p></details></div>
     <p className="eyebrow">ВАШ ВЫПУСК</p><h1>Из длинного разговора —<br />короткие моменты</h1></header>;
 }
-const STEP_MARK: Record<StepView, string> = { done: '✓', running: '◷', silent: '?', failed: '!', pending: '○' };
+const STEP_MARK: Record<StepView, string> = { done: '✓', running: '◷', silent: '…', failed: '!', pending: '○' };
 /** Лента «Загрузка → Расшифровка → Выбор → Монтаж»: состояние каждой стадии — знаком И текстом, не только цветом. */
 export function StageRibbon({ steps }: { steps: RibbonStep[] }) {
   return <ol className="progress-ribbon" aria-label="Этапы обработки">{steps.map(step =>
@@ -32,8 +32,8 @@ export function ProgressPanel({ video, onRetry, busy = false }: { video: VideoSc
   // Готово — лента сворачивается в одну строку: первый экран телефона отдан клипам (FR-GROWTH-001).
   if (success) return <section className="status-panel success compact" role="status" aria-live="polite" data-state={tone}>
     <p><span className="step-mark" aria-hidden="true">✓</span><strong>Клипы готовы</strong> · {video.clips_done} из {video.clips_total}</p></section>;
-  return <section className={`status-panel ${tone}`} role={failure || silent ? 'alert' : 'status'} aria-live="polite" data-state={tone}>
-    <h2>{failure ? 'Обработка не завершена' : silent ? 'Нет ответа от обработки' : 'Выполняется'}</h2>
+  return <section className={`status-panel ${tone}`} role={failure ? 'alert' : 'status'} aria-live="polite" data-state={tone}>
+    <h2>{failure ? 'Обработка не завершена' : silent ? 'Обновляем статус' : 'Выполняется'}</h2>
     <StageRibbon steps={steps} />
     {video.credit_charge_seconds && <p>Объём исходной записи: {video.credit_charge_seconds} секунд · {(video.credit_charge_seconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов. За эту запись — один раз.</p>}
     {failure && video.credit_charge_seconds && !video.retry_after && <Link className="button secondary" href="/upgrade?from=partner_dashboard">Выбрать пакет</Link>}
@@ -89,7 +89,7 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
   }
   // Local clock also detects silence when polling itself loses the network.
   const shown = video.user_state === 'выполняется' && now - Date.parse(video.updated_at) > 300000
-    ? { ...video, no_response: true, stage_label: 'Нет ответа от обработки, проверяем' } : video;
+    ? { ...video, no_response: true, stage_label: 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.' } : video;
   return <><VideoHeader video={video} /><ProgressPanel video={shown} onRetry={() => void retry()} busy={busy} />
     {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}
     <section className="clips-section"><div className="section-heading"><h2>Ваши клипы</h2><span>{video.clips_done} готово / {video.clips_total} выбрано</span></div>

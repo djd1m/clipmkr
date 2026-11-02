@@ -37,7 +37,8 @@ describe('экран прогресса и оценки', () => {
   it('молчание после пяти минут не показывается как идёт', () => {
     const stale = { ...video, updated_at: new Date(now.getTime() - 300001) };
     expect(presentVideo(stale, now).no_response).toBe(true);
-    expect(markup(stale)).toContain('data-state="silent"'); expect(markup(stale)).toContain('Нет ответа от обработки');
+    expect(markup(stale)).toContain('data-state="silent"'); expect(markup(stale)).toContain('Обновляем статус');
+    expect(markup(stale)).toContain('role="status"'); expect(markup(stale)).not.toContain('Нет ответа');
     expect(markup(stale)).not.toContain('Выполняется'); expect(markup(stale)).not.toContain('<progress');
     expect(presentVideo({ ...stale, updated_at: new Date(now.getTime() - 300000) }, now).no_response).toBe(false);
     expect(presentVideo({ ...stale, status: 'done' }, now).no_response).toBe(false);
@@ -53,6 +54,11 @@ describe('экран прогресса и оценки', () => {
     expect(refusal.retry_after).toBe('2026-09-22T21:00:00.000Z');
     expect(presentVideo({ ...video, status: 'failed', failure_reason: 'refused_user_minutes' }, new Date('2026-09-23T12:00:00Z')).retry_after).toBe(refusal.retry_after);
     expect(presentVideo({ ...video, wait_reason: 'no_disk' }, now).stage_label).toBe('Ждём свободного места');
+  });
+  it('ошибка длительности не приписывает блогеру обычный лимит 90 минут', () => {
+    const html = markup({ ...video, status: 'failed', failure_reason: 'too_long' });
+    expect(html).toContain('допустимую длительность для вашего аккаунта');
+    expect(html).not.toContain('90 минут');
   });
   it('пустое объяснение оценки отвергается, null score не становится нулём', () => {
     for (const field of ['explain_hook', 'explain_completeness', 'explain_length']) {
@@ -96,12 +102,12 @@ describe('лента стадий экрана записи', () => {
     const waiting = presentVideo({ ...video, wait_reason: 'no_disk' }, now);
     expect(ribbonOf(waiting).steps[3]!.view).toBe('running'); expect(markup({ ...video, wait_reason: 'no_disk' })).toContain('Ждём свободного места');
   });
-  it('лента: молчание пять минут — «нет ответа», а не «идёт»', () => {
+  it('лента: молчание пять минут — проверяем статус', () => {
     const stale = { ...video, updated_at: new Date(now.getTime() - 300001) };
     expect(views(stale)).toEqual(['done', 'done', 'done', 'silent']);
     const html = markup(stale);
     expect(html).toContain('data-view="silent"'); expect(html).not.toContain('data-view="running"');
-    expect(html).toContain(' — нет ответа'); expect(html).not.toContain(' — идёт');
+    expect(html).toContain(' — проверяем статус'); expect(html).not.toContain(' — идёт');
     // Граница: ровно 5 минут — ещё «идёт».
     expect(views({ ...video, updated_at: new Date(now.getTime() - 300000) })).toEqual(['done', 'done', 'done', 'running']);
     // Локальные часы экрана (сеть пропала) дают тот же вид.

@@ -15,7 +15,7 @@
     "lint": "node scripts/lint.mjs",
     "dz": "dz",
     "openspec": "openspec",
-    "process:install": "dz init --target codex --preset feature-adr --project . --skills-dir node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills --no-integrations --no-hooks",
+    "process:install": "sh scripts/install-process.sh",
     "test": "node scripts/test.mjs",
     "test:responsive": "bash scripts/check-responsive.sh --test",
     "ops:set-plan": "node packages/db/dist/ops-set-plan.js",

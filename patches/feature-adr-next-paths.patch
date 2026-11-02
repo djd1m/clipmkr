@@ -1,0 +1,14 @@
+--- a/node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/scripts/check-plan-completeness.mjs
++++ b/node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/scripts/check-plan-completeness.mjs
+@@ -370,7 +370,10 @@
+ function classifyTargetPath(path) {
+   const reasons = [];
+   if (/\s/.test(path)) reasons.push('contains whitespace');
+-  if (MARKDOWN_RESIDUE_RE.test(path)) reasons.push('markdown residue');
++  // Standard Next.js dynamic directory segments are filesystem paths, not Markdown.
++  // Validate the original path for traversal and all remaining illegal characters below.
++  const markdownPath = path.replace(/(^|\/)(?:\[[A-Za-z_]\w*\]|\[\.\.\.[A-Za-z_]\w*\]|\[\[\.\.\.[A-Za-z_]\w*\]\])(?=\/)/g, '$1dynamic-route');
++  if (MARKDOWN_RESIDUE_RE.test(markdownPath)) reasons.push('markdown residue');
+   if (path.startsWith('/')) reasons.push('absolute path — targets are repo-relative');
+   if (path.startsWith('~')) reasons.push('home-relative path — targets are repo-relative');
+   const anchoredHere = path === '.' || path.startsWith('./');

@@ -6,7 +6,7 @@ export const failureMessages = {
   refused_credit_balance: 'Недостаточно кредитов для этой записи. Выберите пакет и повторите обработку.',
   too_large: 'Файл больше 2 ГБ.', not_media: 'Формат файла не поддерживается.',
   no_audio: 'В записи нет звуковой дорожки.', too_short: 'Запись короче двух минут.',
-  too_long: 'Запись длиннее 90 минут.', probe_timeout: 'Не удалось прочитать свойства файла.',
+  too_long: 'Запись превышает допустимую длительность для вашего аккаунта.', probe_timeout: 'Не удалось прочитать свойства файла.',
   stt_failed: 'Не удалось расшифровать речь.', no_timestamps: 'Не удалось получить пригодные таймкоды слов.',
   no_fragments: 'Самодостаточных фрагментов не найдено.', schema_violation: 'Не удалось проверить выбранные фрагменты.',
   refused_user_uploads: quotaMessages.user_uploads, refused_user_minutes: quotaMessages.user_minutes,

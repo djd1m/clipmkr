@@ -211,7 +211,7 @@ button,.button { min-width:2.75rem; }
   .detail-header .eyebrow { margin-top:var(--space-2); margin-bottom:var(--space-1); }
   .detail-header h1 { font-size:1.5rem; letter-spacing:-0.03em; margin-bottom:0; }
   .detail-header + .status-panel { margin-top:var(--space-4); margin-bottom:0; }
-  .status-panel + .clips-section,.status-panel + .notice { margin-top:var(--space-4); }
+  .status-panel + .clips-section,.status-panel + .notice { margin-top:var(--space-2); }
   .clips-section .section-heading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:0 var(--space-3); margin-bottom:var(--space-3); }
   .clips-section .section-heading h2 { font-size:1.25rem; margin-bottom:0; }
   /* Кадр во всю ширину карточки (фон media-bg), видео по центру: иначе max-height сужает сам блок 9:16 к левому краю. */
