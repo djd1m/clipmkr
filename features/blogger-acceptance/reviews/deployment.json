@@ -1,0 +1,30 @@
+{
+  "revision": "4d70860",
+  "health": 200,
+  "services": {
+    "web": {
+      "image": "clipmkr:20261102-4d70860-web",
+      "id": "sha256:96b0f72f4d003e3bf47493cbba7dde6aa4d951970ce484015cd04d7912fb0ee5",
+      "status": "running",
+      "restarts": 0
+    },
+    "worker-stt": {
+      "image": "clipmkr:20261102-002744d-worker",
+      "id": "sha256:c1bc404a8206afc5f3b9b40c19ff25b637f056453f56a8cce41032933b265da1",
+      "status": "running",
+      "restarts": 0
+    },
+    "worker-llm": {
+      "image": "clipmkr:20261102-002744d-worker",
+      "id": "sha256:c1bc404a8206afc5f3b9b40c19ff25b637f056453f56a8cce41032933b265da1",
+      "status": "running",
+      "restarts": 0
+    },
+    "worker-video": {
+      "image": "clipmkr:20261102-002744d-worker",
+      "id": "sha256:c1bc404a8206afc5f3b9b40c19ff25b637f056453f56a8cce41032933b265da1",
+      "status": "running",
+      "restarts": 0
+    }
+  }
+}
