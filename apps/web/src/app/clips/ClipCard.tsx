@@ -39,7 +39,7 @@ export function ClipCard({ clip, onMusicQueued, onSendToGuest, paymentsOn = fals
   // Order (feature 26): frame with score plate → actions → title → components and «why» → retention → music → Pro.
   return <article className="clip-card">
     {actionsFirst && actions}
-    <div className="clip-preview">{clip.available ? <video key={fileVersion} controls playsInline preload="none"
+    <div className="clip-preview">{clip.available ? <video key={fileVersion} controls playsInline preload="metadata"
       poster={`/api/clips/${clip.clip_id}/thumbnail?v=${fileVersion}`} src={`/api/clips/${clip.clip_id}/file?v=${fileVersion}`} aria-label={clip.title} />
       : <p>{expired ? 'Срок хранения истёк' : clip.status === 'failed' ? 'Не удалось собрать клип' : 'Собираем клип…'}</p>}
       {scored && <span className="score-badge" aria-hidden="true">{scored.score}</span>}</div>
