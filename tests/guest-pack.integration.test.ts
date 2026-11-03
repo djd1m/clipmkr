@@ -2,10 +2,9 @@ import { beforeAll, beforeEach, afterAll, describe, it, expect, vi } from 'vites
 import { randomUUID, randomBytes } from 'node:crypto';
 import { createPool, type Pool } from '../packages/db/src/index';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { CreateBucketCommand, DeleteBucketCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { migrate } from '../packages/db/src/migrate';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
-import { loadS3Config } from '../packages/shared/src/config';
 import { createS3Client, generateDownloadUrl } from '../packages/s3/src';
 import { GuestPackService, consentHash } from '../apps/web/src/server/guest-pack';
 import { GUEST_CONSENT_VERSION } from '../apps/web/src/lib/guest-contract';
@@ -13,6 +12,7 @@ import { createGuestPageHandler } from '../apps/web/src/server/guest-page';
 import { createClipFileHandler } from '../apps/web/src/server/clip-file';
 import { streamGuestFile } from '../apps/web/src/server/guest-file';
 import { appRouter } from '../apps/web/src/server/trpc';
+import { liveS3Environment } from './fixtures/environment';
 const dbUrl = process.env.DATABASE_URL;
 describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
   let pool: Pool, guests: GuestPackService;
@@ -161,10 +161,13 @@ describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
     await pool.query('UPDATE video SET deleted_at=NULL'); await pool.query("UPDATE account SET status='erasing' WHERE id=$1", [owner]);
     expect((await page()(request(), code)).status).toBe(404);
   });
-  it.skipIf(!process.env.S3_ENDPOINT)('MinIO real bytes before revoke, same signed URL 404 afterwards', async () => {
-    const config = loadS3Config(process.env), client = createS3Client({ ...config, publicEndpoint: config.endpoint });
-    const bucket = `n5-guest-${randomBytes(8).toString('hex')}`, key = `guest/${clip}.mp4`;
-    await client.send(new CreateBucketCommand({ Bucket: bucket }));
+  it.skipIf(process.env.N5_PREFIX_RUN_S3 !== '1')('Cloud S3 real bytes before revoke, same signed URL 404 afterwards', async () => {
+    const safety = liveS3Environment(), namespace = `tests/cloud/${randomUUID()}/`;
+    const scope = { prefixes: [namespace] }, config = { ...safety.config, keyPrefix: namespace }, client = createS3Client(config);
+    safety.bind(client, scope); safety.bind(client.signingClient!, scope);
+    const bucket = config.bucket, key = `guest/${clip}.mp4`;
+    const audit = safety.receipt(namespace, 'guest-integration');
+    vi.stubGlobal('fetch', (input: string, init: RequestInit) => safety.fetch(input, init, scope));
     try {
       await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: 'guest-clip-bytes', ContentType: 'video/mp4' }));
       const pack = await sent(), code = pack.url.split('/').at(-1)!;
@@ -176,8 +179,9 @@ describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
       await guests.revoke(owner, pack.guest_pack_id);
       expect((await handler(request(url), clip)).status).toBe(404);
     } finally {
-      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-      await client.send(new DeleteBucketCommand({ Bucket: bucket })); client.destroy();
+      let cleaned = false;
+      try { await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })); cleaned = true; }
+      finally { client.destroy(); vi.unstubAllGlobals(); audit.finish(cleaned); }
     }
   });
 });

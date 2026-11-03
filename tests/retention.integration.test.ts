@@ -1,17 +1,17 @@
 import { beforeAll, beforeEach, afterAll, describe, it, expect, vi } from 'vitest';
 import { randomUUID, randomBytes } from 'node:crypto';
 import { createPool, type Pool } from '../packages/db/src/index';
-import { CreateBucketCommand, DeleteBucketCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { migrate } from '../packages/db/src/migrate';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
 import { ErasureService } from '../apps/web/src/server/erasure';
 import { retentionTick, ERASURE_QUIET_MS, type RetentionStorage } from '../apps/web/src/server/retention';
-import { loadS3Config } from '../packages/shared/src/config';
+import { liveS3Environment } from './fixtures/environment';
 import * as s3 from '../packages/s3/src';
 import { SHOWCASE_CLIP_IDS } from '../packages/shared/src/showcase';
-const url = process.env.DATABASE_URL, endpoint = process.env.S3_ENDPOINT;
+const url = process.env.DATABASE_URL;
 const now = new Date('2026-09-24T12:00:00Z');
-describe.skipIf(!url)('retention PostgreSQL and MinIO', () => {
+describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
   let pool: Pool;
   const schema = `erase_${randomBytes(8).toString('hex')}`;
   beforeAll(async () => {
@@ -132,16 +132,19 @@ describe.skipIf(!url)('retention PostgreSQL and MinIO', () => {
     await retentionTick(pool, memoryStorage(), new Date(now.getTime() + ERASURE_QUIET_MS));
     expect((await pool.query('SELECT id FROM clip WHERE id=$1', [showcase.clip])).rowCount).toBe(0);
   });
-  it.skipIf(!endpoint)('MinIO HEAD confirms all account objects absent; revoked guests precede first deletion', async () => {
-    const f = await fixture();
-    const bucket = `erasure-${randomBytes(8).toString('hex')}`;
-    const ctx = { client: s3.createS3Client(loadS3Config(process.env)), bucket };
+  it.skipIf(process.env.N5_PREFIX_RUN_S3 !== '1')('Cloud S3 HEAD confirms all account objects absent; revoked guests precede first deletion', async () => {
+    const f = await fixture(); const safety = liveS3Environment(), namespace = `tests/cloud/${randomUUID()}/`;
+    const scope = { prefixes: [namespace], allowList: true, allowVersioning: true };
+    const client = s3.createS3Client({ ...safety.config, keyPrefix: namespace });
+    safety.bind(client, scope); safety.bind(client.signingClient!, scope);
+    const ctx = { client, bucket: safety.config.bucket }; const bucket = ctx.bucket;
+    const audit = safety.receipt(namespace, 'retention-integration');
     const orphan = `clips/paid/${f.video}/${randomUUID()}.mp4`;
     const keys = [...f.keys, orphan];
-    await ctx.client.send(new CreateBucketCommand({ Bucket: bucket }));
     try {
       for (const key of keys) await ctx.client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: 'private data' }));
-      const uploadId = await s3.initiateMultipartUpload(ctx, `videos/${f.account}/${f.video}/unfinished.mp4`);
+      audit.startUpload();
+      const uploadId = await s3.initiateMultipartUpload(ctx, `videos/${f.account}/${f.video}/unfinished.mp4`); audit.resolvedUpload();
       expect(uploadId).toBeTruthy();
       for (const key of keys) expect(await s3.headObject(ctx, key)).toBe(12n);
       await new ErasureService(pool, () => now).request(f.account, { confirm: true });
@@ -156,8 +159,10 @@ describe.skipIf(!url)('retention PostgreSQL and MinIO', () => {
       for (const key of keys) await expect(s3.headObject(ctx, key)).rejects.toMatchObject({ $metadata: { httpStatusCode: 404 } });
       expect((await pool.query('SELECT status FROM account WHERE id=$1', [f.account])).rows[0].status).toBe('deleted');
     } finally {
-      for (const prefix of [`videos/${f.account}/`, `clips/free/${f.video}/`, `clips/paid/${f.video}/`, `thumbs/${f.video}/`]) await s3.erasePrefix(ctx, prefix);
-      await ctx.client.send(new DeleteBucketCommand({ Bucket: bucket })); ctx.client.destroy();
+      const cleanup = await Promise.allSettled([`videos/${f.account}/`, `clips/free/${f.video}/`, `clips/paid/${f.video}/`, `thumbs/${f.video}/`].map((prefix) => s3.erasePrefix(ctx, prefix)));
+      ctx.client.destroy();
+      const cleaned = cleanup.every((item) => item.status === 'fulfilled'); audit.finish(cleaned);
+      if (!cleaned) throw new Error('Synthetic retention cleanup incomplete');
     }
   });
 });

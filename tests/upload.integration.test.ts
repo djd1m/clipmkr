@@ -1,15 +1,14 @@
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 import { randomUUID, randomBytes } from 'node:crypto';
 import { createPool, type Pool } from '../packages/db/src/index';
-import { CreateBucketCommand, DeleteBucketCommand, GetBucketLifecycleConfigurationCommand } from '@aws-sdk/client-s3';
 import { migrate } from '../packages/db/src/migrate';
 import { transaction, checkAndConsumeQuota, refundUploadSlot } from '../packages/db/src/quota';
-import { loadLimits, loadS3Config, loadS3PublicEndpoint } from '../packages/shared/src/config';
+import { loadLimits } from '../packages/shared/src/config';
 import { moscowDay } from '../packages/shared/src/upload';
 import * as s3 from '../packages/s3/src';
 import { VideoService, type UploadStorage, type UploadData } from '../apps/web/src/server/video';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
-import { environment } from './fixtures/environment';
+import { environment, liveS3Environment } from './fixtures/environment';
 
 const dbUrl = process.env.DATABASE_URL;
 const limits = loadLimits(environment());
@@ -76,23 +75,25 @@ describe.skipIf(!dbUrl)('PostgreSQL: конкурентная квота', () =>
   });
 });
 
-describe.skipIf(!dbUrl || !process.env.S3_ENDPOINT)('PostgreSQL + MinIO: полный серверный upload', () => {
+describe.skipIf(!dbUrl || process.env.N5_PREFIX_RUN_S3 !== '1')('PostgreSQL + Cloud S3: полный серверный upload', () => {
   let pool: Pool, ctx: s3.StorageContext, storage: UploadStorage, service: VideoService;
+  let safety: ReturnType<typeof liveS3Environment>;
+  let audit: ReturnType<ReturnType<typeof liveS3Environment>['receipt']> | undefined;
+  const namespace = `tests/cloud/${randomUUID()}/`, scope = { prefixes: [namespace], allowList: true, allowVersioning: true };
   const queue = vi.fn(async (_id: string, _fence: number) => {});
   const schema = `upload_${randomBytes(8).toString('hex')}`;
   const keys = new Set<string>(); const uploads: { key: string; id: string }[] = [];
   beforeAll(async () => {
     if (process.env.NODE_ENV !== 'test' || !dbUrl || !new URL(dbUrl).pathname.endsWith('_test')) throw new Error('Только тестовое окружение');
-    const config = { ...loadS3Config(process.env), publicEndpoint: loadS3PublicEndpoint(process.env) };
-    if (!config.bucket.endsWith('-test')) throw new Error('Только бакет *-test');
+    safety = liveS3Environment(); const config = { ...safety.config, keyPrefix: namespace };
+    audit = safety.receipt(namespace, 'upload-integration');
     await ensureTestDatabase(dbUrl);
     pool = createPool(dbUrl, schema);
     await pool.query(`CREATE SCHEMA ${schema}`); await migrate(pool);
-    // Отдельный новый бакет гарантирует отсутствие lifecycle, не меняя общий бакет стенда.
-    ctx = { client: s3.createS3Client(config), bucket: `n5-upload-${randomBytes(8).toString('hex')}-test` };
-    await ctx.client.send(new CreateBucketCommand({ Bucket: ctx.bucket }));
+    const client = s3.createS3Client(config); safety.bind(client, scope); safety.bind(client.signingClient!, scope);
+    ctx = { client, bucket: config.bucket };
     storage = {
-      initiate: vi.fn(async (key) => { keys.add(key); const id = await s3.initiateMultipartUpload(ctx, key); uploads.push({ key, id }); return id; }),
+      initiate: vi.fn(async (key) => { keys.add(key); audit!.startUpload(); const id = await s3.initiateMultipartUpload(ctx, key); uploads.push({ key, id }); audit!.resolvedUpload(); return id; }),
       sign: (key, id, count, date) => s3.signParts(ctx, key, id, count, date),
       list: (key, id) => s3.listUploadedParts(ctx, key, id),
       complete: (key, id, parts) => s3.completeMultipartUpload(ctx, key, id, parts),
@@ -103,10 +104,11 @@ describe.skipIf(!dbUrl || !process.env.S3_ENDPOINT)('PostgreSQL + MinIO: пол�
   });
   afterAll(async () => {
     if (ctx) {
-      for (const u of uploads) await s3.abortMultipartUpload(ctx, u.key, u.id);
-      for (const key of keys) await s3.deleteObject(ctx, key);
-      await ctx.client.send(new DeleteBucketCommand({ Bucket: ctx.bucket }));
+      const aborts = await Promise.allSettled(uploads.map((u) => s3.abortMultipartUpload(ctx, u.key, u.id)));
+      const removals = await Promise.allSettled([...keys].map((key) => s3.deleteObject(ctx, key)));
       ctx.client.destroy();
+      const ok = [...aborts, ...removals].every((item) => item.status === 'fulfilled'); audit?.finish(ok);
+      if (!ok) throw new Error('Synthetic upload cleanup incomplete');
     }
     if (pool) { await pool.query(`DROP SCHEMA ${schema} CASCADE`); await pool.end(); }
   });
@@ -117,8 +119,8 @@ describe.skipIf(!dbUrl || !process.env.S3_ENDPOINT)('PostgreSQL + MinIO: пол�
     return (await pool.query('SELECT used FROM quota_counter WHERE scope=$1 AND scope_key=$2 AND day=$3', [scope, id, moscowDay(new Date())])).rows[0]?.used ?? 0;
   }
   async function put(upload: UploadData, bytes: Uint8Array = goodFile) {
-    const response = await fetch(upload.parts[0]!.url, { method: 'PUT', body: Buffer.from(bytes) });
-    expect(response.status, await response.clone().text()).toBe(200);
+    const response = await safety.fetch(upload.parts[0]!.url, { method: 'PUT', body: Buffer.from(bytes) }, scope);
+    expect(response.status).toBe(200);
     const etag = response.headers.get('etag'); expect(etag).toBeTruthy();
     return { video_id: upload.video_id, parts: [{ part_number: 1, etag: etag! }] };
   }
@@ -142,9 +144,7 @@ describe.skipIf(!dbUrl || !process.env.S3_ENDPOINT)('PostgreSQL + MinIO: пол�
     for (let i = 0; i < 2; i++) await expect(service.create(id, key, body)).rejects.toMatchObject({ code: 'refused' });
     expect(vi.mocked(storage.initiate).mock.calls.length).toBe(before); expect(await count(id)).toBe(2);
   });
-  it('RI-001: бакет без lifecycle → подписанный PUT → Complete → HEAD → Range → queued', async () => {
-    await expect(ctx.client.send(new GetBucketLifecycleConfigurationCommand({ Bucket: ctx.bucket })))
-      .rejects.toMatchObject({ name: 'NoSuchLifecycleConfiguration' });
+  it('RI-001: подписанный PUT → Complete → HEAD → Range → queued', async () => {
     const id = await account(), upload = await service.create(id, randomUUID(), body);
     queue.mockImplementationOnce(async (videoId) => {
       expect((await pool.query('SELECT status FROM video WHERE id=$1', [videoId])).rows[0].status).toBe('queued');
@@ -170,12 +170,12 @@ describe.skipIf(!dbUrl || !process.env.S3_ENDPOINT)('PostgreSQL + MinIO: пол�
     const parts = [];
     for (const part of upload.parts) {
       const start = (part.part_number - 1) * upload.part_size;
-      const response = await fetch(part.url, { method: 'PUT', body: file.subarray(start, start + upload.part_size) });
+      const response = await safety.fetch(part.url, { method: 'PUT', body: file.subarray(start, start + upload.part_size) }, scope, 120_000);
       expect(response.status).toBe(200); parts.push({ part_number: part.part_number, etag: response.headers.get('etag')! });
     }
     expect(await service.complete(id, { video_id: upload.video_id, parts })).toMatchObject({ status: 'queued' });
     expect(Number((await pool.query('SELECT actual_bytes FROM video WHERE id=$1', [upload.video_id])).rows[0].actual_bytes)).toBe(file.length);
-  });
+  }, 300_000);
   it('Чужой и отсутствующий id дают одинаковый 404, без S3', async () => {
     const owner = await account(), stranger = await account(), upload = await service.create(owner, randomUUID(), body);
     for (const video_id of [upload.video_id, randomUUID()]) {

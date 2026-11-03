@@ -24,16 +24,23 @@ function manifest() {
       worker: { id: `sha256:${h}`, archiveSha256: h, ociRevision: revision } } };
 }
 function profile() {
-  const common = { inputBytes: 1024, storageProductionBucket: 'production', storageProductionEndpoint: 'https://storage.example', dockerPrefix: [] as string[], root: '/srv/candidate', envFile: '/srv/private/env', composeFiles: ['/srv/candidate/compose.yml'],
-    resources: { database: 'candidate-db', redis: 'candidate-redis', databaseVolume: 'candidate-db-volume', redisVolume: 'candidate-redis-volume' } };
-  return { targets: [ { ...common, name: 'localdevstage', transport: 'local', project: 'local-stage', allowedOrigins: ['http://localhost:4181'] },
-    { ...common, name: 'cloud-c', transport: 'ssh', project: 'cloud-stage', allowedOrigins: ['https://c.clipmkr.ru'],
+  const common = { inputBytes: 1024, storageBucket: 'shared-bucket', databaseProject: 'infra-stage', redisProject: 'infra-stage', binding: { databaseName: 'n5_test', databaseHost: 'test-db', redisHost: 'test-redis', network: 'test-network' }, dockerPrefix: [] as string[], root: '/srv/candidate', envFile: '/srv/private/env', composeFiles: ['/srv/candidate/compose.yml'],
+    resources: { database: 'c'.repeat(64), redis: 'd'.repeat(64), databaseVolume: 'candidate-db-volume', redisVolume: 'candidate-redis-volume' } };
+  return { targets: [ { ...common, name: 'site-test', storagePrefix: 'tests/site/', transport: 'ssh', project: 'local-stage', ssh: { alias: 'fake-site', knownHosts: '/srv/private/known_hosts', config: '/srv/private/ssh_config', expiresAt: '2999-01-01T00:00:00Z' }, allowedOrigins: ['http://localhost:4181'] },
+    { ...common, name: 'cloud-c', storagePrefix: 'tests/cloud/', transport: 'ssh', project: 'cloud-stage', allowedOrigins: ['https://c.clipmkr.ru'],
       ssh: { alias: 'cloud-c', knownHosts: '/srv/private/known_hosts', config: '/srv/private/ssh_config', expiresAt: '2999-01-01T00:00:00Z' } } ] };
 }
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(), 'release-profile-'));
   const path = join(dir, 'profile.json');
-  const write = (value: unknown) => writeFileSync(path, JSON.stringify(value), { mode: 0o600 });
+  const write = (value: unknown) => {
+    const copy = structuredClone(value) as { targets?: Array<{ ssh?: { config: string; knownHosts: string } }> };
+    for (const target of copy.targets ?? []) if (target.ssh) {
+      if (target.ssh.config === '/srv/private/ssh_config') target.ssh.config = path;
+      if (target.ssh.knownHosts === '/srv/private/known_hosts') target.ssh.knownHosts = path;
+    }
+    writeFileSync(path, JSON.stringify(copy), { mode: 0o600 });
+  };
   write(profile());
   return { dir, path, write, close: () => rmSync(dir, { recursive: true, force: true }) };
 }
@@ -59,6 +66,33 @@ function artifacts(dir: string) {
   m.images.web.ociRevision = head; m.images.worker.ociRevision = head;
   return m;
 }
+function previousSet(dir: string, manifestPath: string) {
+  const path = join(dir, 'previous.json');
+  writeFileSync(path, JSON.stringify({ 'site-test': manifestPath, 'cloud-c': manifestPath }), { mode: 0o600 });
+  return path;
+}
+function storageFixture(dir: string, target: string, project: string, commit: string, prefix: string, fingerprint: string) {
+  const rawPath = join(dir, target + '-raw.json'), unitPath = join(dir, target + '-unit.json'), integrationPath = join(dir, target + '-integration.json');
+  const names = ['validates prefix and checkout config without changing production S3 config shape', 'prefixes all object commands before serialization and signing, path style true', 'prefixes all object commands before serialization and signing, path style false', 'translates list paths and opaque markers and strips only matching returned keys', 'rejects malformed paths, bucket mismatch, unsupported commands and foreign responses without escaping namespace', 'validates multipart response keys and forbids foreign markers and presigned keys', 'blocks live test transport outside its independent run scope', 'preserves unrestricted production behavior when namespace is empty'];
+  const report = (titles: string[]) => ({ success: true, testResults: [{ assertionResults: titles.map(fullName => ({ fullName, status: 'passed' })) }] });
+  writeFileSync(unitPath, JSON.stringify(report(names.map(name => 'S3 namespace ' + name))), { mode: 0o600 });
+  writeFileSync(integrationPath, JSON.stringify(report(['S3 namespace integration isolates two namespaces on real S3 and preserves outside canary bytes'])), { mode: 0o600 });
+  const commands = { site: ['PutObjectCommand','GetObjectCommand','DeleteObjectCommand','ListObjectsV2Command'], cloud: ['PutObjectCommand','DeleteObjectCommand','CreateMultipartUploadCommand','CompleteMultipartUploadCommand','AbortMultipartUploadCommand','ListObjectsV2Command','ListObjectsV2Command','ListMultipartUploadsCommand','ListPartsCommand'] };
+  const sdkRequests = Object.entries(commands).flatMap(([owner, list]) => list.map(command => ({ owner, command, httpStatus: 200, requestId: 'request', path: `/tests/${owner}/canary`, prefix: null, keyMarker: command === 'ListMultipartUploadsCommand' ? 'tests/cloud/canary' : null })));
+  const raw = { cleanupComplete: true, unknownMultipartKeys: [], canaryBeforeSha256: h, canaryAfterSha256: h, sdkRequests, signedHttp: ['UploadPart','GetObject'].map(operation => ({ operation, httpStatus: 200, requestId: 'request', key: 'tests/cloud/canary', bytesSha: h })) };
+  writeFileSync(rawPath, JSON.stringify(raw), { mode: 0o600 });
+  const digest = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
+  const proof = { target, project, commit, observedAt: new Date().toISOString(), endpoint: 'https://storage.example', bucket: 'shared-bucket', prefix, sourceCredentialsFingerprint: fingerprint,
+    rawReceiptPath: rawPath, rawReceiptSha256: digest(rawPath), unitReportPath: unitPath, unitReportSha256: digest(unitPath), integrationReportPath: integrationPath, integrationReportSha256: digest(integrationPath),
+    sdkSourceSha256: digest('packages/s3/src/client.ts'), unitSourceSha256: digest('tests/storage-prefix.test.ts'), integrationSourceSha256: digest('tests/storage-prefix.integration.test.ts'), fixtureSourceSha256: digest('tests/fixtures/environment.ts') };
+  const proofPath = join(dir, target + '-storage.json');
+  const save = () => writeFileSync(proofPath, JSON.stringify(proof), { mode: 0o600 }); save();
+  return { proof, raw, proofPath, rawPath, save, digest };
+}
+function fakeGit(bin: string) {
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, 'git'), `#!/bin/sh\nif [ "$1" = show ]; then case "$2" in *:packages/s3/src/client.ts) cat ${resolve('packages/s3/src/client.ts')} ; exit;; *:tests/storage-prefix.test.ts) cat ${resolve('tests/storage-prefix.test.ts')} ; exit;; *:tests/storage-prefix.integration.test.ts) cat ${resolve('tests/storage-prefix.integration.test.ts')} ; exit;; *:tests/fixtures/environment.ts) cat ${resolve('tests/fixtures/environment.ts')} ; exit;; esac; fi\nexec /usr/bin/git "$@"\n`, { mode: 0o755 });
+}
 describe('release candidate read-only admission', () => {
   it('rejects implicit production and unknown targets', () => {
     const f = fixture();
@@ -68,6 +102,15 @@ describe('release candidate read-only admission', () => {
       expect(() => loadCandidateProfile(f.path)).toThrow();
       p.targets[0]!.name = 'unknown'; f.write(p); expect(() => loadCandidateProfile(f.path)).toThrow();
       p.targets.pop(); f.write(p); expect(() => loadCandidateProfile(f.path)).toThrow();
+    } finally { f.close(); }
+  });
+  it('uses SSH for cloud-c and site-test and rejects localdevstage', () => {
+    const f = fixture();
+    try {
+      const p = profile(); expect(loadCandidateProfile(f.path).targets.map((t: { transport: string }) => t.transport)).toEqual(['ssh', 'ssh']);
+      p.targets[0]!.transport = 'local'; f.write(p); expect(() => loadCandidateProfile(f.path)).toThrow();
+      p.targets[0]!.transport = 'ssh'; p.targets[0]!.name = 'localdevstage'; f.write(p);
+      expect(() => loadCandidateProfile(f.path)).toThrow();
     } finally { f.close(); }
   });
   it('rejects unsafe private target profiles', () => {
@@ -150,21 +193,21 @@ esac
     const f = fixture();
     try {
       const file = join(f.dir, 'manifest.json'); const m = artifacts(f.dir); writeFileSync(file, JSON.stringify(m));
+      const bin = join(f.dir, 'ssh-bin'); mkdirSync(bin);
+      writeFileSync(join(bin, 'ssh'), '#!/bin/sh\nfor last do :; done\nexec /bin/sh -c "$last"\n', { mode: 0o755 });
       const p = profile();
       (p.targets[0] as typeof p.targets[0] & { sourceDir: string }).sourceDir = join(f.dir, 'source-releases'); f.write(p);
-      const run = () => runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'localdevstage']);
+      const run = () => runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'site-test'], { ...process.env, PATH: `${bin}:${process.env.PATH}` });
       const first = await run(); expect(first.status, first.stderr).toBe(0);
       const receipt = JSON.parse(first.stdout); expect(receipt.status).toBe('verified'); expect(receipt.commit).toBe(m.commit);
       const inventory = JSON.parse(readFileSync(join(f.dir, 'source-releases', m.commit, 'inventory.json'), 'utf8'));
       expect(inventory.files['Dockerfile']).toBeDefined();
       const second = await run(); expect(second.status).not.toBe(0);
       expect(readFileSync(join(f.dir, 'source-releases', m.commit, 'tree', 'Dockerfile'), 'utf8').length).toBeGreaterThan(0);
-      const bin = join(f.dir, 'ssh-bin'); mkdirSync(bin);
-      writeFileSync(join(bin, 'ssh'), '#!/bin/sh\nfor last do :; done\nexec /bin/sh -c "$last"\n', { mode: 0o755 });
       const sshTarget = p.targets[0] as typeof p.targets[0] & { transport: string; sourceDir: string; ssh: { alias: string; config: string; knownHosts: string; expiresAt: string } };
       sshTarget.transport = 'ssh'; sshTarget.sourceDir = join(f.dir, 'ssh-source');
       sshTarget.ssh = { alias: 'fake', config: f.path, knownHosts: f.path, expiresAt: '2999-01-01T00:00:00Z' }; f.write(p);
-      const overSsh = await runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'localdevstage'],
+      const overSsh = await runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'site-test'],
         { ...process.env, PATH: `${bin}:${process.env.PATH}` });
       expect(overSsh.status, overSsh.stderr).toBe(0);
       expect(JSON.parse(overSsh.stdout).status).toBe('verified');
@@ -176,91 +219,110 @@ esac
     const f = fixture();
     try {
       const file = join(f.dir, 'manifest.json'); writeFileSync(file, JSON.stringify(artifacts(f.dir)));
-      const result = spawnSync(process.execPath, [resolve('scripts/release-candidate.mjs'), 'apply', f.path, file], { encoding: 'utf8' });
+      const result = spawnSync(process.execPath, [resolve('scripts/release-candidate.mjs'), 'apply', f.path, file, previousSet(f.dir, file)], { encoding: 'utf8' });
       expect(result.status).not.toBe(0); expect(result.stderr).toContain('storage evidence missing');
     } finally { f.close(); }
   });
   it('rejects unverified backup isolation and schema drift', async () => {
     const f = fixture();
     try {
-      const file = join(f.dir, 'manifest.json'); writeFileSync(file, JSON.stringify(artifacts(f.dir)));
+      const file = join(f.dir, 'manifest.json'); const release = artifacts(f.dir); writeFileSync(file, JSON.stringify(release));
       const p = profile();
-      const actions = ['Get', 'Put', 'Delete', 'CreateMultipart', 'UploadPart', 'CompleteMultipart', 'AbortMultipart', 'List'];
-      const proofPath = join(f.dir, 'storage.json');
-      const proof = { target: 'localdevstage', project: 'local-stage', observedAt: new Date().toISOString(), endpoint: 'https://storage.example', bucket: 'isolated', sourceCredentialsFingerprint: h, canaryNamespace: 'release-canary', canaryShaBefore: h, canaryShaAfter: h,
-        operations: ['own', 'production'].flatMap(bucketAlias => actions.map(action => ({ action, bucketAlias, httpStatus: bucketAlias === 'own' ? 200 : 403, s3Code: bucketAlias === 'own' ? '' : 'AccessDenied', bucket: bucketAlias === 'own' ? 'isolated' : 'production', endpoint: 'https://storage.example', objectShaBefore: h, objectShaAfter: h, key: 'release-canary/object', requestId: 'request', bytesSha: h }))) };
-      writeFileSync(proofPath, JSON.stringify(proof), { mode: 0o600 });
+      const bin = join(f.dir, 'bin'); fakeGit(bin);
+      const storageFixtureValue = storageFixture(f.dir, 'site-test', 'local-stage', release.commit, 'tests/site/', h);
+      const { proof, raw, proofPath, rawPath, save, digest: digestFile } = storageFixtureValue;
       const dump = join(f.dir, 'backup.dump'); writeFileSync(dump, 'backup', { mode: 0o600 });
       const digest = createHash('sha256').update('backup').digest('hex');
       const restorePath = join(f.dir, 'restore.json');
       const restored = [{ backup_file: dump, sha256: digest, at_utc: new Date().toISOString(), restore_exit_code: 0, account_rows_sha256: h, account_columns: ['id'], schema_journal: [{ name: '026_policy.sql', sha256: h }] }];
       writeFileSync(restorePath, JSON.stringify(restored), { mode: 0o600 });
       const backupPath = join(f.dir, 'binding.json');
-      const binding = { target: 'localdevstage', project: 'local-stage', observedAt: new Date().toISOString(), backupPath: dump, restoreReceiptPath: restorePath, sha256: digest,
-        sourceIdentity: { composeProject: 'local-stage', databaseContainerId: 'c'.repeat(64), databaseVolume: 'candidate-db-volume', postgresSystemIdentifier: '123', databaseName: 'n5', databaseOid: '123', timezone: 'UTC' } };
+      const binding = { target: 'site-test', project: 'local-stage', observedAt: new Date().toISOString(), backupPath: dump, restoreReceiptPath: restorePath, sha256: digest,
+        sourceIdentity: { composeProject: 'infra-stage', databaseContainerId: 'c'.repeat(64), databaseVolume: 'candidate-db-volume', postgresSystemIdentifier: '123', databaseName: 'n5_test', databaseOid: '123', timezone: 'UTC' } };
       writeFileSync(backupPath, JSON.stringify(binding), { mode: 0o600 });
-      p.targets[0]!.root = f.dir; p.targets[1]!.root = f.dir;
       const target = p.targets[0]! as typeof p.targets[0] & { storageEvidencePath: string; backupEvidencePath: string };
       target.storageEvidencePath = proofPath; target.backupEvidencePath = backupPath; f.write(p);
-      const run = () => runNode([resolve('scripts/release-candidate.mjs'), 'apply', f.path, file]);
-      expect((await run()).stderr).toContain('storage evidence missing'); // second target remains blocked
-      proof.operations.find(op => op.bucketAlias === 'production')!.s3Code = 'InvalidAccessKeyId';
-      writeFileSync(proofPath, JSON.stringify(proof)); expect((await run()).stderr).toContain('production scope not denied');
-      proof.operations.find(op => op.bucketAlias === 'production')!.s3Code = 'AccessDenied'; writeFileSync(proofPath, JSON.stringify(proof));
+      const previous = previousSet(f.dir, file);
+      const run = () => runNode([resolve('scripts/release-candidate.mjs'), 'apply', f.path, file, previous], { ...process.env, PATH: `${bin}:${process.env.PATH}` });
+      expect((await run()).stderr).toContain('data evidence missing');
+      raw.sdkRequests[0]!.path = '/outside/canary'; writeFileSync(rawPath, JSON.stringify(raw)); proof.rawReceiptSha256 = digestFile(rawPath); save();
+      expect((await run()).stderr).toContain('storage operation outside namespace');
+      raw.sdkRequests[0]!.path = '/tests/site/canary'; writeFileSync(rawPath, JSON.stringify(raw)); proof.rawReceiptSha256 = digestFile(rawPath); save();
+      const originalSourceSha = proof.sdkSourceSha256; proof.sdkSourceSha256 = 'f'.repeat(64); save();
+      expect((await run()).stderr).toContain('storage source revision mismatch');
+      proof.sdkSourceSha256 = originalSourceSha; save();
       restored[0]!.schema_journal[0]!.sha256 = 'broken'; writeFileSync(restorePath, JSON.stringify(restored));
       expect((await run()).stderr).toContain('invalid restore journal');
       restored[0]!.schema_journal[0]!.sha256 = h; writeFileSync(restorePath, JSON.stringify(restored));
-      const cloudProofPath = join(f.dir, 'cloud-storage.json');
-      writeFileSync(cloudProofPath, JSON.stringify({ ...proof, target: 'cloud-c', project: 'cloud-stage' }), { mode: 0o600 });
-      const cloudBindingPath = join(f.dir, 'cloud-binding.json');
-      const cloudIdentity = { ...binding.sourceIdentity, composeProject: 'cloud-stage' };
-      writeFileSync(cloudBindingPath, JSON.stringify({ ...binding, target: 'cloud-c', project: 'cloud-stage', sourceIdentity: cloudIdentity }), { mode: 0o600 });
-      const cloud = p.targets[1]! as typeof p.targets[1] & { storageEvidencePath: string; backupEvidencePath: string; ssh: { config: string; knownHosts: string } };
-      cloud.storageEvidencePath = cloudProofPath; cloud.backupEvidencePath = cloudBindingPath; cloud.ssh.config = f.path; cloud.ssh.knownHosts = f.path; f.write(p);
-      const bin = join(f.dir, 'fake-bin'); mkdirSync(bin);
-      const output = (identity: typeof binding.sourceIdentity) => ({ ...identity, journal: restored[0]!.schema_journal,
-        accountRowsSha256: h, storageFingerprint: h, storageEndpoint: proof.endpoint, storageBucket: proof.bucket });
-      const fake = (value: unknown) => `#!/bin/sh\nprintf '%s\\n' '${JSON.stringify(value)}'\n`;
-      writeFileSync(join(bin, 'python3'), fake(output(binding.sourceIdentity)), { mode: 0o755 });
-      writeFileSync(join(bin, 'ssh'), fake(output(cloudIdentity)), { mode: 0o755 });
-      const boundary = (fault = '') => runNode([resolve('scripts/release-candidate.mjs'), 'apply', f.path, file],
-        { ...process.env, FAKE_FAULT: fault, PATH: `${bin}:${process.env.PATH}` });
-      expect((await boundary()).stderr).toContain('runtime evidence and reconciliation are not implemented');
-      writeFileSync(join(bin, 'python3'), fake({ ...output(binding.sourceIdentity), accountRowsSha256: 'd'.repeat(64) }));
-      expect((await boundary()).stderr).toContain('live database baseline drift');
-      // Execute the embedded Python against a fake Docker process, including the
-      // effective Compose environment and real Python account JSON hashing.
-      const storage = { endpoint: proof.endpoint, publicEndpoint: 'https://public.example', region: 'region', bucket: proof.bucket, accessKeyId: 'key', secretAccessKey: 'secret' };
+      const names = ['account','video','clip','payment','payment_intent','attribution','credit_grant','video_credit_charge','credit_allocation'];
+      const dataPath = join(f.dir, 'data.json');
+      const data = { target: 'site-test', project: 'local-stage', backupSha256: digest, sourceIdentity: binding.sourceIdentity, observedAt: new Date().toISOString(),
+        tables: Object.fromEntries(names.map(name => [name, { snapshotSha256: h, restoredSha256: h, count: 1, columns: ['id'] }])), pendingMultipart: [] as string[],
+        objects: [{ logicalKey: 'videos/example', destinationKey: 'tests/site/videos/example', sourceSize: 10, destinationSize: 10,
+          sourceSha256: h, destinationSha256: h, originalShaAfter: h, ownershipEvidence: 'video:00000000-0000-4000-8000-000000000001' }] };
+      writeFileSync(dataPath, JSON.stringify(data), { mode: 0o600 });
+      (target as typeof target & { dataEvidencePath: string }).dataEvidencePath = dataPath; f.write(p);
+      expect((await run()).stderr).toContain('private state directory must be absolute');
+      data.objects[0]!.destinationSha256 = 'b'.repeat(64); writeFileSync(dataPath, JSON.stringify(data));
+      expect((await run()).stderr).toContain('object copy evidence invalid');
+      data.objects[0]!.destinationSha256 = h; data.pendingMultipart.push('pending'); writeFileSync(dataPath, JSON.stringify(data));
+      expect((await run()).stderr).toContain('pending uploads');
+    } finally { f.close(); }
+  }, 60000);
+  it('accepts split app infra projects and rejects database URL binding mismatches', async () => {
+    const f = fixture();
+    try {
+      const file = join(f.dir, 'manifest.json'); const release = artifacts(f.dir); writeFileSync(file, JSON.stringify(release));
+      const p = profile(), now = new Date().toISOString(), emptyHash = createHash('sha256').update('[]').digest('hex');
+      const dump = join(f.dir, 'backup.dump'); writeFileSync(dump, 'backup', { mode: 0o600 });
+      const digest = createHash('sha256').update('backup').digest('hex'), restorePath = join(f.dir, 'restore.json');
+      const journal = [{ name: '026_policy.sql', sha256: h }];
+      writeFileSync(restorePath, JSON.stringify([{ backup_file: dump, sha256: digest, at_utc: now, restore_exit_code: 0, account_rows_sha256: emptyHash, account_columns: ['id'], schema_journal: journal }]), { mode: 0o600 });
+      const storage = { endpoint: 'https://storage.example', publicEndpoint: 'https://public.example', region: 'region', bucket: 'shared-bucket', accessKeyId: 'key', secretAccessKey: 'secret' };
       const fingerprint = createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.entries(storage).sort(([a], [b]) => a.localeCompare(b))))).digest('hex');
-      proof.sourceCredentialsFingerprint = fingerprint; writeFileSync(proofPath, JSON.stringify(proof));
-      writeFileSync(cloudProofPath, JSON.stringify({ ...proof, target: 'cloud-c', project: 'cloud-stage' }));
-      restored[0]!.account_rows_sha256 = createHash('sha256').update('[]').digest('hex'); writeFileSync(restorePath, JSON.stringify(restored));
-      const envs = { N5_PUBLIC_ORIGIN: 'http://localhost:4181', N5_LIMIT_GLOBAL_MINUTES: '240', N5_LIMIT_USER_MINUTES: '240', N5_LIMIT_PAID_USER_MINUTES: '240', N5_LIMIT_GLOBAL_LLM: '4', N5_LIMIT_USER_LLM: '4', S3_ENDPOINT: storage.endpoint, S3_PUBLIC_ENDPOINT: storage.publicEndpoint, S3_REGION: storage.region, S3_BUCKET: storage.bucket, S3_ACCESS_KEY: storage.accessKeyId, S3_SECRET_KEY: storage.secretAccessKey };
-      const config = { services: { web: { environment: envs, mem_limit: '1g' }, 'worker-stt': { environment: envs, mem_limit: '1g' }, 'worker-video': { environment: envs, mem_limit: '1g' }, 'worker-llm': { environment: { N5_LIMIT_GLOBAL_MINUTES: '240', N5_LIMIT_USER_MINUTES: '240', N5_LIMIT_PAID_USER_MINUTES: '240', N5_LIMIT_GLOBAL_LLM: '4', N5_LIMIT_USER_LLM: '4' }, mem_limit: '1g' }, db: { mem_limit: '1g' }, redis: { mem_limit: '1g' } } };
-      const inspect = [{ Id: 'c'.repeat(64), State: { Running: true }, Config: { Labels: { 'com.docker.compose.project': 'PROJECT', 'com.docker.compose.service': 'db' } }, Mounts: [{ Type: 'volume', Destination: '/var/lib/postgresql/data', Name: 'candidate-db-volume' }] }];
-      const info = { postgresSystemIdentifier: '123', databaseName: 'n5', databaseOid: '123', timezone: 'UTC', journal: restored[0]!.schema_journal };
+      const bin = join(f.dir, 'bin'); fakeGit(bin);
+      const tables = ['account','video','clip','payment','payment_intent','attribution','credit_grant','video_credit_charge','credit_allocation'];
+      for (const target of p.targets) {
+        target.root = f.dir; target.envFile = join(f.dir, 'env'); target.composeFiles = [join(f.dir, 'compose.yml')];
+        writeFileSync(target.envFile, 'fixture', { mode: 0o600 }); writeFileSync(target.composeFiles[0]!, 'fixture', { mode: 0o600 });
+        const prefix = target.storagePrefix;
+        const { proofPath } = storageFixture(f.dir, target.name, target.project, release.commit, prefix, fingerprint);
+        const identity = { composeProject: 'infra-stage', databaseContainerId: 'c'.repeat(64), databaseVolume: 'candidate-db-volume', postgresSystemIdentifier: '123', databaseName: 'n5_test', databaseOid: '123', timezone: 'UTC' };
+        const backupPath = join(f.dir, target.name + '-backup.json');
+        writeFileSync(backupPath, JSON.stringify({ target: target.name, project: target.project, observedAt: now, backupPath: dump, restoreReceiptPath: restorePath, sha256: digest, sourceIdentity: identity }), { mode: 0o600 });
+        const dataPath = join(f.dir, target.name + '-data.json');
+        writeFileSync(dataPath, JSON.stringify({ target: target.name, project: target.project, observedAt: now, backupSha256: digest, sourceIdentity: identity,
+          tables: Object.fromEntries(tables.map(name => [name, { snapshotSha256: emptyHash, restoredSha256: emptyHash, count: 0, columns: ['id'] }])), pendingMultipart: [], objects: [] }), { mode: 0o600 });
+        Object.assign(target, { storageEvidencePath: proofPath, backupEvidencePath: backupPath, dataEvidencePath: dataPath, localStateDir: f.dir });
+      }
+      f.write(p);
+      const marker = join(f.dir, 'sql-called');
+      const envs = { N5_PUBLIC_ORIGIN: 'http://localhost:4181', N5_LIMIT_GLOBAL_MINUTES:'240', N5_LIMIT_USER_MINUTES:'240', N5_LIMIT_PAID_USER_MINUTES:'240', N5_LIMIT_GLOBAL_LLM:'4', N5_LIMIT_USER_LLM:'4', S3_ENDPOINT:storage.endpoint, S3_PUBLIC_ENDPOINT:storage.publicEndpoint, S3_REGION:storage.region, S3_BUCKET:storage.bucket, S3_ACCESS_KEY:storage.accessKeyId, S3_SECRET_KEY:storage.secretAccessKey,
+        S3_KEY_PREFIX:'tests/site/', DATABASE_URL:'postgresql://app:secret@test-db:5432/n5_test', REDIS_URL:'redis://test-redis:6379' };
+      const config = { services: { web:{ environment:envs,mem_limit:'1g' }, 'worker-stt':{ environment:envs,mem_limit:'1g' }, 'worker-llm':{ environment:{ ...envs, S3_ENDPOINT:undefined,S3_PUBLIC_ENDPOINT:undefined,S3_REGION:undefined,S3_BUCKET:undefined,S3_ACCESS_KEY:undefined,S3_SECRET_KEY:undefined,S3_KEY_PREFIX:undefined },mem_limit:'1g' }, 'worker-video':{ environment:envs,mem_limit:'1g' } } };
+      const info = { postgresSystemIdentifier:'123',databaseName:'n5_test',databaseOid:'123',timezone:'UTC',journal };
       const docker = `#!/usr/bin/python3
 import json,os,sys
-args=sys.argv[1:]
+args=sys.argv[1:]; project=os.environ.get('FAKE_PROJECT','local-stage')
 if args[0]=='compose' and 'config' in args:
- data=json.loads(${JSON.stringify(JSON.stringify(config))}); data['services']['web']['environment']['N5_PUBLIC_ORIGIN']='https://c.clipmkr.ru' if os.environ.get('FAKE_PROJECT')=='cloud-stage' else 'http://localhost:4181';
- if os.environ.get('FAKE_FAULT')=='memory': data['services']['worker-video']['mem_limit']='0'
- if os.environ.get('FAKE_FAULT')=='quota': data['services']['web']['environment']['N5_LIMIT_GLOBAL_LLM']='99'
- print(json.dumps(data))
-elif args[0]=='compose' and 'ps' in args: print('dbid')
+ data=json.loads(${JSON.stringify(JSON.stringify(config))})
+ for svc in data['services'].values():
+  env=svc['environment']; env['DATABASE_URL']='postgresql://app:secret@test-db:5432/'+('wrong' if os.environ.get('FAKE_BAD_DB') else 'n5_test')
+  if 'S3_KEY_PREFIX' in env: env['S3_KEY_PREFIX']='tests/cloud/' if project=='cloud-stage' else 'tests/site/'
+ data['services']['web']['environment']['N5_PUBLIC_ORIGIN']='https://c.clipmkr.ru' if project=='cloud-stage' else 'http://localhost:4181'; print(json.dumps(data))
 elif args[0]=='inspect':
- data=json.loads(${JSON.stringify(JSON.stringify(inspect))}); data[0]['Config']['Labels']['com.docker.compose.project']=os.environ.get('FAKE_PROJECT','local-stage'); print(json.dumps(data))
+ isdb=args[1].startswith('c'); print(json.dumps([{'Id':args[1],'State':{'Running':True},'Config':{'Labels':{'com.docker.compose.project':'infra-stage'}},'HostConfig':{'Memory':1048576},'Mounts':[{'Type':'volume','Destination':'/var/lib/postgresql/data' if isdb else '/data','Name':'candidate-db-volume' if isdb else 'candidate-redis-volume'}],'NetworkSettings':{'Networks':{'test-network':{'Aliases':['test-db' if isdb else 'test-redis']}}}}]))
 elif args[0]=='exec':
- query=sys.stdin.read(); admission={'storageReferences':1 if os.environ.get('FAKE_FAULT')=='references' else 0,'activeMedia':0,'globalMinutes':0,'globalLlm':4 if os.environ.get('FAKE_FAULT')=='exhausted' else 0}; print(${JSON.stringify(JSON.stringify(info))} if 'pg_control_system' in query else (json.dumps(admission) if 'storageReferences' in query else '[]'))
+ open(${JSON.stringify(marker)},'a').write('sql\\n'); query=sys.stdin.read()
+ print(${JSON.stringify(JSON.stringify(info))} if 'pg_control_system' in query else ('0' if 'SELECT count(*) FROM video WHERE upload_id' in query else (json.dumps({'storageReferences':0,'activeMedia':0,'globalMinutes':0,'globalLlm':0}) if 'storageReferences' in query else '[]')))
 else: sys.exit(1)
 `;
       writeFileSync(join(bin, 'docker'), docker, { mode: 0o755 });
-      writeFileSync(join(bin, 'python3'), '#!/bin/sh\nexec /usr/bin/python3 "$@"\n', { mode: 0o755 });
-      writeFileSync(join(bin, 'ssh'), '#!/bin/sh\nfor last do :; done\nFAKE_PROJECT=cloud-stage exec /bin/sh -c "$last"\n', { mode: 0o755 });
-      expect((await boundary()).stderr).toContain('runtime evidence and reconciliation are not implemented');
-      for (const fault of ['memory', 'quota', 'references', 'exhausted']) {
-        const result = await boundary(fault); expect(result.status).not.toBe(0); expect(result.stderr).toContain('python3 failed');
-      }
+      writeFileSync(join(bin, 'ssh'), `#!/bin/sh\ncase "$*" in *fake-site*) export FAKE_PROJECT=local-stage;; *) export FAKE_PROJECT=cloud-stage;; esac\nfor last do :; done\nexec /bin/sh -c "$last" 2>${join(f.dir, 'remote-error')}\n`, { mode: 0o755 });
+      const previous = previousSet(f.dir, file);
+      const run = (bad = false) => runNode([resolve('scripts/release-candidate.mjs'), 'apply', f.path, file, previous], { ...process.env, FAKE_BAD_DB: bad ? '1' : '', PATH: `${bin}:${process.env.PATH}` });
+      const valid = await run(); expect(valid.status).not.toBe(0); expect(valid.stdout, valid.stderr).toContain('unknown'); expect(readFileSync(marker, 'utf8')).toContain('sql');
+      rmSync(marker); const invalid = await run(true); expect(invalid.status).not.toBe(0); expect(() => readFileSync(marker)).toThrow();
     } finally { f.close(); }
   }, 60000);
   it('blocks all changes even when profile and manifest syntax are valid', () => {
@@ -270,8 +332,11 @@ else: sys.exit(1)
       const m = artifacts(f.dir);
       writeFileSync(file, JSON.stringify(m));
       for (const cmd of ['apply', 'reconcile', 'rollback']) {
-        const result = spawnSync(process.execPath, [resolve('scripts/release-candidate.mjs'), cmd, f.path, file], { encoding: 'utf8' });
-        expect(result.status).not.toBe(0); expect(result.stderr).toContain('blocked');
+        const args = [resolve('scripts/release-candidate.mjs'), cmd, f.path, file];
+        if (cmd !== 'reconcile') args.push(previousSet(f.dir, file));
+        const result = spawnSync(process.execPath, args, { encoding: 'utf8' });
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toContain(cmd === 'reconcile' ? 'reconciliation incomplete' : 'blocked');
       }
     } finally { f.close(); }
   });
