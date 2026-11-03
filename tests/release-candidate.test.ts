@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { runInNewContext } from 'node:vm';
+import * as fs from 'node:fs';
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -293,8 +295,8 @@ esac
       data.objects[0]!.accountId = '00000000-0000-4000-8000-000000000003'; writeFileSync(dataPath, JSON.stringify(data));
       expect((await run()).stderr).toContain('noncanonical object ownership');
       data.objects[0]!.accountId = '00000000-0000-4000-8000-000000000002';
-      data.objects[0]!.kind = 'legacy-synthetic'; writeFileSync(dataPath, JSON.stringify(data));
-      expect((await run()).stderr).toContain('legacy provenance missing');
+      data.objects[0]!.kind = 'legacy-preserved'; writeFileSync(dataPath, JSON.stringify(data));
+      expect((await run()).stderr).toContain('object kind incompatible');
       data.objects[0]!.kind = 'prefixed'; writeFileSync(dataPath, JSON.stringify(data));
       expect((await run()).stderr).toContain('private state directory must be absolute');
       data.objects[0]!.destinationSha256 = 'b'.repeat(64); writeFileSync(dataPath, JSON.stringify(data));
@@ -303,6 +305,35 @@ esac
       expect((await run()).stderr).toContain('pending uploads');
     } finally { f.close(); }
   }, 180000);
+  it('preserves owner-approved legacy media and rejects unbound preservation evidence', () => {
+    const f = fixture();
+    try {
+      const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
+      const body = source.slice(source.indexOf('function checkDataReceipt('), source.indexOf('// Read-only target inventory.'));
+      const stableJson = (value: unknown) => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item);
+      const privateFile = (path: string) => { const st = fs.lstatSync(path); if (!st.isFile() || st.isSymbolicLink() || (st.mode & 0o777) !== 0o600 || fs.realpathSync(path) !== path) throw Error('private'); };
+      const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+      const check = runInNewContext(`(${body.trim()})`, { privateFile, readFileSync, realpathSync: fs.realpathSync, hashFile: (path: string) => digest(readFileSync(path)), sha: /^[a-f0-9]{64}$/, requireValue: (v: unknown, m: string) => { if (!v) throw Error(m); }, createHash, stableJson, Date });
+      const target = profile().targets[0]!, identity = { database: 'site' }, backup = { binding: { sha256: h, sourceIdentity: identity } };
+      const accountId = '00000000-0000-4000-8000-000000000002', videoId = '00000000-0000-4000-8000-000000000001';
+      const logicalKey = `videos/${accountId}/${videoId}/source.mp4`;
+      const object = { kind: 'legacy-preserved', logicalKey, accountId, videoId, clipId: null, ownershipEvidence: `video:${videoId}`, sourceSize: 3, sourceSha256: h, destinationKey: `tests/site/${logicalKey}`, destinationSize: 3, destinationSha256: h, originalShaAfter: h };
+      const fields = ['logicalKey','accountId','videoId','clipId','ownershipEvidence','sourceSize','sourceSha256','destinationKey'] as const;
+      const approval = { schema: 'clipmkr-legacy-preservation-1', decision: 'preserve-all-existing-site-test-data', evidenceReference: 'инструкция владельца 03.11.2026', target: 'site-test', project: target.project, sourceIdentity: identity, storageBucket: target.storageBucket, destinationPrefix: 'tests/site/', objectWhitelistSha256: digest(stableJson([Object.fromEntries(fields.map(k => [k, object[k]]))])) };
+      const approvalPath = join(f.dir, 'approval.json'), dataPath = join(f.dir, 'data.json');
+      const scan = multipartScan('tests/site/', h); scan.scopes.push({ ...scan.scopes[0]!, prefix: logicalKey });
+      const data = { target: target.name, project: target.project, backupSha256: h, sourceIdentity: identity, observedAt: new Date().toISOString(), tables: Object.fromEntries(dataTables.map(name => [name, { snapshotSha256: h, restoredSha256: h, count: 1, columns: ['id','value'] }])), pendingMultipart: [] as string[], multipartScan: scan, objects: [object], preservationApprovalPath: approvalPath, preservationApprovalSha256: '' };
+      const save = () => { writeFileSync(approvalPath, JSON.stringify(approval), { mode: 0o600 }); data.preservationApprovalSha256 = digest(readFileSync(approvalPath)); writeFileSync(dataPath, JSON.stringify(data), { mode: 0o600 }); };
+      const validate = () => check(dataPath, target, backup, { kind: 'initial-inventory' });
+      save(); expect(validate).not.toThrow();
+      for (const key of ['target','project','storageBucket','destinationPrefix','objectWhitelistSha256','evidenceReference','decision','schema'] as const) { const old = approval[key]; approval[key] = ''; save(); expect(validate).toThrow(); approval[key] = old; }
+      approval.sourceIdentity = { database: 'other' }; save(); expect(validate).toThrow(); approval.sourceIdentity = identity;
+      save(); data.preservationApprovalSha256 = 'b'.repeat(64); writeFileSync(dataPath, JSON.stringify(data)); expect(validate).toThrow();
+      save(); object.originalShaAfter = 'b'.repeat(64); save(); expect(validate).toThrow(); object.originalShaAfter = h;
+      object.kind = 'prefixed'; save(); expect(validate).toThrow();
+      object.kind = 'legacy-preserved'; data.pendingMultipart.push('pending'); save(); expect(validate).toThrow();
+    } finally { f.close(); }
+  });
   it('accepts split app infra projects and rejects database URL binding mismatches', async () => {
     const f = fixture();
     try {
@@ -378,7 +409,7 @@ else: sys.exit(1)
       writeFileSync(join(bin, 'ssh'), `#!/bin/sh\ncase "$*" in *fake-site*) export FAKE_PROJECT=local-stage;; *) export FAKE_PROJECT=cloud-stage;; esac\nfor last do :; done\nexec /bin/sh -c "$last" 2>${join(f.dir, 'remote-error')}\n`, { mode: 0o755 });
       const previous = previousSet(f.dir, file);
       const run = (fault = '') => runNode([resolve('scripts/release-candidate.mjs'), 'apply', f.path, file, previous], { ...process.env, ...(fault ? { [fault]: '1' } : {}), PATH: `${bin}:${process.env.PATH}` });
-      const valid = await run(); expect(valid.status).not.toBe(0); expect(valid.stdout, `${valid.stderr}\n${readFileSync(join(f.dir, 'remote-error'), 'utf8')}`).toContain('unknown'); expect(readFileSync(marker, 'utf8')).toContain('sql');
+      const valid = await run(); expect(valid.status).not.toBe(0); expect(valid.stderr).toContain('release disk admission blocked'); expect(readFileSync(marker, 'utf8')).toContain('sql');
       for (const fault of ['FAKE_BAD_DB','FAKE_BAD_PORT','FAKE_BAD_NETWORK','FAKE_ALIAS_COLLISION','FAKE_BAD_EXTRA','FAKE_BAD_LINKS','FAKE_BAD_MOUNT','FAKE_BAD_PG','FAKE_RUNTIME_EXTRA']) {
         rmSync(marker, { force: true }); const invalid = await run(fault); expect(invalid.status).not.toBe(0); expect(() => readFileSync(marker)).toThrow();
       }

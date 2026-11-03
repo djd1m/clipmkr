@@ -125,6 +125,13 @@ class TestExecutor(unittest.TestCase):
  def test_happy_migration(self):
   rc,out=self.call();self.assertEqual((rc,out['status']),(0,'success'));self.assertEqual(self.intent()['status'],'success');self.assertEqual(self.load()['journal'],self.p['desired']['journal'])
   calls=self.calls(); self.assertEqual(sum(a[0]=='load' for a in calls),2);self.assertTrue(any('run' in a for a in calls));self.assertTrue(any('up' in a for a in calls));self.assertTrue(all(not any(x in a for x in ('prune','down')) for a in calls))
+ def test_initial_kind_guard_before_load(self):
+  state=self.load(); state['revision']=None; self.save(state)
+  self.p['previous']={'legacy':True,'commit':None,'journal':self.p['previous']['journal'],'images':self.p['previous']['images'],'containers':{x:{'containerId':state['containers'][x]['Id'],'startedAt':'now'} for x in S}}
+  obj={'kind':'prefixed','logicalKey':'videos/one','destinationKey':'tests/site/videos/one','sourceSize':3,'sourceSha256':'a'*64}
+  self.p['admission']['objectWhitelist']=[obj]
+  self.assertEqual(self.call()[0],1); self.assertFalse(any(x[0]=='load' for x in self.calls()))
+  obj['kind']='legacy-preserved'; self.assertEqual(self.call()[1]['status'],'success'); self.assertEqual(sum(x[0]=='load' for x in self.calls()),2)
  def test_failed_migration_pending_no_retry(self):
   s=self.load();s['fail_migration']=True;self.save(s);self.assertEqual(self.call()[0],1);self.assertEqual(self.intent()['step'],'migration-started');before=self.calls();self.assertEqual(self.call()[0],1);self.assertEqual(self.calls(),before)
  def test_partial_start_mixed_reconcile(self):
@@ -257,6 +264,7 @@ async function exercise(cases: string[]) {
 }
 
 describe('remote executor injected faults', () => {
+  it('guards initial kinds under lock before loading images', async () => { await exercise(['test_initial_kind_guard_before_load']); });
   it('verifies legacy and newly prefixed media without another legacy copy', async () => {
     const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
     const match = source.match(/^const remoteExecutor = (.*);$/m);
@@ -288,7 +296,7 @@ describe('remote executor injected faults', () => {
       await events.end!();
       return { requests, output, exitCode };
     };
-    const legacy = await verify('tests/site/', 'legacy-synthetic', ['video/source', 'tests/site/video/source']);
+    const legacy = await verify('tests/site/', 'legacy-preserved', ['video/source', 'tests/site/video/source']);
     expect(legacy.exitCode).toBe(0); expect(legacy.requests).toEqual(['video/source', 'tests/site/video/source', 'video/source']);
     for (const prefix of ['tests/site/', 'tests/cloud/']) {
       const nextRelease = await verify(prefix, 'prefixed', [prefix + 'video/source']);
