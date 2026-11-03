@@ -67,8 +67,11 @@ COPY --from=build /app/apps/worker/package.json ./apps/worker/package.json
 COPY --from=build /app/packages ./packages
 CMD ["node", "dist/apps/worker/workers/stt.js"]
 
-# ── test: dev-зависимости и исходники; ходит в настоящие db/redis/minio профиля test ──
+# ── test: полный набор на настоящих PostgreSQL/Redis/Cloud S3 ──
 FROM build AS test
-RUN apk add --no-cache ffmpeg && ffmpeg -version && ffprobe -version
+RUN apk add --no-cache ffmpeg python3 git openssl docker-cli docker-cli-compose bash util-linux \
+ && ffmpeg -version && ffprobe -version \
+ && python3 -c "import sys,tomllib; assert sys.version_info >= (3, 11)" \
+ && git --version && openssl version && docker compose version && flock --version
 ENV NODE_ENV=test TZ=Europe/Moscow
 CMD ["npm", "test", "--", "--run"]

@@ -221,12 +221,26 @@ services:
       dockerfile: Dockerfile
       target: test
     profiles: ["test"]
-    command: ["sh", "-c", "node scripts/test-db.mjs && npm test -- --run"]
+    command:
+      - sh
+      - -ec
+      - |-
+        if ! { test -d .git && test ! -L .git && test -d .git/objects && test ! -L .git/objects && test ! -e .git/commondir && test ! -e .git/objects/info/alternates && git rev-parse --absolute-git-dir | grep -qx /app/.git && git rev-parse --show-toplevel | grep -qx /app && git show HEAD:packages/db/migrations/001_init.sql >/dev/null; }; then
+          echo 'test: нужен физический Git checkout с доступными объектами в /app/.git' >&2
+          exit 1
+        fi
+        if ! { test -f /run/clipmkr-resource-proof.json && test ! -L /run/clipmkr-resource-proof.json && test -s /run/clipmkr-resource-proof.json && test -r /run/clipmkr-resource-proof.json; }; then
+          echo 'test: отсутствует читаемое private resource proof' >&2
+          exit 1
+        fi
+        node scripts/test-db.mjs
+        npm test -- --run
     environment:
       <<: [*app-env, *quota-env]
       N5_BILLING_MODE: ${N5_BILLING_MODE-legacy}
       NODE_ENV: test
       N5_ACCEPTANCE: "1"
+      CLIPMKR_REAL_RESOURCE_PROOF: /run/clipmkr-resource-proof.json
       DATABASE_URL: postgresql://n5:${N5_DB_APP_PASSWORD:?пароль БД не задан}@db:5432/n5_test
       N5_PREFIX_RUN_S3: ${N5_PREFIX_RUN_S3-}
       N5_PREFIX_S3_ENDPOINT: ${N5_PREFIX_S3_ENDPOINT-}
@@ -244,6 +258,18 @@ services:
       redis:
         condition: service_healthy
     volumes:
+      - type: bind
+        source: ./.git
+        target: /app/.git
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${N5_REAL_RESOURCE_PROOF_HOST_FILE:-/nonexistent-clipmkr-resource-proof}
+        target: /run/clipmkr-resource-proof.json
+        read_only: true
+        bind:
+          create_host_path: false
       - type: bind
         source: ${N5_PREFIX_S3_RECEIPT_HOST_DIR:-/nonexistent-clipmkr-s3-receipts}
         target: /run/clipmkr-s3-receipts

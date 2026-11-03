@@ -4,6 +4,37 @@
 фактические proof, сквозные fault-тесты, сверка копирования media и независимое ревью.
 Не направлять команду на production и не заменять test DB/Redis/volumes.
 
+## Штатный полный test image (QE-P10)
+
+Запускать из **физического Git checkout** того же commit, из которого Compose
+собирает test image. `./.git` должен быть каталогом с локальными объектами:
+worktree с `.git`-файлом, symlink и `objects/info/alternates` отклоняются.
+Для worktree сначала подготовить отдельный локальный checkout нужного commit
+(`git clone --no-hardlinks`), затем запускать Compose из него. Контекст сборки
+по-прежнему исключает `.git` через `.dockerignore`; только сервис `test`
+получает read-only bind `./.git:/app/.git`. `web` и `worker` не получают Git.
+
+В закрытом `.env` задать `N5_REAL_RESOURCE_PROOF_HOST_FILE` абсолютным путём к
+существующему owned JSON `0600` с реальными OOM/ENOSPC receipts. Compose
+монтирует файл read-only в `/run/clipmkr-resource-proof.json` и передаёт
+`CLIPMKR_REAL_RESOURCE_PROOF` acid test. Без файла bind не создаётся,
+preflight прекращает прогон; неверный proof отклоняет сам acid test. Также
+нужны реальные PostgreSQL/Redis и параметры `N5_PREFIX_RUN_S3=1`,
+`N5_PREFIX_S3_*`, приватный каталог receipts для настоящего Cloud S3.
+
+```bash
+test -d .git && test ! -e .git/objects/info/alternates
+docker compose --project-directory . --env-file .env --profile test config >/dev/null
+docker compose --project-directory . --env-file .env --profile test run --rm --build test
+```
+
+Test stage явно ставит ffmpeg/ffprobe, Python 3.11+ с `tomllib`, Git,
+OpenSSL, Docker CLI/Compose, Bash и util-linux (`flock`). Docker socket не монтируется: Docker
+внутри тестов используется только для `compose config`; release tests
+используют собственные disposable fake executors. `N5_ACCEPTANCE=1` оставляет
+весь `npm test` и считает любой skip ошибкой. Фактический full-suite receipt
+создаётся только после запуска образа; этот runbook не закрывает QE сам.
+
 Запускать controller на Node 22. Профиль и квитанции — вне Git, файл 0600,
 родительский каталог 0700. Секреты не передаются через аргументы или stdout.
 Пример показывает форму, а не реальные имена ресурсов:

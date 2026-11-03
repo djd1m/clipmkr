@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { cpSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { checkWiring, collectEnvironment } from '../scripts/check-env-wiring.mjs';
 import { environment } from './fixtures/environment';
+
+function composeConfig(env: NodeJS.ProcessEnv) {
+  return spawnSync('docker', ['compose', '--env-file', '/dev/null', '--project-directory', '.', '--profile', 'test', 'config', '--format', 'json'],
+    { env, encoding: 'utf8', timeout: 10000 });
+}
 
 describe('Проверяемость проброса окружения', () => {
   const compose = () => ({ services: Object.fromEntries(['web', 'worker-stt', 'worker-llm', 'worker-video'].map((name) => [name, { environment: environment() }])) });
@@ -90,8 +95,8 @@ describe('Проверяемость проброса окружения', () =>
     const env = { ...process.env, ...environment(), N5_DB_APP_PASSWORD: 'fixture-db', REDIS_PASSWORD: 'fixture-redis',
       N5_PREFIX_RUN_S3: '1', N5_PREFIX_S3_ENDPOINT: 'https://s3.cloud.ru', N5_PREFIX_S3_BUCKET: 'fixture-bucket',
       N5_PREFIX_S3_REGION: 'fixture-region', N5_PREFIX_S3_ACCESS_KEY: 'fixture-key', N5_PREFIX_S3_SECRET_KEY: 'fixture-secret',
-      N5_PREFIX_S3_RECEIPT_HOST_DIR: '/tmp/fixture-private-receipts' };
-    const run = spawnSync('docker', ['compose', '--env-file', '/dev/null', '--project-directory', '.', '--profile', 'test', 'config', '--format', 'json'], { env, encoding: 'utf8', timeout: 10000 });
+      N5_PREFIX_S3_RECEIPT_HOST_DIR: '/tmp/fixture-private-receipts', N5_REAL_RESOURCE_PROOF_HOST_FILE: '/tmp/fixture-resource-proof.json' };
+    const run = composeConfig(env);
     expect(run.status).toBe(0);
     const config = JSON.parse(run.stdout), service = config.services.test;
     expect(service.environment.N5_ACCEPTANCE).toBe('1');
@@ -101,6 +106,67 @@ describe('Проверяемость проброса окружения', () =>
     expect(service.volumes).toContainEqual(expect.objectContaining({ type: 'bind', source: '/tmp/fixture-private-receipts', target: '/run/clipmkr-s3-receipts' }));
     expect(service.depends_on).not.toHaveProperty('minio');
     expect(config.services).not.toHaveProperty('minio');
+  });
+  it('runs acceptance with Git metadata and mandatory resource proof', () => {
+    const env = { ...process.env, ...environment(), N5_DB_APP_PASSWORD: 'fixture-db', REDIS_PASSWORD: 'fixture-redis',
+      N5_REAL_RESOURCE_PROOF_HOST_FILE: '/tmp/fixture-resource-proof.json' };
+    const result = composeConfig(env);
+    expect(result.status, result.stderr).toBe(0);
+    const service = JSON.parse(result.stdout).services.test as {
+      environment: Record<string, string>; command: string[];
+      volumes: Array<{ type: string; source: string; target: string; read_only?: boolean; bind?: { create_host_path?: boolean } }>;
+    };
+    const mount = (target: string) => service.volumes.find(volume => volume.target === target);
+    expect(service.environment.N5_ACCEPTANCE).toBe('1');
+    expect(service.environment.CLIPMKR_REAL_RESOURCE_PROOF).toBe('/run/clipmkr-resource-proof.json');
+    expect(mount('/app/.git')).toMatchObject({ type: 'bind', source: path.resolve('.git'), read_only: true, bind: { create_host_path: false } });
+    expect(mount('/run/clipmkr-resource-proof.json')).toMatchObject({
+      type: 'bind', source: env.N5_REAL_RESOURCE_PROOF_HOST_FILE, read_only: true, bind: { create_host_path: false },
+    });
+    expect(service.volumes.some(volume => volume.source === '/var/run/docker.sock')).toBe(false);
+    expect(service.command.slice(0, 2)).toEqual(['sh', '-ec']);
+    const testStage = readFileSync('Dockerfile', 'utf8').split('FROM build AS test')[1]!;
+    const packages = new Set(testStage.match(/RUN apk add --no-cache ([^\n]+)/)?.[1]?.split(/\s+/));
+    for (const name of ['ffmpeg', 'python3', 'git', 'openssl', 'docker-cli', 'docker-cli-compose', 'bash', 'util-linux']) expect(packages.has(name), name).toBe(true);
+    expect(readFileSync('.dockerignore', 'utf8').split('\n')).toContain('.git');
+    const noProofEnv: NodeJS.ProcessEnv = { ...env }; delete noProofEnv.N5_REAL_RESOURCE_PROOF_HOST_FILE;
+    const missingProofConfig = composeConfig(noProofEnv);
+    expect(missingProofConfig.status, missingProofConfig.stderr).toBe(0);
+    const missingProofMount = JSON.parse(missingProofConfig.stdout).services.test.volumes.find(
+      (volume: { target: string }) => volume.target === '/run/clipmkr-resource-proof.json');
+    expect(missingProofMount).toMatchObject({ source: '/nonexistent-clipmkr-resource-proof', read_only: true,
+      bind: { create_host_path: false } });
+    expect(existsSync(missingProofMount.source)).toBe(false);
+    const preflight = service.command[2]!.split('node scripts/test-db.mjs')[0]!;
+    expect(service.command[2]).toMatch(/node scripts\/test-db\.mjs\s+npm test -- --run/);
+    const dir = mkdtempSync(path.join(tmpdir(), 'n5-acceptance-preflight-'));
+    try {
+      const checkout = path.join(dir, 'checkout'), proof = path.join(dir, 'proof.json');
+      mkdirSync(path.join(checkout, 'packages/db/migrations'), { recursive: true });
+      writeFileSync(path.join(checkout, 'packages/db/migrations/001_init.sql'), 'SELECT 1;\n');
+      for (const args of [['init', '-q'], ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'add', '.'],
+        ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture']]) {
+        const git = spawnSync('git', ['-C', checkout, ...args], { encoding: 'utf8' });
+        expect(git.status, git.stderr).toBe(0);
+      }
+      writeFileSync(proof, '{}\n', { mode: 0o600 });
+      const check = preflight.replaceAll('grep -qx /app/.git', `grep -qx ${path.join(checkout, '.git')}`)
+        .replaceAll('grep -qx /app', `grep -qx ${checkout}`)
+        .replaceAll('/run/clipmkr-resource-proof.json', proof);
+      const run = (script = check) => spawnSync('sh', ['-ec', script], { cwd: checkout, encoding: 'utf8' });
+      expect(run().status).toBe(0);
+      renameSync(path.join(checkout, '.git'), path.join(checkout, '.git-hidden'));
+      expect(run().status).not.toBe(0);
+      const withoutGitGuard = check.replace(/^if ! \{ test -d \.git[\s\S]*?^fi\n/m, '');
+      expect(withoutGitGuard).not.toBe(check);
+      expect(run(withoutGitGuard).status).toBe(0);
+      renameSync(path.join(checkout, '.git-hidden'), path.join(checkout, '.git'));
+      rmSync(proof);
+      expect(run().status).not.toBe(0);
+      const withoutProofGuard = check.replace(/^if ! \{ test -f [\s\S]*?^fi\n/m, '');
+      expect(withoutProofGuard).not.toBe(check);
+      expect(run(withoutProofGuard).status).toBe(0);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   it('S3_ENDPOINT не режется до S; динамическое чтение не пропускается', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'n5-wiring-'));
