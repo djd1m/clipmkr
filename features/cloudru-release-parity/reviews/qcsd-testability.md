@@ -97,3 +97,11 @@ SDK design требует wire capture и реальный MinIO, whitelist-copy
 **Вердикт CLEAN по дизайну роли:** QT-01–07 подтверждены структурно. QT-07: явный январский R1/R2 оракул охватывает периоды, ставки/null, distinct payer, отдельные исключения, snapshot и refund; fixture PostgreSQL отделена от live native receipts и расчёта. QT-06: freeze обеих копий, прекращение in-flight и drain предшествуют switch, webhook/status остаются live, обратный переход симметричен. Новых серьёзных условий в проверенной области нет.
 
 Это не проверка кода, тестов, payment, backup, инфраструктуры или E2E. Полный CJM остаётся зависим от реальных доказательств, включая окно TEST shop; общий ключ сохраняет production-права, IAM proof и 403 не заявляются. `implementationVerified` относится только к ideation design.
+
+## Focused ideation revision 990c9af993e7
+
+Модель `gpt-6.1-terra`, CLI-сессия `01a1a23d-e893-7482-b789-bae0434e5ab7`; восемь хешей и author handoff проверены, nonce `aa531874-11fe-46dc-a376-443dfa2c84fa`. Входы: 00/01/02, ADR-001/002/003, 04/05, 06.
+
+**CLEAN по дизайну роли:** QT-01–07 подтверждены. QT-08 обнаружено на snapshot 2a38 и сообщено, но receipt тогда не записан из-за смены host; текущий FR-8 исправлен на Cloud.ru S3 и согласован с ADR-003. История сохранена как собственное условие, структурно подтверждённое на текущей ревизии.
+
+Рассмотрены test-only физический fence до HTTP/signed fetch, fake zero-IO при сломанном SDK guard, уникальные scope и canary, read-only versioning и journal/cleanup. Key остаётся production-wide, IAM proof не заявляется. Это ideation: код, тесты, live S3 и CJM не проверялись; исторический MinIO не подтверждает Cloud.

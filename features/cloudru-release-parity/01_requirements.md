@@ -148,14 +148,38 @@ production сохраняет прежнее поведение; test profiles �
 bucket-wide mutations запрещены при непустом namespace. Erasure/multipart/retention
 получают прежние logical keys. Admission сравнивает bucket+prefix, а не bucket inequality.
 
-Проверка SDK — настоящий MinIO с двумя prefixes и outside canary: size/SHA до/после,
+Проверка SDK — настоящий Cloud.ru S3 с двумя prefixes и outside canary: size/SHA до/после,
 public PUT/GET, list/multipart/retention/erasure. Capture всех wire requests доказывает
 physical prefix всех object/list операций; unsafe input/unknown commands/bucket
 mutations отказывают до сети. GetBucketVersioning exact bucket read — исключение
-без object prefix. Outside canary изменяется только fixture setup/teardown, не SDK.
+без object prefix. Outside canary находится в tests/site/<уникальный-run>/ — вне
+проверяемого tests/cloud/, но внутри разрешённого tests/*; setup/teardown только
+по точным созданным ключам/upload IDs. Бакет не создаётся/не удаляется, policy, CORS,
+lifecycle и versioning не меняются. Корневое перечисление бакета запрещено.
 Реальный Cloud canary оператор выполняет только внутри tests/cloud/ и tests/site/,
 без мутаций рабочих namespaces. Общий key не даёт требуемого denial: 403 не ожидаем,
 не требуем и не заявляем; Cloud canary подтверждает совместимость, не IAM scope.
+
+#### Независимый предсетевой предохранитель настоящих S3 тестов
+
+Shared production-wide key требует второго test-only барьера, независимого от
+проверяемой SDK namespace middleware. До первого реального HTTP запроса fixture
+оборачивает фактический requestHandler.handle internal/signing/raw clients.
+Разрешены только HTTPS exact endpoint/bucket, physical object keys внутри
+уникального run tests/cloud/ или tests/site/, list Prefix/KeyMarker внутри того же
+run и read-only GET GetBucketVersioning exact bucket. Raw canary — только точный
+собственный key, без list. Bucket mutations, root listing, CopySource, другие
+bucket queries, encoded escapes и всё за scope блокируются ДО transport.
+Подписанный URL проходит тот же независимый physical-scope guard ДО fetch.
+Guard не использует keyPrefix parser проверяемого SDK и не выносится в app runtime.
+Единый fixture liveS3Environment в существующем tests/fixtures/environment.ts
+возвращает config/bind/fetch; legacy network tests переиспользуют его.
+Отрицательные SDK случаи остаются fake HTTP; тест с намеренно снятым/сломанным
+SDK prefix и synthetic own logical key доказывает zero actual network через
+независимый fence. Не отправляем опасные negative probes на provider и не
+проверяем широкие права общего key попытками реальных production мутаций.
+Private journal до первого PUT сохраняет run UUID/exact attempted keys/upload IDs
+и unknown outcomes; cleanup failure не маскирует первичную ошибку и не PASS.
 
 ### FR-9 — точный build-time env и полная регрессия
 
@@ -178,7 +202,7 @@ immutable revision. Эти результаты сохраняются, но bas
 
 Существующий план переноса — входной материал, не разрешение на cutover.
 Туннель временный, разрешение ключа до 04.11 около 15:01 UTC; юнит transient.
-Нужны повторная проверка site binding/drift и полный data baseline, SDK/MinIO proof, disk admission,
+Нужны повторная проверка site binding/drift и полный data baseline, SDK/S3 proof, disk admission,
 согласованное окно текущего TEST shop и UI-оператор. Бюджеты реальных STT/модельных проверок должны опираться на текущие
 настройки и ограниченный объём приёмки; неизвестное не выдаётся за подтверждённое.
 
@@ -239,7 +263,7 @@ freeze/relay/DNS/перенос рабочей БД. Новый стек и но
 | DATA-03 | Cloud 26→28, site 28→28 | Cloud добавляет только 026/027; site не мигрирует повторно; сверены все прежние аккаунты/медиа/платежи/referrals и созданные после baseline данные |
 | DATA-04 | Схема при rollback | A и B имеют одинаковые полные journal; иной journal блокирует автоматический откат; БД/volumes не откатываются |
 | DATA-05 | Owner exception общего ключа | Полные production-права сохранены; нет новых SA/key/policy/IAM proof/требования 403. Root read-only: policy отсутствует, CORS c/n5 PUT, versioning disabled; Cloud canary только внутри tests prefixes |
-| DATA-06 | Code/SDK граница test copies и production objects | Реальный MinIO: один bucket, tests/cloud/ и tests/site/, весь object/list wire трафик и signing prefixed; markers/responses/public signing/retention/multipart; unsafe/unknown mutations без сети; outside canary size/SHA до/после прежние |
+| DATA-06 | Code/SDK граница test copies и production objects | Настоящий Cloud.ru S3: один bucket, tests/cloud/ и tests/site/, весь object/list wire трафик и signing prefixed; markers/responses/public signing/retention/multipart; unsafe/unknown mutations без сети; outside canary size/SHA до/после прежние |
 | DATA-07 | Переход непустого site-test | DB-whitelist synthetic objects скопирован с size/SHA в tests/site/; оригиналы сохранены, DB keys прежние; чужая ссылка/неснятый pending multipart блокирует смену namespace |
 | DATA-08 | Раздельные app/infra projects и точная DB | applicationProject ≠ test infra допустим; pinned containers/volumes/network сохранены, DATABASE_URL DB = binding.dbName и host → exact test DB container; POSTGRES_DB default/main DB/mismatch отклоняются, DB/Redis up отсутствует |
 | PAY-01 | Окно нынешнего TEST shop | Согласованы начало/конец, drained intents; UI-оператор переключил native notifications, проверены replay/credits/referrals; callback n5 восстановлен после завершения Cloud intents |

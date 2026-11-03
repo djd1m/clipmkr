@@ -16,8 +16,8 @@
     }
   ],
   "snapshot": {
-    "nonce": "3a6d97cf-4396-4b28-be4e-d8b47c69eb3a",
-    "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+    "nonce": "aa531874-11fe-46dc-a376-443dfa2c84fa",
+    "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
     "manifest": [
       {
         "path": "features/cloudru-release-parity/00_complexity_assessment.md",
@@ -25,11 +25,11 @@
       },
       {
         "path": "features/cloudru-release-parity/01_requirements.md",
-        "digest": "0ec1ef39c89cf3addd5d9d3601976ae0fe0f5cc80baf3cfd3c4961b337501d47"
+        "digest": "744c459ba5d018bc041f194f21869f92fd64d8f79191b6456838f1109305f30f"
       },
       {
         "path": "features/cloudru-release-parity/02_research.md",
-        "digest": "cb03ed3789a44ee99133e892abf4f42355afed7b0961be090a313696e0863208"
+        "digest": "196187e28a341361839f48f5ce8d4c96fb957a23086c14eb761934ca2a271f25"
       },
       {
         "path": "features/cloudru-release-parity/03_adr/001-release-manifest.md",
@@ -41,7 +41,7 @@
       },
       {
         "path": "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
-        "digest": "f656aa047ad26f89b51f5bc4aed7b72195fee5ba5ad5deb04317cc30d65e2cb3"
+        "digest": "e0f99307114c39563b8b15b97b1a6f84ba715476759972bed7476f7caea9f56f"
       },
       {
         "path": "features/cloudru-release-parity/04_domain_model.md",
@@ -49,7 +49,7 @@
       },
       {
         "path": "features/cloudru-release-parity/05_architecture.md",
-        "digest": "45526716fe0bc40f1b943571fc0e3e07052146ead18dc65aa2390dab3cdec5f4"
+        "digest": "03142c85eb769ed247f238f148a2b5001a6b3aef09219c5e525d5164e4b1e33b"
       }
     ]
   },
@@ -230,6 +230,44 @@
         "features/cloudru-release-parity/05_architecture.md"
       ],
       "evidence": "01_requirements.md CJM-12 требует совпадение регистраций/использования/оплат и оценку 20/30%, но не задаёт выбранный месяц, разбивку по каждой ссылке, отсутствие ставки, исключаемые статусы или сохранение attribution при смене ссылки. docs/acceptance/core-cjm.md §3 требует эти правила; TASK-7 лишь ссылается на CJM-01–12 и обе статистики. Без различающих входов и ожидаемых результатов сумма может совпасть при неверной выборке."
+    },
+    {
+      "id": "RISK-04",
+      "owner": "qcsd-risk",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "До live S3 проверки явно исключить forwarding опасных negative probes (bucket mutations/path escapes/foreign Bucket-Key-Prefix/unknown commands) к общему bucket: выполнять их только на non-forwarding capture transport либо блокировать перед HTTPS независимым от проверяемого middleware fail-closed harness. Live forwarding допускает только согласованный bucket и собственные current-run keys/list prefixes/upload IDs в tests/cloud/<run>/ и tests/site/<run>/ плюс явный read-only GetBucketVersioning. Attempted unsafe egress обязан давать test FAIL даже при предотвращении сети safety harness; его блокировку нельзя выдавать за SDK guard proof. Legal positive presign/list-pagination/multipart/erasure проверки остаются на настоящем S3. Confirmation: injected bypass/поломка SDK namespace guard даёт FAIL и ноль реальных unsafe requests; cleanup только known own keys/upload IDs. Нового key/IAM либо разрешения destructive probes не требуется.",
+      "scope": [
+        "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+        "features/cloudru-release-parity/05_architecture.md",
+        "features/cloudru-release-parity/01_requirements.md"
+      ],
+      "evidence": "ADR-003 Confirmation2:116–125 переносит integration на настоящий Cloud.ru S3, включая «versioning-read и негативные guards»; Confirmation1:109–115 оставляет fake unit transport, но не отделяет опасные live negative probes от forwarding. Confirmation3:126–132 и05:89–98 запрещают bucket mutations/root listing и требуют capture/exact cleanup, однако не задают независимый pre-forwarding отказ harness. По Context/Decision key production-wide. Если проверяемый guard намеренно сломан/обойдён, unknown/bucket mutation/path escape может уйти в общий bucket до capture/assert FAIL; exact cleanup чужие данные/metadata не восстанавливает. Это пробел нового дизайна выполнения тестов, не обнаруженный кодовый дефект."
+    },
+    {
+      "id": "QQ-05",
+      "owner": "qcsd-quality",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "До живых S3 integration определить независимый от проверяемого SDK namespace middleware предсетевой предохранитель тестового transport: проверять конечный неизменённый HTTP request до делегирования реальному HTTPS для internal SDK, raw fixtures и HTTP выполнения presigned URL. Допускать только согласованные endpoint/bucket и object/list операции внутри tests/cloud/<текущий-run>/ либо tests/site/<текущий-run>/; GetBucketVersioning read точного bucket — явное исключение. Запрещать root/broad listing, чужой run, bucket/metadata mutations и выход за namespace; cleanup только по своим зарегистрированным keys/upload IDs. Отказ предохранителя означает FAIL проверки, он не дописывает prefix и не исправляет запрос. До live запуска отдельная fault-проверка с поддельным нижним transport должна показать, что потеря/подмена prefix или опасная команда даёт ноль сетевых отправок и красный результат; положительная интеграция после этого остаётся настоящим Cloud.ru S3. Предохранитель относится к integration harness, не меняет общий production-wide key/IAM и не запрещает отдельно согласованный operator copy старых test objects.",
+      "scope": [
+        "features/cloudru-release-parity/01_requirements.md",
+        "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+        "features/cloudru-release-parity/05_architecture.md"
+      ],
+      "evidence": "ADR-003:98–105,116–132 переводит проверки SDK, erasure/retention, signing и negative guards на общий живой bucket с production-wide key; capture проверяет запросы и canary после операций. TASK-3 и поправка 06:154–166 задают UUID/exact cleanup и reuse createS3Client, но не независимый pre-send барьер для конечного wire request. Если проверяемое преобразование Prefix/Key потеряно либо erasure отправляет слишком широкий Prefix, capture/последующий SHA лишь обнаружат уже отправленный запрос; общий key не отклоняет его по IAM. Аналогичная граница нужна для raw/presigned путей. Запрет рабочих мутаций и root listing сформулирован, но безопасный FAIL именно при дефекте проверяемой границы не определён. Это новый пробел дизайна живого тестового harness после отказа от disposable MinIO, не утверждение о дефекте текущего кода."
+    },
+    {
+      "id": "QT-08",
+      "owner": "qcsd-testability",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Согласовать обязательный FR-8 и критерии приёмки с явным решением владельца: network SDK proof выполнять на настоящем HTTPS Cloud.ru S3, исключить обязательный новый прогон MinIO и не переносить его исторический результат. Сохранить измеримые wire/signing/pagination/erasure/canary критерии и BLOCKED при отсутствии реального S3 proof.",
+      "scope": [
+        "features/cloudru-release-parity/01_requirements.md",
+        "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md"
+      ],
+      "evidence": "01_requirements.md FR-8 прямо требует «настоящий MinIO» для проверки SDK, тогда как ADR-003 Confirmation 2–3 требует настоящий Cloud.ru S3, а 02_research.md и 06 план фиксируют отмену MinIO. Формальная обязательная FR и согласованный путь проверки противоречат друг другу: без исправления нельзя однозначно определить что закрывает FR-8 и может ли полный результат быть PASS."
     }
   ],
   "reviewSeen": true,

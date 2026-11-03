@@ -16,7 +16,7 @@ S3: owner явно выбрал нынешний общий key с полным�
 boundary bucket+tests/cloud/ либо tests/site/. Новых key/SA/policy и provider403 нет.
 Root read-only: policy отсутствует, CORS c/n5 PUT допускает, versioning disabled;
 production settings прежние. AWS SDK middleware на internal/signing clients,
-logical DB keys/erasure/multipart/retention прежние. MinIO wire+outside canary proof,
+logical DB keys/erasure/multipart/retention прежние. S3 wire+outside canary proof,
 Cloud canary только внутри tests. Site media копируется по DB-whitelist с size/SHA,
 старые объекты сохраняются; старые multipart разрешить до namespace change.
 Автоматический app rollback требует одинаковых схемы и namespace.
@@ -30,3 +30,8 @@ incremental images/archives с сохранением rollback images, без gl
 Семь failures full-suite source 71e7812 требуют точного build-time wiring fix,
 immutable health уже build-tested; baseline full PASS пока нет.
 Revision pending: root prepare/три actual focused QCSD/K1/K2, coding приостановлен.
+
+Настоящие S3 network tests используют независимый physical-scope guard
+requestHandler/fetch до сети, отдельный от проверяемой SDK middleware, и только
+уникальные tests/cloud/ и tests/site/. Legacy integration сохраняют сценарии
+без bucket lifecycle; fixture cleanup — точные собственные keys/upload IDs.

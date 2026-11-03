@@ -99,10 +99,32 @@ SDK tests фиксируют каждый wire request: object paths и list Pre
 в точном namespace, signed requests туда же; unsafe inputs/unknown commands/
 bucket mutations прекращаются до сети. GetBucketVersioning exact bucket read
 не имеет object prefix и остаётся явным allowlisted исключением. Fixture setup/
-teardown outside canary — отдельный raw disposable MinIO client, не target SDK.
+teardown outside canary — отдельный raw client только для точных synthetic keys
+в tests/site/<run>/, не target SDK. Вне tests/* он не читает и не изменяет объекты.
 Cloud операторский canary допускается только внутри tests/cloud/ и tests/site/;
 мутации рабочих namespaces запрещены. Это проверка совместимости приложения,
 не scope proof и не проверка отказа общего key на production objects.
+
+#### Независимый предсетевой предохранитель настоящих S3 тестов
+
+Shared production-wide key требует второго test-only барьера, независимого от
+проверяемой SDK namespace middleware. До первого реального HTTP запроса fixture
+оборачивает фактический requestHandler.handle internal/signing/raw clients.
+Разрешены только HTTPS exact endpoint/bucket, physical object keys внутри
+уникального run tests/cloud/ или tests/site/, list Prefix/KeyMarker внутри того же
+run и read-only GET GetBucketVersioning exact bucket. Raw canary — только точный
+собственный key, без list. Bucket mutations, root listing, CopySource, другие
+bucket queries, encoded escapes и всё за scope блокируются ДО transport.
+Подписанный URL проходит тот же независимый physical-scope guard ДО fetch.
+Guard не использует keyPrefix parser проверяемого SDK и не выносится в app runtime.
+Единый fixture liveS3Environment в существующем tests/fixtures/environment.ts
+возвращает config/bind/fetch; legacy network tests переиспользуют его.
+Отрицательные SDK случаи остаются fake HTTP; тест с намеренно снятым/сломанным
+SDK prefix и synthetic own logical key доказывает zero actual network через
+независимый fence. Не отправляем опасные negative probes на provider и не
+проверяем широкие права общего key попытками реальных production мутаций.
+Private journal до первого PUT сохраняет run UUID/exact attempted keys/upload IDs
+и unknown outcomes; cleanup failure не маскирует первичную ошибку и не PASS.
 
 ## Confirmation
 
@@ -112,20 +134,23 @@ Cloud операторский canary допускается только вну
    unknown/bucket mutations, повтор того же command и empty-prefix compatibility.
    Одного mock client.send недостаточно: он обходит middleware. Wire capture
    подтверждает отсутствие запросов за prefix и ноль requests для отказов.
-2. `tests/storage-prefix.integration.test.ts`: реальный disposable MinIO, один bucket,
+2. `tests/storage-prefix.integration.test.ts`: настоящий Cloud.ru S3, один bucket,
    два StorageClient tests/cloud/ и tests/site/ с одинаковыми logical keys и разными
-   байтами; отдельный raw fixture client создаёт outside synthetic canary. До/после
+   байтами; отдельный raw fixture client создаёт outside-cloud synthetic canary
+   только в tests/site/<уникальный-run>/, без bucket lifecycle операций. До/после
    сравнить SHA-256/size/набор ключей canary и второй копии при erasure первой.
    Реальные presigned PUT part/GET, complete/list/abort, pagination и retention/erasure;
    versioning-read и негативные guards. Нужный multipart page forcing зафиксировать
    явно; fake paginator не обозначать как real provider pagination proof. Capture
    всех запросов отделяет setup/teardown от target SDK, проверяет physical prefix
    Key/Prefix/markers/signatures и неизменность outside canary после операций.
-3. Интеграция использует уже установленные AWS SDK, Vitest/Node crypto и MinIO
-   profile; raw admin fixture нужен только для disposable bucket setup/teardown.
-   Cleanup строго своего bucket/prefix, outside canary только fixture lifecycle,
-   никаких production credentials/canary mutations. N5_ACCEPTANCE прогон не может
-   принять skip/отсутствующий MinIO за PASS.
+3. Интеграция использует уже установленные AWS SDK, Vitest/Node crypto и HTTPS Cloud.ru S3
+   profile. Используется нынешний общий production-wide key по решению владельца;
+   все network object операции только tests/cloud/ или tests/site/ с уникальным
+   run ID. Нет Create/DeleteBucket, root listing или metadata mutations. Read-only
+   GetBucketVersioning разрешён. Cleanup — только точные свои keys/upload IDs;
+   outside-cloud canary расположен в tests/site/<run>/, вне tests/* мутаций нет.
+   N5_ACCEPTANCE прогон не может принять skip/отсутствующий S3 profile за PASS.
 4. Отдельный реальный Cloud canary нынешним общим key: positive CRUD/multipart/list
    и public signing только synthetic objects inside tests/cloud/ и tests/site/.
    Никаких мутаций рабочих namespaces или ожидаемого provider 403. В receipt прямо

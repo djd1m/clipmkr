@@ -42,7 +42,7 @@ production storage settings или заявлять IAM isolation/provider403 pr
 
 #### Scenario: Реальное доказательство SDK namespace
 - **WHEN** выполняется приёмка namespace
-- **THEN** реальный isolated MinIO с двумя prefixes доказывает wire prefix и прежние size/SHA outside canary; Cloud canary работает только inside tests prefixes, 403 по общему key не требуется.
+- **THEN** настоящий Cloud.ru S3 с двумя prefixes доказывает wire prefix и прежние size/SHA outside canary; Cloud canary работает только inside tests prefixes, 403 по общему key не требуется.
 
 ### Requirement: Существующая test infra имеет отдельный binding
 Profile SHALL явно связывать applicationProject, databaseProject/redisProject,
@@ -107,3 +107,11 @@ SHALL сохраняться.
 #### Scenario: Сломанная build binding
 - **WHEN** ARG RELEASE_REVISION → ENV NEXT_PUBLIC_RELEASE_REVISION → Next build нарушена либо пропущен обязательный runtime env
 - **THEN** wiring regression даёт finding; исключение всех NEXT_PUBLIC_* не допускается.
+
+### Requirement: Живые S3 тесты ограничены независимым барьером
+Network tests SHALL блокировать запрос вне собственного физического run scope до реального HTTP.
+
+#### Scenario: Независимая защита живых S3 тестов
+
+- **WHEN** проверяемая SDK middleware не добавила namespace или получила опасный input
+- **THEN** отдельный test-only requestHandler/fetch guard блокирует физический запрос до сети; live negative probes не обращаются к рабочим объектам; bucket mutations и root listing не выполняются.

@@ -91,7 +91,9 @@ StorageClient уже владеет internal transport и отдельным sig
 закрывает оба. Единственная точка преобразования — middleware обоих клиентов;
 новый storage service, ручная правка всех callers и новые dependencies не нужны.
 Переиспользуются `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, Vitest и
-существующий MinIO test profile. SDK command contract приведён в ADR-003.
+существующий HTTPS S3 Cloud.ru с нынешним ключом и отдельным закрытым test profile.
+Владелец явно отменил MinIO: дальнейшие network S3 tests выполняются на настоящем
+S3 только внутри tests/*. SDK command contract приведён в ADR-003.
 
 В этом дереве общий S3 parser называется `loadS3Config` (`S3Config` выводится из него).
 Отдельный символ `sharedS3Config` поиском не найден; это роль общей конфигурации,
@@ -123,7 +125,7 @@ Vitest уже включает `tests/**/*.test.ts`, tests tsconfig включа
 
 Root read-only проверил: policy отсутствует, CORS уже разрешает c/n5 PUT,
 versioning disabled. Production settings не меняем. SDK proof — изолированный
-MinIO: physical prefix всех object/list wire операций/signing/multipart/retention,
+S3: physical prefix всех object/list wire операций/signing/multipart/retention,
 unsafe/unknown/bucket mutations до сети, outside canary size/SHA прежние.
 GetBucketVersioning read exact bucket — явное исключение без object path.
 Реальный Cloud canary только inside tests/cloud/ и tests/site/; без мутаций рабочих
@@ -140,3 +142,15 @@ build-tested: 200/no-store/immutable SHA/runtime override cannot forge.
 Полный suite того source нашёл 7 failures в 3 файлах из-за классификации
 NEXT_PUBLIC_RELEASE_REVISION как runtime-required. Нужны точный build-time contract,
 wiring regression и повторный full suite; baseline full PASS сейчас отсутствует.
+
+## Уточнение тестового провайдера владельцем
+
+«miniIO теперь можно не использовать, тесты надо проводить на настоящем s3».
+MinIO больше не dependency/gate. Его ListMultipartUploads не поддерживает
+перечисление по prefix: подтверждено [исходниками MinIO](https://github.com/minio/minio/blob/master/cmd/erasure-multipart.go),
+это не свидетельство поведения Cloud.ru. Проверяем настоящий Cloud S3, оставляя
+fake HTTP только для unit отрицательных случаев. Legacy integration upload/guest-pack/
+retention адаптируются к существующему bucket и уникальному tests/cloud/<run>/,
+без Create/DeleteBucket или изменения metadata. RI-001 больше не предполагает
+отсутствие lifecycle у общего bucket: неизменный direct-upload/complete проверяется
+настоящим S3; bucket lifecycle не меняется и его отсутствие не утверждается.

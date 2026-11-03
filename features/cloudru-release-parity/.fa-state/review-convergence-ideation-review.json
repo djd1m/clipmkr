@@ -1,8 +1,8 @@
 {
   "schema": "fa-review-convergence-1",
   "phase": "ideation",
-  "nonce": "3a6d97cf-4396-4b28-be4e-d8b47c69eb3a",
-  "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+  "nonce": "aa531874-11fe-46dc-a376-443dfa2c84fa",
+  "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
   "author": {
     "addressed": [
       "RISK-01",
@@ -18,7 +18,9 @@
       "QT-04",
       "QT-05",
       "QT-06",
-      "QT-07"
+      "QT-07",
+      "QQ-05",
+      "RISK-04"
     ],
     "changedScope": [
       "features/cloudru-release-parity/01_requirements.md",
@@ -27,11 +29,12 @@
       "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
       "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
       "features/cloudru-release-parity/04_domain_model.md",
-      "features/cloudru-release-parity/05_architecture.md"
+      "features/cloudru-release-parity/05_architecture.md",
+      "features/cloudru-release-parity/06_implementation_plan.md"
     ],
     "classification": "structural",
-    "delta": "По прямому уточнению владельца вторая цель теперь existing site-test на сервере сайта с непустыми данными и split app/infra Compose; сохранность всех строк/объектов, DB URL binding, copy по whitelist и место под артефакты. Явный выбор общего S3 key с code/SDK namespace tests/cloud и tests/site; IAM isolation/key/policy/403 больше не требуются, key production-wide. Нынешний TEST shop используется только в согласованное окно с drain/return callback. Добавлены SDK pipeline/MinIO/canary и buildtime-wiring regression критерии; старые 7 failures не скрыты. Финальная поправка QQ-02/RISK-02: серверный N5_CHECKOUT_ENABLED gate обеих copies, freeze до drain/callback switch, сохранённый live webhook/status, симметричный возврат с закрытым Cloud. QT-07: точный January/R1/R2 оракул minor units/null/20/30/distinct payer/exclusions/month bounds/snapshot/refund и разделение PG/live evidence.",
-    "evidence": "01 FR-1..9 и матрица, ADR-001/002/003, 04/05; код и full deployment новой ревизии ещё не подтверждены. 06 актуализирован Sol в новой Codex CLI сессии, actual turn_context model gpt-6.1-sol. 01 checkout lifecycle и числовой оракул; ADR002 уточнение; 05 Checkout gate;06TASK8/9+AM16/17+testtargets.",
+    "delta": "По прямому уточнению владельца вторая цель теперь existing site-test на сервере сайта с непустыми данными и split app/infra Compose; сохранность всех строк/объектов, DB URL binding, copy по whitelist и место под артефакты. Явный выбор общего S3 key с code/SDK namespace tests/cloud и tests/site; IAM isolation/key/policy/403 больше не требуются, key production-wide. Нынешний TEST shop используется только в согласованное окно с drain/return callback. Добавлены SDK pipeline/MinIO/canary и buildtime-wiring regression критерии; старые 7 failures не скрыты. Финальная поправка QQ-02/RISK-02: серверный N5_CHECKOUT_ENABLED gate обеих copies, freeze до drain/callback switch, сохранённый live webhook/status, симметричный возврат с закрытым Cloud. QT-07: точный January/R1/R2 оракул minor units/null/20/30/distinct payer/exclusions/month bounds/snapshot/refund и разделение PG/live evidence. Новое прямое решение владельца: MinIO больше не использовать, network S3 тесты на настоящем Cloud.ru S3. Все мутации только unique tests/cloud и tests/site, raw outside-cloud canary внутриtests/site; запрет bucket create/delete/rootlisting/metadatamutation, read-only versioning разрешён. Три legacyintegration адаптируются к namespace с сохранением сценариев; отсутствие lifecycle общегоbucket не предполагается. Единственное оставшееся старое слово MinIO в FR-8 исправлено на Cloud.ru S3 до текущего snapshot b522; все3roles должны проверить текущие8хешей. QQ-05/RISK-04: независимый тестовый physical scope fence wraps actual SDK HTTP handler and signedfetch до сети, explicit exact endpoint/bucket/run paths/listmarkers/versioningread, rawcanaryexactkey; отказ при снятом SDKguard проверяетсяfake transport zeroIO. privatepre-PUTjournalиunknownoutcomes. 01/ADR003/05/06AM18.",
+    "evidence": "01 FR-1..9 и матрица, ADR-001/002/003, 04/05; код и full deployment новой ревизии ещё не подтверждены. 06 актуализирован Sol в новой Codex CLI сессии, actual turn_context model gpt-6.1-sol. 01 checkout lifecycle и числовой оракул; ADR002 уточнение; 05 Checkout gate;06TASK8/9+AM16/17+testtargets. Ответ владельца про настоящие S3 tests; 01/02/ADR003/05/06/OpenSpec синхронизированы. Никакого утверждения livePASS.",
     "newRisks": {
       "assessment": "Общий ключ сохраняет production authority: владелец явно выбрал эту остаточную границу после разъяснения. Защита только в коде/SDK и не выдерживает обход клиента/компрометацию ключа. Непустой site-test и дефицит диска требуют сохранности/whitelist/admission, окно testshop требует drain/возврата. Новых скрытых допущений об IAM нет.",
       "evidence": "Ответ владельца: Нынешний общий ключ; ограничиваем тесты в коде. FR-4/5/7/8, ADR-002/003 закрепляют новые риски и проверки.",
@@ -81,40 +84,60 @@
             "features/cloudru-release-parity/05_architecture.md"
           ],
           "evidence": "01_requirements:59–60 фиксирует временный туннель/expiry; ADR-001 требует частичного receipt, архитектура:7–15 — проверенного SSH. Не определено, как отличить завершённый remote apply от прерванного после исчезновения обратного туннеля, и кто исключает конкурентный apply."
+        },
+        {
+          "id": "RISK-04",
+          "owner": "qcsd-risk",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "До live S3 проверки явно исключить forwarding опасных negative probes (bucket mutations/path escapes/foreign Bucket-Key-Prefix/unknown commands) к общему bucket: выполнять их только на non-forwarding capture transport либо блокировать перед HTTPS независимым от проверяемого middleware fail-closed harness. Live forwarding допускает только согласованный bucket и собственные current-run keys/list prefixes/upload IDs в tests/cloud/<run>/ и tests/site/<run>/ плюс явный read-only GetBucketVersioning. Attempted unsafe egress обязан давать test FAIL даже при предотвращении сети safety harness; его блокировку нельзя выдавать за SDK guard proof. Legal positive presign/list-pagination/multipart/erasure проверки остаются на настоящем S3. Confirmation: injected bypass/поломка SDK namespace guard даёт FAIL и ноль реальных unsafe requests; cleanup только known own keys/upload IDs. Нового key/IAM либо разрешения destructive probes не требуется.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+            "features/cloudru-release-parity/05_architecture.md",
+            "features/cloudru-release-parity/01_requirements.md"
+          ],
+          "evidence": "ADR-003 Confirmation2:116–125 переносит integration на настоящий Cloud.ru S3, включая «versioning-read и негативные guards»; Confirmation1:109–115 оставляет fake unit transport, но не отделяет опасные live negative probes от forwarding. Confirmation3:126–132 и05:89–98 запрещают bucket mutations/root listing и требуют capture/exact cleanup, однако не задают независимый pre-forwarding отказ harness. По Context/Decision key production-wide. Если проверяемый guard намеренно сломан/обойдён, unknown/bucket mutation/path escape может уйти в общий bucket до capture/assert FAIL; exact cleanup чужие данные/metadata не восстанавливает. Это пробел нового дизайна выполнения тестов, не обнаруженный кодовый дефект."
         }
       ],
       "verifications": [
         {
           "id": "RISK-01",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "Самостоятельно повторно проверены ADR-002 Context/Decision и 05 «Данные и запуск», CJM-08: selector и параллельный backend общего origin исключены; c/n5 test copies обновляются in-place, production DB/Redis/session secrets не наследуются, после смены secret нужен вход. Изменения checkout gate не возвращают session/cookie fallback. RISK-01 подтверждён только для текущего дизайна, без browser/code/E2E proof.",
+          "evidence": "Самостоятельно повторно проверены ADR-002 Context/Decision,05 «Данные и запуск»,CJM-08: существующие c/n5 test copies обновляются in-place без selector/fallback; DB/Redis/session secrets отделены от production. Test-only physical fence app runtime/session/cache/backend не меняет. Условие подтверждено для текущего дизайна, не кода/browser/E2E.",
           "implementationVerified": true
         },
         {
           "id": "RISK-02",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "Подтверждено для текущего дизайна после собственного чтения 01 FR-5:84–97, ADR-002:133–144, 05:139–166 и 06 TASK-8/AM-16. N5_CHECKOUT_ENABLED — строгий server boolean/default true, false после прежних rate/origin/auth и до body/createIntent/provider create даёт 503 для всех новых/повторных POST; status/webhook/provider lookup остаются live. До первого switch закрываются ОБА test checkout, подтверждаются 503, прекращение старых in-flight/старого web, DB+provider drain. Только после подтверждения Cloud callback открывается Cloud; site остаётся закрыт всё окно. Перед возвратом Cloud снова frozen, intents/callbacks drained; после подтверждённого n5 callback открывается только site, Cloud остаётся закрыт. Нулевой pending до freeze/UI hiding/mode off отвергнуты как proof. Исходные shop/mode/intent/IP-proxy/provider verification/replay-one-grant и unknown-stop требования сохранены; нужны будущие negative creation и live window receipts обоих направлений. Это закрывает ранее найденную гонку drain→new intent→wrong receiver на уровне дизайна. Код, provider delivery и фактическое окно не проверены.",
+          "evidence": "Самостоятельно повторно прочитаны01 FR-5,ADR-002 checkout amendment,05 Checkout gate,06 TASK-8/AM-16: server gate false после rate/origin/auth до body/createIntent/provider create даёт503, webhook/status live. Freeze обеих copies и прекращение старых in-flight до DB/provider drain/switch; после confirmation открыт только Cloud,site closed всё окно; перед return Cloud frozen/drained,после n5 confirmation открыт только site,Cloud closed. Unknown-stop и shop/mode/intent/IP-proxy/provider/replay-one-grant сохранены. Новая S3 поправка не меняет окно. Только design verification.",
           "implementationVerified": true
         },
         {
           "id": "RISK-03",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "Самостоятельно повторно проверены 01 FR-6/REL-05, ADR-001 Decision, 05 «Remote apply и восстановление», 06 TASK-1/5: две SSH-цели, host-key/loopback/expiry preflight, запрет автоматического продления/расширения доступа. Один lock и private atomic state до mutations; disconnect=unknown; inspect/reconcile runtime/namespace/topology/full journal до retry без auto-resume. Новый checkout freeze требует подтверждения на обеих копиях, а unknown не разрешает switch либо открытие неактивной стороны. RISK-03 подтверждён в дизайне; живой SSH recovery не проверен.",
+          "evidence": "Самостоятельно повторно проверены FR-6/REL-05,ADR-001,05 Remote apply и ресурсы,06 TASK-1/4/5: две SSH цели,host-key/loopback/expiry,lock/private atomic state до mutations,disconnect=unknown,reconcile runtime/namespace/topology/journal до retry без auto-resume/auto-extension. Disk admission до transfer/apply с сохранением current/rollback images и резерва сохраняется; test-only S3 fence SSH доступ не расширяет. Только дизайн, не live recovery.",
+          "implementationVerified": true
+        },
+        {
+          "id": "RISK-04",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "classification": "structural",
+          "evidence": "Подтверждено после собственного чтения01 FR-8:163–182,ADR-003 «Независимый предсетевой предохранитель»,05 SDK namespace boundary и06 AM-18/provider amendment. До первого I/O test-only fence wraps фактический requestHandler.handle internal/signing/raw и отдельно signed URL fetch. Независимый от проверяемого keyPrefix parser physical-scope guard допускает только HTTPS exact endpoint/bucket/current-run object keys/list Prefix+KeyMarker и read-only GET GetBucketVersioning exact bucket. Raw canary только exact known key без list; bucket mutations/root listing/CopySource/other bucket queries/encoded escapes/outside scope отклоняются до transport. Опасные negative SDK probes только fake HTTP; deliberate disabled/broken middleware с synthetic logical key и fake transport counter доказывает fence zero I/O, не выдаётся за real S3 proof. Один existing liveS3Environment config/bind/fetch reuse всеми network integrations; private pre-PUT journal run/attempted keys/uploadIDs/unknown outcomes, exact cleanup не маскирует primary error и cleanup failure не PASS. Legal positive SDK/signing/pagination/erasure проверки остаются настоящим S3, safety rejection не proof SDK guard. Условие закрыто исключительно в исправленном дизайне; никакие кодовые/сетевые проверки не выполнены.",
           "implementationVerified": true
         }
       ],
       "newRisks": {
-        "assessment": "После собственной проверки оставшихся условий, фактических изменений и связанных зависимостей новых серьёзных рисков не выявлено. Исходная гонка RISK-02 устранена server checkout gate и симметричным freeze/drain/switch/confirm/open. Общий S3 key остаётся production-wide по owner exception; SDK boundary не является IAM и не защищает от обхода SDK/компрометации key. Сохранность site data/copy/volumes, split-project DB binding, SSH unknown и disk admission остаются обязательными gates будущего исполнения, а не выполненными результатами.",
-        "evidence": "01 FR-5 и числовой оракул QT-07; ADR-002 «Уточнение заморозки оплаты»; 05 «Checkout gate и сверка оценки»; 06 TASK-8/9/AM-16/17 и declared targets. Сохранены ADR-003 namespace SDK/wire/MinIO, ADR-002 copy/drain и 05 DB/SSH/resource guards. Проверка исключительно design-phase.",
+        "assessment": "После независимой focused проверки всех собственных условий, actual changes и затронутых зависимостей новых серьёзных рисков не выявлено. RISK-04 закрыт дизайном независимого physical egress fence и переносом опасных probes исключительно на fake HTTP. Общий key по принятому owner exception остаётся production-wide; ни fixture fence, ни SDK boundary не являются IAM isolation. Private journal/unknown outcomes/exact cleanup уменьшают риск orphan objects без blanket cleanup. Сохранность site copy/DB rows/volumes, pinned DATABASE_URL/split projects, checkout window, SSH и disk admission остаются обязательными будущими gates.",
+        "evidence": "01 FR-8 independent fence; ADR-003 pre-network subsection и Confirmation;05 SDK boundary;06 AM-18/provider amendment/27 targets. Повторно проверены собственные session/payment/SSH зависимости; code/runtime evidence не использовано.",
         "conditions": []
       },
       "authorAssessmentChecked": true,
       "deltaVerification": {
         "classification": "structural",
-        "evidence": "Прочитаны actual author handoff/newRisks и текущие изменённые 01/ADR-002/05, 06 TASK-8/9/AM-16/17/24 targets и связанные неизменённые контракты. Самостоятельно сверены 8/8 SHA-256 и hash manifest на nonce 3a6d97cf-4396-4b28-be4e-d8b47c69eb3a. Structural classification подтверждена. Gate использует существующие WebConfig/environment/BillingDependencies/createCheckoutHandler, server-only до side effects с прежним rate/origin/auth, live webhook/status; explicit runtime/handler/env/Compose/fixture/tests targets внесены в 06. Freeze обоих test copies, in-flight завершение и DB/provider drain до switch, единственный открытый checkout после подтверждения callback и симметричный возврат закрывают RISK-02. January-2030 Moscow oracle проверен на внутреннюю согласованность: R1 248000/R2 399000/total 647000 коп., один distinct payer, null/20/30; после refund 149000 total 498000, estimates 99600/149400. Границы paid_at, отдельные exclusions, immutable sourceSnapshot и PG fixture отделены от real current-month native receipts обеих ролей; чужое QT-07 не закрываю своей ролью. Ранее проверенные SDK/wire/MinIO/copy/DB binding/disk/SSH/production fence не ослаблены; IAM/new key/403 не gate. K2/старые tests/author live claims не использованы как approval либо implementation proof. implementationVerified=true означает только независимо проверенные исправленные артефакты ideation; code/tests/live/full CJM не проверены.",
+        "evidence": "Прочитаны actual author handoff/newRisks и текущие01 FR-8/ADR-003/05/06 AM-18/provider amendment/27 targets; самостоятельно сверены8/8 SHA-256 и hash manifest на revision 990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67, nonce aa531874-11fe-46dc-a376-443dfa2c84fa. Structural classification подтверждена: независимый pre-I/O test transport guard меняет защиту live suite. Проверены охват internal/signing/raw requestHandler.handle и signed fetch, exact HTTPS endpoint/bucket/run physical paths/list markers, raw exact-key no-list, read-only versioning-only bucket exception, denial mutations/root listing/CopySource/other queries/encoded escapes/outside scope, независимость parser и отсутствие app-runtime adapter. Deliberate SDK-off/broken fake-counter discrimination не live proof; dangerous SDK negatives только fake,legal positives Cloud-only. Pre-PUT private journal/unknown outcomes/cleanup primary-error preservation и reuse liveS3Environment тремя legacy network integrations с PG *_test isolation закреплены. Реальный wire/signing/list-pagination/erasure/outside-cloud canary SHA/size proof и no-skip требования не ослаблены; lifecycle общего bucket не считается отсутствующим. RISK-01..04 исходные условия сохранены и independently design verified, новых HIGH нет. Чужие QQ/QT и история QT-08 не переписывались/не закрывались этой ролью. Structural implementationVerified=true означает только исправленные ideation artifacts: код/tests/live S3/SSH/DB/payment/full CJM не проверены. Старые MinIO PASS,K1/K2/author statements не приняты как implementation approval; final codeQE отдельно.",
         "implementationVerified": true
       }
     },
@@ -175,47 +198,67 @@
             "features/cloudru-release-parity/01_requirements.md"
           ],
           "evidence": "ADR-002:30–32 требует проверки лимитов, но не задаёт измеримый критерий достаточности и защиту legacy в ходе нагрузки. FR-2 включает 90/120 минут и индивидуальный предел; требования к бюджету отсылают к настройкам без stop condition. На общей ВМ раздельный Compose не ограничивает конкуренцию за CPU/RAM/диск."
+        },
+        {
+          "id": "QQ-05",
+          "owner": "qcsd-quality",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "До живых S3 integration определить независимый от проверяемого SDK namespace middleware предсетевой предохранитель тестового transport: проверять конечный неизменённый HTTP request до делегирования реальному HTTPS для internal SDK, raw fixtures и HTTP выполнения presigned URL. Допускать только согласованные endpoint/bucket и object/list операции внутри tests/cloud/<текущий-run>/ либо tests/site/<текущий-run>/; GetBucketVersioning read точного bucket — явное исключение. Запрещать root/broad listing, чужой run, bucket/metadata mutations и выход за namespace; cleanup только по своим зарегистрированным keys/upload IDs. Отказ предохранителя означает FAIL проверки, он не дописывает prefix и не исправляет запрос. До live запуска отдельная fault-проверка с поддельным нижним transport должна показать, что потеря/подмена prefix или опасная команда даёт ноль сетевых отправок и красный результат; положительная интеграция после этого остаётся настоящим Cloud.ru S3. Предохранитель относится к integration harness, не меняет общий production-wide key/IAM и не запрещает отдельно согласованный operator copy старых test objects.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "ADR-003:98–105,116–132 переводит проверки SDK, erasure/retention, signing и negative guards на общий живой bucket с production-wide key; capture проверяет запросы и canary после операций. TASK-3 и поправка 06:154–166 задают UUID/exact cleanup и reuse createS3Client, но не независимый pre-send барьер для конечного wire request. Если проверяемое преобразование Prefix/Key потеряно либо erasure отправляет слишком широкий Prefix, capture/последующий SHA лишь обнаружат уже отправленный запрос; общий key не отклоняет его по IAM. Аналогичная граница нужна для raw/presigned путей. Запрет рабочих мутаций и root listing сформулирован, но безопасный FAIL именно при дефекте проверяемой границы не определён. Это новый пробел дизайна живого тестового harness после отказа от disposable MinIO, не утверждение о дефекте текущего кода."
         }
       ],
       "verifications": [
         {
           "id": "QQ-01",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "На текущей revision сверены FR-2/4/5, CJM-08..12, ADR-002 и 05: один backend обычного c.clipmkr.ru без selector, сохранение referral/return, отдельные session secrets и независимые контексты owner/blogger/client; production origin/маршрут не меняется. Checkout freeze добавляет понятный 503, не меняет GET/status/webhook и не направляет пользователя в другую копию. Расчёт реферальной оценки предусматривает сверку обеих ролей и отказ чужой учётке. Условие подтверждено только как исправленный дизайн; браузеры и реализация не проверялись.",
+          "evidence": "На текущей revision 01/05 и неизменённый ADR-002 сохраняют обычный c.clipmkr.ru без selector, один backend для новых контекстов/referral/payment return, отдельные session secrets и разделение owner/blogger/client. Physical-scope fence ограничен test harness, не меняет app runtime/пользовательские ссылки. CJM Play/download/отчётность остаются обязательными. Дизайн подтверждён; браузер/код не проверялись.",
           "implementationVerified": true
         },
         {
           "id": "QQ-02",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "Закрыто на уровне текущего дизайна: 01 FR-5 явно требует N5_CHECKOUT_ENABLED=false на ОБОИХ test-контурах, подтверждение 503 и завершение старых in-flight/старого web ДО provider/DB drain и UI callback switch. False после rate/origin/auth и до body/createIntent/provider create блокирует новые и повторные POST; GET/status/webhook/provider lookup остаются live. Cloud открывается только после подтверждённого Cloud callback, site закрыт весь период; перед возвратом Cloud вновь freeze/drain, n5 открывается только после проверенного возврата, Cloud остаётся закрыт. Pending=0 до freeze, UI hide и mode=off прямо исключены как proof. ADR-002 уточнение, 05 Checkout gate и 06 TASK-8/AM-16 согласованы; WebConfig→explicit adapter→BillingDependencies→createCheckoutHandler, Compose/env/fixtures и payment guards/integration targets включены. Проверки обеих границ требуют 503, ноль новых intents/provider calls и завершение старого callback/status ровно один раз. Принадлежность intent, чужие shop/mode/IP, replay и native proof остаются обязательны. Конкретное окно и полный CJM остаются BLOCKED до живых receipts; исправление design не объявляется работающим кодом.",
+          "evidence": "Повторно проверены FR-5 и 05 Checkout gate, неизменённый ADR-002 и TASK-8/AM-16: server freeze обеих copies с 503 и завершением старых in-flight ДО provider/DB drain; status/webhook остаются live. Открывается только контур подтверждённого callback; перед возвратом Cloud вновь freeze/drain, site открывается после подтверждения n5, Cloud остаётся закрыт. Поддельные/чужие/replay события и native proof сохраняют прежние критерии, полный CJM без window/native receipts blocked. Новый S3 fence не ослабляет контракт. Подтверждён только дизайн.",
           "implementationVerified": true
         },
         {
           "id": "QQ-03",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "Повторно сверены действующие FR-6/7, DATA-01..04/07/08, ADR-002, 04/05 и 06 TASK-4/5/6. Полный journal, отдельный migration state, Cloud 26→28/site 28→28, запрет слепого DB restore/автоматического 28→26, unknown→reconcile и app+namespace compatibility при rollback сохранены. Точные DATABASE_URL database/host и pinned split-project DB/Redis/volumes, copy/drain/size/SHA/original preservation и все прежние/новые данные всех A/B фаз остаются предусловиями. Новые checkout/отчётные проверки не отменяют этих границ. Связанные ADR-001 и остальные неизменные входы имеют прежние проверенные SHA-256. Подтверждение только ideation, без DB/infra/restore/runtime исполнения.",
+          "evidence": "FR-4/6/7 и 05/06 TASK-4/5 сохраняют source-bound backup/drift и все данные, exact DATABASE_URL→pinned DB при split app/infra projects, DB/Redis/volumes, whitelist streaming copy/size/SHA/originals, drain и logical keys. Неизменённые ADR-001/002/04 по проверенным hashes сохраняют полный journal и совместимость namespace при rollback, unknown→reconcile без слепого DB restore. Новый test-only fence не распространяется на отдельно согласованный operator copy старых test objects; journal fixture/точная очистка не разрешают удаление данных приложения. Условие закрыто в дизайне, runtime/restore не проверялись.",
           "implementationVerified": true
         },
         {
           "id": "QQ-04",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "На новой revision сохранены FR-7, resource/provider admission 01 и 05, TASK-4/6: memory ≥2 ГиБ/finite limits, media disk ≥3×input+2 ГиБ, отдельный release disk peak до transfer с rollback images, последовательные 90/120 только Cloud, quota 240 минут/4 LLM с retries и атомарным dispatch admission, stop conditions без production cleanup. TASK-9 отделяет PostgreSQL fixture от live Cloud и не требует дополнительного STT; числовой оракул не расширяет бюджет обработки. Достаточность фактических 3,6 ГБ не обещана, disposable faults не затрагивают рабочие jobs. Подтверждён дизайн, не runtime ресурсы/платные вызовы.",
+          "evidence": "FR-7, 05 и 06 resource admission сохраняют ≥2 ГиБ available memory, finite limits, media disk 3×input+2 ГиБ, отдельный release peak до transfer с rollback images, последовательные Cloud 90/120, quota 240 минут/4 LLM и stop conditions. Новый fence/offline fault не требует дополнительных STT/LLM; реальные S3 tests используют уникальные runs/точную очистку без production cleanup. Фактическая достаточность 3,6 ГБ не обещана. Подтверждение только проектных ограничений.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QQ-05",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "classification": "structural",
+          "evidence": "Закрыто в исправленном дизайне текущей revision. 01 FR-8 и ADR-003 «Независимый предсетевой предохранитель настоящих S3 тестов» прямо требуют до первого real HTTP wrapping actual requestHandler.handle internal/signing/raw clients и проверку presigned URL ДО fetch; 05 связывает это с test-only fence. Независимый parser не использует keyPrefix parser проверяемого SDK. Physical scope ограничен exact HTTPS endpoint/bucket и текущими run object keys/list Prefix/KeyMarker; raw canary — exact own key без list, GetBucketVersioning — только GET exact bucket. Root/broad/outside scope, bucket mutations, CopySource/other bucket queries/encoded escapes блокируются до transport. AM-18 задаёт blocks live test transport outside its independent run scope в tests/storage-prefix.test.ts: отключённая/сломанная SDK middleware должна получить отказ и zero IO, опасные negative probes только fake HTTP. Это контракт блокировки, не исправления запроса; положительный live S3 остаётся отдельным обязательным proof. Единый existing fixture liveS3Environment config/bind/fetch переиспользуется legacy integrations; private pre-PUT journal фиксирует attempted keys/uploads/unknown outcomes, exact cleanup не маскирует первичную ошибку и не даёт PASS при неуспехе. Общий production-wide key/owner exception и отдельный operator copy не меняются. Проверены документы и план; fence, fault и live поведение не исполнялись.",
           "implementationVerified": true
         }
       ],
       "newRisks": {
-        "assessment": "Новых серьёзных условий в focused quality scope не выявлено. Прежняя гонка QQ-02 закрыта явным server freeze/in-flight/drain и эксклюзивным допуском checkout по действующему callback; исходные QQ-01..04 сохранены без изменения.",
-        "evidence": "Самостоятельно прочитаны изменённые 01/ADR-002/05 и план 06, сверены зависимости и 8/8 manifest hashes. Нормальный и обратный переходы окна определены, auth/rate/origin остаются раньше gate, callback/status live; absent flag default true сохраняет прежнее поведение, тестовое окно требует подтверждённого false. Независимый пересчёт 99000+149000+399000=647000, @20%=129400/@30%=194100; после возврата149000: total498000, @20%=99600/@30%=149400, все per-link суммы совпали. 01 отдельно задаёт null, distinct payer, каждое исключение, [начало,конец) Moscow/paid_at, immutable source snapshot и сверку owner/blogger/изоляцию. January2030 PostgreSQL fixture не выдаётся за native/current-month Cloud. TASK-8/9 и AM-16/17 имеют targets/confirmation; это план будущих проверок, не доказательство их выполнения. SDK/shared-key owner exception, whitelist copy и DB/disk preflight сохранены; IAM/key/policy/403 не добавляются.",
+        "assessment": "Новых серьёзных условий в focused quality scope не выявлено; QQ-05 устранён в текущем дизайне независимым предсетевым fence и offline fault, исходные QQ-01..04 сохраняют подтверждение.",
+        "evidence": "Самостоятельно сопоставлены 01 FR-8, ADR-003, 05 и 06 AM-18 с исходным QQ-05: actual handler/fetch boundary до IO, независимость от SDK parser, exact endpoint/bucket/run, запреты bucket/root/CopySource/encoded escapes, raw exact-key, versioning-read exception, fake negative fault и positive live proof разделены. Private journal/unknown outcomes/cleanup failure не подменяют успешную приёмку. Existing fixture reuse и PostgreSQL isolation/отдельный operator copy не нарушены. Owner exception production-wide key остаётся явным; никакие результаты реализации или live PASS не выводятся из документов.",
         "conditions": []
       },
       "authorAssessmentChecked": true,
       "deltaVerification": {
         "classification": "structural",
-        "evidence": "Actual author handoff прочитан. Самостоятельно проверены структурные изменения 01/ADR-002/05, план 06 TASK-8/9/AM-16/17 и связанные зависимости; 8/8 SHA-256/aggregate revision/nonce совпали. QQ-02 закрыт порядком freeze обеих copies→in-flight completion→drain→UI switch→open только receiver, симметрично при возврате; прежние auth/rate/origin и live webhook/status сохранены. Числовой реферальный оракул проверен независимой арифметикой и отделён от native Cloud proof. QQ-01/03/04 остаются подтверждены в дизайне, новых серьёзных условий нет. implementationVerified=true только в смысле ideation, не реализации/тестов/живого CJM. План 06 SHA-256 a8dba153b1b6e497a7bfe05c7e13b1827c16ef40b9f4d9568f96d0cc9bd7826a.",
+        "evidence": "Actual author handoff текущих revision/nonce прочитан. Проверены 8/8 input hashes/aggregate revision и structural изменения независимого test-only physical-scope fence в 01/ADR-003/05, соответствующий AM-18 и fixture reuse в 06 (SHA-256 dab44a6e31a1ac7e44311d5d0514d3d90226af1d2edf1486ac8efc2859a3ab6f). QQ-05 теперь задаёт безопасный отказ actual HTTP/fetch при сломанной SDK middleware и отдельную offline zero-IO проверку; live positive proof остаётся обязательным, private journal/cleanup не маскируют ошибки. Собственные QQ-01..05 сохранены дословно и подтверждены на этой revision. implementationVerified=true означает исключительно исправленный ideation design, не наличие/прохождение кода, тестов либо полного CJM.",
         "implementationVerified": true
       }
     },
@@ -312,68 +355,87 @@
             "features/cloudru-release-parity/05_architecture.md"
           ],
           "evidence": "01_requirements.md CJM-12 требует совпадение регистраций/использования/оплат и оценку 20/30%, но не задаёт выбранный месяц, разбивку по каждой ссылке, отсутствие ставки, исключаемые статусы или сохранение attribution при смене ссылки. docs/acceptance/core-cjm.md §3 требует эти правила; TASK-7 лишь ссылается на CJM-01–12 и обе статистики. Без различающих входов и ожидаемых результатов сумма может совпасть при неверной выборке."
+        },
+        {
+          "id": "QT-08",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Согласовать обязательный FR-8 и критерии приёмки с явным решением владельца: network SDK proof выполнять на настоящем HTTPS Cloud.ru S3, исключить обязательный новый прогон MinIO и не переносить его исторический результат. Сохранить измеримые wire/signing/pagination/erasure/canary критерии и BLOCKED при отсутствии реального S3 proof.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md"
+          ],
+          "evidence": "01_requirements.md FR-8 прямо требует «настоящий MinIO» для проверки SDK, тогда как ADR-003 Confirmation 2–3 требует настоящий Cloud.ru S3, а 02_research.md и 06 план фиксируют отмену MinIO. Формальная обязательная FR и согласованный путь проверки противоречат друг другу: без исправления нельзя однозначно определить что закрывает FR-8 и может ли полный результат быть PASS."
         }
       ],
       "verifications": [
         {
           "id": "QT-01",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "01 CJM-01–12 задаёт субъектов, наблюдения и evidence/status, включая upload, пределы, три контекста, playback/download и referral/payment; native proof остаётся обязательным для полного CJM. Числовое уточнение QT-07 задаёт отдельный PG oracle и live receipts.",
+          "evidence": "CJM-01–12 задают субъекты, evidence/status и критерии upload, лимитов, трёх контекстов, playback и referral/payment. Native proof и полный CJM остаются отдельным live gate.",
           "implementationVerified": true
         },
         {
           "id": "QT-02",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "REL-01/03/04 и TASK-6: полный SHA, archive, OCI и image IDs каждого web/worker каждой цели в каждой фазе A→B→A→B; видимый B, journal и сохранность данных; stale/missing/manifest/journal/partial отказывают.",
+          "evidence": "REL-01/03/04 и TASK-6 требуют SHA, archive и runtime IDs всех web/worker обеих целей во всех A→B→A→B фазах, journal/data и негативные stale/missing/partial checks.",
           "implementationVerified": true
         },
         {
           "id": "QT-03",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "05 поток версии, REL-01/02/04 и TASK-6: чистый checkout SHA, Git archive и build context, checksum передачи, runtime image IDs, сравнение source B на Cloud с Git archive, негативные stale label, archive и runtime mismatch.",
+          "evidence": "05, REL-01/02/04 и TASK-6 связывают clean checkout SHA, Git archive/build context/checksum и runtime IDs; source B сверяется с Git archive, stale/подмена дают отказ.",
           "implementationVerified": true
         },
         {
           "id": "QT-04",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "DATA-01/02, ADR-002 и TASK-4: source-bound backup обеих test DB, изолированный restore, snapshot baseline, полный journal, сравнение значимых строк и проверка live drift, до apply расширение site data baseline; чужой/испорченный backup отклоняется, рабочая БД автоматически не восстанавливается.",
+          "evidence": "DATA-01/02, ADR-002 и TASK-4 требуют source-bound backup обеих DB, isolated restore, snapshot baseline/journal/значимые строки, drift до apply и отказ чужой или повреждённой копии; рабочая DB автоматически не восстанавливается.",
           "implementationVerified": true
         },
         {
           "id": "QT-05",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "FR-7 и раздел provider admission: 240 минут и 4 LLM, quota_counter, атомарный допуск chunk/call, retries и spend log, стоп при нехватке; RES-01/02 локализуют OOM/ENOSPC в disposable worker и сравнивают остальные контейнеры, quota/параллельность отдельно. Реальные остатки и достаточность не проверены.",
+          "evidence": "FR-7 и provider admission задают 240 минут/4 LLM, quota_counter, атомарный допуск, retry/spend log, stop; RES-01/02 предусматривают OOM/ENOSPC в disposable worker, quota/параллельность отдельно. Фактическая достаточность ресурсов не проверена.",
           "implementationVerified": true
         },
         {
           "id": "QT-06",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "FR-5, ADR-002, 05 и TASK-8: обе копии freeze, ожидание старых in-flight и DB/provider drain до UI switch, Cloud открыт после подтверждения callback при закрытом site; обратный freeze/drain, n5 callback подтверждён до открытия site. Webhook/status живы, native lookup/grant/replay/rights/attribution и старый receiver требуют реальных receipts; до них CJM blocked.",
+          "evidence": "FR-5, ADR-002, 05 и TASK-8 требуют freeze обеих copies и in-flight/drain до switch, live webhook/status, симметричный возврат n5 и native proof grant/replay/rights/attribution. Без receipts payment и полный CJM blocked.",
           "implementationVerified": true
         },
         {
           "id": "QT-07",
-          "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
           "classification": "structural",
-          "evidence": "01 раздел количественной проверки задаёт независимый январь 2030 Europe/Moscow, boundaries paid_at, R1/R2 248000/399000 и total 647000, distinct payer, null/20/30, отдельные исключения, неизменный snapshot и refund149000 → 498000/99600/149400; сверка обеих ролей. PG fixture отделена от live Cloud current-month native receipts и независимого расчёта; TASK-9 повторяет доказательства.",
+          "evidence": "01 задаёт независимый January 2030 Moscow R1/R2 oracle: 647000, null/20/30, distinct payer, boundaries, exclusions, snapshot, refund → 498000/99600/149400; обе роли, PG fixture и live receipts отдельно; TASK-9 сохраняет эти критерии.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QT-08",
+          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "classification": "structural",
+          "evidence": "Замечание обнаружено на snapshot 2a38, но receipt не записан: host сменился до lock. Сейчас FR-8 прямо требует Cloud.ru S3 и ADR-003 Confirmation 2–3 соответствует ему; 02/06 отменяют новый MinIO, wire/signing/pagination/erasure/canary и BLOCKED без профиля остаются. Исторический MinIO PASS не подтверждает Cloud.",
           "implementationVerified": true
         }
       ],
       "newRisks": {
-        "assessment": "Новых серьёзных непокрытых условий в области измеримости дизайна не выявлено; фактические зависимости и риски требуют исполнения и receipts.",
-        "evidence": "Проверены freeze/in-flight/drain и сохранение callback/status, независимый месячный оракул и разделение PG/live, SDK wire/MinIO и отдельный copy, DATABASE_URL binding, release disk admission. Общий key production-wide по owner exception; IAM proof и 403 не заявлены.",
+        "assessment": "Новых серьёзных непокрытых условий в области тестируемости не выявлено. Тестовый физический fence и реальные Cloud доказательства ещё требуется реализовать и выполнить.",
+        "evidence": "FR-8/ADR-003: независимый pre-I/O guard actual requestHandler и signed fetch, exact endpoint/bucket/run scope, fake zero-IO при отключённом SDK guard, приватный journal и exact cleanup; исторический MinIO не используется как Cloud evidence. Key production-wide, IAM scope не заявлен.",
         "conditions": []
       },
       "authorAssessmentChecked": true,
       "deltaVerification": {
         "classification": "structural",
-        "evidence": "Восемь SHA-256 и актуальный author handoff сверены; independently проверены QT-01–07 и изменения 01/ADR-002/05 с TASK-8/9 плана. Структурный флаг подтверждает только проверку дизайна ideation: код, тесты, payment, restore, окружения и E2E не проверялись.",
+        "evidence": "Проверены 8 SHA-256, фактический author handoff и текущие 01/ADR-003/05/06: Cloud-only, независимый test-only fence actual HTTP и signed fetch, точный synthetic scope и read-only versioning, fake negative и pre-PUT journal; QT-08 исправлен. Это подтверждение только дизайна ideation, без кода, тестов и live S3.",
         "implementationVerified": true
       }
     }

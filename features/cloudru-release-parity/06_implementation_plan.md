@@ -30,13 +30,13 @@ Test: `rejects implicit production and unknown targets`, `rejects unsafe private
 
 Test: прежние `rejects substituted source archives and stale labeled images`, `health exposes immutable build revision`, `validates full release manifest and artifact identities` плюс wiring regression. Готово: wiring guard сохранён, семь failures устранены фактическим повтором трёх затронутых файлов и полного suite; пересобранный health сохраняет immutable/no-store/DB-error контракт. Правка B — отдельный commit/реальный HTTP ответ, forged label не заменяет image ID. Имена трёх файлов root уточняет по исходному full-suite log, planner их не выдумывает.
 
-### TASK-3 (FR-4, FR-8, ADR-003): SDK namespace и реальная MinIO интеграция
+### TASK-3 (FR-4, FR-8, ADR-003): SDK namespace и реальная S3 интеграция
 
 Фаза architecture/refinement; 60–120 минут; зависит TASK-1 (имена/K1), реализация отдельна от TASK-2. Files: `packages/shared/src/config.ts`, `packages/s3/src/client.ts`, web environment adapter, workers/stt.ts и render.ts, Compose, `.env.example`, `tests/fixtures/environment.ts`, `tests/storage-prefix.test.ts`, `tests/storage-prefix.integration.test.ts`, `tests/wiring.test.ts`. Общий parser loadS3Config исполняет роль sharedS3Config; нового parser/service/зависимостей не создавать. S3_KEY_PREFIX валидируется, empty default сохраняет production; exact tests/cloud/ и tests/site/ обязателен для test admission. Fixtures явно задают empty для прежних тестов, новая интеграция задаёт каждый nonempty prefix.
 
 Одна AWS SDK middleware-граница в StorageClient на internal/signing clients: exact Bucket, command allowlist и request/response таблица ADR-003. Key/Prefix/KeyMarker в wire, response Key/NextKeyMarker/collection prefixes обратно в logical после namespace validation; opaque markers прежние. Path escapes/encoded path/unknown commands/bucket mutations до сети, GetBucketVersioning exact bucket read разрешён. Command не мутировать/не удваивать prefix при retries/signing. Erasure/retention/multipart и DB keys logical. По проверенному import graph stt.ts/render.ts → startWorker/runtime.ts → role !== worker-llm → loadS3Config/createS3Client; explicit adapters обязаны передать prefix. Worker-llm storage не создаёт, ключ/prefix ему не добавлять. Web readEnvironment и fixtures тоже явные поля даже optional variable; wiring guard это проверяет.
 
-Test: `scopes every supported SDK command and public signature and rejects escapes` и `keeps empty prefix compatible and rejects foreign response keys` в unit; `isolates two namespaces on real MinIO and preserves outside canary bytes` в integration; `wires S3_KEY_PREFIX to web and storage workers` в wiring. Реальный middleware pipeline, не mock send. Реальный disposable MinIO: один bucket/два prefixes/одинаковые logical keys/разные bytes, outside synthetic canary size/SHA/key-set до/после. Capture ВСЕХ wire requests: physical prefix object operations/signing/list/multipart/retention; zero network для unsafe/unknown/bucket mutations. GetBucketVersioning read — явное bucket-level исключение. Presigned PUT/GET, multipart complete/list/abort и erasure/retention реальны; pagination unit + live доступный сценарий. Raw fixture client только изолированный setup/teardown, его обращения отделены от SDK proof. Готово: contract/empty compatibility, MinIO без skips; Cloud canary TASK-4 только inside tests, никакого IAM/403 proof. Общий key production-wide по owner exception, при обходе SDK сохраняется доступ ко всему production.
+Test: `scopes every supported SDK command and public signature and rejects escapes` и `keeps empty prefix compatible and rejects foreign response keys` в unit; `isolates two namespaces on real S3 and preserves outside canary bytes` в integration; `wires S3_KEY_PREFIX to web and storage workers` в wiring. Реальный middleware pipeline, не mock send. Настоящий Cloud.ru S3: существующий bucket/два prefixes/одинаковые logical keys/разные bytes, outside-cloud synthetic canary в tests/site/<уникальный-run>/ size/SHA/key-set до/после. Capture ВСЕХ wire requests: physical prefix object operations/signing/list/multipart/retention; zero network для unsafe/unknown/bucket mutations. GetBucketVersioning read — явное bucket-level исключение. Presigned PUT/GET, multipart complete/list/abort и erasure/retention реальны; pagination unit + live доступный сценарий. Raw fixture client только exact-key setup/teardown внутри tests/site/<уникальный-run>/, его обращения отделены от SDK proof. Готово: contract/empty compatibility, настоящий S3 без skips; Cloud canary TASK-4 только inside tests, никакого IAM/403 proof. Общий key production-wide по owner exception, при обходе SDK сохраняется доступ ко всему production.
 
 ### TASK-4 (FR-4, FR-5, FR-7, FR-8, ADR-002, ADR-003): data/isolation/resource admission
 
@@ -112,9 +112,9 @@ TASK-1 → {TASK-2, TASK-3}; TASK-1 + TASK-3 → TASK-4; TASK-2 + TASK-3 + TASK-
 
 CP0: design-ready → root prepare → три actual focused QCSD quality/risk/testability по новым inputs → действительный Step-6 checkpoint, K1 storage-prefix/новые exports и K2 tier L --require-requirements. До этого plan unapproved; форматная K2 не coding permission. Не изменять .fa-state/review JSON для получения PASS.
 
-CP1 (TASK-1/2/3): two-SSH/profile/source guards, точная build/runtime env классификация, prefix unit+real MinIO, все 7 full-suite failures реально устранены; full suite/typecheck/lint и archive web/worker builds с HTTP health immutable/no-store/503 проверены. При отсутствии среды/skip — BLOCKED, не baseline PASS.
+CP1 (TASK-1/2/3): two-SSH/profile/source guards, точная build/runtime env классификация, prefix unit+real S3, все 7 full-suite failures реально устранены; full suite/typecheck/lint и archive web/worker builds с HTTP health immutable/no-store/503 проверены. При отсутствии среды/skip — BLOCKED, не baseline PASS.
 
-CP2 (TASK-4): новый root site binding 5/28 matched test.dump + drift/all-data reconciliation, split application/infra projects/pinned container/volume/network и DATABASE_URL database/host proof. DB-whitelist/size/SHA/original preservation/pending multipart resolution под lock; SDK MinIO wire proof, exact bucket+prefix consumers, Cloud canary только inside tests; SSH/реальный incremental image/archive disk admission. Общий production-wide key — owner exception, IAM/new key/policy/403 не gate. Профильный boolean не evidence; до code/data/resource допуска writers/apply blocked.
+CP2 (TASK-4): новый root site binding 5/28 matched test.dump + drift/all-data reconciliation, split application/infra projects/pinned container/volume/network и DATABASE_URL database/host proof. DB-whitelist/size/SHA/original preservation/pending multipart resolution под lock; SDK S3 wire proof, exact bucket+prefix consumers, Cloud canary только inside tests; SSH/реальный incremental image/archive disk admission. Общий production-wide key — owner exception, IAM/new key/policy/403 не gate. Профильный boolean не evidence; до code/data/resource допуска writers/apply blocked.
 
 CP3 (TASK-5/6): интегрированный remote executor через настоящий SSH на обеих целях; partial/disconnect/concurrency/schema+namespace rollback guards, acid injection. OOM/ENOSPC раньше реально локализованы на Cloud disposable containers, это история; новый runner recovery ими не доказан. Повторять реальные faults только если изменения/недостаток доказательства это требуют, без production mounts/network.
 
@@ -124,7 +124,7 @@ CP4: все восемь фаз A→B→A→B на cloud-c/site-test с полн
 
 Риски нового focused QCSD: provenance/ложный immutable env — TASK-2/6; signing/response-key escape — TASK-3/4; неверный app/infra project/database/host/default POSTGRES_DB — TASK-1/4/5; data loss/чужая ссылка/localstage snapshot/pending multipart — TASK-4/5/6; SSH/two writers/unknown — TASK-5; disk 97%/бюджеты/false green — TASK-4/6; потерянный callback/pending intents — TASK-7. Fallback: остановить только target test copy/новые checkout, сохранить state, reconcile/roll-forward; без production cleanup/слепого restore/отключения guards. Owner явно принимает сохранение production-wide key: SDK boundary снижает ошибки кода, не защищает при обходе SDK/компрометации key. IAM rollout не mitigation текущего плана.
 
-Временный Cloud SSH доступ до 04.11 около 15:01 UTC по сведениям root — не постоянный канал; перед работой root проверяет host key/tunnel/expiry обоих targets. Planner live probes не выполнял. Root уже получил новый site sourceIdentity/account SHA/journal match test.dump 5/28, до apply проверить drift и все прочие данные. Остаются: split-project/DATABASE_URL binding proof, whitelist/copy/multipart receipts, реальный disk admission (при нехватке отдельный cleanup plan), конкретное TEST shop окно/UI-оператор/drain/return, реальные release/CJM receipts. Процесс: root prepare/3 QCSD/K1/K2; код: wiring full-suite fix, prefix SDK/MinIO, remote integration/acid/QE и fresh cross-model review. Новые SA/key/policy/provider403 отсутствуют в зависимостях. Старый ideationclosed/10 checkpoint tests не означают готовность новой ревизии.
+Временный Cloud SSH доступ до 04.11 около 15:01 UTC по сведениям root — не постоянный канал; перед работой root проверяет host key/tunnel/expiry обоих targets. Planner live probes не выполнял. Root уже получил новый site sourceIdentity/account SHA/journal match test.dump 5/28, до apply проверить drift и все прочие данные. Остаются: split-project/DATABASE_URL binding proof, whitelist/copy/multipart receipts, реальный disk admission (при нехватке отдельный cleanup plan), конкретное TEST shop окно/UI-оператор/drain/return, реальные release/CJM receipts. Процесс: root prepare/3 QCSD/K1/K2; код: wiring full-suite fix, prefix SDK/S3, remote integration/acid/QE и fresh cross-model review. Новые SA/key/policy/provider403 отсутствуют в зависимостях. Старый ideationclosed/10 checkpoint tests не означают готовность новой ревизии.
 
 ## Amendments
 
@@ -136,7 +136,7 @@ AM-5 (QT-02, REL-03): runtime IDs каждого сервиса в каждой 
 AM-6 (QT-03, REL-02/04): archive/build/runtime цепочка вместо доверия label. Confirmation: stale label и подмена archive обнаружены → test `rejects substituted source archives and stale labeled images` in `tests/release-candidate.test.ts` (fails if reverted).
 AM-7 (QT-04, RISK-02, DATA-01–04): snapshot restore baseline и полный journal, без слепого restore. Confirmation: несовместимый rollback отвергается → test `rejects rollback with different full schema journal` in `tests/release-candidate.test.ts` (fails if reverted).
 
-AM-8 (последнее явное решение владельца, ADR-003): нынешний общий key сохраняет production-права, только SDK namespace, без новых SA/key/policy/IAM proof/provider403. Confirmation: physical prefix всего object/list/signing/multipart/retention трафика, outside canary прежний → test `isolates two namespaces on real MinIO and preserves outside canary bytes` in `tests/storage-prefix.integration.test.ts` (fails if reverted).
+AM-8 (последнее явное решение владельца, ADR-003): нынешний общий key сохраняет production-права, только SDK namespace, без новых SA/key/policy/IAM proof/provider403. Confirmation: physical prefix всего object/list/signing/multipart/retention трафика, outside canary прежний → test `isolates two namespaces on real S3 and preserves outside canary bytes` in `tests/storage-prefix.integration.test.ts` (fails if reverted).
 AM-9 (владелец, FR-1): cloud-c/site-test только через SSH, controller localdevstage исключён. Confirmation: правильные две цели используют SSH, прежняя local цель отвергнута → test `uses SSH for cloud-c and site-test and rejects localdevstage` in `tests/release-candidate.test.ts` (fails if reverted).
 AM-10 (владелец, FR-4/ADR-002): непустой site сохраняет все 5 accounts/4 videos/10 clips/6 payments/referrals, copy только whitelist с size/SHA, originals и logical DB keys прежние; pending uploads разрешены до смены namespace. Confirmation: чужая ссылка/copy mismatch/pending блокируют apply → test `preserves nonempty site data and rejects foreign copy and pending multipart` in `tests/release-candidate.test.ts` (fails if reverted).
 AM-11 (владелец, FR-5): нынешний TEST shop, конкретное окно/UI-оператор/drain/native/replay/credits/referrals/drain/возврат n5 callback; до окна callback прежний. Confirmation: непройденное окно/drain/return блокирует полный CJM → test `requires agreed current test shop window and drained intents before callback switch` in `tests/release-candidate.test.ts` (fails if reverted).
@@ -149,6 +149,28 @@ AM-15 (import graph/wiring, FR-8): optional S3_KEY_PREFIX явно проход�
 
 AM-16 (QQ-02/RISK-02): checkout freeze обоих test-контуров предшествует drain и callback switch, provider/webhook остаётся live. Confirmation: новые/повторные creation не проходят, старый callback/status работает → test `pauses checkout creation while webhook and status remain live` in `tests/payments-guards.test.ts` (fails if reverted).
 AM-17 (QT-07): January/R1/R2 суммы, null/20/30, distinct payer, исключения и snapshot проверяются независимым оракулом. Confirmation: неверная месячная/посылочная оценка ломает ожидания → test `matches monthly per-link totals rates exclusions and immutable attribution` in `tests/blogger-report.integration.test.ts` (fails if reverted).
+
+
+AM-18 (QQ-05/RISK-04): независимый test-only physical-scope fence до реальной сети,
+включая signed fetch и raw fixture. Confirmation: снятая SDK middleware не даёт
+отправить непредписанный request → test `blocks live test transport outside its independent run scope`
+in `tests/storage-prefix.test.ts` (fails if reverted). Единый liveS3Environment
+в существующем fixtures/environment.ts, без нового app service.
+
+## Поправка владельца: настоящие S3 проверки
+
+MinIO не используется в дальнейших network tests. TASK-3/CP1/CP2 работают с
+закрытым HTTPS Cloud.ru профилем, нынешним общим bucket/key, только tests/cloud/
+и tests/site/; уникальные run IDs и точные fixture keys/upload IDs для cleanup.
+Create/DeleteBucket, root listing и изменение bucket metadata запрещены.
+GetBucketVersioning read разрешён; synthetic outside-cloud canary — tests/site/.
+Legacy upload/guest-pack/retention integration сохраняют сценарии и PostgreSQL
+isolation, но переиспользуют createS3Client с уникальным tests/cloud/<run>/ и
+explicit real-S3 opt-in. Общий fixture helper liveS3Environment в уже существующем
+tests/fixtures/environment.ts даёт минимальный reuse без нового сервиса. RI-001 не утверждает отсутствие lifecycle общего bucket.
+Fake HTTP unit не выдаётся за live proof. Расширение code targets ниже относится
+к необходимой адаптации этих трёх сетевых integration tests.
+
 
 EXPECTED_CODE_TARGETS:
 - scripts/release-candidate.mjs
@@ -175,3 +197,6 @@ EXPECTED_CODE_TARGETS:
 - tests/payments-guards.test.ts
 - tests/billing.integration.test.ts
 - tests/blogger-report.integration.test.ts
+- tests/upload.integration.test.ts
+- tests/guest-pack.integration.test.ts
+- tests/retention.integration.test.ts

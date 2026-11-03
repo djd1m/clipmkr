@@ -7,7 +7,7 @@
 - [x] Root сообщил новый site-test sourceIdentity/account SHA/journal match реального test.dump restore: 5/28; localstage binding исключён.
 - [ ] Root prepare и три actual focused QCSD по последнему owner exception; новый checkpoint K1 namespace/exports и K2.
 - [ ] Проверить split app/infra projects/pinned DB/Redis identities и DATABASE_URL database/host, дополнить весь data baseline/drift.
-- [ ] Реализовать SDK namespace/wire guards нынешним общим key; real MinIO two-prefix/outside canary proof, без IAM rollout/provider403.
+- [ ] Реализовать SDK namespace/wire guards нынешним общим key; real S3 two-prefix/outside canary proof, без IAM rollout/provider403.
 - [ ] Разрешить старые test multipart; DB-whitelist copy в tests/site/ с size/SHA, originals и logical DB keys сохранены.
 - [ ] Подтвердить фактический site disk/incremental image/archive admission без global prune/удаления rollback images.
 - [ ] Исправить точную build-time env классификацию, wiring regression и 7 full-suite failures; повторить полный suite.

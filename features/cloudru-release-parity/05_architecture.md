@@ -86,14 +86,20 @@ Logical request keys превращаются в namespace+key, returned keys п
 unknown commands/path escapes/bucket-wide mutations scoped клиента запрещены.
 Multipart/retention/erasure API и DB keys сохраняют прежний logical контракт.
 
-SDK proof — реальный MinIO с двумя prefixes и outside synthetic canary с SHA/size
+SDK proof — настоящий Cloud.ru S3 с двумя prefixes и outside synthetic canary с SHA/size
 до/после, capture всех object/list wire operations и public signing; unsafe input/
 unknown bucket mutation — ноль requests. GetBucketVersioning exact-bucket read
-явно исключён из object-prefix условия. Cloud canary только inside tests/cloud/
+явно исключён из object-prefix условия. Outside-cloud canary — только собственный
+synthetic object в tests/site/<уникальный-run>/; exact-key cleanup без bucket
+create/delete/root listing/metadata mutations. Cloud canary только inside tests/cloud/
 и tests/site/, без мутаций рабочих namespaces и требования provider 403 от общего
 key. Root read-only проверил: policy отсутствует, CORS уже допускает c/n5 PUT,
 versioning disabled; production settings не меняются. IAM rollout не dependency;
 при обходе SDK/компрометации общего key production-доступ остаётся возможен.
+
+Независимый test-only requestHandler/fetch fence ограничивает физический run scope
+ДО сети даже при отключённой/сломанной SDK middleware: FR-8/ADR-003. Общий fixture
+переиспользуется network тестами; app runtime вторым адаптером не обрастает.
 
 ## Ресурсы и реальная приёмка
 
