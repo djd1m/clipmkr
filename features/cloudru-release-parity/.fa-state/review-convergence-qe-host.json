@@ -12,8 +12,8 @@
     }
   ],
   "snapshot": {
-    "nonce": "bc1f6e25-4822-48fa-a2fc-4669ff055fa0",
-    "revision": "afdcd9f79b5fb71661f534e766f09eae9292817d18e9462a59aac1cc7c31d644",
+    "nonce": "2bb33bfb-7366-4621-964d-72f4992cd261",
+    "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
     "manifest": [
       {
         "path": ".codex/config.toml",
@@ -21,7 +21,15 @@
       },
       {
         "path": ".env.example",
-        "digest": "b22df778271aa5e6140e989a382f59722a3ceeaae83d541b0989007e9e8b68bd"
+        "digest": "191248cf7dbe536590600be506d515bd39855466418cf20a7dc7e300a77c9020"
+      },
+      {
+        "path": "AGENTS.md",
+        "digest": "6d8b0bec7a1783a7b9c24a29eb3a8b83cd9e9c68e81ebb53d613977221e48760"
+      },
+      {
+        "path": "CLAUDE.md",
+        "digest": "1f0fbd7865088dd2454a201025b5d9ce3fda4bb37732b26df023e54e4631fbc1"
       },
       {
         "path": "Dockerfile",
@@ -30,6 +38,10 @@
       {
         "path": "apps/web/src/app/health/route.ts",
         "digest": "abcfa012109114f6afcc22288f3c3cbec85c80dc60847aef5f850fc75d152b5f"
+      },
+      {
+        "path": "apps/web/src/server/billing-deps.ts",
+        "digest": "21d0491af11a30fb21498d2fef9d7a962dff6363784a2e0345733e710ed8e2c6"
       },
       {
         "path": "apps/web/src/server/billing-handler.ts",
@@ -44,6 +56,26 @@
         "digest": "26198017d74871d3ac67c6467bb15aff8f8230b230ac503b42bbde15fd7cb800"
       },
       {
+        "path": "apps/web/src/server/partner.ts",
+        "digest": "497e5e5e6f207276e8616e778490e80c3b27bd1e9f93cd726569e8ba001d08ee"
+      },
+      {
+        "path": "apps/web/src/server/video.ts",
+        "digest": "35bdb05cc54a04581aa3779c34402779fb23e066694c1a2de61ec37093025eed"
+      },
+      {
+        "path": "apps/worker/src/media/download.ts",
+        "digest": "de8a67ec163e477bef692ad0baae1db5b24f9cb35c95e6b9211bf6d50daee774"
+      },
+      {
+        "path": "apps/worker/src/runtime.ts",
+        "digest": "b826885f3f8b328926a90c480b7cab3629972c6b25477e85464bc6aacf79d21b"
+      },
+      {
+        "path": "apps/worker/src/workers/stt.ts",
+        "digest": "3f7c85a3bcbda3012189781e8e7f7d78cac4d6dcb255025197f4168cf028c07b"
+      },
+      {
         "path": "apps/worker/workers/render.ts",
         "digest": "f8a78c7957a0f3770b8e8b6172de48be4630da5d937acabd1806415a5b7fa736"
       },
@@ -53,11 +85,23 @@
       },
       {
         "path": "docker-compose.yml",
-        "digest": "277dc0b17ec0a566e3d0e26b29d2c83e61964491c9b41dd6ab2b88cb2a9f7566"
+        "digest": "de545fff5f556b53a6f64bd7ed384609ea38db06e30e11802cf1e1f90dd7f075"
+      },
+      {
+        "path": "docs/acceptance/core-cjm.md",
+        "digest": "57959d202a7b92f7ce1b0a2b06255435422e0012b28d53f2d1d176912f62be5a"
+      },
+      {
+        "path": "docs/incidents/2026-11-03-disk-space.md",
+        "digest": "7c9935fb1574b0af6638c937018230f02e9303a26a2de1f53c8c0b3d089ebf8c"
+      },
+      {
+        "path": "docs/review-policy.md",
+        "digest": "6619a2e53c73e0aac592cc3a206f147033d5636a57946f43346df17f961ca1aa"
       },
       {
         "path": "docs/runbooks/release-candidate.md",
-        "digest": "9e5570722b5dc8c10610214316d2d94b31e9aeafd18af915fcfeca4b8799d905"
+        "digest": "1040c399d2dfc0e8a8d8768787e11ef7cd65fa46996e526e1c58941a5b75254a"
       },
       {
         "path": "features/cloudru-release-parity/00_complexity_assessment.md",
@@ -65,7 +109,7 @@
       },
       {
         "path": "features/cloudru-release-parity/01_requirements.md",
-        "digest": "744c459ba5d018bc041f194f21869f92fd64d8f79191b6456838f1109305f30f"
+        "digest": "0faa2c3624379fafc10d9a02013bbf481ca83f4b13d7ede9e5ede37c63668a0d"
       },
       {
         "path": "features/cloudru-release-parity/02_research.md",
@@ -73,7 +117,7 @@
       },
       {
         "path": "features/cloudru-release-parity/03.5_ideation_report.md",
-        "digest": "ea86dd509a70fd444f27981e3bf9cce8083ce733988efb2ec5c499a32a5b26d1"
+        "digest": "6859c78895a9770e210a6fdb611660e7a4bcaa6d793feaff62ca2239a5e316bf"
       },
       {
         "path": "features/cloudru-release-parity/03_adr/001-release-manifest.md",
@@ -81,7 +125,7 @@
       },
       {
         "path": "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
-        "digest": "ef74f08733ed90bb0153b8eba6d9aae0715db6e94828ac6aa21da77ed306474d"
+        "digest": "717ac6fb67bc2345cfd7c2f19647959b70ce6cf409ebe2701150f5376eb14a68"
       },
       {
         "path": "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
@@ -89,15 +133,15 @@
       },
       {
         "path": "features/cloudru-release-parity/04_domain_model.md",
-        "digest": "c9471027b8f885ce969b06893a88468aed5add35b71cae95b6df36d4e682dfba"
+        "digest": "fbb1a4c495d63dc2c46fdcfa5c1a65fcd6fd4b2939986d4b5e5530a4b8aaf356"
       },
       {
         "path": "features/cloudru-release-parity/05_architecture.md",
-        "digest": "03142c85eb769ed247f238f148a2b5001a6b3aef09219c5e525d5164e4b1e33b"
+        "digest": "d1b03d7c352c8fad6b1550fde38c9ce2b38eea6f389b6913fb155a0d0a26456a"
       },
       {
         "path": "features/cloudru-release-parity/06_implementation_plan.md",
-        "digest": "dab44a6e31a1ac7e44311d5d0514d3d90226af1d2edf1486ac8efc2859a3ab6f"
+        "digest": "bcd74b5f2447ebbbd5f594d52fa615b2ae85ba1048b9e9351755fbb8e105a16c"
       },
       {
         "path": "openspec/changes/cloudru-release-parity/.openspec.yaml",
@@ -109,7 +153,7 @@
       },
       {
         "path": "openspec/changes/cloudru-release-parity/design.md",
-        "digest": "03f60c4a38d3b7e5c38fce4025fcba408abf4aba2644fd3fcb8bcbce57087ffd"
+        "digest": "e18394380e57aeb7247bfd2c8deccb94566584271d8d83bb6169a9557698684b"
       },
       {
         "path": "openspec/changes/cloudru-release-parity/proposal.md",
@@ -117,11 +161,11 @@
       },
       {
         "path": "openspec/changes/cloudru-release-parity/specs/release-candidate/spec.md",
-        "digest": "56c985a4fc1b49d0a388f53143a2a114fc8fc1647e21314ab6ecc490aa3ea537"
+        "digest": "f6208cfac3d7cc817158e7def28a792f540aead4cfce99c6e5cb9b42e2c66413"
       },
       {
         "path": "openspec/changes/cloudru-release-parity/tasks.md",
-        "digest": "89e648fec18ac51cb2ed13ddc10fc62bc24b6832d4610ca8124e0f43ea3726d2"
+        "digest": "49239dd2608844247eeb6399687db585f3167a553db2d05815eac0927064c383"
       },
       {
         "path": "openspec/config.yaml",
@@ -132,8 +176,168 @@
         "digest": "e126fa455bece0421f6423bb055c2d4e26f6abff30ee8d94462ef2ced235b536"
       },
       {
+        "path": "package-lock.json",
+        "digest": "3ed92ed982b25f5e0ee7d00f0ca4d1f3302af2dc212d90df9f04346e7a1188f1"
+      },
+      {
+        "path": "package.json",
+        "digest": "dcb92398c06ed9a0e5a3949072b10f52d9f30968f0c934eb61e13aacefbb1105"
+      },
+      {
+        "path": "packages/db/migrations/001_init.sql",
+        "digest": "96e64cf44ca9e1842b524f4047344406e647b150e3eb4f628d83b8bdae79a107"
+      },
+      {
+        "path": "packages/db/migrations/002_growth_event_prefix.sql",
+        "digest": "7cc0f6608638f6455a222079dd032aabdfa893e1c9e5ae32c7c8aee4260eaa63"
+      },
+      {
+        "path": "packages/db/migrations/003_ipv6_legacy_cleanup.sql",
+        "digest": "d67d53d976a85df31c7a0badfaafc781d7b0d208551e0b2cb62c3cb980baad46"
+      },
+      {
+        "path": "packages/db/migrations/003_upload.sql",
+        "digest": "37d58b90a50643ee855a428a1f916a8323e8fe365edc5138fd795ebcb647d558"
+      },
+      {
+        "path": "packages/db/migrations/004_ipv6_prefix_masklen.sql",
+        "digest": "931bd1e22bc6a2b8134db2c2935165f8c62cf09c044859c9b039f0a61bd24651"
+      },
+      {
+        "path": "packages/db/migrations/005_queue_probe.sql",
+        "digest": "56f7596827d9c6a4bde7a594cc064151fff95c0ef8464b5d60e83a299ea6d9ab"
+      },
+      {
+        "path": "packages/db/migrations/006_transcription.sql",
+        "digest": "a29192f0d00382faf7c2abff255c6a9bb210ed452d803fd554feebe6470c6ddb"
+      },
+      {
+        "path": "packages/db/migrations/007_selection.sql",
+        "digest": "4bb5a2664300596c029965c79d001255503687358e52160206bdcf7fda2f3d91"
+      },
+      {
+        "path": "packages/db/migrations/008_render.sql",
+        "digest": "f58b0e95eba0e116f2ce5339c9bafef65a69cf5d0d57e8395af42e96126c1d93"
+      },
+      {
+        "path": "packages/db/migrations/009_short_link.sql",
+        "digest": "1ae9770f9cdb7a9e448e154434b9f4d8fb97cec3f9bd7e68809469049a641165"
+      },
+      {
+        "path": "packages/db/migrations/010_guest_pack.sql",
+        "digest": "ba9502f92ab5f5d63189a06ca254355a6d944a757837b896af62d2ebfde27807"
+      },
+      {
+        "path": "packages/db/migrations/011_partner.sql",
+        "digest": "db9435a8126f757d9a82796a897482238e3f8eeeb9219f5b233811e25496ecc3"
+      },
+      {
+        "path": "packages/db/migrations/012_retention.sql",
+        "digest": "581f8b0e48478b9ef52442f9a94323d50ab7d0aa6faaa477e80d97d57eeeaa94"
+      },
+      {
+        "path": "packages/db/migrations/013_watermark_geometry.sql",
+        "digest": "3ad6b8dc0d663d7fb1186d63d64b65c8113f14f93de0e354343f1d9fa9b47faf"
+      },
+      {
+        "path": "packages/db/migrations/014_music.sql",
+        "digest": "3c28b2faac7105ada02cae2ecd8284a1a221b3f1510c51d5ded805493dd7cde5"
+      },
+      {
+        "path": "packages/db/migrations/015_teaser.sql",
+        "digest": "91b901c924022f23fbbd17c28faaee2930015b72aaa2881638978c4e38e27209"
+      },
+      {
+        "path": "packages/db/migrations/016_partner_fairness.sql",
+        "digest": "c62565deed9db14229fbf16c43f03b73d4db80b424bbcdd308349618aef783cd"
+      },
+      {
+        "path": "packages/db/migrations/017_compaction.sql",
+        "digest": "e82364688460aee545e31ca349c77202481fd7591b187f77bc137646a672d670"
+      },
+      {
+        "path": "packages/db/migrations/018_clip_music.sql",
+        "digest": "963bef3e870ee0cd543eac35b1c03245cd48f68b4cb60aa2bab8288c842b02b1"
+      },
+      {
+        "path": "packages/db/migrations/019_music_skip_reason.sql",
+        "digest": "0b6701fbb8182fd83164dd3b3a1cda12c94a2e361a19a8dda436928eb38f47e9"
+      },
+      {
+        "path": "packages/db/migrations/020_clip_cta.sql",
+        "digest": "f4704fd958b10a8ae5c2e4f5e51e91b70b3ccd0fdb8524dbd1cfdee9807c7feb"
+      },
+      {
+        "path": "packages/db/migrations/021_payments.sql",
+        "digest": "d1926825da1f828d6d0028beb4591ed27557c4f5f7560969cba0e258fff46dd6"
+      },
+      {
+        "path": "packages/db/migrations/022_credit_packages.sql",
+        "digest": "60896c2ab95d9c882bc1ec02d86ef162937fdc57c1a152c3f0b9f8de2d49a786"
+      },
+      {
+        "path": "packages/db/migrations/023_support_access.sql",
+        "digest": "4292f40619857601116555f87bdd57610c7bdfdc85a556d9894c926d9fcaaaeb"
+      },
+      {
+        "path": "packages/db/migrations/024_partner_landing_dedup.sql",
+        "digest": "3e4493517428f2cbc37ac8495fb2ffe8561f10159665f66ebbb2164b01a916c5"
+      },
+      {
+        "path": "packages/db/migrations/025_owner_unlimited.sql",
+        "digest": "4631f2f5270bfa145899f3c92df02c544399f679f6bd605e6fadd15b12c7483e"
+      },
+      {
+        "path": "packages/db/migrations/026_blogger_policy.sql",
+        "digest": "34e33657b56f06348009d21f6930b4f86acc7071f33372536b4c4ac348c59eb1"
+      },
+      {
+        "path": "packages/db/migrations/027_payment_referral_snapshot.sql",
+        "digest": "eb43089a92eb1f62784545b5fc742b5b6a1c33f614d83fa8632de721c0ef9c8e"
+      },
+      {
+        "path": "packages/db/src/blogger-report.ts",
+        "digest": "341e249d118533ff3573fd90c2c572f11376a358386942e814b61f9c522cd05d"
+      },
+      {
+        "path": "packages/db/src/index.ts",
+        "digest": "a20430791f44e955d6f94cad3e0427c061c871d368ee996ff877fa982af034e7"
+      },
+      {
+        "path": "packages/db/src/migrate.ts",
+        "digest": "811b03ea40ec002f99c872744eb8a45410c5d5ad508d2395e23078b4b29ab7a3"
+      },
+      {
+        "path": "packages/db/src/quota.ts",
+        "digest": "da1d10660fb84a78dbab490853230f0b00fe3267071b22ddfd8c6c1b3e3dd78e"
+      },
+      {
+        "path": "packages/db/src/selection.ts",
+        "digest": "a3d57395186256d8e6581df946a3c0f06f2e2043a36e62db91b6b2faad24adab"
+      },
+      {
+        "path": "packages/db/src/transcription.ts",
+        "digest": "b26c6d89c44eb799dd60e18560a5475bd1e7b8440c1961a2edcacbf519f21acf"
+      },
+      {
         "path": "packages/s3/src/client.ts",
         "digest": "26cacf63dc70d341668ab849ad2b45461c259ce48ccf1045ada5685482bfc754"
+      },
+      {
+        "path": "packages/s3/src/erasure.ts",
+        "digest": "4b9e759aaa00f019ab633368590319ff639f6a05901aa45051911fda22ac9937"
+      },
+      {
+        "path": "packages/s3/src/multipart.ts",
+        "digest": "df54a2e345d6c98672b28e1bab5ae71b19754f4752a6025521a021f31959a481"
+      },
+      {
+        "path": "packages/s3/src/operations.ts",
+        "digest": "ecf5a0a284d6f3b833cf31adb48d15ee344dca0db1823a1eb69ba686bdb5e0fe"
+      },
+      {
+        "path": "packages/s3/src/presign.ts",
+        "digest": "ff846c390cb8ff77689723377a539013022aa99fd23c0a5fb532da049c930776"
       },
       {
         "path": "packages/shared/src/config.ts",
@@ -153,7 +357,7 @@
       },
       {
         "path": "scripts/release-candidate.mjs",
-        "digest": "f133946bb2bfc36d135cc4de4bc4451942bc058738dd810cb831496bbb69f0da"
+        "digest": "1e06ee58ee4c8d72850011405ba10f96f41ec3947bb4cced10d14d5007121010"
       },
       {
         "path": "tests/artifacts/blogger-cabinet/chromium-dark-1440.png",
@@ -265,11 +469,11 @@
       },
       {
         "path": "tests/fixtures/environment.ts",
-        "digest": "4b4ba4e4151e83ce8e42a318dbbee186b4fcb723075a65148b3072dcd4b94a45"
+        "digest": "16b5ab518d47bd90a0a88643e62fc6ea24d7cde91108eb52d07e5e985c8c0691"
       },
       {
         "path": "tests/guest-pack.integration.test.ts",
-        "digest": "0e62738ae815af134fb0d95387aadb5d0965022a585068bf4110e1ae656fa9aa"
+        "digest": "5193b316ea8a08ed362c146cb4baaa8e589aa64751dc1175cf1a8f579bdb32d3"
       },
       {
         "path": "tests/payments-guards.test.ts",
@@ -277,31 +481,31 @@
       },
       {
         "path": "tests/release-candidate-acid.test.ts",
-        "digest": "de5a9c1c1ae83d59192268b2d402752576c2aaf11ed2a66c5d3774970f99337d"
+        "digest": "27a2f7e5a0c894f13fb3487977ae529b4c7d5e287c2e8163221a4b5b04a898b8"
       },
       {
         "path": "tests/release-candidate.test.ts",
-        "digest": "1b8361bddfdc950145181bbadb9f993cfe88c15abccf10c4536c84d01cdfb1da"
+        "digest": "3ef645f00598e9c28779ac8364fa02452a0a2def7db5a260ae55e797177ccb73"
       },
       {
         "path": "tests/retention.integration.test.ts",
-        "digest": "a1e87f72418b47b59069093d3cba85da21017c0fa0382bbff00da1a5331e0b0f"
+        "digest": "6ad35679aecec9d5b1e6274715d73cfde478cb0cca70eab7d8e1dc3f36c4dacb"
       },
       {
         "path": "tests/storage-prefix.integration.test.ts",
-        "digest": "51610c6c586e9b5c5b24164ea6aa5560f5a551acef17e8906dfc36de41eba271"
+        "digest": "008032259f66fccbc43ea9f5ca443c867cd4d706abdf0ae5f9faada311440cee"
       },
       {
         "path": "tests/storage-prefix.test.ts",
-        "digest": "ccefb9bae17f44d7df0a4ae6390bc508a1ddf328a981511108cc3724cf406a6a"
+        "digest": "aa2c62df9d4d1c36077e55052e85e5f9b045c3704b2f8456ff2a7238d631ed2d"
       },
       {
         "path": "tests/upload.integration.test.ts",
-        "digest": "7032a078915878c7a5b54cf7a77af09232c786ee0720578cda9de55d617345cb"
+        "digest": "bc04b6f4bffcd188155b46ef6da7a12493daabedeac8b181dddc4297e0b8bbe7"
       },
       {
         "path": "tests/wiring.test.ts",
-        "digest": "f8edbdaadba7bed49e6737230e6d232fc51debd60e7791a78372f0799045d809"
+        "digest": "c813b559ec9f328d27ecba3de6d530dc17bc9c7967c5728a0ae9175a87e60de9"
       }
     ]
   },
@@ -513,9 +717,99 @@
         "apps/worker/workers/stt.ts"
       ],
       "evidence": "Actual host manifest содержит 72 совпавших digest, но отсутствуют 12 самостоятельно прочитанных зависимостей (operations/multipart/presign/erasure, DB quota/transcription/selection/blogger-report, worker runtime/stt/download и billing-deps). Их точные supplementary hashes записаны в ownreport; они не заменяют native binding. Это условие полноты доказательства, не дополнительный дефект приложения."
+    },
+    {
+      "id": "QE-P10",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-9 / CP1 / TASK-2/3/6: поддерживаемый полный acceptance runner должен воспроизводимо исполнять включённые release/wiring проверки со всеми инструментами, source fixture и обязательными private proof inputs, без неизбежных failures/skips. Успешный host focused-прогон не заменяет контракт test image/Compose.",
+      "scope": [
+        "Dockerfile",
+        "docker-compose.yml",
+        "tests/release-candidate.test.ts",
+        "tests/release-candidate-acid.test.ts",
+        "tests/wiring.test.ts",
+        "docs/runbooks/release-candidate.md"
+      ],
+      "evidence": "Штатный test image/Compose не обеспечивает новые обязательные проверки. Trigger: запуск service test по docker-compose.yml:218–251 с корректным real-S3 профилем. Он вызывает весь npm test с N5_ACCEPTANCE=1 (:224,229), но не передаёт CLIPMKR_REAL_RESOURCE_PROOF и не монтирует proof. tests/release-candidate-acid.test.ts:463 поэтому обязательно skip, а scripts/test-skip-reporter.ts:14–16 делает exitCode=1. Дополнительно artifacts() в tests/release-candidate.test.ts:51–66 безусловно вызывает git rev-parse HEAD/archive/show в cwd; .dockerignore:6 исключает .git из COPY build context. Dockerfile:71–74 добавляет test-stage только ffmpeg и не объявляет python3/git/Docker CLI, при этом release tests вызывают python3, а tests/wiring.test.ts:94 запускает docker compose config. Независимые offline controls подтвердили git rev-parse HEAD exit128 в source-only каталоге и actual skip reporter exitCode1 при Compose-определённом отсутствии proof. Docker/full suite не запускались; это установленный разрыв кода конфигурации, не отсутствие live proof. Нужен полный поддерживаемый runner/override либо изолированные source fixtures и явный контракт tool/proof inputs; dependency .dockerignore, scripts/test.mjs и scripts/test-skip-reporter.ts необходимо объявить и измерить при repair. Исходный MinIO/N5_PREFIX дефект QE-P09 исправлен отдельно."
     }
   ],
   "reviewSeen": true,
-  "rework": false,
-  "changedPaths": []
+  "rework": true,
+  "changedPaths": [
+    ".env.example",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "apps/web/src/server/billing-deps.ts",
+    "apps/web/src/server/partner.ts",
+    "apps/web/src/server/video.ts",
+    "apps/worker/src/media/download.ts",
+    "apps/worker/src/runtime.ts",
+    "apps/worker/src/workers/stt.ts",
+    "docker-compose.yml",
+    "docs/acceptance/core-cjm.md",
+    "docs/incidents/2026-11-03-disk-space.md",
+    "docs/review-policy.md",
+    "docs/runbooks/release-candidate.md",
+    "features/cloudru-release-parity/01_requirements.md",
+    "features/cloudru-release-parity/03.5_ideation_report.md",
+    "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+    "features/cloudru-release-parity/04_domain_model.md",
+    "features/cloudru-release-parity/05_architecture.md",
+    "features/cloudru-release-parity/06_implementation_plan.md",
+    "openspec/changes/cloudru-release-parity/design.md",
+    "openspec/changes/cloudru-release-parity/specs/release-candidate/spec.md",
+    "openspec/changes/cloudru-release-parity/tasks.md",
+    "package-lock.json",
+    "package.json",
+    "packages/db/migrations/001_init.sql",
+    "packages/db/migrations/002_growth_event_prefix.sql",
+    "packages/db/migrations/003_ipv6_legacy_cleanup.sql",
+    "packages/db/migrations/003_upload.sql",
+    "packages/db/migrations/004_ipv6_prefix_masklen.sql",
+    "packages/db/migrations/005_queue_probe.sql",
+    "packages/db/migrations/006_transcription.sql",
+    "packages/db/migrations/007_selection.sql",
+    "packages/db/migrations/008_render.sql",
+    "packages/db/migrations/009_short_link.sql",
+    "packages/db/migrations/010_guest_pack.sql",
+    "packages/db/migrations/011_partner.sql",
+    "packages/db/migrations/012_retention.sql",
+    "packages/db/migrations/013_watermark_geometry.sql",
+    "packages/db/migrations/014_music.sql",
+    "packages/db/migrations/015_teaser.sql",
+    "packages/db/migrations/016_partner_fairness.sql",
+    "packages/db/migrations/017_compaction.sql",
+    "packages/db/migrations/018_clip_music.sql",
+    "packages/db/migrations/019_music_skip_reason.sql",
+    "packages/db/migrations/020_clip_cta.sql",
+    "packages/db/migrations/021_payments.sql",
+    "packages/db/migrations/022_credit_packages.sql",
+    "packages/db/migrations/023_support_access.sql",
+    "packages/db/migrations/024_partner_landing_dedup.sql",
+    "packages/db/migrations/025_owner_unlimited.sql",
+    "packages/db/migrations/026_blogger_policy.sql",
+    "packages/db/migrations/027_payment_referral_snapshot.sql",
+    "packages/db/src/blogger-report.ts",
+    "packages/db/src/index.ts",
+    "packages/db/src/migrate.ts",
+    "packages/db/src/quota.ts",
+    "packages/db/src/selection.ts",
+    "packages/db/src/transcription.ts",
+    "packages/s3/src/erasure.ts",
+    "packages/s3/src/multipart.ts",
+    "packages/s3/src/operations.ts",
+    "packages/s3/src/presign.ts",
+    "scripts/release-candidate.mjs",
+    "tests/fixtures/environment.ts",
+    "tests/guest-pack.integration.test.ts",
+    "tests/release-candidate-acid.test.ts",
+    "tests/release-candidate.test.ts",
+    "tests/retention.integration.test.ts",
+    "tests/storage-prefix.integration.test.ts",
+    "tests/storage-prefix.test.ts",
+    "tests/upload.integration.test.ts",
+    "tests/wiring.test.ts"
+  ]
 }

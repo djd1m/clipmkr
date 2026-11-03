@@ -1,9 +1,161 @@
 {
   "schema": "fa-review-convergence-1",
   "phase": "qe",
-  "nonce": "bc1f6e25-4822-48fa-a2fc-4669ff055fa0",
-  "revision": "afdcd9f79b5fb71661f534e766f09eae9292817d18e9462a59aac1cc7c31d644",
-  "author": null,
+  "nonce": "2bb33bfb-7366-4621-964d-72f4992cd261",
+  "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+  "author": {
+    "addressed": [
+      "QE-P01",
+      "QE-P02",
+      "QE-P03",
+      "QE-P04",
+      "QE-P05",
+      "QE-P06",
+      "QE-P07",
+      "QE-P08",
+      "QE-P09",
+      "QEP-01",
+      "QEP-02",
+      "QEP-03",
+      "QEP-04",
+      "QEP-05",
+      "QEP-06",
+      "QEP-07"
+    ],
+    "changedScope": [
+      ".codex/config.toml",
+      ".env.example",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "Dockerfile",
+      "apps/web/src/app/health/route.ts",
+      "apps/web/src/server/billing-deps.ts",
+      "apps/web/src/server/billing-handler.ts",
+      "apps/web/src/server/billing-runtime.ts",
+      "apps/web/src/server/environment.ts",
+      "apps/web/src/server/partner.ts",
+      "apps/web/src/server/video.ts",
+      "apps/worker/src/media/download.ts",
+      "apps/worker/src/runtime.ts",
+      "apps/worker/src/workers/stt.ts",
+      "apps/worker/workers/render.ts",
+      "apps/worker/workers/stt.ts",
+      "docker-compose.yml",
+      "docs/acceptance/core-cjm.md",
+      "docs/incidents/2026-11-03-disk-space.md",
+      "docs/review-policy.md",
+      "docs/runbooks/release-candidate.md",
+      "features/cloudru-release-parity/00_complexity_assessment.md",
+      "features/cloudru-release-parity/01_requirements.md",
+      "features/cloudru-release-parity/02_research.md",
+      "features/cloudru-release-parity/03.5_ideation_report.md",
+      "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+      "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+      "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+      "features/cloudru-release-parity/04_domain_model.md",
+      "features/cloudru-release-parity/05_architecture.md",
+      "features/cloudru-release-parity/06_implementation_plan.md",
+      "openspec/changes/cloudru-release-parity/.openspec.yaml",
+      "openspec/changes/cloudru-release-parity/README.md",
+      "openspec/changes/cloudru-release-parity/design.md",
+      "openspec/changes/cloudru-release-parity/proposal.md",
+      "openspec/changes/cloudru-release-parity/specs/release-candidate/spec.md",
+      "openspec/changes/cloudru-release-parity/tasks.md",
+      "openspec/config.yaml",
+      "ops/cloudru/compose.images.yml",
+      "package-lock.json",
+      "package.json",
+      "packages/db/migrations/001_init.sql",
+      "packages/db/migrations/002_growth_event_prefix.sql",
+      "packages/db/migrations/003_ipv6_legacy_cleanup.sql",
+      "packages/db/migrations/003_upload.sql",
+      "packages/db/migrations/004_ipv6_prefix_masklen.sql",
+      "packages/db/migrations/005_queue_probe.sql",
+      "packages/db/migrations/006_transcription.sql",
+      "packages/db/migrations/007_selection.sql",
+      "packages/db/migrations/008_render.sql",
+      "packages/db/migrations/009_short_link.sql",
+      "packages/db/migrations/010_guest_pack.sql",
+      "packages/db/migrations/011_partner.sql",
+      "packages/db/migrations/012_retention.sql",
+      "packages/db/migrations/013_watermark_geometry.sql",
+      "packages/db/migrations/014_music.sql",
+      "packages/db/migrations/015_teaser.sql",
+      "packages/db/migrations/016_partner_fairness.sql",
+      "packages/db/migrations/017_compaction.sql",
+      "packages/db/migrations/018_clip_music.sql",
+      "packages/db/migrations/019_music_skip_reason.sql",
+      "packages/db/migrations/020_clip_cta.sql",
+      "packages/db/migrations/021_payments.sql",
+      "packages/db/migrations/022_credit_packages.sql",
+      "packages/db/migrations/023_support_access.sql",
+      "packages/db/migrations/024_partner_landing_dedup.sql",
+      "packages/db/migrations/025_owner_unlimited.sql",
+      "packages/db/migrations/026_blogger_policy.sql",
+      "packages/db/migrations/027_payment_referral_snapshot.sql",
+      "packages/db/src/blogger-report.ts",
+      "packages/db/src/index.ts",
+      "packages/db/src/migrate.ts",
+      "packages/db/src/quota.ts",
+      "packages/db/src/selection.ts",
+      "packages/db/src/transcription.ts",
+      "packages/s3/src/client.ts",
+      "packages/s3/src/erasure.ts",
+      "packages/s3/src/multipart.ts",
+      "packages/s3/src/operations.ts",
+      "packages/s3/src/presign.ts",
+      "packages/shared/src/config.ts",
+      "patches/dz-name-check-app-source.patch",
+      "scripts/check-env-wiring.mjs",
+      "scripts/install-process.sh",
+      "scripts/release-candidate.mjs",
+      "tests/artifacts/blogger-cabinet/chromium-dark-1440.png",
+      "tests/artifacts/blogger-cabinet/chromium-dark-320.png",
+      "tests/artifacts/blogger-cabinet/chromium-dark-375.png",
+      "tests/artifacts/blogger-cabinet/chromium-light-1440.png",
+      "tests/artifacts/blogger-cabinet/chromium-light-320.png",
+      "tests/artifacts/blogger-cabinet/chromium-light-375.png",
+      "tests/artifacts/blogger-cabinet/webkit-dark-1440.png",
+      "tests/artifacts/blogger-cabinet/webkit-dark-320.png",
+      "tests/artifacts/blogger-cabinet/webkit-dark-375.png",
+      "tests/artifacts/blogger-cabinet/webkit-light-1440.png",
+      "tests/artifacts/blogger-cabinet/webkit-light-320.png",
+      "tests/artifacts/blogger-cabinet/webkit-light-375.png",
+      "tests/artifacts/upload-lifecycle/chromium-dark-1440.png",
+      "tests/artifacts/upload-lifecycle/chromium-dark-320.png",
+      "tests/artifacts/upload-lifecycle/chromium-dark-375.png",
+      "tests/artifacts/upload-lifecycle/chromium-light-1440.png",
+      "tests/artifacts/upload-lifecycle/chromium-light-320.png",
+      "tests/artifacts/upload-lifecycle/chromium-light-375.png",
+      "tests/artifacts/upload-lifecycle/webkit-dark-1440.png",
+      "tests/artifacts/upload-lifecycle/webkit-dark-320.png",
+      "tests/artifacts/upload-lifecycle/webkit-dark-375.png",
+      "tests/artifacts/upload-lifecycle/webkit-light-1440.png",
+      "tests/artifacts/upload-lifecycle/webkit-light-320.png",
+      "tests/artifacts/upload-lifecycle/webkit-light-375.png",
+      "tests/billing.integration.test.ts",
+      "tests/blogger-report.integration.test.ts",
+      "tests/feature-adr-paths.test.mjs",
+      "tests/fixtures/environment.ts",
+      "tests/guest-pack.integration.test.ts",
+      "tests/payments-guards.test.ts",
+      "tests/release-candidate-acid.test.ts",
+      "tests/release-candidate.test.ts",
+      "tests/retention.integration.test.ts",
+      "tests/storage-prefix.integration.test.ts",
+      "tests/storage-prefix.test.ts",
+      "tests/upload.integration.test.ts",
+      "tests/wiring.test.ts"
+    ],
+    "classification": "structural",
+    "delta": "Lifecycle multipart отделён от исторического UploadId; initial/steady namespace разделены для обеих целей; terminal reconcile идемпотентен, staging привязан к операции и защищён locks/intent до transfer. App/infra endpoint/network/ports/aliases сверяются до SQL. Baseline охватывает все public tables с полной исходной schema projection. S3 CopySource fence действует до сети, live journal обязателен, cleanup exact с сохранением обеих ошибок, Compose acceptance использует настоящий S3. Owner preservation требует bound approval и канонический whitelist согласно изменённому владельцем ADR-002, без приписывания synthetic provenance реальным данным. Дисковый admission измеряет архивы/layers/metadata, суммарный бюджет и inode/layout/temp на обеих целях до writer и повторно под lock; effective containerd paths получаются штатным config dump проверенного запущенного executable. Существенные неизменённые зависимости включены в manifest.",
+    "evidence": "Проверяемый committed source 1fc9622d7bd7dd054e3b141886200c5611516742. Именованные tests/runbook внутри measured scope; авторские результаты не являются независимым закрытием. Root запускает final full regression отдельно; live A/B, Cloud CJM и native TEST shop окно остаются открыты.",
+    "newRisks": {
+      "assessment": "Изменены trust boundary probes, disk budget, locks и обработка legacy/новых media. Нужна независимая проверка поддерживаемого положительного пути, malformed/foreign inputs и отказов, actual embedded Python, не совпадения названий тестов. Live gates не объявлены пройденными.",
+      "evidence": "Текущий measured delta и affected dependencies; author claims требуют originating verification каждого из 16 условий и new-risk review.",
+      "conditions": []
+    }
+  },
   "reviews": [
     {
       "reviewer": "qe-primary",
@@ -130,20 +282,105 @@
           "evidence": "Штатный acceptance test container остаётся привязан к MinIO и не получает live S3 профиль. docker-compose.yml:224–247 запускает N5_ACCEPTANCE=1, выставляет старые MinIO S3_* и depends_on minio; N5_PREFIX_RUN_S3/N5_PREFIX_S3_* и private receipt mount не передаются. После изменения tests/storage-prefix.integration.test.ts:19–25 этот стандартный контейнер падает Real S3 test profile required, три legacy network ветки skip. Экспорт новых переменных на host сам по себе не передаёт их внутрь Compose service. Это статически установленный разрыв test wiring, не результат запуска Docker. Критерий исправления: Дать поддерживаемый документированный private real-S3 acceptance профиль/override, передающий новые env и journal mount, без обязательного MinIO, сохранив opt-in и независимый fence. Проверять resolved test configuration и отсутствие вынужденных skips; не ослаблять N5_ACCEPTANCE."
         }
       ],
-      "verifications": [],
+      "verifications": [
+        {
+          "id": "QE-P01",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "scripts/release-candidate.mjs:855 теперь считает pending по status=uploading; исторический UploadId завершённой video больше не достаточен для отказа. Прочитан actual VideoService.complete. Основные tests 52/52 PASS; дополнительный actual admissionProbe с fake SQL принимает idle done+historical ID, отказывает active upload; in-memory возврат старого предиката делает positive красным. Фактический pending S3 проверяет embedded media verifier. Queued остаётся active workload и требует drain, без изменения данных.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P02",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "checkDataReceipt :715 и remoteExecutor :921 различают initial legacy и steady prefixed; Cloud initial пустой, новые Cloud/site prefixed объекты допускаются. Actual JS media verifier читает только prefixed key для steady, legacy original до/после; negative missing/pending срабатывают. PASS tests verifies legacy and newly prefixed media without another legacy copy и records every runtime identity through A B A B с новым объектом между фазами. Это fake execution, не live A/B.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P03",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Remote execute/reconcile принимает связанные pending/success/aborted/operator-blocked и сверяет runtime/journal/data под lock без повторного load/up/migrate. PASS группы reconciles unknown remote outcomes before retry: потеря ответа после старта, terminal success/abort, повтор reconcile, до remote intent, чужой binding и активный migrator. Базовый apply имеет положительный путь; lost terminal response больше не блокируется только из-за status success.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P04",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Controller :1113–1126 берёт упорядоченные local locks, :1251 сохраняет staging intent до transfer; :1023/1059 и receiver :935–1009 используют operation directory, remote flock, durable marker, размер/SHA и безопасный reuse. PASS partial первого/второго transfer, другой operation до terminal отказан и после terminal принят; local contention и remote contention проверены отдельными процессами; A/B/rollback использует разные staging directories. Source-sync сознательно отдельная create-only операция, retry её partial tree требует оператора по runbook.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P05",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "admissionProbe :788–841 проверяет DB/Redis ports/options, effective и runtime app networks, project/service identities, DNS/mount/env overrides и alias collisions до SQL; compose run migrator наследует проверенную конфигурацию. Положительный split-project apply для двух targets и девять отрицательных controls прошли. Собственный actual probe дополнительно отверг DB port, Redis port, effective/runtime network и alias collision при нуле SQL calls. Настоящий DNS/Docker здесь не проверялся.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P06",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "tests/fixtures/environment.ts:58–65 использует явный signing-query allowlist и case-insensitive запрет CopySource query/headers. tests/storage-prefix.test.ts:132–183 прошёл с настоящим AWS presigner для CopyObject и UploadPartCopy, без app middleware, с нулём fake transport calls для запрещённых операций; разрешённые запросы доходят до transport. Реальная сеть не использовалась.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P07",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "checkDataReceipt :688–695 требует 26 известных таблиц и допускает дополнительные измеренные; actual probe :861–873 получает полный public schema, hashes/counts, compareAdmission :911 требует точное совпадение таблиц и исходных columns/count/hash. После добавляющей migration сохраняется исходная проекция. PASS id-only/schema/content/count guards; собственный actual probe меняет hashes partner/partner_code/growth_event/transcript/clip_link/payment/credit_grant при неизменных IDs. Прочитаны blogger-report, PartnerService и migrations026/027. PostgreSQL oracle/restore здесь не исполнялся.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P08",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Обязательный private receipt до live mutations теперь независимо от N5_ACCEPTANCE; attempts сохраняют exact physical keys, unknown create и полученные UploadIds, cleanup phase fsync-ится. Guest/retention используют exact cleanup и сохраняют primary+cleanup; upload finalize всегда закрывает pool. PASS journal unknown/resolved/failed/complete и AggregateError/pool cleanup controls; source network fixtures просмотрены полностью. Live crash/реальный S3 cleanup этим не заявлены.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QE-P09",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Исходный разрыв S3 wiring устранён: docker-compose.yml:202–251 отделяет legacy-minio, у test нет minio dependency, переданы N5_PREFIX_RUN_S3 и все N5_PREFIX_S3 inputs, private receipt bind с create_host_path=false; .env.example описывает private opt-in. Независимый YAML AST control подтвердил проводку, формат receipt, зависимости и отсутствие прежних S3 overrides. Docker compose config test намеренно не исполнялся по scope; найденный отдельный разрыв всего test runner зарегистрирован QE-P10. Эта verification закрывает исходные MinIO/N5_PREFIX defects, а не общий acceptance PASS.",
+          "implementationVerified": true
+        }
+      ],
       "newRisks": {
-        "assessment": "Выявлены девять существенных structural нарушений; все внесены как исходные условия QE-P01–QE-P09. Дополнительные ресурсные/runtime/live ограничения описаны отдельно и не выданы за подтверждённые дефекты.",
-        "evidence": "Независимый scope от base-ref; 102 Vitest checks PASS, 18 embedded fake executor cases, 16 synthetic process controls; воспроизведены terminal-reconcile, неверный network/ports и query CopySource. Отчёт features/cloudru-release-parity/.fa-state/qe-reports/qe-primary.md SHA256 5bf81fced5b0dc0aa67edc190ce7850f9f0dff11c5c64db5e358b1e83f41bd47. Live/полный suite/CJM не запускались.",
-        "conditions": []
+        "assessment": "Проверены actual measured delta и затронутые зависимости, а также author newRisks. Девять исходных исправлений подтверждены; выявлен новый HIGH structural QE-P10 в интеграции штатного acceptance runner. Нет основания для code GO. Отсутствие live A/B/CJM/payment не объявлено кодовым дефектом.",
+        "evidence": "130 Vitest PASS (52 focused, 78 adjacent), 1 намеренно исключённый Docker CLI test; 2 Node process tests PASS; 15 собственных admission controls, YAML AST и 2 воспроизведения runner gap. AQE fleet/SSH/Docker/реальная сеть не запускались. Подробности: features/cloudru-release-parity/.fa-state/qe-reports/qe-primary.md, текущий cycle2; actual model gpt-6-astra, session 01a1a267-4905-79c1-8d8a-019e54e458f4. Report SHA256 72f71cabdb12331d47d9e20599e709f735dbd05720a9ca85e6a3cbc108a81ccd.",
+        "conditions": [
+          {
+            "id": "QE-P10",
+            "owner": "qe-primary",
+            "severity": "HIGH",
+            "classification": "structural",
+            "requirement": "FR-9 / CP1 / TASK-2/3/6: поддерживаемый полный acceptance runner должен воспроизводимо исполнять включённые release/wiring проверки со всеми инструментами, source fixture и обязательными private proof inputs, без неизбежных failures/skips. Успешный host focused-прогон не заменяет контракт test image/Compose.",
+            "scope": [
+              "Dockerfile",
+              "docker-compose.yml",
+              "tests/release-candidate.test.ts",
+              "tests/release-candidate-acid.test.ts",
+              "tests/wiring.test.ts",
+              "docs/runbooks/release-candidate.md"
+            ],
+            "evidence": "Штатный test image/Compose не обеспечивает новые обязательные проверки. Trigger: запуск service test по docker-compose.yml:218–251 с корректным real-S3 профилем. Он вызывает весь npm test с N5_ACCEPTANCE=1 (:224,229), но не передаёт CLIPMKR_REAL_RESOURCE_PROOF и не монтирует proof. tests/release-candidate-acid.test.ts:463 поэтому обязательно skip, а scripts/test-skip-reporter.ts:14–16 делает exitCode=1. Дополнительно artifacts() в tests/release-candidate.test.ts:51–66 безусловно вызывает git rev-parse HEAD/archive/show в cwd; .dockerignore:6 исключает .git из COPY build context. Dockerfile:71–74 добавляет test-stage только ffmpeg и не объявляет python3/git/Docker CLI, при этом release tests вызывают python3, а tests/wiring.test.ts:94 запускает docker compose config. Независимые offline controls подтвердили git rev-parse HEAD exit128 в source-only каталоге и actual skip reporter exitCode1 при Compose-определённом отсутствии proof. Docker/full suite не запускались; это установленный разрыв кода конфигурации, не отсутствие live proof. Нужен полный поддерживаемый runner/override либо изолированные source fixtures и явный контракт tool/proof inputs; dependency .dockerignore, scripts/test.mjs и scripts/test-skip-reporter.ts необходимо объявить и измерить при repair. Исходный MinIO/N5_PREFIX дефект QE-P09 исправлен отдельно."
+          }
+        ]
       },
-      "authorAssessmentChecked": false,
-      "deltaVerification": null
+      "authorAssessmentChecked": true,
+      "deltaVerification": {
+        "classification": "structural",
+        "evidence": "Author addressed/changedScope/delta/newRisks сопоставлены с текущими исходниками и самостоятельно выполненными тестами, не приняты как PASS. Изменения lifecycle/namespace/identity/baseline/staging/fence/cleanup/disk проверены на positive и negative paths, process patch проверен этой ролью. changedScope покрывает host.changedPaths. Вся delta не подтверждается как готовая из-за нового QE-P10 (test image/Compose не обеспечивает suite inputs/dependencies); live и полный suite остаются отдельной приёмкой root.",
+        "implementationVerified": false
+      }
     },
     {
       "reviewer": "qe-precision",
       "family": "owner-exception",
       "independent": true,
-      "verdict": "no-go",
+      "verdict": "clean",
       "conditions": [
         {
           "id": "QEP-01",
@@ -236,14 +473,68 @@
           "evidence": "Actual host manifest содержит 72 совпавших digest, но отсутствуют 12 самостоятельно прочитанных зависимостей (operations/multipart/presign/erasure, DB quota/transcription/selection/blogger-report, worker runtime/stt/download и billing-deps). Их точные supplementary hashes записаны в ownreport; они не заменяют native binding. Это условие полноты доказательства, не дополнительный дефект приложения."
         }
       ],
-      "verifications": [],
+      "verifications": [
+        {
+          "id": "QEP-01",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Actual endpoint/network checks at scripts/release-candidate.mjs:778/816/823/830/841 and relevant split-topology test passed positive both-target nonempty CLI and negatives DB/port/network/alias/hosts/links/mount/PG/runtime overrides before SQL. Own unchanged actual admissionProbe confirmed nonempty Cloud positive and wrong network/alias negatives; removal mutant in memory breaks the oracle. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QEP-02",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Actual checkDataReceipt and compareAdmission require 26 known tables and compare complete public schema membership/ordered columns, hashes and row counts to snapshot/restore/live before writer. Id-only rejected; per-table schema/row/hash/source-identity drift tests passed. Executor verifies original data across the additive migration. No real PostgreSQL run claimed. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QEP-03",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Current agreed FR-4 and ADR-002:46–74 explicitly replace the historical synthetic-only premise with preservation of all existing site-test data, including real uploads. Original condition preserved unchanged. Independently verified canonical account/video/clip/key mapping, DB owner tuple and private owner approval exact sourceIdentity/bucket/prefix/whitelist hash before staging. Positive owner-preserved and negative owner/scope/identity/hash/missing/unsafe/symlink approval/kind/pending tests passed. This verifies the explicit owner acceptance amendment, not historical synthetic provenance or owner authentication. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QEP-04",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Actual embedded media verifier distinguishes legacy-preserved/prefixed; steady reads only prefixed destination. Byte-level VM tests passed legacy/site/Cloud and missing/pending negatives. Actual executor fault cases verified media check before stop and again after stop and no restart after failure. Newly prefixed media no longer requires raw legacy original; real copy remains separate operator acceptance. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QEP-05",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Actual admissionProbe no longer unconditionally rejects nonempty Cloud. Empty requirement only applies to initial Cloud, steady accepts prefixed media. Own actual-probe nonempty Cloud positive, both-target nonempty controller path, Cloud-prefix verifier and wrong initial-kind guard before load passed. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QEP-06",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "Fixture now requires private durable journal, records physical attempted keys and unknown token before effect, exact UploadId after acknowledgement, cleanup/outcomes. Relevant callers independently read. Passed journal recovery key/ID/unknown/resolved/cleaned/permissions test and dual-error/DB-close tests. Live S3 not run. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QEP-07",
+          "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+          "classification": "structural",
+          "evidence": "All 12 relevant unchanged dependencies missing in originating snapshot are now present in actual 123-file host manifest, byte-identical to originating hashes. Schema/migrator and affected app paths included. Every measured SHA verified again under final receipt lock with zero mismatch. Reviewer did not modify host/lineage. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+          "implementationVerified": true
+        }
+      ],
       "newRisks": {
-        "assessment": "Исходные найденные риски и условие полноты snapshot явно перечислены в conditions; дополнительных условий вне этого списка не заявлено.",
-        "evidence": "Независимое чтение документов до кода; 107/107 scoped unit, 18/18 дополнительно адаптированных fake executor cases, независимые negative probes. Ownreport features/cloudru-release-parity/.fa-state/qe-reports/qe-precision.md; SHA-256 2451e9aa8ee879937ee8739161c605afac5dc2613ccd58c4dda034c55d28c655. Полный runtime/CJM и gate не выполнялись.",
+        "assessment": "После независимой проверки назначенного code scope, measured delta и затронутых зависимостей дополнительных serious code рисков не выявлено. Owner amendment сохранности проверен явно. Ограничение общего receipt envelope и live acceptance названы отдельно.",
+        "evidence": "140/140 focused Vitest tests без skip, четыре собственных actual-probe controls с in-memory mutant; implementation и relevant tests проверены самостоятельно. Author new-risk assessment проверен. Native/runtime closure не заявлены. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
         "conditions": []
       },
-      "authorAssessmentChecked": false,
-      "deltaVerification": null
+      "authorAssessmentChecked": true,
+      "deltaVerification": {
+        "classification": "structural",
+        "evidence": "Самостоятельно проверены network/endpoint/alias/DNS safeguards, full schema/data/count baseline, canonical legacy owner approval, initial/steady media, multipart lifecycle/fence/journal, locks/staging/reconcile и disk/archive/effective-daemon admission. Author structural classification/risk assessment подтверждены actual code и 140 passed focused tests плюс четыре controls. Sol-authored process paths исключены согласно назначению и остаются у qe-primary/Astra. Все 123 host hashes совпали; actual live A/B/CJM/shop и full suite не присвоены этой роли. Общий envelope оставлен владельцу/root, если он stale. Current host revision e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0, nonce 2bb33bfb-7366-4621-964d-72f4992cd261. Ownreport SHA-256 6e894bb41fdd6c8f838bf67e4f4b2652460c570ffd6983aa42fca296fb6a90e3.",
+        "implementationVerified": true
+      }
     }
   ]
 }

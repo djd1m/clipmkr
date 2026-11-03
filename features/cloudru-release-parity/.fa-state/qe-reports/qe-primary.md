@@ -1,3 +1,84 @@
+# Focused native QE — cycle2, qe-primary
+
+Текущий вердикт: **NO-GO для code GO**. Исправления исходных **QE-P01…QE-P09 проверены** на текущей ревизии; найден новый **QE-P10, HIGH, structural**. Это code review, а не акт готовности продукта. Final product acceptance не установлена и остаётся отдельной задачей root.
+
+## Привязка и независимость
+
+- Actual selected model: **gpt-6-astra**, роль `qe-primary`, family `owner-exception`.
+- Exec session/thread: `01a1a267-4905-79c1-8d8a-019e54e458f4`; идентичность подтверждена только соответствующими переменными сессии.
+- HEAD: `1fc9622d7bd7dd054e3b141886200c5611516742`; nonce: `2bb33bfb-7366-4621-964d-72f4992cd261`; revision: `e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0`.
+- Это продолжение originating независимого ревью, начатого с документов без coding history. Авторы controller/SDK/app/tests по назначению — `gpt-6.1-terra` и `gpt-6-sol`; process patch/installer/test — `gpt-6.1-sol`. Astra отличается от всех этих моделей. Root integration не считается новым product coding.
+- Текущий host содержит 123 измеренных файла. Все SHA256 сверены при исследовании и повторно под reviewer lock непосредственно перед записью. Source/host/history не менялись reviewer-ом.
+- Входы: полный перечень согласованных документов сохранён в исторической части ниже; повторно использованы AGENTS.md, review-policy, installed feature-adr `modules/08-qe.md`, обновлённые requirements, ADR-001/002/003, domain/architecture/plan и OpenSpec. Прочитан только собственный прежний отчёт и собственные условия. Current author object/newRisks прочитаны как проверяемое объяснение delta, не как доказательство.
+- Source scope основан на Git diff от feature base `119c446ce5bdc7b8f4cc3afa49efce47bd4642a2` и delta от прежнего reviewed HEAD `9b214f401ddcfa193bc455064061a0d2722417ac`. Новые измеренные зависимости не приравнивались к новым правкам. Проверены весь controller с фактическими embedded Python/JS, test fixtures, Compose, SDK, data lifecycle/schema/ownership, runtime/payment/wiring и process compatibility. Generated screenshots и запрещённые как исходные evidence historical ideation bytes использованы только для hash binding.
+
+## Реально выполнено
+
+Node: `/tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin/node`, версия 22.23.4; Python локальный. Окружение запусков очищалось через `env -i`; TMPDIR и логи направлены в разрешённый private каталог своей роли. В безопасном PATH перед системными командами поставлены отказывающие заглушки `docker`/`ssh`; штатные тестовые fake binaries используются там, где тест явно их создаёт.
+
+1. `node node_modules/vitest/vitest.mjs run tests/release-candidate.test.ts tests/release-candidate-acid.test.ts tests/storage-prefix.test.ts tests/payments-guards.test.ts --no-cache` с `N5_ACCEPTANCE=1` и разрешённым `CLIPMKR_REAL_RESOURCE_PROOF`: **52/52 PASS**, 4 файла, 250.77 s. Controller 17, acid 13, namespace 10, checkout 12. Acid читает единственный разрешённый resource proof: проверки его структуры/before-after/fault fields прошли; новых реальных OOM/ENOSPC/Docker faults reviewer не запускал и происхождение private документа внешним runtime не удостоверял.
+2. `node node_modules/vitest/vitest.mjs run tests/wiring.test.ts tests/health.test.ts tests/s3.test.ts tests/s3-public-endpoint.test.ts tests/billing.unit.test.ts --testNamePattern='^(?!.*resolves real S3 acceptance)' --no-cache`: **78 PASS, 1 намеренно excluded**, 18.12 s. Исключённый новый тест вызывает настоящий Docker CLI; запрет текущей сессии соблюдён. Это не full-suite PASS. Первый начатый combined прогон был остановлен после обнаружения этой зависимости и в counts не включён.
+3. `node --test tests/feature-adr-paths.test.mjs`: **2/2 PASS**, включая 6 K1 и 10 K2 controls; `sh -n scripts/install-process.sh` и `git apply --reverse --check` для обоих process patches — exit0. Installer, init и feature gates не запускались.
+4. Собственный `probe_controls.py` исполняет **actual admissionProbe**, подменяя только системные наблюдения/transport. **15 controls PASS**: done с historical UploadId; in-memory mutant старого upload predicate ловится; active upload отвергается; пять endpoint/network ошибок дают ноль SQL; семь изменений contents при прежних IDs меняют data hashes. SQL responses моделируются — это не PostgreSQL integration.
+5. Независимый YAML AST control без Docker подтвердил S3 opt-in/env/private mount и отсутствие MinIO dependency. Полное resolved Compose/runtime поведение не заявлено.
+6. Новая regression воспроизведена двумя offline controls: настоящая `git rev-parse HEAD` в disposable source-only каталоге — **128**; actual transpiled skip reporter на обязательном skipped resource case с Compose-defined `N5_ACCEPTANCE=1` — **exitCode1**. Fake reporter input доказывает правило отказа, а отсутствие proof env/mount установлено из actual Compose.
+
+Итого 130 Vitest PASS, 1 осознанное исключение; отдельные process и собственные controls указаны выше без суммирования неоднородных assertions. No network/SSH/Docker/API/платных вызовов, secret env и прочих private profiles/receipts не было. Мутации только в памяти или disposable файлах собственного private каталога. Настоящие resource faults, весь suite, build/typecheck/lint/CJM не повторялись за root.
+
+## Проверка исходных условий
+
+| ID | Текущий результат и независимое свидетельство |
+|---|---|
+| QE-P01 | **implementationVerified:true**. scripts/release-candidate.mjs:855 теперь считает pending по status=uploading; исторический UploadId завершённой video больше не достаточен для отказа. Прочитан actual VideoService.complete. Основные tests 52/52 PASS; дополнительный actual admissionProbe с fake SQL принимает idle done+historical ID, отказывает active upload; in-memory возврат старого предиката делает positive красным. Фактический pending S3 проверяет embedded media verifier. Queued остаётся active workload и требует drain, без изменения данных. |
+| QE-P02 | **implementationVerified:true**. checkDataReceipt :715 и remoteExecutor :921 различают initial legacy и steady prefixed; Cloud initial пустой, новые Cloud/site prefixed объекты допускаются. Actual JS media verifier читает только prefixed key для steady, legacy original до/после; negative missing/pending срабатывают. PASS tests verifies legacy and newly prefixed media without another legacy copy и records every runtime identity through A B A B с новым объектом между фазами. Это fake execution, не live A/B. |
+| QE-P03 | **implementationVerified:true**. Remote execute/reconcile принимает связанные pending/success/aborted/operator-blocked и сверяет runtime/journal/data под lock без повторного load/up/migrate. PASS группы reconciles unknown remote outcomes before retry: потеря ответа после старта, terminal success/abort, повтор reconcile, до remote intent, чужой binding и активный migrator. Базовый apply имеет положительный путь; lost terminal response больше не блокируется только из-за status success. |
+| QE-P04 | **implementationVerified:true**. Controller :1113–1126 берёт упорядоченные local locks, :1251 сохраняет staging intent до transfer; :1023/1059 и receiver :935–1009 используют operation directory, remote flock, durable marker, размер/SHA и безопасный reuse. PASS partial первого/второго transfer, другой operation до terminal отказан и после terminal принят; local contention и remote contention проверены отдельными процессами; A/B/rollback использует разные staging directories. Source-sync сознательно отдельная create-only операция, retry её partial tree требует оператора по runbook. |
+| QE-P05 | **implementationVerified:true**. admissionProbe :788–841 проверяет DB/Redis ports/options, effective и runtime app networks, project/service identities, DNS/mount/env overrides и alias collisions до SQL; compose run migrator наследует проверенную конфигурацию. Положительный split-project apply для двух targets и девять отрицательных controls прошли. Собственный actual probe дополнительно отверг DB port, Redis port, effective/runtime network и alias collision при нуле SQL calls. Настоящий DNS/Docker здесь не проверялся. |
+| QE-P06 | **implementationVerified:true**. tests/fixtures/environment.ts:58–65 использует явный signing-query allowlist и case-insensitive запрет CopySource query/headers. tests/storage-prefix.test.ts:132–183 прошёл с настоящим AWS presigner для CopyObject и UploadPartCopy, без app middleware, с нулём fake transport calls для запрещённых операций; разрешённые запросы доходят до transport. Реальная сеть не использовалась. |
+| QE-P07 | **implementationVerified:true**. checkDataReceipt :688–695 требует 26 известных таблиц и допускает дополнительные измеренные; actual probe :861–873 получает полный public schema, hashes/counts, compareAdmission :911 требует точное совпадение таблиц и исходных columns/count/hash. После добавляющей migration сохраняется исходная проекция. PASS id-only/schema/content/count guards; собственный actual probe меняет hashes partner/partner_code/growth_event/transcript/clip_link/payment/credit_grant при неизменных IDs. Прочитаны blogger-report, PartnerService и migrations026/027. PostgreSQL oracle/restore здесь не исполнялся. |
+| QE-P08 | **implementationVerified:true**. Обязательный private receipt до live mutations теперь независимо от N5_ACCEPTANCE; attempts сохраняют exact physical keys, unknown create и полученные UploadIds, cleanup phase fsync-ится. Guest/retention используют exact cleanup и сохраняют primary+cleanup; upload finalize всегда закрывает pool. PASS journal unknown/resolved/failed/complete и AggregateError/pool cleanup controls; source network fixtures просмотрены полностью. Live crash/реальный S3 cleanup этим не заявлены. |
+| QE-P09 | **implementationVerified:true**. Исходный разрыв S3 wiring устранён: docker-compose.yml:202–251 отделяет legacy-minio, у test нет minio dependency, переданы N5_PREFIX_RUN_S3 и все N5_PREFIX_S3 inputs, private receipt bind с create_host_path=false; .env.example описывает private opt-in. Независимый YAML AST control подтвердил проводку, формат receipt, зависимости и отсутствие прежних S3 overrides. Docker compose config test намеренно не исполнялся по scope; найденный отдельный разрыв всего test runner зарегистрирован QE-P10. Эта verification закрывает исходные MinIO/N5_PREFIX defects, а не общий acceptance PASS. |
+
+
+Все девять исходных condition objects сохранены неизменными, включая прежние severity/requirement/scope/evidence. Исторические file:line в них относятся к исходной ревизии. Новые verifications привязаны исключительно к current revision. QE-P09 закрывает исходный дефект MinIO/S3 profile; найденная общая несовместимость runner ниже отдельно запрещает объявлять штатный acceptance путь исправным.
+
+## QE-P10 — HIGH — Штатный test runner не обеспечивает включённые обязательные проверки
+
+**Требование:** FR-9, CP1, TASK-2/3/6; воспроизводимый поддерживаемый acceptance путь без неизбежных failures/skips.
+
+**Trigger:** запуск checked-in Compose service `test` с корректным real-S3 opt-in и private receipt directory.
+
+**Файл/строки:** `docker-compose.yml:218–251`, `Dockerfile:71–74`, `tests/release-candidate.test.ts:51–66`, `tests/release-candidate-acid.test.ts:463–473`, `tests/wiring.test.ts:94`.
+
+- Service запускает весь `npm test` с `N5_ACCEPTANCE=1`, но не передаёт `CLIPMKR_REAL_RESOURCE_PROOF` и не монтирует его. Обязательный acid test неизбежно skipped; штатный reporter делает этот запуск неуспешным. Наличие разрешённого proof на host само по себе не передаёт его внутрь контейнера.
+- Controller tests безусловно требуют `git rev-parse HEAD`, `git archive`, `git show` в cwd. `.dockerignore:6` исключает `.git` из build context, а ни test-stage, ни service не создаёт или монтирует тестовый Git checkout. Даже при установленном Git эта ветвь падает. Disposable local control подтвердил exit128; Docker не запускался.
+- Новые проверки требуют Python и Docker CLI, но test-stage наследуется от build, добавляет только ffmpeg и не объявляет эти инструменты. Новый wiring test вызывает `docker compose config`; наличие CLI на controller не доказывает его наличие в test image. Тестовый runner должен иметь явный контракт этих зависимостей.
+
+**Исправление/подтверждение:** предоставить полную поддерживаемую recipe/override с требуемыми tool и proof inputs либо автономные disposable Git fixtures/явное разделение host проверок. Нельзя лечить отключением `N5_ACCEPTANCE`, скрытым skip или считать custom host окружение доказательством checked-in image. Проверить существующий и исправленный test runtime на этой границе; положительный full-suite путь исполняет root отдельно.
+
+`.dockerignore`, `scripts/test.mjs`, `scripts/test-skip-reporter.ts` прочитаны как релевантные зависимости, но отсутствуют в текущем measured manifest. При repair их необходимо объявить и измерить. Scope нового condition содержит только уже измеренные дефектные границы. Finding не основан на отсутствии ещё не выполненных live A/B/CJM/payment и не утверждает результат чужого параллельного full suite.
+
+## Матрица expanded QE и anti-drift
+
+| Перспектива | Проверено | Вывод / ограничение |
+|---|---|---|
+| Функциональность | Исторический UploadId, nonempty canonical whitelist, initial/steady kinds, checkout freeze | Исходные дефекты исправлены; active jobs требуют drain. Owner сохранение всех существующих данных принято без выдуманной synthetic provenance |
+| Integration | Actual embedded executor/probe/media verifier, AWS signing, config/adapters | Local fake boundaries PASS; новый разрыв test image/Compose QE-P10; реальных SSH/DB/S3 соединений нет |
+| Regression | 130 Vitest PASS, process K1/K2, health offline 200/503 | Full suite root отдельно; 1 Docker CLI test намеренно исключён |
+| Security/fences | CopySource query/header, hostile keys/markers, alias/ports/network/DNS options до SQL; private receipt binding | Проверенные controls PASS. Production-wide key остаётся owner-accepted code boundary, IAM isolation не заявлено |
+| Resource/performance | Gzip/diff-ID/image parser, filesystem/containerd effective config, combined byte/inode budget, under-lock recheck | Positive и insufficient/tamper negatives PASS; удаление disk gate и подстановка default root ломают tests. Ext4/Docker29 ограничения явные. Peak real disk/RSS не измерен; резерв не атомарен относительно посторонних writers |
+| Resilience/mutation | Partial first/second transfer, terminal reconcile, migration/partial start faults, locks, populated A/B sequence, exact cleanup | PASS в fake harness. Process lock holder не равен двум live SSH controllers; реальные kill/network/OOM recovery отдельно |
+| Testability | Негативные controls исходных safeguards и собственный old-predicate mutant | Тесты различают проверенные нарушения; runtime contract тестового контейнера FAIL QE-P10 |
+| Code/spec traceability | Requirements, три ADR, architecture/plan/OpenSpec, AM-18/19/20 | Owner preservation/checkout safeguards согласованы с кодом; full-suite recipe не завершена. Названные будущие tests и предыдущий design gate не являются execution evidence |
+
+**Author newRisks проверены:** изменения действительно structural и меняют trust boundaries. Independently проверены positive apply, malformed/foreign bindings, new prefixed media, locks/terminal recovery, disk admission до записи/load и owner approval kinds. Author changedScope покрывает host.changedPaths. `authorAssessmentChecked:true`; `deltaVerification.implementationVerified:false` из-за QE-P10. Author PASS/другой reviewer report не использовались.
+
+**Границы code GO и final acceptance:** текущая роль не разрешает code GO до исправления QE-P10. Даже после его закрытия остаются root full suite/build/checks, реальный backup/restore/copy/fenced S3, live runtime provenance и A/B на двух targets, публичный core-CJM и согласованное окно текущего TEST shop с freeze/drain/native/replay/credits/referrals/возвратом callback. Отсутствие этих live evidence само по себе не кодовый дефект. Нет новых IAM keys/403/buckets/ВМ требований, production не переключать. AQE MCP/fleet/runtime не запускались; расширенные перспективы применены одним originating reviewer.
+
+Ниже сохранён исторический отчёт исходного прохода и исправления формы receipt; его прежний NO-GO и counts не являются текущими verifications.
+
+---
+
 # Независимый native QE — qe-primary
 
 Вердикт: **NO-GO для code GO**, девять HIGH structural conditions. Final product acceptance **не установлена** и выполняется root отдельно; отсутствие live proof само по себе не объявлено дефектом.
@@ -207,3 +288,6 @@ Final product acceptance: **не установлена**, независимо 
 Зависимости `apps/web/src/server/video.ts`, `packages/db/src/blogger-report.ts` и `apps/web/src/server/partner.ts` остаются доказательствами findings в неизменённых requirement/evidence и исходном отчёте. Host обязан объявить и измерить эти релевантные зависимости при подготовке исправления кода; их исключение из scope текущей receipt не исключает их из семантической проверки. `scripts/release-candidate.mjs` — измеренная дефектная граница для обоих условий.
 
 Повторно сверены все 72 manifest hashes: совпадают. Остальные reviewer entries и `author: null` сохранены; host/history/source не изменены. `prepare`/`evaluate` не вызывались. SHA256 отчёта в прежнем поле newRisks.evidence относится к исходному отчёту до этого добавления; само поле evidence намеренно сохранено побайтно по смыслу запроса.
+
+
+Сверка cycle2 перед записью: 2026-11-03T22:09:14.130763+00:00; 123/123 manifest SHA256 совпали.

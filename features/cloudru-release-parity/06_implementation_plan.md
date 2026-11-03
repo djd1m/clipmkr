@@ -287,6 +287,14 @@ safeguard — checkout freeze при живых webhook/status; подтверж
 UI/drain/native/return receipts payment и полный CJM остаются BLOCKED. Платёжные
 требования не отменяются, автоматизации provider notifications API не добавляется.
 
+AM-21 (QE-P10, FR-9): штатный acceptance image и Compose должны предоставлять
+Git/Python и остальные реально используемые тестами инструменты, доступный
+канонический Git checkout и readonly resource proof. Отсутствующие обязательные
+входы дают явный отказ, не skip; отдельная частная среда интегратора не заменяет
+штатный путь. Confirmation: → test `runs acceptance with Git metadata and mandatory resource proof`
+in `tests/wiring.test.ts` проверяет положительную проводку и отказ при потере
+обязательных входов. Итог проверяется настоящим test image с полным suite.
+
 ## Поправка владельца: настоящие S3 проверки
 
 MinIO не используется в дальнейших network tests. TASK-3/CP1/CP2 работают с
@@ -311,6 +319,7 @@ Fake HTTP unit не выдаётся за live proof. Расширение code 
 фактических исправлений с обеими originating reviewer roles.
 
 EXPECTED_CODE_TARGETS:
+- docs/REPRODUCE.md
 - scripts/release-candidate.mjs
 - Dockerfile
 - apps/web/src/app/health/route.ts
