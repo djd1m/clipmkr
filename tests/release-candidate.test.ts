@@ -132,6 +132,90 @@ function fakeGit(bin: string) {
   writeFileSync(join(bin, 'git'), `#!/bin/sh\nif [ "$1" = show ]; then case "$2" in *:packages/s3/src/client.ts) cat ${resolve('packages/s3/src/client.ts')} ; exit;; *:tests/storage-prefix.test.ts) cat ${resolve('tests/storage-prefix.test.ts')} ; exit;; *:tests/storage-prefix.integration.test.ts) cat ${resolve('tests/storage-prefix.integration.test.ts')} ; exit;; *:tests/fixtures/environment.ts) cat ${resolve('tests/fixtures/environment.ts')} ; exit;; esac; fi\nexec /usr/bin/git "$@"\n`, { mode: 0o755 });
 }
 describe('release candidate read-only admission', () => {
+  it('confirms effective containerd root with the running binary config dump', () => {
+    const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
+    const match = source.match(/const diskAdmission = (String\.raw`[\s\S]*?`);/);
+    if (!match) throw new Error('disk admission program missing');
+    const program = runInNewContext(match[1]!) as string;
+    const check = String.raw`
+import contextlib,glob,io,json,os,pathlib,stat,subprocess,sys,tempfile,types
+from unittest.mock import patch
+native_open=open; native_stat=os.stat; native_readlink=os.readlink; native_os_open=os.open;native_fstat=os.fstat
+effective='root = "/var/lib/containerd"\nstate = "/run/containerd"\nimports = ["/etc/containerd/conf.d/*.toml"]\ntemp = ""\n'
+dump=effective; failed=False; exe='/usr/bin/containerd'; actual=['/usr/bin/containerd']; invoked=[];same_inode=True;globbed=False
+def fake_open(path,*args,**kwargs):
+ if str(path)=='/proc/4242/cmdline':return io.BytesIO(('\0'.join(actual)+'\0').encode())
+ return native_open(path,*args,**kwargs)
+def fake_stat(path,*args,**kwargs):
+ if str(path) in ('/usr/bin/containerd','/proc/4242/exe'):return types.SimpleNamespace(st_mode=stat.S_IFREG|0o755,st_uid=0,st_dev=11,st_ino=22 if same_inode or str(path)=='/usr/bin/containerd' else 23)
+ return native_stat(path,*args,**kwargs)
+def fake_readlink(path,*args,**kwargs):
+ if str(path)=='/proc/4242/exe':return exe
+ return native_readlink(path,*args,**kwargs)
+def fake_os_open(path,*args,**kwargs):
+ if str(path)=='/proc/4242/exe':return native_os_open('/dev/null',os.O_RDONLY)
+ return native_os_open(path,*args,**kwargs)
+def fake_fstat(fd,*args,**kwargs):
+ return types.SimpleNamespace(st_dev=11,st_ino=22 if same_inode else 23)
+def fake_run(args,**kwargs):
+ invoked.append(args)
+ if failed:raise subprocess.CalledProcessError(1,args)
+ return types.SimpleNamespace(stdout=dump)
+def read_command(args):
+ assert args[:2]==['python3','-c']
+ output=io.StringIO(); old=sys.argv;sys.argv=['-c',*args[3:]]
+ try:
+  with patch('builtins.open',fake_open),patch('os.stat',fake_stat),patch('os.readlink',fake_readlink),patch('os.open',fake_os_open),patch('os.fstat',fake_fstat),patch('subprocess.run',fake_run),patch('glob.glob',side_effect=lambda pattern:['/etc/containerd/conf.d/custom.toml'] if globbed else []),contextlib.redirect_stdout(output):
+   exec(compile(args[2],'<daemon-configs>','exec'),{'__name__':'__main__'})
+ finally:sys.argv=old
+ return output.getvalue().strip()
+case=0
+def check(config_text, expected=True, flags=None):
+ global dump,failed,exe,actual,case
+ case+=1
+ with tempfile.TemporaryDirectory() as tempdir:
+  docker=str(pathlib.Path(tempdir)/'daemon.json');config=str(pathlib.Path(tempdir)/'config.toml')
+  if config_text is not None:pathlib.Path(config).write_text(config_text)
+  flags=[x.replace('{config}',config) for x in (flags or [])];actual=['/usr/bin/containerd',*flags]
+  try:
+   d,c=daemon_configs([],docker,config,{'pid':4242,'exe':'/usr/bin/containerd','argv':flags,'unsupported':False})
+  except (AssertionError,ValueError,KeyError,subprocess.CalledProcessError,TypeError):
+   if expected:raise
+   return
+  if not expected:raise AssertionError('unsafe config accepted case '+str(case))
+  assert d=={} and c['root']=='/var/lib/containerd' and c['state']=='/run/containerd'
+  assert invoked[-1][0].startswith('/proc/self/fd/') and invoked[-1][1:]==[*flags,'config','dump']
+check(None)
+check('version = 2\n')
+check('version = 2\n',flags=['--config','{config}'])
+dump='state = "/run/containerd"\n';check(None,False)
+dump='root = "/var/lib/containerd"\n';check(None,False)
+dump='broken = [\n';check(None,False)
+dump=effective.replace('/var/lib/containerd','/foreign');check(None,False)
+dump=effective.replace('temp = ""','temp = "/foreign"');check(None,False)
+dump=effective.replace('/etc/containerd/conf.d/*.toml','/foreign/*.toml');check(None,False)
+dump=effective+'[plugins."io.containerd.snapshotter.v1.overlayfs"]\nroot_path = "/foreign"\n';check(None,False)
+dump=effective;globbed=True;check(None,False);globbed=False
+dump=effective;failed=True;check(None,False);failed=False
+exe='/tmp/containerd';check(None,False);exe='/usr/bin/containerd'
+same_inode=False;check(None,False);same_inode=True
+check(None,False,flags=['--config=/foreign'])
+check(None,False,flags=['--root=/foreign'])
+actual=['/usr/bin/containerd','--root=/foreign']
+with tempfile.TemporaryDirectory() as t:
+ try:daemon_configs([],str(pathlib.Path(t)/'d'),str(pathlib.Path(t)/'c'),{'pid':4242,'exe':'/usr/bin/containerd','argv':[],'unsupported':True})
+ except ValueError:pass
+ else:raise AssertionError('unsupported flags accepted')
+print('effective dump scenarios passed')
+`;
+    const run = (library: string) => spawnSync('python3', ['-c', library + check], { encoding: 'utf8', timeout: 30000 });
+    const result = run(program);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('effective dump scenarios passed');
+    const mutant = program.replace('effective=tomllib.loads(dump)', "effective=tomllib.loads(dump); effective.setdefault('root','/var/lib/containerd')");
+    expect(mutant).not.toBe(program);
+    expect(run(mutant).status).not.toBe(0); // A fabricated root must break the missing-root negative.
+  }, 30000);
   it('rejects site identity drift and insufficient incremental image archive space', () => {
     const text = readFileSync('scripts/release-candidate.mjs', 'utf8');
     const extract = (name: string) => {
@@ -144,8 +228,8 @@ describe('release candidate read-only admission', () => {
     const receiver = text.match(/const sourceReceiver = diskLibrary \+ (`[\s\S]*?`);/);
     if (!receiver) throw new Error('source receiver missing');
     const fake = String.raw`
-def proc_info(prefix): return {'dockerd':[{'argv':['--data-root=/unknown'] if os.environ.get('FAULT')=='root' else [],'tmp':['/unknown'] if os.environ.get('FAULT')=='temp' else []}],'containerd':[] if os.environ.get('FAULT')=='daemon' else [{'argv':['--root=/unknown'] if os.environ.get('FAULT')=='store' else ([] if os.environ.get('FAULT')=='unconfirmed-store' else ['--root=/var/lib/containerd']),'tmp':[]}]}
-def daemon_configs(prefix,d,c): return ({'data-root':'/unknown'} if os.environ.get('FAULT')=='config' else {}),({'root':'/unknown'} if os.environ.get('FAULT')=='store-config' else {})
+def proc_info(prefix): return {'dockerd':[{'argv':['--data-root=/unknown'] if os.environ.get('FAULT')=='root' else [],'tmp':['/unknown'] if os.environ.get('FAULT')=='temp' else []}],'containerd':[] if os.environ.get('FAULT')=='daemon' else [{'argv':['--root=/unknown'] if os.environ.get('FAULT')=='store' else [],'tmp':[]}]}
+def daemon_configs(prefix,d,c,cont): return ({'data-root':'/unknown'} if os.environ.get('FAULT')=='config' else {}),({'root':'/unknown' if os.environ.get('FAULT')=='store-config' else '/var/lib/containerd','state':'/run/containerd'} if os.environ.get('FAULT')!='missing-dump-root' else {'state':'/run/containerd'})
 def read_command(args):
  return json.dumps({'Driver':'vfs' if os.environ.get('FAULT')=='driver' else 'overlayfs','DriverStatus':[] if os.environ.get('FAULT')=='snapshotter' else [['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/unknown' if os.environ.get('FAULT')=='docker-info-root' else '/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table():
@@ -194,7 +278,7 @@ with tempfile.TemporaryDirectory() as d:
  os.environ['FAKE_FREE']=str(required-1);assert fails(p)
  os.environ['FAKE_FREE']=str(10**12)
  p['expectedBinding']={**first['binding'],'dockerRoot':'/foreign'};assert fails(p);p['expectedBinding']=first['binding']
- for fault in ('different-fs','fs-type','block','root','store','unconfirmed-store','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','content-mount','snapshot-mount'):
+ for fault in ('different-fs','fs-type','block','root','store','missing-dump-root','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','content-mount','snapshot-mount'):
   os.environ['FAULT']=fault;assert fails(p),fault
  os.environ.pop('FAULT',None)
  os.environ['FAKE_INODES']=str(first['requiredInodes']-1);assert fails(p)
@@ -336,7 +420,7 @@ esac
       const bin = join(f.dir, 'ssh-bin'); mkdirSync(bin);
       const shim = String.raw`
 def proc_info(prefix): return {'dockerd':[{'argv':[],'tmp':[]}],'containerd':[{'argv':['--root=/var/lib/containerd'],'tmp':[]}]}
-def daemon_configs(prefix,d,c): return {},{}
+def daemon_configs(prefix,d,c,cont): return {},{'root':'/var/lib/containerd','state':'/run/containerd'}
 def read_command(args):
  return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]
@@ -610,7 +694,7 @@ else: sys.exit(1)
       expect(dockerSyntax.status, dockerSyntax.stderr).toBe(0);
       const diskShim = String.raw`
 def proc_info(prefix): return {'dockerd':[{'argv':[],'tmp':[]}],'containerd':[{'argv':['--root=/var/lib/containerd'],'tmp':[]}]}
-def daemon_configs(prefix,d,c): return {},{}
+def daemon_configs(prefix,d,c,cont): return {},{'root':'/var/lib/containerd','state':'/run/containerd'}
 def read_command(args):
  return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]

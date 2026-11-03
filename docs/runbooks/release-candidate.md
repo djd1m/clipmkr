@@ -154,8 +154,14 @@ manifest/config → gzip layers/rootfs diff IDs. Уже полностью stage
 Нужен Python ≥3.11 на целях для штатного чтения containerd TOML. Поддерживается
 только общий **ext4 с блоком 4096 байт** для app, source,
 staging/state, `/tmp`, DockerRootDir `/var/lib/docker` и отдельного containerd
-root `/var/lib/containerd`, явно подтверждённый флагом запущенного containerd
-или его config; молчаливый default не подтверждение. Проверяются также Docker tmp,
+root `/var/lib/containerd`. Эффективные root `/var/lib/containerd` и state
+`/run/containerd` подтверждаются только результатом `config dump` от проверенного
+исполняемого файла запущенного containerd с его наблюдёнными флагами и выбранным
+config; значения по умолчанию не подставляются самим controller. По [документации
+containerd](https://containerd.io/docs/main/man/containerd-config.toml.5/) файл
+config может отсутствовать, а [штатная команда `config dump`](https://github.com/containerd/containerd/blob/main/cmd/containerd/command/config.go)
+строит итоговую конфигурацию из defaults и доступного config. Custom imports,
+неизвестные root/temp и изменившийся executable/flags блокируют допуск. Проверяются также Docker tmp,
 containerd content и snapshotter store; внутри snapshotter допустимы только
 штатные overlay mounts `snapshots/<число>/fs`. Нужны Docker 29, driver `overlayfs`,
 `io.containerd.snapshotter.v1`, проверенные флаги запущенных dockerd/containerd,
@@ -209,4 +215,4 @@ terminal `success` или `aborted`, проверяет SHA конкретных
 локальным профилем. Хеш probe привязывает исполняемую проверку к проверенному
 controller; пример не является готовым профилем для запуска.
 
-**Блокировка допуска диска:** текущий controller не измеряет фактический пик incremental layers на файловой системе Docker data-root. Поэтому apply/rollback останавливаются до staging; расчёт по размерам tar и свободному месту staging не является подтверждением RES-03. Отдельная команда source-sync пока не связана с этой блокировкой: её запуск до подтверждённого фактического допуска не разрешён. Для снятия блокировки нужен согласованный измеряемый контракт, учитывающий обе файловые системы, передачу, распаковку и сохранённые rollback images.
+**Текущий статус допуска диска:** измеряемый admission из раздела выше включён в controller, source-sync, staging и receiver до записи и `docker load`. Read-only probe 03.11.2026 21:42 UTC на обеих целях отказал при прежней проверке root containerd из явного флага/файла; этот код исправлен для штатного `config dump`, но повторного живого probe после исправления пока нет. RES-03 и выпуск не объявлены пройденными. При фактическом отказе или неподтверждённых layout, месте либо inode apply/rollback/source-sync остаются заблокированы без очистки образов и чужих проектов.

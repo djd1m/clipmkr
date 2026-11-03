@@ -18,7 +18,7 @@ function embeddedDiskLibrary(source: string): string {
 }
 const fakeDiskSystem = String.raw`
 def proc_info(prefix): return {'dockerd':[{'argv':[],'tmp':[]}],'containerd':[{'argv':['--root=/var/lib/containerd'],'tmp':[]}]}
-def daemon_configs(prefix,d,c): return {},{}
+def daemon_configs(prefix,d,c,cont): return {},{'root':'/var/lib/containerd','state':'/run/containerd'}
 def read_command(args):
     return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]

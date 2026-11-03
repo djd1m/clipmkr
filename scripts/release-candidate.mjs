@@ -197,13 +197,18 @@ for item in os.listdir('/proc'):
   if name not in ('dockerd','containerd'): continue
   env=open('/proc/'+item+'/environ','rb').read().split(b'\\0') if name=='dockerd' else []
   tmp=[x.split(b'=',1)[1].decode() for x in env if x.startswith(b'DOCKER_TMPDIR=')]
-  args=[x.decode() for x in argv[1:] if x]; selected=('--config-file','--data-root','--exec-root','--containerd','--storage-driver','--graph','-g','--config','-c','--root','-r','--state')
-  visible=[]
-  for i,arg in enumerate(args):
+  args=[x.decode() for x in argv[1:] if x]
+  selected=('--config','-c','--root','-r','--state') if name=='containerd' else ('--config-file','--data-root','--exec-root','--containerd','--storage-driver','--graph','-g')
+  visible=[]; unsupported=False; i=0
+  while i<len(args):
+   arg=args[i]
    if arg in selected:
-    visible.extend([arg,args[i+1] if i+1<len(args) else ''])
-   elif any(arg.startswith(x+'=') for x in selected): visible.append(arg)
-  found.setdefault(name,[]).append({'argv':visible,'tmp':tmp})
+    visible.extend([arg,args[i+1] if i+1<len(args) else '']); i+=2; continue
+   if any(arg.startswith(x+'=') for x in selected): visible.append(arg)
+   elif name=='containerd': unsupported=True
+   i+=1
+  exe=os.readlink('/proc/'+item+'/exe') if name=='containerd' else ''
+  found.setdefault(name,[]).append({'argv':visible,'tmp':tmp,'pid':int(item),'exe':exe,'unsupported':unsupported})
  except (OSError,UnicodeError): pass
 print(json.dumps(found))"""
     return json.loads(read_command(prefix+['python3','-c',code]))
@@ -212,8 +217,9 @@ def flag(argv, names):
     for i,arg in enumerate(argv):
         for name in names:
             if arg==name:
-                disk_need(i+1<len(argv),'daemon flag'); found.append(argv[i+1])
-            elif arg.startswith(name+'='): found.append(arg[len(name)+1:])
+                disk_need(i+1<len(argv) and bool(argv[i+1]),'daemon flag'); found.append(argv[i+1])
+            elif arg.startswith(name+'='):
+                disk_need(bool(arg[len(name)+1:]),'daemon flag'); found.append(arg[len(name)+1:])
     disk_need(len(found)<=1,'duplicate daemon flag')
     return found[0] if found else None
 def path_info(path, mounts):
@@ -235,13 +241,52 @@ def mount_table():
         def unescape(s): return re.sub(r'\\([0-7]{3})',lambda m:chr(int(m.group(1),8)),s)
         mounts.append({'path':unescape(a[4]),'device':a[2],'type':b[0]})
     return mounts
-def daemon_configs(prefix, docker_config, containerd_config):
-    code="""import json,os,sys,tomllib
-d,c=sys.argv[1:]
+def daemon_configs(prefix, docker_config, containerd_config, cont):
+    disk_need(type(cont.get('pid')) is int and cont['pid']>0 and cont.get('exe')=='/usr/bin/containerd' and not cont.get('unsupported') and isinstance(cont.get('argv'),list),'containerd executable or flags')
+    disk_need(flag(cont['argv'],['--config','-c']) in (None,containerd_config),'containerd config flag drift')
+    # The privileged reader verifies the live inode and argv, then executes that same inode.
+    code="""import glob,json,os,stat,subprocess,sys,tomllib
+d,c,pid,claimed_argv=sys.argv[1:];pid=int(pid);claimed_argv=json.loads(claimed_argv)
+proc='/proc/'+str(pid);exe=proc+'/exe';path='/usr/bin/containerd'
+assert os.readlink(exe)==path
+st=os.stat(path);live=os.stat(exe)
+assert stat.S_ISREG(st.st_mode) and st.st_uid==0 and not st.st_mode & 0o022 and (st.st_dev,st.st_ino)==(live.st_dev,live.st_ino)
+actual=[x.decode() for x in open(proc+'/cmdline','rb').read().split(b'\\0') if x]
+assert actual and os.path.basename(actual[0])=='containerd' and actual[1:]==claimed_argv
+if os.path.lexists(c):
+ cfg=os.lstat(c)
+ assert stat.S_ISREG(cfg.st_mode) and cfg.st_uid==0 and not cfg.st_mode & 0o022 and os.path.realpath(c)==c
 docker=json.load(open(d)) if os.path.exists(d) else {}
-containerd=tomllib.load(open(c,'rb')) if os.path.exists(c) else {}
-print(json.dumps({'docker':{k:docker[k] for k in ('data-root','exec-root','storage-driver','containerd') if k in docker},'containerd':{k:containerd[k] for k in ('root','state') if k in containerd}}))"""
-    result=json.loads(read_command(prefix+['python3','-c',code,docker_config,containerd_config]))
+declared=tomllib.load(open(c,'rb')) if os.path.exists(c) else {}
+assert isinstance(docker,dict) and isinstance(declared,dict)
+fd=os.open(exe,os.O_RDONLY|os.O_CLOEXEC)
+try:
+ pinned=os.fstat(fd)
+ assert (pinned.st_dev,pinned.st_ino)==(st.st_dev,st.st_ino)
+ dump=subprocess.run(['/proc/self/fd/'+str(fd),*claimed_argv,'config','dump'],pass_fds=(fd,),check=True,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=30).stdout
+finally:os.close(fd)
+effective=tomllib.loads(dump)
+assert isinstance(effective,dict) and all(isinstance(effective.get(k),str) and effective[k] for k in ('root','state'))
+assert effective['root']=='/var/lib/containerd' and effective['state']=='/run/containerd'
+assert declared.get('root') in (None,effective['root']) and declared.get('state') in (None,effective['state'])
+imports=effective.get('imports',[])
+assert isinstance(imports,list) and all(isinstance(x,str) for x in imports)
+allowed={c,'/etc/containerd/conf.d/*.toml'}
+assert set(imports)<=allowed and not glob.glob('/etc/containerd/conf.d/*.toml')
+assert effective.get('temp','') in ('','/tmp') and declared.get('temp','') in ('','/tmp')
+assert declared.get('imports',[]) in ([],['/etc/containerd/conf.d/*.toml'])
+def no_custom_paths(node):
+ if isinstance(node,dict):
+  for k,v in node.items():
+   if k in ('root','root_path','state','temp') and v not in ('',None):return False
+   if isinstance(v,(dict,list)) and not no_custom_paths(v):return False
+ elif isinstance(node,list):
+  return all(no_custom_paths(v) for v in node)
+ return True
+assert no_custom_paths({k:v for k,v in effective.items() if k not in ('root','state','temp')})
+print(json.dumps({'docker':{k:docker[k] for k in ('data-root','exec-root','storage-driver','containerd') if k in docker},'containerd':{'root':effective['root'],'state':effective['state'],'declaredRoot':declared.get('root'),'declaredState':declared.get('state'),'temp':effective.get('temp','')}}))"""
+    result=json.loads(read_command(prefix+['python3','-c',code,docker_config,containerd_config,str(cont['pid']),json.dumps(cont['argv'])]))
+    disk_need(flag(cont['argv'],['--root','-r']) in (None,result['containerd']['root']) and flag(cont['argv'],['--state']) in (None,result['containerd']['state']),'containerd flag/effective config drift')
     return result['docker'],result['containerd']
 def source_measure(path,expected):
     with open(path,'rb') as f: disk_need(stream_digest(f)==expected,'source hash')
@@ -275,17 +320,16 @@ def admit_disk(p):
     disk_need(dock['tmp'] in ([],['/tmp']),'Docker temp')
     containerd_config=flag(cont['argv'],['--config','-c']) or '/etc/containerd/config.toml'
     disk_need(containerd_config in ('/etc/containerd/config.toml','/etc/containerd/config-default.toml'),'containerd config path')
-    config,cconfig=daemon_configs(prefix,docker_config,containerd_config)
+    config,cconfig=daemon_configs(prefix,docker_config,containerd_config,cont)
     disk_need(isinstance(config,dict) and config.get('data-root','/var/lib/docker')=='/var/lib/docker' and
               config.get('exec-root','/run/docker') in ('/run/docker','/var/run/docker') and
               config.get('storage-driver','overlayfs')=='overlayfs' and
               config.get('containerd','/run/containerd/containerd.sock')=='/run/containerd/containerd.sock','Docker custom layout')
-    disk_need(isinstance(cconfig,dict) and cconfig.get('root','/var/lib/containerd')=='/var/lib/containerd' and cconfig.get('state','/run/containerd')=='/run/containerd','containerd config root')
+    disk_need(isinstance(cconfig,dict) and cconfig.get('root')=='/var/lib/containerd' and cconfig.get('state')=='/run/containerd' and cconfig.get('temp','') in ('','/tmp') and cconfig.get('declaredRoot') in (None,cconfig['root']) and cconfig.get('declaredState') in (None,cconfig['state']),'containerd config root')
     flagged_root=flag(cont['argv'],['--root','-r'])
-    configured_root=cconfig.get('root')
-    containerd_root=flagged_root or configured_root
-    disk_need(containerd_root=='/var/lib/containerd' and (flagged_root is None or flagged_root=='/var/lib/containerd') and
-              flag(cont['argv'],['--state']) in (None,'/run/containerd'),'containerd root unconfirmed or unsupported')
+    containerd_root=cconfig['root']
+    disk_need((flagged_root is None or flagged_root==containerd_root) and
+              flag(cont['argv'],['--state']) in (None,cconfig['state']),'containerd root unconfirmed or unsupported')
     info=json.loads(read_command(prefix+['docker','info','--format','{{json .}}']))
     version=read_command(prefix+['docker','version','--format','{{.Server.Version}}'])
     status=info.get('DriverStatus') or []
