@@ -1,0 +1,38 @@
+{
+  "observed_at": "2026-11-03T05:59:41.246196+00:00",
+  "scope": "read-only diagnostics; not a migration receipt",
+  "hub_version": "0.1.16",
+  "engine_version": "0.2.7-20261029",
+  "engine_sha256": "94fdba4fe4d1a71e684be998c3d2f94f374ff4e4054db2683bcc04d72bfabc03",
+  "self_test": {
+    "passed": 5,
+    "total": 5
+  },
+  "successful_calls": [
+    "vm_get",
+    "vm_list",
+    "disk_list",
+    "list_security_groups"
+  ],
+  "vm": {
+    "id": "4a07fec2-e017-4f2c-bea8-3cf7069c2b99",
+    "name": "clipmkr-20261029-r4",
+    "state": "running",
+    "public_ip": "176.109.111.98",
+    "private_ip": "10.0.0.8"
+  },
+  "disk": {
+    "id": "b428452f-53df-48f3-9416-0645f19ddc20",
+    "size_gb": 80,
+    "type": "SSD",
+    "state": "in_use",
+    "zone": "ru.AZ-1"
+  },
+  "os_access": {
+    "tcp22_from_source": "timeout",
+    "hub_vm_exec": "rejected by safe proxy: requires exactly one matching active approved VM session"
+  },
+  "mutations_executed": false,
+  "secrets_included": false,
+  "active_edge_clipmkr_excerpt_sha256": "3a2b828ae04662246567f91502fdba171f67533cd44f23b274d49e20c72d1344"
+}
