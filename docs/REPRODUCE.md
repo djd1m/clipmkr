@@ -196,6 +196,10 @@ docker compose --project-directory . --env-file .env --profile test --profile ed
 Инструкция и границы proof — `docs/runbooks/release-candidate.md`, раздел QE-P10.
 Отсутствующие Git/proof вызывают отказ до тестов; неверный proof отклоняется
 acid test. Docker socket в тестовый сервис не передаётся.
+Test image включает `file` для проверки типа кадра и хранит точный документ
+`docs/features/cloudru-provider-foundation/05_completion.md` для теста квалификации
+провайдера; оба входа проверяются при повторной сборке. Остальные документы
+не передаются в runtime web/worker.
 
 ```bash
 docker compose --project-directory . --env-file .env --profile test run --rm --build test

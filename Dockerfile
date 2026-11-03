@@ -69,9 +69,9 @@ CMD ["node", "dist/apps/worker/workers/stt.js"]
 
 # ── test: полный набор на настоящих PostgreSQL/Redis/Cloud S3 ──
 FROM build AS test
-RUN apk add --no-cache ffmpeg python3 git openssl docker-cli docker-cli-compose bash util-linux \
+RUN apk add --no-cache ffmpeg python3 git openssl docker-cli docker-cli-compose bash util-linux file \
  && ffmpeg -version && ffprobe -version \
  && python3 -c "import sys,tomllib; assert sys.version_info >= (3, 11)" \
- && git --version && openssl version && docker compose version && flock --version
+ && git --version && openssl version && docker compose version && flock --version && file --version
 ENV NODE_ENV=test TZ=Europe/Moscow
 CMD ["npm", "test", "--", "--run"]

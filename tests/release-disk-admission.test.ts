@@ -164,8 +164,18 @@ def read_command(args):
  return json.dumps({'Driver':'vfs' if os.environ.get('FAULT')=='driver' else 'overlayfs','DriverStatus':[] if os.environ.get('FAULT')=='snapshotter' else [['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/unknown' if os.environ.get('FAULT')=='docker-info-root' else '/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table():
  fault=os.environ.get('FAULT')
- nested=os.environ['NESTED'] if fault=='nested' else ('/var/lib/containerd/io.containerd.content.v1.content/foreign' if fault=='content-mount' else ('/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/unknown/fs' if fault=='snapshot-mount' else ('/var/lib/docker/foreign' if fault=='docker-nested' else ('/var/lib/docker' if fault=='docker-root-mount' else ('/var/lib/containerd' if fault=='containerd-root-mount' else None)))))
- return [{'path':'/','device':'1:1','type':'ext4'}]+([{'path':nested,'device':'1:2','type':'overlay' if fault=='snapshot-mount' else 'xfs' if fault in ('docker-root-mount','containerd-root-mount') else 'ext4'}] if nested else [])
+ mounts=[{'path':'/','device':'1:1','type':'ext4'},
+  {'path':'/var/lib/docker/containers/'+'a'*64+'/mounts/shm','device':'0:2','type':'tmpfs'},
+  {'path':'/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/123/fs','device':'0:3','type':'overlay'}]
+ faults={'nested':os.environ['NESTED'],'docker-tmp-nested':'/var/lib/docker/tmp/foreign',
+  'content-mount':'/var/lib/containerd/io.containerd.content.v1.content/foreign',
+  'snapshot-mount':'/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/unknown/fs',
+  'docker-root-mount':'/var/lib/docker','docker-tmp-mount':'/var/lib/docker/tmp',
+  'containerd-root-mount':'/var/lib/containerd',
+  'content-root-mount':'/var/lib/containerd/io.containerd.content.v1.content'}
+ if fault in faults:
+  mounts.append({'path':faults[fault],'device':'1:2','type':'overlay' if fault=='snapshot-mount' else 'xfs' if fault.endswith('root-mount') or fault=='docker-tmp-mount' else 'ext4'})
+ return mounts
 class Volume:
  f_frsize=4096
  @property
@@ -202,19 +212,21 @@ with tempfile.TemporaryDirectory() as d:
  assert measured['web']['entries']==300 and measured['web']['allocationBytes']>20*image.stat().st_size
  p={'targetName':'site-test','appRoot':str(app),'sourceDir':str(r/'releases'),'sourcePath':str(r/'releases'/('2'*40)/'source.tar'),'stageDir':str(stage),'stateDir':str(state),'dockerPrefix':[],'inputBytes':1000,'commit':'2'*40,'operationId':op,'artifacts':artifacts,'measurements':measured,'sourceMeasure':source_measure(str(src),artifacts['source']['sha256'])}
  os.environ['NESTED']=str(stage/'nested')
+ assert any(m['type']=='tmpfs' and m['path'].endswith('/mounts/shm') for m in mount_table())
+ assert any(m['type']=='overlay' and m['path'].endswith('/snapshots/123/fs') for m in mount_table())
  first=admit_disk(p);p['inputBytes']+=(-first['requiredBytes']*2731)%4096
  first=admit_disk(p);required=first['requiredBytes'];assert required%4096==0 and required>sum(a['size'] for a in artifacts.values())+measured['web']['allocationBytes']
  os.environ['FAKE_FREE']=str(required);assert admit_disk(p)
  os.environ['FAKE_FREE']=str(required-1);assert fails(p)
  os.environ['FAKE_FREE']=str(10**12)
  p['expectedBinding']={**first['binding'],'dockerRoot':'/foreign'};assert fails(p);p['expectedBinding']=first['binding']
- for fault in ('different-fs','fs-type','block','root','store','missing-dump-root','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','content-mount','snapshot-mount','docker-nested'):
+ for fault in ('different-fs','fs-type','block','root','store','missing-dump-root','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','docker-tmp-nested','content-mount','snapshot-mount'):
   os.environ['FAULT']=fault;assert fails(p),fault
  os.environ.pop('FAULT',None)
  p.pop('expectedBinding');p['targetName']='cloud-c';p['dockerPrefix']=['sudo','-n']
  cloud=admit_disk(p)
  assert all(item['observedAt']==item['path'] for item in cloud['binding']['paths'][5:])
- for fault in ('docker-root-mount','containerd-root-mount','helper-fail','helper-malformed'):
+ for fault in ('docker-root-mount','docker-tmp-mount','containerd-root-mount','content-root-mount','helper-fail','helper-malformed'):
   os.environ['FAULT']=fault;assert fails(p),fault
   if fault in ('helper-fail','helper-malformed'):
    args={'targetName':'cloud-c','sourceDir':p['sourceDir'],'root':str(app),'commit':p['commit'],'sourceSha256':artifacts['source']['sha256'],'disk':p}

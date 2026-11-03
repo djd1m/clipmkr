@@ -375,7 +375,7 @@ def admit_disk(p):
         meta,v=system_path_info(path,mounts,prefix); metadata.append(meta); volumes.append(v)
     disk_need(all(x['fsType']=='ext4' and x['block']==4096 for x in metadata),'unsupported filesystem')
     disk_need(len({(x['device'],x['mount'],x['stDev']) for x in metadata})==1,'different filesystem')
-    for root in (p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_root,content_root):
+    for root in (p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_tmp,content_root):
         disk_need(not any(m['path']!=metadata[0]['mount'] and m['path'].startswith(root.rstrip('/')+'/') for m in mounts),'nested mount')
     for m in mounts:
         if m['path'].startswith(containerd_root+'/'):

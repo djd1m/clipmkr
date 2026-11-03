@@ -138,8 +138,12 @@ describe('Проверяемость проброса окружения', () =>
     expect(service.command.slice(0, 2)).toEqual(['sh', '-ec']);
     const testStage = readFileSync('Dockerfile', 'utf8').split('FROM build AS test')[1]!;
     const packages = new Set(testStage.match(/RUN apk add --no-cache ([^\n]+)/)?.[1]?.split(/\s+/));
-    for (const name of ['ffmpeg', 'python3', 'git', 'openssl', 'docker-cli', 'docker-cli-compose', 'bash', 'util-linux']) expect(packages.has(name), name).toBe(true);
-    expect(readFileSync('.dockerignore', 'utf8').split('\n')).toContain('.git');
+    for (const name of ['ffmpeg', 'python3', 'git', 'openssl', 'docker-cli', 'docker-cli-compose', 'bash', 'util-linux', 'file']) expect(packages.has(name), name).toBe(true);
+    expect(testStage).toContain('file --version');
+    const ignored = readFileSync('.dockerignore', 'utf8').split('\n');
+    expect(ignored).toContain('.git');
+    expect(ignored.lastIndexOf('!docs/Completion.md')).toBeGreaterThan(ignored.lastIndexOf('*.md'));
+    expect(ignored.lastIndexOf('!docs/features/cloudru-provider-foundation/05_completion.md')).toBeGreaterThan(ignored.lastIndexOf('*.md'));
     const noProofEnv: NodeJS.ProcessEnv = { ...env }; delete noProofEnv.N5_REAL_RESOURCE_PROOF_HOST_FILE;
     const missingProofConfig = composeConfig(noProofEnv);
     expect(missingProofConfig.status, missingProofConfig.stderr).toBe(0);

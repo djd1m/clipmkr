@@ -33,7 +33,10 @@ docker compose --project-directory . --env-file .env --profile test run --rm --b
 ```
 
 Test stage явно ставит ffmpeg/ffprobe, Python 3.11+ с `tomllib`, Git,
-OpenSSL, Docker CLI/Compose, Bash и util-linux (`flock`). Docker socket не монтируется: Docker
+OpenSSL, Docker CLI/Compose, Bash, util-linux (`flock`) и `file` с проверкой версии
+при сборке. `.dockerignore` оставляет в test image точный документ
+`docs/features/cloudru-provider-foundation/05_completion.md`, который читает
+тест квалификации провайдера; текст квалификации не меняется. Docker socket не монтируется: Docker
 внутри тестов используется только для `compose config`; release tests
 используют собственные disposable fake executors. `N5_ACCEPTANCE=1` оставляет
 весь `npm test` и считает любой skip ошибкой. Фактический full-suite receipt
@@ -201,7 +204,11 @@ containerd content и snapshotter store; внутри snapshotter допусти
 штатные overlay mounts `snapshots/<число>/fs`. Нужны Docker 29, driver `overlayfs`,
 `io.containerd.snapshotter.v1`, проверенные флаги запущенных dockerd/containerd,
 их config и `DOCKER_TMPDIR`. Разные/неизвестные FS, root, temp, config, driver
-или вложенные mounts под рабочими каталогами дают отказ. Все существующие системные
+или вложенные mounts под рабочими каталогами дают отказ. Проверка вложенных Docker
+mounts относится к действительному `/var/lib/docker/tmp`: штатный tmpfs
+`/var/lib/docker/containers/<id>/mounts/shm` живых контейнеров лежит вне
+пути временных файлов и не блокирует допуск. В containerd остаётся строгая
+проверка content root и точной формы overlay snapshot mounts. Все существующие системные
 Docker/containerd roots, включая Docker tmp, content и snapshotter, наблюдаются
 точно по своему пути. На Cloud read-only Python helper читает только выбранные
 `lstat`, `statvfs`, device и block через `dockerPrefix: ["sudo", "-n"]`; на site
@@ -257,4 +264,4 @@ terminal `success` или `aborted`, проверяет SHA конкретных
 локальным профилем. Хеш probe привязывает исполняемую проверку к проверенному
 controller; пример не является готовым профилем для запуска.
 
-**Текущий статус допуска диска:** измеряемый admission включён в controller, source-sync, staging и receiver до записи и `docker load`. Read-only probe Cloud 03.11.2026 22:47 UTC выявил ложное наблюдение родителя вместо трёх недоступных UID1000 системных каталогов. Проверка исправлена, но root ещё должен повторить живой read-only probe на обеих целях. RES-03 и выпуск не объявлены пройденными. При фактическом отказе или неподтверждённых layout, месте либо inode apply/rollback/source-sync остаются заблокированы без очистки образов и чужих проектов.
+**Текущий статус допуска диска:** измеряемый admission включён в controller, source-sync, staging и receiver до записи и `docker load`. Read-only probe Cloud 03.11.2026 22:47 UTC выявил ложное наблюдение родителя вместо трёх недоступных UID1000 системных каталогов; точное привилегированное чтение исправило это. Следующий read-only probe на обеих целях выявил чрезмерный отказ по штатным Docker `shm` mounts; проверка сужена до реальных store/tmp путей. Root должен повторить живой read-only probe на обеих целях. RES-03 и выпуск не объявлены пройденными. При фактическом отказе или неподтверждённых layout, месте либо inode apply/rollback/source-sync остаются заблокированы без очистки образов и чужих проектов.
