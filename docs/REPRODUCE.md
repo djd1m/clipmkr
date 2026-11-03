@@ -187,8 +187,10 @@ docker compose --project-directory . --env-file .env --profile test --profile ed
 Для текущего полного `N5_ACCEPTANCE=1` использовать физический Git checkout
 нужного commit (`.git` — каталог без alternates), а не linked worktree.
 Тестовый сервис монтирует только его `.git` и закрытый файл
-`N5_REAL_RESOURCE_PROOF_HOST_FILE` read-only. В `.env` указать абсолютный путь
-к существующему owned resource proof `0600`, настоящий Cloud S3 профиль
+`N5_REAL_RESOURCE_PROOF_HOST_FILE` read-only. При другом UID владельца `.git`
+контейнер `test` передаёт всем дочерним Git-процессам стандартный `safe.directory=/app`
+через переменные окружения; конфигурация Git на хосте и доверие к `*` не меняются.
+В `.env` указать абсолютный путь к существующему owned resource proof `0600`, настоящий Cloud S3 профиль
 `N5_PREFIX_RUN_S3=1`/`N5_PREFIX_S3_*` и приватный каталог
 `N5_PREFIX_S3_RECEIPT_HOST_DIR`. Нужны настоящие PostgreSQL и Redis.
 Инструкция и границы proof — `docs/runbooks/release-candidate.md`, раздел QE-P10.

@@ -13,6 +13,10 @@ worktree с `.git`-файлом, symlink и `objects/info/alternates` откло
 (`git clone --no-hardlinks`), затем запускать Compose из него. Контекст сборки
 по-прежнему исключает `.git` через `.dockerignore`; только сервис `test`
 получает read-only bind `./.git:/app/.git`. `web` и `worker` не получают Git.
+Если `.git` принадлежит другому UID (обычному пользователю Cloud), Git внутри
+контейнера `test` принимает его через стандартные переменные окружения `GIT_CONFIG_*`:
+`safe.directory` установлен ровно в `/app` для всех дочерних Git-процессов.
+Конфигурация Git на хосте и глобальная конфигурация не меняются; доверие к `*` не включается.
 
 В закрытом `.env` задать `N5_REAL_RESOURCE_PROOF_HOST_FILE` абсолютным путём к
 существующему owned JSON `0600` с реальными OOM/ENOSPC receipts. Compose

@@ -118,6 +118,17 @@ describe('Проверяемость проброса окружения', () =>
     };
     const mount = (target: string) => service.volumes.find(volume => volume.target === target);
     expect(service.environment.N5_ACCEPTANCE).toBe('1');
+    const gitSettings = (settings: Record<string, string | undefined>) => Object.fromEntries(
+      Object.entries(settings).filter(([name, value]) => /^GIT_CONFIG_(?:COUNT|KEY_\d+|VALUE_\d+)$/.test(name) && typeof value === 'string'));
+    const exactTrust = { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'safe.directory', GIT_CONFIG_VALUE_0: '/app' };
+    expect(gitSettings(service.environment)).toEqual(exactTrust);
+    for (const role of ['web', 'worker-stt', 'worker-llm', 'worker-video']) {
+      expect(gitSettings(JSON.parse(result.stdout).services[role].environment)).toEqual({});
+    }
+    for (const change of [{ GIT_CONFIG_COUNT: '0' }, { GIT_CONFIG_KEY_0: 'safe.bareRepository' },
+      { GIT_CONFIG_VALUE_0: '*' }, { GIT_CONFIG_COUNT: '2', GIT_CONFIG_KEY_1: 'safe.directory', GIT_CONFIG_VALUE_1: '*' }]) {
+      expect(gitSettings({ ...service.environment, ...change })).not.toEqual(exactTrust);
+    }
     expect(service.environment.CLIPMKR_REAL_RESOURCE_PROOF).toBe('/run/clipmkr-resource-proof.json');
     expect(mount('/app/.git')).toMatchObject({ type: 'bind', source: path.resolve('.git'), read_only: true, bind: { create_host_path: false } });
     expect(mount('/run/clipmkr-resource-proof.json')).toMatchObject({

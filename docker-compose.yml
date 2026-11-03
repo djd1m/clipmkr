@@ -240,6 +240,10 @@ services:
       N5_BILLING_MODE: ${N5_BILLING_MODE-legacy}
       NODE_ENV: test
       N5_ACCEPTANCE: "1"
+      # Физический checkout может принадлежать другому UID; доверяем только /app во всех Git subprocesses.
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: safe.directory
+      GIT_CONFIG_VALUE_0: /app
       CLIPMKR_REAL_RESOURCE_PROOF: /run/clipmkr-resource-proof.json
       DATABASE_URL: postgresql://n5:${N5_DB_APP_PASSWORD:?пароль БД не задан}@db:5432/n5_test
       N5_PREFIX_RUN_S3: ${N5_PREFIX_RUN_S3-}
