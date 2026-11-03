@@ -17,8 +17,11 @@ boundary bucket+tests/cloud/ либо tests/site/. Новых key/SA/policy и p
 Root read-only: policy отсутствует, CORS c/n5 PUT допускает, versioning disabled;
 production settings прежние. AWS SDK middleware на internal/signing clients,
 logical DB keys/erasure/multipart/retention прежние. S3 wire+outside canary proof,
-Cloud canary только внутри tests. Site media копируется по DB-whitelist с size/SHA,
-старые объекты сохраняются; старые multipart разрешить до namespace change.
+Cloud canary только внутри tests. По явному решению владельца сохраняются все
+существующие site-test uploads, включая реальные: каноническая принадлежность DB,
+точный DB-whitelist и квитанция сохранения, связанная с target/project/sourceIdentity/
+bucket/prefix и хешем whitelist, обязательны; synthetic provenance не требуется.
+Site media копируется по whitelist с size/SHA, старые объекты сохраняются; старые multipart разрешить до namespace change.
 Автоматический app rollback требует одинаковых схемы и namespace.
 
 Cloud использует обычный тестовый origin без cookie выбора backend. Native

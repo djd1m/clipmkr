@@ -28,7 +28,11 @@ SHALL проверяться drift и baseline всех прочих данны�
 
 #### Scenario: Непустое медиа site-test
 - **WHEN** существующий site-test переходит на namespace tests/site/
-- **THEN** только DB-whitelist synthetic objects копируются с независимой size/SHA проверкой; originals и logical DB keys сохраняются, foreign references/pending multipart блокируют смену.
+- **THEN** по явному решению владельца сохраняются все канонически принадлежащие существующей site-test DB объекты, включая реальные загрузки; точный DB-whitelist связан приватной квитанцией с target/project/sourceIdentity/bucket/prefix, каждый size/SHA независимо проверяется; originals и logical DB keys сохраняются, foreign references/pending multipart блокируют смену.
+
+#### Scenario: Попытка обойти согласование сохранения
+- **WHEN** initial legacy site выдаёт объекты за prefixed либо квитанция не совпадает с target/project/sourceIdentity/bucket/prefix и точным whitelist
+- **THEN** controller отказывает до staging, receiver проверяет допустимые kinds под lock до load; сохранение всех данных не разрешает расширять whitelist на чужие объекты.
 
 ### Requirement: Нынешний общий ключ ограничивается только кодом SDK
 Согласно явному owner exception система SHALL сохранять общий текущий S3 key

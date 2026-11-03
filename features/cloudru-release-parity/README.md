@@ -1,6 +1,12 @@
 # Cloud.ru: кандидат и повторяемое обновление
 
-Статус: revision pending — требования/ADR/план пересмотрены; новые prepare, три focused QCSD и K1/K2 впереди. Старые receipts относятся к прежнему снимку. Указание владельца: действовать автономно,
+Статус: дизайн сохранения всех существующих данных n5, включая реальные загрузки,
+прошёл prepare, три focused verification исходных QCSD-ролей и actual evaluate:
+closed, revision ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f.
+K2 и current code target admission прошли; literal coder context проверяется
+перед передачей автору. Новых commands/modules/exports в этой поправке нет.
+Далее repair controller и повтор QE; прежние receipts сохранены как история.
+Указание владельца: действовать автономно,
 production не переключать без его отдельного решения.
 
 Последнее owner exception: нынешний общий S3 key сохраняет production-права;

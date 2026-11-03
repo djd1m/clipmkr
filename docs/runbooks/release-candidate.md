@@ -78,12 +78,17 @@ columns, сортировке JSONB строк и Python canonical JSON.
 
 Каждый object whitelist указывает canonical logical key, account/video/clip IDs,
 назначение, размер и SHA. Для уже работающего namespace `kind: "prefixed"`
-проверяет только bytes по prefixed key. Первичный legacy-перенос требует
-`kind: "legacy-synthetic"`, неизменённый оригинал и отдельное подлинное
-историческое evidence с SHA и проверяемыми JSON pointers на владельца и ресурс;
-ссылка в самой test DB не заменяет provenance. Если фактическое evidence не
-содержит нужных полей, объект остаётся недопущенным; создавать историческое
-evidence из текущей DB нельзя. Копирование выполняется отдельно оператором
+проверяет только bytes по prefixed key. По явному решению владельца 03.11.2026
+сохраняются все существующие site-test uploads, включая реальные. Первичный
+legacy-перенос требует `kind: "legacy-preserved"`, неизменённый оригинал и
+`preservationApprovalPath`/`preservationApprovalSha256` в data evidence. Приватная
+owned квитанция `0600` схемы `clipmkr-legacy-preservation-1` связывает фактическую
+инструкцию владельца и decision `preserve-all-existing-site-test-data` с exact
+target/project/sourceIdentity/storageBucket/destinationPrefix и objectWhitelistSha256
+по ADR-002. Synthetic происхождение не требуется и не приписывается загрузкам.
+Нельзя сменить kind на prefixed для обхода initial legacy допуска; steady releases
+используют только prefixed. Отсутствующая/чужая/подменённая квитанция блокирует staging.
+Копирование выполняется отдельно оператором
 потоковым способом; writer проверяет source/destination hashes и не вызывает
 server-side CopyObject.
 

@@ -105,3 +105,11 @@ SDK design требует wire capture и реальный MinIO, whitelist-copy
 **CLEAN по дизайну роли:** QT-01–07 подтверждены. QT-08 обнаружено на snapshot 2a38 и сообщено, но receipt тогда не записан из-за смены host; текущий FR-8 исправлен на Cloud.ru S3 и согласован с ADR-003. История сохранена как собственное условие, структурно подтверждённое на текущей ревизии.
 
 Рассмотрены test-only физический fence до HTTP/signed fetch, fake zero-IO при сломанном SDK guard, уникальные scope и canary, read-only versioning и journal/cleanup. Key остаётся production-wide, IAM proof не заявляется. Это ideation: код, тесты, live S3 и CJM не проверялись; исторический MinIO не подтверждает Cloud.
+
+## Focused ideation revision ba9cf99c151c
+
+Роль `qcsd-testability`, family `owner-exception`; nonce `6b1467c6-00ff-4452-956d-143cb8ac52b5`. Проверены восемь хешей snapshot, author handoff, требования, три ADR, 04/05/06, core-cjm и OpenSpec.
+
+**CLEAN по дизайну:** QT-01–08 подтверждены на текущей ревизии. Реальные existing site uploads допускаются по решению владельца с canonical DB ownership и привязанной к точному whitelist квитанцией; initial legacy требует `legacy-preserved`, steady — `prefixed`, originals и DB rows сохраняются. Новых серьёзных рисков в проверенной области не обнаружено.
+
+Это ideation: код, тесты, принадлежность и bytes объектов, backup/restore, S3, payment и CJM не проверялись. Live gates остаются открыты; общий ключ сохраняет production-права и cutover не разрешён.

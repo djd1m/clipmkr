@@ -17,7 +17,8 @@
   Нынешний общий key сохраняет production-права по явному owner exception.
   Разделение tests/production и двух tests только code/SDK, без IAM isolation.
 - **DataBaseline / CopyEvidence:** sourceIdentity и snapshot-bound restore плюс
-  свежий live baseline той же site DB; DB-whitelist synthetic objects с size/SHA,
+  свежий live baseline той же site DB; DB-whitelist всех принадлежащих ей объектов
+  с явной квитанцией сохранения по решению владельца и size/SHA,
   proof сохранения original и разрешённых старых multipart. Не новая DB-таблица.
   Новый site sourceIdentity/account SHA/journal match test.dump 5/28 получен root;
   до apply дополняются остальные data fingerprints и проверяется drift.

@@ -18,9 +18,12 @@
 После успеха обе цели подтверждают тот же commit
 и ожидаемые образы. Ошибка одной цели не превращается в общий успешный результат.
 Прямые несохранённые правки работающих контейнеров не являются источником версии.
-По уточнению владельца «сервер сайта и сервер разработки — одно и то же»;
-под «этим VPS» он понимает site-server. Физический controller workspace по inventory
-расположен отдельно; это не третья цель. Старый `localdevstage` исключён,
+Существующий site-test выбран по уточнению владельца «сервер сайта и сервер
+разработки — одно и то же». Физический controller workspace по inventory
+расположен отдельно; это не третья цель. Назначение «текущий сервер» не переносится
+с контекста доставки на другие операции: перед дисковой очисткой цель сверяется
+с запросом и явно называется; исправление ошибки — docs/incidents/2026-11-03-disk-space.md.
+Старый `localdevstage` исключён,
 новый dev-контур не создаётся. Оба targets используют SSH, локального executor нет.
 
 ### FR-2 — E2E на Cloud.ru
@@ -54,7 +57,11 @@ Root уже переснял site sourceIdentity и live account SHA/full journa
 ревизии; localstage binding исключён. Перед apply повторно проверить отсутствие drift
 и дополнить baseline всеми существенными media/payment/referral/credit строками.
 Перед namespace change остановить test writers и безопасно разрешить старые pending
-multipart. Копировать только DB-whitelist synthetic objects в `tests/site/`, проверить
+multipart. По явному решению владельца от 03.11.2026 «Сохранить все существующие
+данные n5» копировать все канонически принадлежащие существующей site-test DB
+объекты по точному DB-whitelist в `tests/site/`, включая реальные загрузки.
+Синтетическое происхождение не требуется. Решение связывается приватной квитанцией
+с точными target/project/sourceIdentity, bucket/prefix и хешем whitelist. Проверить
 каждый size и SHA-256, сохранить исходники. Чужие production-ссылки блокируют apply;
 нельзя молча добавлять им prefix. DB keys остаются logical, без переписывания строк.
 
@@ -264,7 +271,7 @@ freeze/relay/DNS/перенос рабочей БД. Новый стек и но
 | DATA-04 | Схема при rollback | A и B имеют одинаковые полные journal; иной journal блокирует автоматический откат; БД/volumes не откатываются |
 | DATA-05 | Owner exception общего ключа | Полные production-права сохранены; нет новых SA/key/policy/IAM proof/требования 403. Root read-only: policy отсутствует, CORS c/n5 PUT, versioning disabled; Cloud canary только внутри tests prefixes |
 | DATA-06 | Code/SDK граница test copies и production objects | Настоящий Cloud.ru S3: один bucket, tests/cloud/ и tests/site/, весь object/list wire трафик и signing prefixed; markers/responses/public signing/retention/multipart; unsafe/unknown mutations без сети; outside canary size/SHA до/после прежние |
-| DATA-07 | Переход непустого site-test | DB-whitelist synthetic objects скопирован с size/SHA в tests/site/; оригиналы сохранены, DB keys прежние; чужая ссылка/неснятый pending multipart блокирует смену namespace |
+| DATA-07 | Переход непустого site-test | Owner-approved DB-whitelist существующих site-test objects скопирован с size/SHA в tests/site/; оригиналы сохранены, DB keys прежние; чужая ссылка/неснятый pending multipart блокирует смену namespace |
 | DATA-08 | Раздельные app/infra projects и точная DB | applicationProject ≠ test infra допустим; pinned containers/volumes/network сохранены, DATABASE_URL DB = binding.dbName и host → exact test DB container; POSTGRES_DB default/main DB/mismatch отклоняются, DB/Redis up отсутствует |
 | PAY-01 | Окно нынешнего TEST shop | Согласованы начало/конец, drained intents; UI-оператор переключил native notifications, проверены replay/credits/referrals; callback n5 восстановлен после завершения Cloud intents |
 | RES-03 | Release admission site-server | Фактический disk/layers/archive peak с резервом и сохранёнными rollback images; при нехватке apply blocked, global prune отсутствует |

@@ -35,8 +35,10 @@ Cloud-кандидат работает обычным c.clipmkr.ru: один or
 referral и return. Cookie выбора версии отсутствует, DNS не переключается.
 
 Namespace change site: остановить только test writers/new uploads, разрешить старые
-pending multipart штатным complete/безопасным abort, связать DB-whitelist synthetic
-objects с source/destination/size/SHA. Streaming copy в tests/site/ с независимой
+pending multipart штатным complete/безопасным abort, связать DB-whitelist всех
+существующих site-test objects с source/destination/size/SHA и приватной квитанцией
+явного решения владельца сохранить реальные загрузки. Каноническая принадлежность
+проверяется по точной source DB; происхождение как synthetic не требуется. Streaming copy в tests/site/ с независимой
 проверкой каждого объекта; originals сохраняются, DB logical keys не переписываются.
 Чужая production-ссылка/несовпадение hash/pending upload блокируют apply. Подробности
 и rollback namespace — ADR-002; нет массового prefix/копирования всего bucket.

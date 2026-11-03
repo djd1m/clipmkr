@@ -3,6 +3,7 @@
 - [x] Зафиксировать запрет production cutover и обязательную приёмку.
 - [x] Выполнить маршрутизацию, требования и исследование переиспользования.
 - [x] Снять inventory текущих образов, схем и агрегатов без изменения данных.
+- [x] Получить явное решение сохранить все существующие данные n5, включая реальные загрузки, и обновить границу legacy-переноса в требованиях/ADR.
 - [x] Исторический QCSD/focused/K1/K2 старого снимка — история в 07_progress, не approval текущей ревизии.
 - [x] Root сообщил новый site-test sourceIdentity/account SHA/journal match реального test.dump restore: 5/28; localstage binding исключён.
 - [ ] Root prepare и три actual focused QCSD по последнему owner exception; новый checkpoint K1 namespace/exports и K2.

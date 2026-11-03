@@ -43,11 +43,35 @@ drift. Несовпадение или несвязанный source требу�
 Общий bucket и нынешний production-wide key разрешены owner exception ADR-003:
 tests/cloud/ и tests/site/ ограничиваются только кодом/SDK. Новых key/policy/IAM
 proof/403 нет. Не требовать bucket inequality и пустых S3-ссылок site.
-Вместо этого составить приватный DB-whitelist всех referenced synthetic test
-objects (source, clips, thumbnails и прочие реально найденные storage fields),
-связав logical key, владельца/test принадлежность, size/SHA-256 и destination.
+По явному решению владельца 03.11.2026 «Сохранить все существующие данные n5»
+составить приватный DB-whitelist всех referenced objects существующей site-test DB,
+включая реальные пользовательские загрузки (source, clips, thumbnails и прочие
+найденные storage fields). Синтетическое происхождение не является условием.
+Связать logical key, канонического владельца и точную source DB, size/SHA-256
+и destination. Приватная квитанция фиксирует фактическое решение владельца;
+она не создаёт задним числом историческую synthetic provenance.
 Не копировать bucket целиком и не объявлять произвольную production-ссылку тестовой.
 Неопределённая принадлежность/отсутствующий объект/конфликт destination — BLOCKED.
+
+Для первого непустого site-перехода используется `kind: "legacy-preserved"`.
+Data evidence содержит `preservationApprovalPath` и `preservationApprovalSha256`:
+внешний owned regular file `0600` в приватном каталоге, без symlink. Квитанция
+схемы `clipmkr-legacy-preservation-1` связывает decision
+`preserve-all-existing-site-test-data`, непустую ссылку на реальную инструкцию,
+target `site-test`, application project, полную sourceIdentity, storageBucket,
+destinationPrefix `tests/site/` и objectWhitelistSha256. Хеш вычисляется SHA-256
+от stable JSON массива, отсортированного по logicalKey; в каждой строке строго
+logicalKey/accountId/videoId/clipId/ownershipEvidence/sourceSize/sourceSha256/
+destinationKey. Совпадение квитанции и фактического whitelist обязательно;
+source/destination hashes и originalShaAfter проверяются отдельно. Файл служит
+операторской привязкой решения и объёма переноса, не аутентификацией владельца.
+
+Первый legacy site-переход требует legacy-preserved у всех объектов и проверяет
+квитанцию до staging/удалённых изменений. Нельзя заменить kind на prefixed, чтобы
+обойти согласование или чтение originals. Receiver повторно проверяет допустимые
+kinds под lock до load; последующие выпуски с уже действующим namespace требуют
+только `prefixed` и не читают прежние unprefixed originals. Cloud initial остаётся
+пустым; его объекты не допускаются под этой квитанцией.
 
 До namespace change остановить только site test writers и новые uploads; проверить
 старые multipart по DB+S3. Завершить под старым namespace либо безопасно abort
@@ -127,7 +151,7 @@ Owner: оператор выпуска; независимое QE проверя
 
 Нужны новые prepare и три actual focused QCSD. Новый site binding 5/28 уже сверён root;
 остаются drift/all-data baseline, split-project/DB host proof, DB-whitelist/copy/drain,
-SDK/MinIO/inside-tests Cloud canary, disk admission и конкретное
+SDK/настоящий S3/inside-tests Cloud canary, disk admission и конкретное
 окно с UI-оператором остаются зависимостями; прежний ideation не одобряет эту ревизию.
 
 ## Уточнение заморозки оплаты по QQ-02/RISK-02

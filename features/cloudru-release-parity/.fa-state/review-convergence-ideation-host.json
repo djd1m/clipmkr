@@ -16,8 +16,8 @@
     }
   ],
   "snapshot": {
-    "nonce": "aa531874-11fe-46dc-a376-443dfa2c84fa",
-    "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+    "nonce": "6b1467c6-00ff-4452-956d-143cb8ac52b5",
+    "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
     "manifest": [
       {
         "path": "features/cloudru-release-parity/00_complexity_assessment.md",
@@ -25,7 +25,7 @@
       },
       {
         "path": "features/cloudru-release-parity/01_requirements.md",
-        "digest": "744c459ba5d018bc041f194f21869f92fd64d8f79191b6456838f1109305f30f"
+        "digest": "0faa2c3624379fafc10d9a02013bbf481ca83f4b13d7ede9e5ede37c63668a0d"
       },
       {
         "path": "features/cloudru-release-parity/02_research.md",
@@ -37,7 +37,7 @@
       },
       {
         "path": "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
-        "digest": "ef74f08733ed90bb0153b8eba6d9aae0715db6e94828ac6aa21da77ed306474d"
+        "digest": "717ac6fb67bc2345cfd7c2f19647959b70ce6cf409ebe2701150f5376eb14a68"
       },
       {
         "path": "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
@@ -45,11 +45,11 @@
       },
       {
         "path": "features/cloudru-release-parity/04_domain_model.md",
-        "digest": "c9471027b8f885ce969b06893a88468aed5add35b71cae95b6df36d4e682dfba"
+        "digest": "fbb1a4c495d63dc2c46fdcfa5c1a65fcd6fd4b2939986d4b5e5530a4b8aaf356"
       },
       {
         "path": "features/cloudru-release-parity/05_architecture.md",
-        "digest": "03142c85eb769ed247f238f148a2b5001a6b3aef09219c5e525d5164e4b1e33b"
+        "digest": "d1b03d7c352c8fad6b1550fde38c9ce2b38eea6f389b6913fb155a0d0a26456a"
       }
     ]
   },

@@ -1,8 +1,8 @@
 {
   "schema": "fa-review-convergence-1",
   "phase": "ideation",
-  "nonce": "aa531874-11fe-46dc-a376-443dfa2c84fa",
-  "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+  "nonce": "6b1467c6-00ff-4452-956d-143cb8ac52b5",
+  "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
   "author": {
     "addressed": [
       "RISK-01",
@@ -19,25 +19,29 @@
       "QT-05",
       "QT-06",
       "QT-07",
+      "RISK-04",
       "QQ-05",
-      "RISK-04"
+      "QT-08"
     ],
     "changedScope": [
       "features/cloudru-release-parity/01_requirements.md",
-      "features/cloudru-release-parity/02_research.md",
-      "features/cloudru-release-parity/03_adr/001-release-manifest.md",
       "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
-      "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
       "features/cloudru-release-parity/04_domain_model.md",
       "features/cloudru-release-parity/05_architecture.md",
-      "features/cloudru-release-parity/06_implementation_plan.md"
+      "features/cloudru-release-parity/06_implementation_plan.md",
+      "features/cloudru-release-parity/README.md",
+      "features/cloudru-release-parity/07_progress.md",
+      "openspec/changes/cloudru-release-parity/specs/release-candidate/spec.md",
+      "openspec/changes/cloudru-release-parity/design.md",
+      "openspec/changes/cloudru-release-parity/tasks.md",
+      "docs/runbooks/release-candidate.md"
     ],
     "classification": "structural",
-    "delta": "По прямому уточнению владельца вторая цель теперь existing site-test на сервере сайта с непустыми данными и split app/infra Compose; сохранность всех строк/объектов, DB URL binding, copy по whitelist и место под артефакты. Явный выбор общего S3 key с code/SDK namespace tests/cloud и tests/site; IAM isolation/key/policy/403 больше не требуются, key production-wide. Нынешний TEST shop используется только в согласованное окно с drain/return callback. Добавлены SDK pipeline/MinIO/canary и buildtime-wiring regression критерии; старые 7 failures не скрыты. Финальная поправка QQ-02/RISK-02: серверный N5_CHECKOUT_ENABLED gate обеих copies, freeze до drain/callback switch, сохранённый live webhook/status, симметричный возврат с закрытым Cloud. QT-07: точный January/R1/R2 оракул minor units/null/20/30/distinct payer/exclusions/month bounds/snapshot/refund и разделение PG/live evidence. Новое прямое решение владельца: MinIO больше не использовать, network S3 тесты на настоящем Cloud.ru S3. Все мутации только unique tests/cloud и tests/site, raw outside-cloud canary внутриtests/site; запрет bucket create/delete/rootlisting/metadatamutation, read-only versioning разрешён. Три legacyintegration адаптируются к namespace с сохранением сценариев; отсутствие lifecycle общегоbucket не предполагается. Единственное оставшееся старое слово MinIO в FR-8 исправлено на Cloud.ru S3 до текущего snapshot b522; все3roles должны проверить текущие8хешей. QQ-05/RISK-04: независимый тестовый physical scope fence wraps actual SDK HTTP handler and signedfetch до сети, explicit exact endpoint/bucket/run paths/listmarkers/versioningread, rawcanaryexactkey; отказ при снятом SDKguard проверяетсяfake transport zeroIO. privatepre-PUTjournalиunknownoutcomes. 01/ADR003/05/06AM18.",
-    "evidence": "01 FR-1..9 и матрица, ADR-001/002/003, 04/05; код и full deployment новой ревизии ещё не подтверждены. 06 актуализирован Sol в новой Codex CLI сессии, actual turn_context model gpt-6.1-sol. 01 checkout lifecycle и числовой оракул; ADR002 уточнение; 05 Checkout gate;06TASK8/9+AM16/17+testtargets. Ответ владельца про настоящие S3 tests; 01/02/ADR003/05/06/OpenSpec синхронизированы. Никакого утверждения livePASS.",
+    "delta": "Владелец явно подтвердил сохранение всех существующих данных n5, включая реальные загрузки. FR-4/ADR-002 заменяют требование synthetic provenance на exact canonical DB-whitelist и приватную bound preservation receipt. Первый legacy site требует legacy-preserved у всех объектов; prefixed не обходит допуск. Steady namespace остаётся prefixed-only. Производственный маршрут, общий S3 owner exception, исходные objects, data/ownership/drift/multipart/rollback guards сохраняются. Уточнена разница текущего controller и site для дисковых операций. Код новой поправки ещё не писался.",
+    "evidence": "Прямой ответ владельца «Сохранить все существующие данные n5» на request_user_input_async call_50220a6e6d614c5ca752dec91d638fb6, item 0; FR-4, ADR-002 Decision, 04 DataBaseline, 05 namespace change, 06 поправка/AM-19 и OpenSpec сценарии. Старые 17 условий сохраняются; прежние проверки не выдаются за closure новой ревизии.",
     "newRisks": {
-      "assessment": "Общий ключ сохраняет production authority: владелец явно выбрал эту остаточную границу после разъяснения. Защита только в коде/SDK и не выдерживает обход клиента/компрометацию ключа. Непустой site-test и дефицит диска требуют сохранности/whitelist/admission, окно testshop требует drain/возврата. Новых скрытых допущений об IAM нет.",
-      "evidence": "Ответ владельца: Нынешний общий ключ; ограничиваем тесты в коде. FR-4/5/7/8, ADR-002/003 закрепляют новые риски и проверки.",
+      "assessment": "Расширение допуска с synthetic на реальные existing uploads требует отдельной привязки решения к точной DB и whitelist и запрета обхода через kind. Эти риски явно добавлены в ADR-002 и AM-19; runtime proof впереди.",
+      "evidence": "ADR-002: preservationApprovalPath/Sha256, target/project/sourceIdentity/bucket/prefix/whitelist binding, initial/steady kind gates до staging/load, canonical ownership и original preservation; остальной scope неизменён.",
       "conditions": []
     }
   },
@@ -102,42 +106,42 @@
       "verifications": [
         {
           "id": "RISK-01",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Самостоятельно повторно проверены ADR-002 Context/Decision,05 «Данные и запуск»,CJM-08: существующие c/n5 test copies обновляются in-place без selector/fallback; DB/Redis/session secrets отделены от production. Test-only physical fence app runtime/session/cache/backend не меняет. Условие подтверждено для текущего дизайна, не кода/browser/E2E.",
+          "evidence": "Самостоятельно повторно прочитаны актуальные requirements,ADR-002 Context/Decision,04/05 и core-CJM: c/n5 остаются existing in-place test copies без selector/общего backend fallback, production DB/Redis/session secrets не наследуются, после смены secret новый вход. Новый legacy-preserved admission сохраняет account/media ownership и не меняет browser/session/cache контракт. Исходное условие verified только для текущего дизайна, не кода/браузера/E2E.",
           "implementationVerified": true
         },
         {
           "id": "RISK-02",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Самостоятельно повторно прочитаны01 FR-5,ADR-002 checkout amendment,05 Checkout gate,06 TASK-8/AM-16: server gate false после rate/origin/auth до body/createIntent/provider create даёт503, webhook/status live. Freeze обеих copies и прекращение старых in-flight до DB/provider drain/switch; после confirmation открыт только Cloud,site closed всё окно; перед return Cloud frozen/drained,после n5 confirmation открыт только site,Cloud closed. Unknown-stop и shop/mode/intent/IP-proxy/provider/replay-one-grant сохранены. Новая S3 поправка не меняет окно. Только design verification.",
+          "evidence": "Повторно проверены01 FR-5,ADR-002 checkout amendment,05 платёжный контракт и06 TASK-8/AM-16: server gate после rate/origin/auth до body/createIntent/provider create,503 при freeze и live status/webhook. Freeze ОБОИХ checkout/прекращение старых in-flight до DB/provider drain/switch, после confirmation открыт только Cloud; site closed весь window; перед return Cloud frozen/drained,после n5 confirmation открыт только site,Cloud closed. Unknown-stop,shop/mode/intent/IP-proxy/provider/replay-one-grant остаются. Сохранение real legacy media не меняет этот маршрут и не закрывает payment gate. Только design verification.",
           "implementationVerified": true
         },
         {
           "id": "RISK-03",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Самостоятельно повторно проверены FR-6/REL-05,ADR-001,05 Remote apply и ресурсы,06 TASK-1/4/5: две SSH цели,host-key/loopback/expiry,lock/private atomic state до mutations,disconnect=unknown,reconcile runtime/namespace/topology/journal до retry без auto-resume/auto-extension. Disk admission до transfer/apply с сохранением current/rollback images и резерва сохраняется; test-only S3 fence SSH доступ не расширяет. Только дизайн, не live recovery.",
+          "evidence": "Повторно проверены01 FR-6/7,ADR-001,05 Remote apply/resource sections и06 TASK-1/4/5: обе цели SSH,host-key/loopback/expiry preflight,один lock/private atomic state до mutations,disconnect=unknown,inspect/reconcile runtime/namespace/topology/full journal до retry,без auto-resume/расширения доступа. Preservation approval проверяется до staging; receiver kinds повторно под target lock до load. Disk admission до transfer/apply с current/rollback images/резервом сохранён; текущий controller и site явно различены для cleanup. Это проектный контракт,не SSH/disk/runtime proof.",
           "implementationVerified": true
         },
         {
           "id": "RISK-04",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Подтверждено после собственного чтения01 FR-8:163–182,ADR-003 «Независимый предсетевой предохранитель»,05 SDK namespace boundary и06 AM-18/provider amendment. До первого I/O test-only fence wraps фактический requestHandler.handle internal/signing/raw и отдельно signed URL fetch. Независимый от проверяемого keyPrefix parser physical-scope guard допускает только HTTPS exact endpoint/bucket/current-run object keys/list Prefix+KeyMarker и read-only GET GetBucketVersioning exact bucket. Raw canary только exact known key без list; bucket mutations/root listing/CopySource/other bucket queries/encoded escapes/outside scope отклоняются до transport. Опасные negative SDK probes только fake HTTP; deliberate disabled/broken middleware с synthetic logical key и fake transport counter доказывает fence zero I/O, не выдаётся за real S3 proof. Один existing liveS3Environment config/bind/fetch reuse всеми network integrations; private pre-PUT journal run/attempted keys/uploadIDs/unknown outcomes, exact cleanup не маскирует primary error и cleanup failure не PASS. Legal positive SDK/signing/pagination/erasure проверки остаются настоящим S3, safety rejection не proof SDK guard. Условие закрыто исключительно в исправленном дизайне; никакие кодовые/сетевые проверки не выполнены.",
+          "evidence": "Самостоятельно повторно прочитаны01 FR-8,ADR-003,05 SDK namespace boundary,06 AM-18: независимый test-only physical-scope fence перед actual internal/signing/raw requestHandler.handle и signed fetch; exact HTTPS endpoint/bucket/current-run keys/list prefixes+markers,raw exact-key no-list,read-only versioning GET exception. Bucket/root/CopySource/other-query/encoded-escape/outside-scope до I/O; parser независим от проверяемой SDK middleware. Опасные negatives только fake,SDK-off/broken fake-counter discrimination не live proof,private pre-PUT journal/unknown outcomes/exact cleanup без masking primary error. Новый операторский legacy copy читает только exact DB-owned approval-bound originals вне destination prefix и пишет tests/site; это отдельный preservation step поADR-002,не расширение fixture fence и не SDK canary. RISK-04 verified только в дизайне; код/сеть не проверены.",
           "implementationVerified": true
         }
       ],
       "newRisks": {
-        "assessment": "После независимой focused проверки всех собственных условий, actual changes и затронутых зависимостей новых серьёзных рисков не выявлено. RISK-04 закрыт дизайном независимого physical egress fence и переносом опасных probes исключительно на fake HTTP. Общий key по принятому owner exception остаётся production-wide; ни fixture fence, ни SDK boundary не являются IAM isolation. Private journal/unknown outcomes/exact cleanup уменьшают риск orphan objects без blanket cleanup. Сохранность site copy/DB rows/volumes, pinned DATABASE_URL/split projects, checkout window, SSH и disk admission остаются обязательными будущими gates.",
-        "evidence": "01 FR-8 independent fence; ADR-003 pre-network subsection и Confirmation;05 SDK boundary;06 AM-18/provider amendment/27 targets. Повторно проверены собственные session/payment/SSH зависимости; code/runtime evidence не использовано.",
+        "assessment": "Новых серьёзных design risks после собственной focused проверки не выявлено. Явное owner preserve-all разрешает реальные existing site uploads без выдуманной synthetic provenance; canonical DB ownership/exact whitelist/bound approval,initial-versus-steady kind gate,original/source/dest SHA и полный data baseline остаются барьерами. Approval file прямо не считается аутентификацией владельца; он связывает уже данное решение с точным scope. Чужие ссылки,missing/conflicting objects,drift/pending multipart остаются BLOCKED. Общий ключ production-wide по принятому exception; live S3/test transport/checkout/SSH/disk/CJM gates остаются невыполненными обязательствами,а не результатами этой проверки.",
+        "evidence": "01FR-4/5/6/7/8,ADR-001/002/003,04/05,06 preservation amendment/TASK-4/AM-19,OpenSpec preservation and kind-bypass scenarios,operator runbook full baseline/object approval. Проверка исключительно актуального дизайна; чужие review conclusions не использованы.",
         "conditions": []
       },
       "authorAssessmentChecked": true,
       "deltaVerification": {
         "classification": "structural",
-        "evidence": "Прочитаны actual author handoff/newRisks и текущие01 FR-8/ADR-003/05/06 AM-18/provider amendment/27 targets; самостоятельно сверены8/8 SHA-256 и hash manifest на revision 990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67, nonce aa531874-11fe-46dc-a376-443dfa2c84fa. Structural classification подтверждена: независимый pre-I/O test transport guard меняет защиту live suite. Проверены охват internal/signing/raw requestHandler.handle и signed fetch, exact HTTPS endpoint/bucket/run physical paths/list markers, raw exact-key no-list, read-only versioning-only bucket exception, denial mutations/root listing/CopySource/other queries/encoded escapes/outside scope, независимость parser и отсутствие app-runtime adapter. Deliberate SDK-off/broken fake-counter discrimination не live proof; dangerous SDK negatives только fake,legal positives Cloud-only. Pre-PUT private journal/unknown outcomes/cleanup primary-error preservation и reuse liveS3Environment тремя legacy network integrations с PG *_test isolation закреплены. Реальный wire/signing/list-pagination/erasure/outside-cloud canary SHA/size proof и no-skip требования не ослаблены; lifecycle общего bucket не считается отсутствующим. RISK-01..04 исходные условия сохранены и independently design verified, новых HIGH нет. Чужие QQ/QT и история QT-08 не переписывались/не закрывались этой ролью. Structural implementationVerified=true означает только исправленные ideation artifacts: код/tests/live S3/SSH/DB/payment/full CJM не проверены. Старые MinIO PASS,K1/K2/author statements не приняты как implementation approval; final codeQE отдельно.",
+        "evidence": "Сначала самостоятельно прочитаны текущие01 requirements,триADR,04,05,06,core-CJM и весь OpenSpec change; затем только own host conditions и actual author handoff/changedPaths. Дополнительно проверены affected operator runbook,README и новый preservation раздел07; авторские runtime claims не evidence. Сверены8/8 SHA-256 и hash manifest current ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f, nonce 6b1467c6-00ff-4452-956d-143cb8ac52b5;06 отдельно ec386e29fbb4f72a05bacc0d9aa350c383a55874550f4d6e21a8217130254cd7. Structural classification подтверждена: legacy admission меняет допустимые real-media объекты. ADR-002 Decision/06AM-19/OpenSpec проверены на exact target/site application project/full sourceIdentity/storageBucket/tests-site prefix и whitelist hash binding. Owned regular0600/no-symlink approval schema clipmkr-legacy-preservation-1 содержит preserve-all decision и ссылку на реальную инструкцию; digest stable JSON whitelist sorted logicalKey со строго заданными ownership/source/dest fields,source/destination hashes/originalShaAfter отдельно. Файл scope receipt,не owner authentication. Initial legacy site требует legacy-preserved ВСЕХ objects и approval до staging; prefixed не обход,receiver проверяет kinds под lock до load;steady только prefixed без чтения прежних originals,Cloud initial пустой/не покрыт approval. Full DB public-table/columns/count/hash baseline,source-bound restore/drift,pinned DB/split-project/volumes,multipart drain,streaming exact copy без overwrite с originals/logical keys и namespace-compatible rollback сохранены. No production cutover,key/IAM exception и независимый test fence не ослаблены. Все четыре own conditions сохранены дословно и verified на currentrevision;новых HIGH нет. implementationVerified=true только о проверенном исправленном дизайне;код новой поправки не изучался/не писался,tests/live/backup/copy/SSH/DB/S3/payment/full CJM не выполнялись. Общий convergence не оценивался;prepare/evaluate не вызывались.",
         "implementationVerified": true
       }
     },
@@ -216,49 +220,49 @@
       "verifications": [
         {
           "id": "QQ-01",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "На текущей revision 01/05 и неизменённый ADR-002 сохраняют обычный c.clipmkr.ru без selector, один backend для новых контекстов/referral/payment return, отдельные session secrets и разделение owner/blogger/client. Physical-scope fence ограничен test harness, не меняет app runtime/пользовательские ссылки. CJM Play/download/отчётность остаются обязательными. Дизайн подтверждён; браузер/код не проверялись.",
+          "evidence": "Самостоятельно перечитаны текущие FR-2/4/5, ADR-002 Decision, 05 и core-cjm. Один обычный backend/origin без selector, существующие аккаунты и logical keys сохраняются; CJM предусматривает раздельные контексты owner/blogger/client и сохранение referral/payment return. Расширение legacy admission на реальные существующие uploads не меняет роль владельца записей и не разрешает чужие media references. После verified copy по-прежнему обязательны playback/download всех прежних media. QQ-01 подтверждено только в дизайне; браузер/права/медиа фактически не проверялись.",
           "implementationVerified": true
         },
         {
           "id": "QQ-02",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Повторно проверены FR-5 и 05 Checkout gate, неизменённый ADR-002 и TASK-8/AM-16: server freeze обеих copies с 503 и завершением старых in-flight ДО provider/DB drain; status/webhook остаются live. Открывается только контур подтверждённого callback; перед возвратом Cloud вновь freeze/drain, site открывается после подтверждения n5, Cloud остаётся закрыт. Поддельные/чужие/replay события и native proof сохраняют прежние критерии, полный CJM без window/native receipts blocked. Новый S3 fence не ослабляет контракт. Подтверждён только дизайн.",
+          "evidence": "FR-5, ADR-002 уточнение заморозки, 05 Checkout gate и 06 TASK-8/AM-16 сохраняют запрет checkout обеих копий до drain, 503 до body/createIntent/provider create после прежних auth/rate/origin, живые status/webhook и завершение старых in-flight. Открывается только контур подтверждённого callback, возврат симметричен, Cloud закрыт после окна. Сохраняются ownership intent/provider lookup/replay и согласованное окно/native receipts; preservation approval не является payment proof. Платёжная приёмка/полный CJM остаются blocked без live evidence. Условие подтверждено в дизайне.",
           "implementationVerified": true
         },
         {
           "id": "QQ-03",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "FR-4/6/7 и 05/06 TASK-4/5 сохраняют source-bound backup/drift и все данные, exact DATABASE_URL→pinned DB при split app/infra projects, DB/Redis/volumes, whitelist streaming copy/size/SHA/originals, drain и logical keys. Неизменённые ADR-001/002/04 по проверенным hashes сохраняют полный journal и совместимость namespace при rollback, unknown→reconcile без слепого DB restore. Новый test-only fence не распространяется на отдельно согласованный operator copy старых test objects; journal fixture/точная очистка не разрешают удаление данных приложения. Условие закрыто в дизайне, runtime/restore не проверялись.",
+          "evidence": "Текущие FR-4/6/7, ADR-001/002, 04/05, 06 поправка/TASK-4/5/AM-19 и runbook сохраняют full journal, source-bound backup/restore и baseline всех public base tables/columns, drift, exact DB binding/split infra, отсутствие blind restore и равенство схемы/namespace при rollback. Новая clipmkr-legacy-preservation-1 receipt связывает реальную инструкцию и decision с site-test/project/sourceIdentity/bucket/tests/site и SHA stable JSON отсортированного по logicalKey полного whitelist; ownership и source/destination/originalShaAfter проверяются отдельно. Initial legacy требует legacy-preserved для всех объектов и approval до staging, receiver проверяет kinds под lock до load; prefixed не обходит initial gate. Steady требует prefixed-only и не читает старые originals; Cloud initial пуст и не охватывается receipt. Missing/foreign/conflicting objects и pending multipart блокируют переход, originals/DB keys/rows/volumes не удаляются. Совместимость и сохранность заданы проверяемым дизайном; реальная квитанция, DB, hashes объектов и выполнение миграций не исследовались.",
           "implementationVerified": true
         },
         {
           "id": "QQ-04",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "FR-7, 05 и 06 resource admission сохраняют ≥2 ГиБ available memory, finite limits, media disk 3×input+2 ГиБ, отдельный release peak до transfer с rollback images, последовательные Cloud 90/120, quota 240 минут/4 LLM и stop conditions. Новый fence/offline fault не требует дополнительных STT/LLM; реальные S3 tests используют уникальные runs/точную очистку без production cleanup. Фактическая достаточность 3,6 ГБ не обещана. Подтверждение только проектных ограничений.",
+          "evidence": "FR-7 и 05/06 сохраняют конечные memory limits, available memory ≥2 ГиБ, media disk 3×input+2 ГиБ и отдельный release admission перед transfer с current/rollback images. Owner-approved real uploads копируются streaming без накопления на заполненном диске; увеличение допустимого provenance не отменяет size/admission. Cloud 90/120 только последовательно, quota 240 минут/4 LLM с retries и stop conditions остаются; site проверяет существующие media без повторного платного STT. Уточнение FR-1 запрещает переносить обозначение текущего сервера на несогласованную цель очистки. QQ-04 подтверждено как дизайн; ни ресурсы, ни достаточность места не измерялись.",
           "implementationVerified": true
         },
         {
           "id": "QQ-05",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Закрыто в исправленном дизайне текущей revision. 01 FR-8 и ADR-003 «Независимый предсетевой предохранитель настоящих S3 тестов» прямо требуют до первого real HTTP wrapping actual requestHandler.handle internal/signing/raw clients и проверку presigned URL ДО fetch; 05 связывает это с test-only fence. Независимый parser не использует keyPrefix parser проверяемого SDK. Physical scope ограничен exact HTTPS endpoint/bucket и текущими run object keys/list Prefix/KeyMarker; raw canary — exact own key без list, GetBucketVersioning — только GET exact bucket. Root/broad/outside scope, bucket mutations, CopySource/other bucket queries/encoded escapes блокируются до transport. AM-18 задаёт blocks live test transport outside its independent run scope в tests/storage-prefix.test.ts: отключённая/сломанная SDK middleware должна получить отказ и zero IO, опасные negative probes только fake HTTP. Это контракт блокировки, не исправления запроса; положительный live S3 остаётся отдельным обязательным proof. Единый existing fixture liveS3Environment config/bind/fetch переиспользуется legacy integrations; private pre-PUT journal фиксирует attempted keys/uploads/unknown outcomes, exact cleanup не маскирует первичную ошибку и не даёт PASS при неуспехе. Общий production-wide key/owner exception и отдельный operator copy не меняются. Проверены документы и план; fence, fault и live поведение не исполнялись.",
+          "evidence": "Повторно прочитаны текущие FR-8, ADR-003, 05 и 06 AM-18: независимый test-only physical fence перед actual internal/signing/raw requestHandler.handle и presigned fetch, собственный parser и exact endpoint/bucket/run keys/list markers; raw canary exact key без list, только GET versioning exception. Root/bucket mutations/CopySource/encoded escapes/outside scope отказывают до IO, SDK-off fault остаётся fake/offline, positive Cloud S3 proof отдельно обязателен. Private journal/unknown outcomes/exact cleanup не маскируют ошибки. Разрешение читать реальные legacy source objects относится только к отдельно bound operator copy ADR-002, не расширяет fixture scope и не превращает пользовательские media в synthetic canary. Owner exception общего production-wide key/IAM граница прежние. Условие подтверждено исключительно в дизайне, без кода/fault/live запросов.",
           "implementationVerified": true
         }
       ],
       "newRisks": {
-        "assessment": "Новых серьёзных условий в focused quality scope не выявлено; QQ-05 устранён в текущем дизайне независимым предсетевым fence и offline fault, исходные QQ-01..04 сохраняют подтверждение.",
-        "evidence": "Самостоятельно сопоставлены 01 FR-8, ADR-003, 05 и 06 AM-18 с исходным QQ-05: actual handler/fetch boundary до IO, независимость от SDK parser, exact endpoint/bucket/run, запреты bucket/root/CopySource/encoded escapes, raw exact-key, versioning-read exception, fake negative fault и positive live proof разделены. Private journal/unknown outcomes/cleanup failure не подменяют успешную приёмку. Existing fixture reuse и PostgreSQL isolation/отдельный operator copy не нарушены. Owner exception production-wide key остаётся явным; никакие результаты реализации или live PASS не выводятся из документов.",
+        "assessment": "Новых серьёзных design risks в focused quality scope не выявлено. Допуск реальных существующих uploads ограничен exact canonical DB-whitelist и bound owner-preservation receipt; исходные QQ-01..05 подтверждены без изменения их смысла.",
+        "evidence": "Самостоятельно проверены FR-4, ADR-002 Decision, 04/05, 06 поправка/AM-19, OpenSpec change и runbook. Полный baseline и ownership сохраняются; approval связан с target/project/sourceIdentity/bucket/prefix/whitelist, initial legacy-preserved нельзя выдать за prefixed, receiver проверяет kinds под lock, steady prefixed не читает originals. Source/destination/original hashes, отсутствие overwrite конфликта, drain и data/rollback guards остаются. Приватная receipt явно не является аутентификацией владельца; реальная инструкция уже дана. Synthetic остаётся только fixture/canary, их physical fence не расширяется на реальные media. Неизвестное live evidence остаётся blocked, не новым выдуманным дефектом кода и не PASS.",
         "conditions": []
       },
       "authorAssessmentChecked": true,
       "deltaVerification": {
         "classification": "structural",
-        "evidence": "Actual author handoff текущих revision/nonce прочитан. Проверены 8/8 input hashes/aggregate revision и structural изменения независимого test-only physical-scope fence в 01/ADR-003/05, соответствующий AM-18 и fixture reuse в 06 (SHA-256 dab44a6e31a1ac7e44311d5d0514d3d90226af1d2edf1486ac8efc2859a3ab6f). QQ-05 теперь задаёт безопасный отказ actual HTTP/fetch при сломанной SDK middleware и отдельную offline zero-IO проверку; live positive proof остаётся обязательным, private journal/cleanup не маскируют ошибки. Собственные QQ-01..05 сохранены дословно и подтверждены на этой revision. implementationVerified=true означает исключительно исправленный ideation design, не наличие/прохождение кода, тестов либо полного CJM.",
+        "evidence": "После самостоятельного чтения inputdocs и dependencies прочитан actual author handoff текущего snapshot; changedPaths 01/ADR-002/04/05 сверены. Проверены 8/8 hashes и aggregate revision/nonce; supplemental plan/runbook/OpenSpec hashes повторно сверены под lock. Замена synthetic provenance на явное preservation approval является structural: она допускает реальные existing site-test uploads, но сохраняет canonical ownership/full baseline и точный scope квитанции. Initial/steady kind gates, originalShaAfter, hash-bound whitelist, отказ до staging/load и AM-19 negative cases заданы. QQ-01..05 подтверждены в текущем дизайне; новых serious условий не выявлено. implementationVerified=true означает исключительно исправленный ideation design, не код, тесты, фактический data copy либо полный CJM.",
         "implementationVerified": true
       }
     },
@@ -372,70 +376,70 @@
       "verifications": [
         {
           "id": "QT-01",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "CJM-01–12 задают субъекты, evidence/status и критерии upload, лимитов, трёх контекстов, playback и referral/payment. Native proof и полный CJM остаются отдельным live gate.",
+          "evidence": "CJM-01–12 измеряют границы, upload, playback, три контекста и referral/payment; полный CJM blocked до native proof. FR-4 и DATA-07 сохраняют site uploads.",
           "implementationVerified": true
         },
         {
           "id": "QT-02",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "REL-01/03/04 и TASK-6 требуют SHA, archive и runtime IDs всех web/worker обеих целей во всех A→B→A→B фазах, journal/data и негативные stale/missing/partial checks.",
+          "evidence": "REL-01/03/04 и TASK-6 задают SHA и image IDs всех web/worker обеих целей во всех фазах A→B→A→B, journal/data, видимый B и негативные проверки.",
           "implementationVerified": true
         },
         {
           "id": "QT-03",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "05, REL-01/02/04 и TASK-6 связывают clean checkout SHA, Git archive/build context/checksum и runtime IDs; source B сверяется с Git archive, stale/подмена дают отказ.",
+          "evidence": "05, REL-01/02/04, ADR-001 и TASK-2/6 связывают clean checkout SHA, Git archive/build context, checksum, OCI и runtime IDs; подмена archive/stale runtime дают отказ.",
           "implementationVerified": true
         },
         {
           "id": "QT-04",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "DATA-01/02, ADR-002 и TASK-4 требуют source-bound backup обеих DB, isolated restore, snapshot baseline/journal/значимые строки, drift до apply и отказ чужой или повреждённой копии; рабочая DB автоматически не восстанавливается.",
+          "evidence": "FR-4, DATA-01/02, ADR-002 и TASK-4 задают source-bound backup каждой DB, isolated restore, snapshot baseline/full journal/хеши значимых строк, live drift и отказ повреждённого или чужого backup. Фактические restore и baseline не проверены.",
           "implementationVerified": true
         },
         {
           "id": "QT-05",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "FR-7 и provider admission задают 240 минут/4 LLM, quota_counter, атомарный допуск, retry/spend log, stop; RES-01/02 предусматривают OOM/ENOSPC в disposable worker, quota/параллельность отдельно. Фактическая достаточность ресурсов не проверена.",
+          "evidence": "FR-7 и provider admission задают quota 240 минут/4 LLM, quota_counter, атомарный допуск, retries/spend log; RES-01/02 предусматривают disposable OOM/ENOSPC и проверки quota/параллельности. Фактические остатки не проверены.",
           "implementationVerified": true
         },
         {
           "id": "QT-06",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "FR-5, ADR-002, 05 и TASK-8 требуют freeze обеих copies и in-flight/drain до switch, live webhook/status, симметричный возврат n5 и native proof grant/replay/rights/attribution. Без receipts payment и полный CJM blocked.",
+          "evidence": "FR-5, ADR-002 и 05 задают freeze обеих copies, in-flight/drain до switch, live webhook/status, native grant/replay/rights/referral и возврат n5. TEST shop window/receipts и полный CJM остаются blocked до доказательств.",
           "implementationVerified": true
         },
         {
           "id": "QT-07",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "01 задаёт независимый January 2030 Moscow R1/R2 oracle: 647000, null/20/30, distinct payer, boundaries, exclusions, snapshot, refund → 498000/99600/149400; обе роли, PG fixture и live receipts отдельно; TASK-9 сохраняет эти критерии.",
+          "evidence": "01 задаёт January 2030 Moscow/R1/R2 oracle 647000, null/20/30, distinct payer, boundaries, exclusions, snapshot, refund → 498000/99600/149400; owner/blogger и PG fixture/live native receipts отдельно.",
           "implementationVerified": true
         },
         {
           "id": "QT-08",
-          "revision": "990c9af993e75ca5552d9b071b76857e94f876fec14f6fdb87e30b9dd94c6b67",
+          "revision": "ba9cf99c151cce2b7743e94b98e27f0c26d1be98b48080b749b3f5468b2e372f",
           "classification": "structural",
-          "evidence": "Замечание обнаружено на snapshot 2a38, но receipt не записан: host сменился до lock. Сейчас FR-8 прямо требует Cloud.ru S3 и ADR-003 Confirmation 2–3 соответствует ему; 02/06 отменяют новый MinIO, wire/signing/pagination/erasure/canary и BLOCKED без профиля остаются. Исторический MinIO PASS не подтверждает Cloud.",
+          "evidence": "FR-8 и ADR-003 требуют Cloud.ru S3, 06 исключает новые MinIO network tests; wire/signing/pagination/erasure/canary и blocked при отсутствии S3 сохранены. Старый MinIO результат не доказывает Cloud.",
           "implementationVerified": true
         }
       ],
       "newRisks": {
-        "assessment": "Новых серьёзных непокрытых условий в области тестируемости не выявлено. Тестовый физический fence и реальные Cloud доказательства ещё требуется реализовать и выполнить.",
-        "evidence": "FR-8/ADR-003: независимый pre-I/O guard actual requestHandler и signed fetch, exact endpoint/bucket/run scope, fake zero-IO при отключённом SDK guard, приватный journal и exact cleanup; исторический MinIO не используется как Cloud evidence. Key production-wide, IAM scope не заявлен.",
+        "assessment": "Новых серьёзных непокрытых условий в области измеримости не выявлено; сохранность реальных uploads и их принадлежность требуют фактических evidence.",
+        "evidence": "FR-4/ADR-002, 04/05, 06 AM-19 и OpenSpec связывают решение с DB/target/project/bucket/prefix/whitelist, требуют canonical ownership, original SHA и initial/steady kind guards; mismatch и pending блокируют переход. Квитанция не является аутентификацией владельца.",
         "conditions": []
       },
       "authorAssessmentChecked": true,
       "deltaVerification": {
         "classification": "structural",
-        "evidence": "Проверены 8 SHA-256, фактический author handoff и текущие 01/ADR-003/05/06: Cloud-only, независимый test-only fence actual HTTP и signed fetch, точный synthetic scope и read-only versioning, fake negative и pre-PUT journal; QT-08 исправлен. Это подтверждение только дизайна ideation, без кода, тестов и live S3.",
+        "evidence": "Проверены author handoff/changedPaths и восемь хешей. FR-4, ADR-002, 04/05, 06 и OpenSpec допускают реальные site uploads с точным canonical DB-whitelist и bound receipt, сохраняют originals/rows, drain, initial legacy и steady prefixed guards. Проверка только дизайна; код, тесты и live gates не проверялись.",
         "implementationVerified": true
       }
     }
