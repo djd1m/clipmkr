@@ -21,7 +21,14 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
     await pool.query(`CREATE SCHEMA ${schema}`); await migrate(pool);
   });
   beforeEach(async () => { await pool.query('TRUNCATE account,quota_counter CASCADE'); });
-  afterAll(async () => { if (pool) { await pool.query(`DROP SCHEMA ${schema} CASCADE`); await pool.end(); } });
+  afterAll(async () => {
+    if (!pool) return;
+    let dropError: unknown, closeError: unknown;
+    try { await pool.query(`DROP SCHEMA ${schema} CASCADE`); } catch (error) { dropError = error; }
+    try { await pool.end(); } catch (error) { closeError = error; }
+    if (dropError && closeError) throw new AggregateError([dropError, closeError], 'Database cleanup failed');
+    if (dropError) throw dropError; if (closeError) throw closeError;
+  });
   async function fixture(plan = 'free', finished = new Date(now.getTime() - 4 * 86400_000), clipId: string = randomUUID()) {
     const account = (await pool.query("INSERT INTO account(email,password_hash,plan) VALUES($1,'private',$2) RETURNING id", [`${randomUUID()}@test.invalid`, plan])).rows[0].id as string;
     const video = (await pool.query(`INSERT INTO video(account_id,idempotency_key,source,declared_bytes,status,finished_at)
@@ -141,10 +148,12 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
     const audit = safety.receipt(namespace, 'retention-integration');
     const orphan = `clips/paid/${f.video}/${randomUUID()}.mp4`;
     const keys = [...f.keys, orphan];
+    let primary: unknown, cleanupError: unknown, uploadId: string | undefined;
+    const uploadKey = `videos/${f.account}/${f.video}/unfinished.mp4`;
     try {
-      for (const key of keys) await ctx.client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: 'private data' }));
-      audit.startUpload();
-      const uploadId = await s3.initiateMultipartUpload(ctx, `videos/${f.account}/${f.video}/unfinished.mp4`); audit.resolvedUpload();
+      for (const key of keys) { audit.attempt(key); await ctx.client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: 'private data' })); }
+      const token = audit.startUpload(uploadKey);
+      uploadId = await s3.initiateMultipartUpload(ctx, uploadKey); audit.resolvedUpload(token, uploadId);
       expect(uploadId).toBeTruthy();
       for (const key of keys) expect(await s3.headObject(ctx, key)).toBe(12n);
       await new ErasureService(pool, () => now).request(f.account, { confirm: true });
@@ -158,11 +167,15 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
       }, new Date(now.getTime() + ERASURE_QUIET_MS));
       for (const key of keys) await expect(s3.headObject(ctx, key)).rejects.toMatchObject({ $metadata: { httpStatusCode: 404 } });
       expect((await pool.query('SELECT status FROM account WHERE id=$1', [f.account])).rows[0].status).toBe('deleted');
-    } finally {
-      const cleanup = await Promise.allSettled([`videos/${f.account}/`, `clips/free/${f.video}/`, `clips/paid/${f.video}/`, `thumbs/${f.video}/`].map((prefix) => s3.erasePrefix(ctx, prefix)));
+    } catch (error) { primary = error; } finally {
+      try { audit.beginCleanup(); } catch (error) { cleanupError = error; }
+      const aborts = !cleanupError && uploadId ? await Promise.allSettled([s3.abortMultipartUpload(ctx, uploadKey, uploadId)]) : [];
+      const removals = cleanupError ? [] : await Promise.allSettled(keys.map((key) => s3.deleteObject(ctx, key)));
       ctx.client.destroy();
-      const cleaned = cleanup.every((item) => item.status === 'fulfilled'); audit.finish(cleaned);
-      if (!cleaned) throw new Error('Synthetic retention cleanup incomplete');
+      const cleaned = !cleanupError && [...aborts, ...removals].every((item) => item.status === 'fulfilled');
+      if (!cleaned) cleanupError = new Error('Synthetic retention cleanup incomplete');
+      try { audit.finish(cleaned); } catch (error) { cleanupError ??= error; }
     }
+    audit.report(primary, cleanupError);
   });
 });

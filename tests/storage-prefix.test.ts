@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Readable } from 'node:stream';
+import { chmodSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { AbortMultipartUploadCommand, CompleteMultipartUploadCommand, CopyObjectCommand, CreateMultipartUploadCommand,
   DeleteBucketCommand, DeleteObjectCommand, GetBucketVersioningCommand, GetObjectCommand, HeadObjectCommand,
-  ListBucketsCommand, ListMultipartUploadsCommand, ListObjectsV2Command, ListPartsCommand, PutObjectCommand, S3Client, UploadPartCommand } from '@aws-sdk/client-s3';
+  ListBucketsCommand, ListMultipartUploadsCommand, ListObjectsV2Command, ListPartsCommand, PutObjectCommand, S3Client, UploadPartCommand, UploadPartCopyCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { loadS3Config, loadWebConfig } from '../packages/shared/src/config';
 import { createS3Client } from '../packages/s3/src/client';
@@ -131,6 +134,19 @@ describe('S3 namespace', () => {
         await expect(client.send(command as never)).rejects.toThrow('S3 test fence');
       }
       expect(requests).toBe(3);
+      for (const q of ['X-Amz-Copy-Source', 'x-AMZ-copy-source-range', 'X-Amz-Unknown']) {
+        expect(() => client.config.requestHandler.handle({ protocol: 'https:', hostname: 's3.cloud.ru', method: 'PUT', path: '/bucket/' + key, query: { [q]: 'outside' } } as never)).toThrow('S3 test fence');
+      }
+      const copySigner = new S3Client({ endpoint: safety.config.endpoint, region: safety.config.region, forcePathStyle: true,
+        credentials: { accessKeyId: 'fake', secretAccessKey: 'fake-secret' } });
+      try {
+        for (const command of [new CopyObjectCommand({ Bucket: 'bucket', Key: key, CopySource: 'bucket/outside' }),
+          new UploadPartCopyCommand({ Bucket: 'bucket', Key: key, CopySource: 'bucket/outside', UploadId: 'fake', PartNumber: 1 })]) {
+          const signed = await getSignedUrl(copySigner, command as never);
+          await expect(safety.fetch(signed, { method: 'PUT' }, scope)).rejects.toThrow('S3 test fence');
+        }
+      } finally { copySigner.destroy(); }
+      expect(requests).toBe(3); expect(fakeFetch).not.toHaveBeenCalled();
       await expect(safety.fetch('https://s3.cloud.ru/bucket/production/file', { method: 'GET' }, scope)).rejects.toThrow('S3 test fence');
       await expect(safety.fetch('https://s3.cloud.ru/bucket/' + key, { method: 'GET' }, scope, 120_001)).rejects.toThrow('timeout');
       expect(fakeFetch).not.toHaveBeenCalled();
@@ -143,6 +159,45 @@ describe('S3 namespace', () => {
       }
       expect(requests).toBe(3);
     } finally { client.destroy(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); }
+  });
+  it('journals exact live keys and upload outcomes before effects and retains failed cleanup', () => {
+    for (const [key, value] of Object.entries({ N5_PREFIX_RUN_S3: '1', N5_PREFIX_S3_ENDPOINT: 'https://s3.cloud.ru', N5_PREFIX_S3_BUCKET: 'bucket',
+      N5_PREFIX_S3_REGION: 'test', N5_PREFIX_S3_ACCESS_KEY: 'fake', N5_PREFIX_S3_SECRET_KEY: 'fake-secret', N5_ACCEPTANCE: '0' })) vi.stubEnv(key, value);
+    const directory = mkdtempSync(path.join(tmpdir(), 's3-journal-')); chmodSync(directory, 0o700);
+    try {
+      vi.stubEnv('N5_PREFIX_S3_RECEIPT_DIR', '');
+      expect(() => liveS3Environment().receipt('tests/cloud/run/', 'fixture')).toThrow('receipt directory');
+      vi.stubEnv('N5_PREFIX_S3_RECEIPT_DIR', directory);
+      const audit = liveS3Environment().receipt('tests/cloud/run/', 'fixture');
+      const read = () => JSON.parse(readFileSync(path.join(directory, readdirSync(directory).find((f) => f.startsWith('legacy-s3-'))!), 'utf8'));
+      audit.attempt('first/file'); const token = audit.startUpload('pending/file');
+      expect(read()).toMatchObject({ state: 'pending', attemptedKeys: [{ key: 'tests/cloud/run/first/file', state: 'unknown' }, { key: 'tests/cloud/run/pending/file', state: 'unknown' }],
+        uploads: [{ key: 'tests/cloud/run/pending/file', id: null, state: 'unknown' }] });
+      audit.finish(true); expect(read().state).toBe('pending');
+      audit.resolvedUpload(token, 'synthetic-upload-id'); audit.beginCleanup();
+      const recovery = read();
+      expect(recovery).toMatchObject({ state: 'cleanup', uploads: [{ id: 'synthetic-upload-id', state: 'resolved' }] });
+      const deletes = recovery.attemptedKeys.map((item: { key: string }) => item.key);
+      const aborts = recovery.uploads.map((item: { key: string; id: string }) => [item.key, item.id]);
+      expect(deletes).toEqual(['tests/cloud/run/first/file', 'tests/cloud/run/pending/file']);
+      expect(aborts).toEqual([['tests/cloud/run/pending/file', 'synthetic-upload-id']]);
+      audit.finish(false); expect(read().state).toBe('pending');
+      expect(() => audit.report(new Error('primary'), new Error('cleanup'))).toThrow('S3 test and cleanup failed');
+      try { audit.report(new Error('primary'), new Error('cleanup')); } catch (error) { expect((error as AggregateError).errors).toHaveLength(2); }
+      audit.finish(true); expect(read()).toMatchObject({ state: 'complete', uploads: [{ state: 'cleaned' }], attemptedKeys: [{ state: 'cleaned' }, { state: 'cleaned' }] });
+      expect(statSync(path.join(directory, readdirSync(directory)[0]!)).mode & 0o777).toBe(0o600);
+    } finally { rmSync(directory, { recursive: true, force: true }); vi.unstubAllEnvs(); }
+  });
+  it('closes the isolated database when S3 cleanup fails and preserves both failures', async () => {
+    for (const [key, value] of Object.entries({ N5_PREFIX_RUN_S3: '1', N5_PREFIX_S3_ENDPOINT: 'https://s3.cloud.ru', N5_PREFIX_S3_BUCKET: 'bucket',
+      N5_PREFIX_S3_REGION: 'test', N5_PREFIX_S3_ACCESS_KEY: 'fake', N5_PREFIX_S3_SECRET_KEY: 'fake-secret' })) vi.stubEnv(key, value);
+    const safety = liveS3Environment(); const close = vi.fn(async () => { throw new Error('pool'); });
+    try {
+      let failure: unknown;
+      try { await safety.finalize(async () => { throw new Error('storage'); }, close); } catch (error) { failure = error; }
+      expect(close).toHaveBeenCalledOnce(); expect(failure).toBeInstanceOf(AggregateError);
+      expect((failure as AggregateError).errors.map((error: Error) => error.message)).toEqual(['storage', 'pool']);
+    } finally { vi.unstubAllEnvs(); }
   });
   it('preserves unrestricted production behavior when namespace is empty', async () => {
     const f = fixture(''); await f.client.send(new DeleteBucketCommand({ Bucket: 'another' }));

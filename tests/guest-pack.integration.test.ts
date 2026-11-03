@@ -46,7 +46,14 @@ describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
     for (const [i, id] of [clip, other].entries()) await pool.query(`INSERT INTO clip(id,video_id,"index",start_seconds,end_seconds,title,status,watermarked,object_key,thumbnail_key)
       VALUES($1,$2,$3,0,25,'Момент','done',true,$4,'thumb')`, [id, video, i + 1, `guest/${id}.mp4`]);
   });
-  afterAll(async () => { if (pool) { await pool.query(`DROP SCHEMA ${schema} CASCADE`); await pool.end(); } });
+  afterAll(async () => {
+    if (!pool) return;
+    let dropError: unknown, closeError: unknown;
+    try { await pool.query(`DROP SCHEMA ${schema} CASCADE`); } catch (error) { dropError = error; }
+    try { await pool.end(); } catch (error) { closeError = error; }
+    if (dropError && closeError) throw new AggregateError([dropError, closeError], 'Database cleanup failed');
+    if (dropError) throw dropError; if (closeError) throw closeError;
+  });
   it('ADR-008 HTTP 422 without consent and with false creates ZERO rows', async () => {
     for (const consent of [undefined, false]) {
       const response = await fetchRequestHandler({ endpoint: '/api/trpc', req: new Request('https://app.example/api/trpc/guest.create', {
@@ -168,7 +175,9 @@ describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
     const bucket = config.bucket, key = `guest/${clip}.mp4`;
     const audit = safety.receipt(namespace, 'guest-integration');
     vi.stubGlobal('fetch', (input: string, init: RequestInit) => safety.fetch(input, init, scope));
+    let primary: unknown, cleanupError: unknown;
     try {
+      audit.attempt(key);
       await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: 'guest-clip-bytes', ContentType: 'video/mp4' }));
       const pack = await sent(), code = pack.url.split('/').at(-1)!;
       const handler = createClipFileHandler({ allowRead: async () => true, trustedProxyHops: 1, pool, auth, clock: () => now, guestSecret: 'test-only', stream: streamGuestFile,
@@ -178,10 +187,12 @@ describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
       const response = await handler(request(url), clip); expect(response.status).toBe(200); expect(await response.text()).toBe('guest-clip-bytes');
       await guests.revoke(owner, pack.guest_pack_id);
       expect((await handler(request(url), clip)).status).toBe(404);
-    } finally {
+    } catch (error) { primary = error; } finally {
       let cleaned = false;
-      try { await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })); cleaned = true; }
-      finally { client.destroy(); vi.unstubAllGlobals(); audit.finish(cleaned); }
+      try { audit.beginCleanup(); await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })); cleaned = true; } catch (error) { cleanupError = error; }
+      try { audit.finish(cleaned); } catch (error) { cleanupError ??= error; }
+      client.destroy(); vi.unstubAllGlobals();
     }
+    audit.report(primary, cleanupError);
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cpSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { checkWiring, collectEnvironment } from '../scripts/check-env-wiring.mjs';
 import { environment } from './fixtures/environment';
 
@@ -84,6 +85,22 @@ describe('Проверяемость проброса окружения', () =>
       writeFileSync(file, readFileSync(file, 'utf8').replace('S3_KEY_PREFIX: process.env.S3_KEY_PREFIX,', ''));
       expect(checkWiring(compose(), dir)).toContain('web environment.ts: S3_KEY_PREFIX');
     } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+  it('resolves real S3 acceptance without a MinIO dependency', () => {
+    const env = { ...process.env, ...environment(), N5_DB_APP_PASSWORD: 'fixture-db', REDIS_PASSWORD: 'fixture-redis',
+      N5_PREFIX_RUN_S3: '1', N5_PREFIX_S3_ENDPOINT: 'https://s3.cloud.ru', N5_PREFIX_S3_BUCKET: 'fixture-bucket',
+      N5_PREFIX_S3_REGION: 'fixture-region', N5_PREFIX_S3_ACCESS_KEY: 'fixture-key', N5_PREFIX_S3_SECRET_KEY: 'fixture-secret',
+      N5_PREFIX_S3_RECEIPT_HOST_DIR: '/tmp/fixture-private-receipts' };
+    const run = spawnSync('docker', ['compose', '--env-file', '/dev/null', '--project-directory', '.', '--profile', 'test', 'config', '--format', 'json'], { env, encoding: 'utf8', timeout: 10000 });
+    expect(run.status).toBe(0);
+    const config = JSON.parse(run.stdout), service = config.services.test;
+    expect(service.environment.N5_ACCEPTANCE).toBe('1');
+    expect(service.environment.N5_PREFIX_RUN_S3).toBe('1');
+    for (const field of ['ENDPOINT', 'BUCKET', 'REGION', 'ACCESS_KEY', 'SECRET_KEY']) expect(service.environment[`N5_PREFIX_S3_${field}`]).toBe(env[`N5_PREFIX_S3_${field}` as keyof typeof env]);
+    expect(service.environment.N5_PREFIX_S3_RECEIPT_DIR).toBe('/run/clipmkr-s3-receipts');
+    expect(service.volumes).toContainEqual(expect.objectContaining({ type: 'bind', source: '/tmp/fixture-private-receipts', target: '/run/clipmkr-s3-receipts' }));
+    expect(service.depends_on).not.toHaveProperty('minio');
+    expect(config.services).not.toHaveProperty('minio');
   });
   it('S3_ENDPOINT не режется до S; динамическое чтение не пропускается', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'n5-wiring-'));

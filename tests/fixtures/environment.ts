@@ -56,21 +56,25 @@ export function liveS3Environment() {
     const query = request.query ?? {}, method = request.method ?? '';
     const allowedQuery = new Set(['uploads', 'uploadId', 'partNumber', 'list-type', 'prefix', 'max-keys', 'continuation-token',
       'start-after', 'key-marker', 'upload-id-marker', 'max-uploads', 'max-parts', 'part-number-marker', 'versioning', 'x-id', 'response-content-disposition']);
-    if (Object.keys(query).some((q) => !allowedQuery.has(q) && !/^x-amz-/i.test(q))) throw new Error('S3 test fence: query');
-    if (Object.keys(request.headers ?? {}).some((h) => h.toLowerCase() === 'x-amz-copy-source')) throw new Error('S3 test fence: copy');
+    const authQuery = new Set(['x-amz-algorithm', 'x-amz-content-sha256', 'x-amz-credential', 'x-amz-date', 'x-amz-expires',
+      'x-amz-signature', 'x-amz-signedheaders', 'x-amz-security-token', 'x-amz-checksum-crc32', 'x-amz-sdk-checksum-algorithm', 'x-amz-checksum-mode']);
+    const isAuth = (q: string) => authQuery.has(q.toLowerCase());
+    if (Object.keys(query).some((q) => q.toLowerCase().startsWith('x-amz-copy-source')) ||
+        Object.keys(request.headers ?? {}).some((h) => h.toLowerCase().startsWith('x-amz-copy-source'))) throw new Error('S3 test fence: copy');
+    if (Object.keys(query).some((q) => !allowedQuery.has(q) && !isAuth(q))) throw new Error('S3 test fence: query');
     const within = (value: unknown) => typeof value === 'string' && !/[\\%?#\x00-\x1f\x7f-\x9f]/.test(value) &&
       !value.split('/').some((part, i, all) => part === '.' || part === '..' || (!part && i !== all.length - 1)) && scope.prefixes.some((prefix) => value.startsWith(prefix));
     if (!key) {
       if (method !== 'GET') throw new Error('S3 test fence: bucket mutation');
       if ('versioning' in query) {
-        if (scope.allowVersioning && Object.keys(query).every((q) => q === 'versioning' || /^x-amz-/i.test(q))) return;
+        if (scope.allowVersioning && Object.keys(query).every((q) => q === 'versioning' || isAuth(q))) return;
         throw new Error('S3 test fence: versioning');
       }
       const multipart = 'uploads' in query, objects = query['list-type'] === '2';
       if (!scope.allowList || multipart === objects || !within(query.prefix)) throw new Error('S3 test fence: listing');
       const fields = multipart ? ['uploads', 'prefix', 'max-uploads', 'key-marker', 'upload-id-marker'] :
         ['list-type', 'prefix', 'max-keys', 'continuation-token', 'start-after'];
-      if (Object.keys(query).some((q) => !fields.includes(q) && !/^x-amz-/i.test(q))) throw new Error('S3 test fence: listing query');
+      if (Object.keys(query).some((q) => !fields.includes(q) && !isAuth(q))) throw new Error('S3 test fence: listing query');
       for (const marker of ['key-marker', 'start-after']) if (query[marker] !== undefined && !within(query[marker])) throw new Error('S3 test fence: marker');
       return;
     }
@@ -101,13 +105,13 @@ export function liveS3Environment() {
     validateScope({ prefixes: [prefix] });
     if (!/^[a-z0-9-]+$/.test(testName)) throw new Error('Invalid S3 test name');
     const directory = process.env.N5_PREFIX_S3_RECEIPT_DIR;
-    if (!directory && process.env.N5_ACCEPTANCE === '1') throw new Error('Private S3 receipt directory required');
+    if (!directory) throw new Error('Private S3 receipt directory required');
     if (directory) {
       const st = lstatSync(directory), real = realpathSync(directory), repo = realpathSync(process.cwd());
       if (!path.isAbsolute(directory) || real !== directory || !st.isDirectory() || st.isSymbolicLink() || st.uid !== process.getuid?.() ||
           (st.mode & 0o777) !== 0o700 || real === repo || real.startsWith(repo + path.sep)) throw new Error('Invalid private S3 receipt directory');
     }
-    const id = randomUUID(), state = { testName, prefix, state: 'pending', unknownUploads: 0 };
+    const id = randomUUID(), state = { testName, prefix, state: 'pending', attemptedKeys: [] as Array<{ key: string; state: string }>, uploads: [] as Array<{ token: string; key: string; id: string | null; state: string }> };
     const save = () => {
       if (!directory) return;
       const tmp = path.join(directory, `.legacy-s3-${id}-${randomUUID()}`), target = path.join(directory, `legacy-s3-${id}.json`);
@@ -116,8 +120,34 @@ export function liveS3Environment() {
       renameSync(tmp, target); const dir = openSync(directory, 'r'); try { fsyncSync(dir); } finally { closeSync(dir); }
     };
     save();
-    return { startUpload() { state.unknownUploads++; save(); }, resolvedUpload() { state.unknownUploads--; save(); },
-      finish(ok: boolean) { state.state = ok && state.unknownUploads === 0 ? 'complete' : 'pending'; save(); } };
+    const physical = (key: string) => {
+      if (!key || key.startsWith('/') || /[\\%?#\x00-\x1f\x7f-\x9f]/.test(key) || key.split('/').some((part) => !part || part === '.' || part === '..')) throw new Error('Invalid receipt key');
+      return prefix + key;
+    };
+    const attempt = (key: string) => {
+      const k = physical(key); if (!state.attemptedKeys.some((item) => item.key === k)) state.attemptedKeys.push({ key: k, state: 'unknown' }); save();
+    };
+    return { attempt,
+      startUpload(key: string) { attempt(key); const token = randomUUID(); state.uploads.push({ token, key: physical(key), id: null, state: 'unknown' }); save(); return token; },
+      resolvedUpload(token: string, uploadId: string) { const item = state.uploads.find((u) => u.token === token); if (!item || item.state !== 'unknown' || !uploadId) throw new Error('Invalid upload receipt'); item.id = uploadId; item.state = 'resolved'; save(); },
+      beginCleanup() { state.state = 'cleanup'; save(); },
+      finish(ok: boolean) { const complete = ok && state.uploads.every((u) => u.state !== 'unknown'); state.state = complete ? 'complete' : 'pending';
+        if (complete) { state.attemptedKeys.forEach((k) => { k.state = 'cleaned'; }); state.uploads.forEach((u) => { u.state = 'cleaned'; }); } save(); },
+      report(primary: unknown, cleanup: unknown) { const safe = (e: unknown) => {
+          const v = e as { name?: string; $metadata?: { httpStatusCode?: number } }; const n = ['Error', 'TimeoutError', 'AccessDenied', 'NoSuchUpload'].includes(v?.name ?? '') ? v.name : 'OtherError';
+          const code = v?.$metadata?.httpStatusCode; return `${n}:${typeof code === 'number' && code >= 100 && code <= 599 ? code : 'unknown'}`;
+        };
+        if (primary && cleanup) throw new AggregateError([new Error('primary: ' + safe(primary)), new Error('cleanup: ' + safe(cleanup))], 'S3 test and cleanup failed');
+        if (primary) throw primary; if (cleanup) throw cleanup;
+      } };
+
   };
-  return { config, bind, fetch: guardedFetch, receipt };
+  const finalize = async (cleanup: () => Promise<void>, closePool: () => Promise<void>) => {
+    let cleanupError: unknown, poolError: unknown;
+    try { await cleanup(); } catch (error) { cleanupError = error; }
+    finally { try { await closePool(); } catch (error) { poolError = error; } }
+    if (cleanupError && poolError) throw new AggregateError([cleanupError, poolError], 'S3 and database cleanup failed');
+    if (cleanupError) throw cleanupError; if (poolError) throw poolError;
+  };
+  return { config, bind, fetch: guardedFetch, receipt, finalize };
 }

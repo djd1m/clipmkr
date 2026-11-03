@@ -93,7 +93,7 @@ describe.skipIf(!dbUrl || process.env.N5_PREFIX_RUN_S3 !== '1')('PostgreSQL + Cl
     const client = s3.createS3Client(config); safety.bind(client, scope); safety.bind(client.signingClient!, scope);
     ctx = { client, bucket: config.bucket };
     storage = {
-      initiate: vi.fn(async (key) => { keys.add(key); audit!.startUpload(); const id = await s3.initiateMultipartUpload(ctx, key); uploads.push({ key, id }); audit!.resolvedUpload(); return id; }),
+      initiate: vi.fn(async (key) => { keys.add(key); const token = audit!.startUpload(key); const id = await s3.initiateMultipartUpload(ctx, key); uploads.push({ key, id }); audit!.resolvedUpload(token, id); return id; }),
       sign: (key, id, count, date) => s3.signParts(ctx, key, id, count, date),
       list: (key, id) => s3.listUploadedParts(ctx, key, id),
       complete: (key, id, parts) => s3.completeMultipartUpload(ctx, key, id, parts),
@@ -103,14 +103,17 @@ describe.skipIf(!dbUrl || process.env.N5_PREFIX_RUN_S3 !== '1')('PostgreSQL + Cl
     service = new VideoService(pool, limits, storage, queue); // Реальное время для SigV4.
   });
   afterAll(async () => {
-    if (ctx) {
+    const closePool = async () => { if (pool) { try { await pool.query(`DROP SCHEMA ${schema} CASCADE`); } finally { await pool.end(); } } };
+    const cleanup = async () => {
+      if (!ctx) return;
+      audit?.beginCleanup();
       const aborts = await Promise.allSettled(uploads.map((u) => s3.abortMultipartUpload(ctx, u.key, u.id)));
       const removals = await Promise.allSettled([...keys].map((key) => s3.deleteObject(ctx, key)));
       ctx.client.destroy();
       const ok = [...aborts, ...removals].every((item) => item.status === 'fulfilled'); audit?.finish(ok);
       if (!ok) throw new Error('Synthetic upload cleanup incomplete');
-    }
-    if (pool) { await pool.query(`DROP SCHEMA ${schema} CASCADE`); await pool.end(); }
+    };
+    if (safety) await safety.finalize(cleanup, closePool); else await closePool();
   });
   async function account() {
     return (await pool.query("INSERT INTO account(email,password_hash) VALUES ($1,'test-hash') RETURNING id", [`${randomUUID()}@example.invalid`])).rows[0].id as string;
