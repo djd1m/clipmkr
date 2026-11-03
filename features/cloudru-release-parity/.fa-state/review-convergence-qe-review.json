@@ -1,0 +1,249 @@
+{
+  "schema": "fa-review-convergence-1",
+  "phase": "qe",
+  "nonce": "bc1f6e25-4822-48fa-a2fc-4669ff055fa0",
+  "revision": "afdcd9f79b5fb71661f534e766f09eae9292817d18e9462a59aac1cc7c31d644",
+  "author": null,
+  "reviews": [
+    {
+      "reviewer": "qe-primary",
+      "family": "owner-exception",
+      "independent": true,
+      "verdict": "no-go",
+      "conditions": [
+        {
+          "id": "QE-P01",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-4 / ADR-002 / DATA-07: допуск различает реально незавершённый multipart и сохранённый исторический UploadId; существующие завершённые записи допускаются без очистки пользовательских строк.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts"
+          ],
+          "evidence": "Завершённая загрузка ошибочно считается pending multipart. scripts/release-candidate.mjs:478 запрещает любую строку video с upload_id IS NOT NULL. Штатный complete в apps/web/src/server/video.ts:144,170–183 сохраняет upload_id, меняя actual_bytes/status/upload_enqueued_at. Сквозной поиск по apps/packages не нашёл штатного обнуления upload_id. Поэтому хотя бы одна успешно загруженная запись блокирует существующий site-test и последующие выпуски. Критерий исправления: Смоделировать done/queued-after-complete video с сохранённым UploadId и отсутствующим pending multipart в S3. Сейчас отказ до apply. Проверять состояние/принадлежность и фактический multipart, добавить positive завершённой загрузки и negative реально pending; не лечить удалением/перезаписью данных."
+        },
+        {
+          "id": "QE-P02",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-3/FR-4, REL-03 и ADR-002: повторный выпуск и совместимый rollback сохраняют уже используемый namespace и все новые объекты; legacy copy выполняется только для нуждающихся в переносе старых объектов.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate-acid.test.ts"
+          ],
+          "evidence": "Одноразовый перенос namespace применяется к каждому следующему выпуску. scripts/release-candidate.mjs:479 безусловно требует storageReferences=0 для cloud-c, включая повторный apply/reconcile. В embedded remoteExecutor на :539 блок objects всегда читает digest(logicalKey) без namespace до проверки уже существующего destination. После первого реального CJM Cloud непуст; новый site-объект, созданный уже в namespace, не имеет legacy unprefixed source. Оба штатных сценария повторного выпуска блокируются. checkDataReceipt :398–400 также требует originalShaAfter для каждого объекта. Критерий исправления: Разделить initial namespace transition и steady-state выпуск; привязать текущий namespace к проверенному state. Добавить A→B→A→B с новым Cloud video и новым site clip между фазами, source для нового объекта существует только в namespace. Нынешний fake A/B тест имеет пустые references/objectWhitelist и этого не проверяет."
+        },
+        {
+          "id": "QE-P03",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-6 / REL-05 / ADR-001: reconcile под lock должен уметь подтвердить уже завершённую связанную операцию по runtime/schema и закрыть локальный unknown без повторного apply.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate-acid.test.ts"
+          ],
+          "evidence": "Потерянный ответ после terminal success не восстанавливается reconcile. scripts/release-candidate.mjs:539, execute: reconcile требует state.status == pending. На успехе remote сначала атомарно пишет success, затем отправляет результат; controller :742–745 до ответа хранит unknown. Обрыв после remote atomic success оставляет корректный terminal state, который reconcile отвергает. Повторный reconcile после потерянного ответа самого reconcile имеет ту же проблему. Локально воспроизведено на неизменённом embedded executor: apply=(0,success), reconcile=(1,blocked), remote state=success; Docker fake, сеть отсутствует. Критерий исправления: Сделать повторную сверку terminal состояний идемпотентной с проверкой binding/runtime/schema; согласовать восстановление operator-blocked. Добавить fault после atomic success и после terminal записи reconcile, а не только существующий disconnect_after_up до terminal записи."
+        },
+        {
+          "id": "QE-P04",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-1/FR-3/FR-6, TASK-5: передача и повторный выпуск имеют привязанный к операции state, безопасное продолжение/сверку и одного writer; partial transfer не оставляет неразрешимый unknown.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts",
+            "tests/release-candidate-acid.test.ts",
+            "docs/runbooks/release-candidate.md"
+          ],
+          "evidence": "Передача артефактов не входит в восстанавливаемый state/lock-протокол. scripts/release-candidate.mjs:740 передаёт все архивы до saveState(:742) и remote lock(:539). artifactReceiver :561–562 всегда использует source.tar/web.tar/worker.tar и запрещает уже существующий файл. При обрыве второго transfer первый source.tar остаётся, локального request ещё нет: reconcile :678 нечего читать, retry снова падает на source.tar. После успешного A те же fixed staging paths блокируют B/rollback при неизменном профиле. Remote lock не сериализует staging и локальное чтение/запись state (:728–745). Критерий исправления: Нужен operation/release-bound staging, intent до первой передачи, точная проверка уже полученных bytes и единая сериализация controller state/staging/apply. Проверки: потеря ответа первого/второго transfer, повтор того же выпуска, B после A, два конкурентных controller процесса. Не удалять неизвестные stage artifacts автоматически."
+        },
+        {
+          "id": "QE-P05",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-4 / DATA-08 / ADR-001/002: effective DATABASE_URL/REDIS_URL каждого app и migrator должны вести именно к pinned infra в проверенной test network до SQL и mutations; проверяются network, alias и порт.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts",
+            "docker-compose.yml"
+          ],
+          "evidence": "Pinned DB проверяется отдельно от реального сетевого пути приложения. scripts/release-candidate.mjs:448–464 сравнивает hostname/database и наличие alias у pinned контейнера. Ни networks app-сервисов, ни неоднозначный alias в их сетях, ни URL ports не проверяются. SQL :465–466 выполняется через docker exec pinned DB, минуя application URL, тогда как migrator на :539 использует application DATABASE_URL. Локальный вызов фактического admissionProbe с fake Docker: все app в wrong-network, DB URL port=6543, Redis port=6380; admission принят, выполнены 15 fake SQL вызовов. Реальной сети/БД не было. Критерий исправления: Привязать effective service networks и фактическое разрешение host:port к pinned DB/Redis, в том числе one-off migrator; исключить неоднозначные aliases/неожиданные endpoint options. Positive split-project и negative wrong app network/port/alias должны проверять отказ до SQL. Иначе проверенная БД и реально изменяемая мигратором БД могут различаться."
+        },
+        {
+          "id": "QE-P06",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-8 / ADR-003 / AM-18: независимый requestHandler/fetch fence отвергает CopySource независимо от SDK middleware, включая query подписанного URL, до любого transport.",
+          "scope": [
+            "tests/fixtures/environment.ts",
+            "tests/storage-prefix.test.ts",
+            "tests/storage-prefix.integration.test.ts"
+          ],
+          "evidence": "Независимый S3 fence пропускает presigned CopySource в query. tests/fixtures/environment.ts:59 разрешает любой x-amz-* query, а :60 блокирует copy-source только в headers. :77–78 допускает PUT в свой destination. Реальный установленный AWS getSignedUrl(CopyObjectCommand) с фиктивными credentials переносит x-amz-copy-source в query. Отдельный probe safety.fetch с таким query достиг fakeFetch: 1 вызов вместо ожидаемых 0. Реальных HTTP не было; URL/подпись не выводились. Это позволяет независимому test fence пропустить чтение source вне run scope, если проверяемая middleware сломана/обойдена. Критерий исправления: Запретить CopySource и связанные копирующие параметры и в query, и в headers без учёта регистра; ограничить разрешённые signing query явным контрактом. Проверить настоящую SDK-подпись CopyObject/UploadPartCopy через fake transport со снятой app middleware. Общий production-wide key остаётся согласованным, новый IAM/key не требуется."
+        },
+        {
+          "id": "QE-P07",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-4 / DATA-01–04 / ADR-002: baseline и post-apply сверяют все значимые account/media/payment/referral/credit данные и связи, с проверяемым составом таблиц и исходных колонок.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts"
+          ],
+          "evidence": "Data baseline не покрывает существенные данные и допускает id-only проекции. scripts/release-candidate.mjs:387–391 и :485–492 ограничиваются девятью таблицами; partner, partner_code, growth_event, transcript, guest_pack/guest_pack_clip, clip_link и payment_event отсутствуют. При этом blogger-report.ts:50–71 и partner.ts:107–135 используют partner/code/events для владения и статистики. Изменение code/status/partner/account связи или потеря событий проходит эти hashes. Для включённых таблиц columns могут быть только [id], что прямо используется в tests/release-candidate.test.ts:256–260,288–289; суммы/балансы/содержимое тогда вообще не измеряются. count не сопоставляется с live count. Критерий исправления: Определить и проверять полную snapshot-derived проекцию значимых данных, с допустимыми добавленными миграцией колонками. Добавить негативные изменения referral owner/code/events, transcript/links, payment amount и credit balance при неизменных id; никаких успешных all-data claims на id-only receipts."
+        },
+        {
+          "id": "QE-P08",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-8 / AM-18: каждый реальный S3 прогон до первой мутации сохраняет private run/exact attempted keys/upload IDs/unknown outcomes; cleanup точный и его ошибка не скрывает первичную.",
+          "scope": [
+            "tests/fixtures/environment.ts",
+            "tests/storage-prefix.integration.test.ts",
+            "tests/upload.integration.test.ts",
+            "tests/guest-pack.integration.test.ts",
+            "tests/retention.integration.test.ts"
+          ],
+          "evidence": "Live S3 журналы и cleanup не выполняют обязательный recovery-контракт. tests/fixtures/environment.ts:104,112 и storage-prefix.integration.test.ts:54–68 разрешают реальную сеть без durable journal при N5_ACCEPTANCE != 1. Даже при acceptance legacy receipt :110–120 содержит лишь prefix/state/unknownUploads, без keys и UploadIds; resolvedUpload убирает счётчик сразу после создания, не записывая полученный ID. При падении процесса восстановление точных операций невозможно. retention :162 очищает через erasePrefix, а не собственные exact IDs/keys. guest :181–183 и retention :165 могут заменить исходную ошибку ошибкой cleanup; upload :111 бросает до DROP SCHEMA/pool.end. Критерий исправления: Сделать journal обязательным для explicit live opt-in, записывать intent keys и каждый upload ID/исход, использовать exact cleanup и сохранять обе ошибки. Проверить fake потерю ответа CreateMultipartUpload, crash после создания, первичный отказ вместе с cleanup failure и обязательное закрытие pool. Это defect тестовой безопасности, а не требование запуска live теста reviewer-ом."
+        },
+        {
+          "id": "QE-P09",
+          "owner": "qe-primary",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "TASK-3/CP1 и поправка владельца о настоящем S3: поддерживаемый сетевой acceptance путь использует explicit fenced real-S3 профиль без обязательной MinIO зависимости и без принятия skips за PASS.",
+          "scope": [
+            "docker-compose.yml",
+            "tests/storage-prefix.integration.test.ts",
+            "tests/upload.integration.test.ts",
+            "tests/guest-pack.integration.test.ts",
+            "tests/retention.integration.test.ts"
+          ],
+          "evidence": "Штатный acceptance test container остаётся привязан к MinIO и не получает live S3 профиль. docker-compose.yml:224–247 запускает N5_ACCEPTANCE=1, выставляет старые MinIO S3_* и depends_on minio; N5_PREFIX_RUN_S3/N5_PREFIX_S3_* и private receipt mount не передаются. После изменения tests/storage-prefix.integration.test.ts:19–25 этот стандартный контейнер падает Real S3 test profile required, три legacy network ветки skip. Экспорт новых переменных на host сам по себе не передаёт их внутрь Compose service. Это статически установленный разрыв test wiring, не результат запуска Docker. Критерий исправления: Дать поддерживаемый документированный private real-S3 acceptance профиль/override, передающий новые env и journal mount, без обязательного MinIO, сохранив opt-in и независимый fence. Проверять resolved test configuration и отсутствие вынужденных skips; не ослаблять N5_ACCEPTANCE."
+        }
+      ],
+      "verifications": [],
+      "newRisks": {
+        "assessment": "Выявлены девять существенных structural нарушений; все внесены как исходные условия QE-P01–QE-P09. Дополнительные ресурсные/runtime/live ограничения описаны отдельно и не выданы за подтверждённые дефекты.",
+        "evidence": "Независимый scope от base-ref; 102 Vitest checks PASS, 18 embedded fake executor cases, 16 synthetic process controls; воспроизведены terminal-reconcile, неверный network/ports и query CopySource. Отчёт features/cloudru-release-parity/.fa-state/qe-reports/qe-primary.md SHA256 5bf81fced5b0dc0aa67edc190ce7850f9f0dff11c5c64db5e358b1e83f41bd47. Live/полный suite/CJM не запускались.",
+        "conditions": []
+      },
+      "authorAssessmentChecked": false,
+      "deltaVerification": null
+    },
+    {
+      "reviewer": "qe-precision",
+      "family": "owner-exception",
+      "independent": true,
+      "verdict": "no-go",
+      "conditions": [
+        {
+          "id": "QEP-01",
+          "owner": "qe-precision",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-4/FR-5, ADR-002, DATA-08: effective/runtime network приложения и мигратора однозначно связывает DATABASE_URL/REDIS_URL с pinned test containers; wrong network/alias collision отклоняется до SQL и mutations при допустимых разных app/infra projects.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts",
+            "tests/release-candidate-acid.test.ts"
+          ],
+          "evidence": "scripts/release-candidate.mjs:450,460,466 и embedded executor:539: infra alias проверен, app networks не проверены, baseline SQL идёт через local socket pinned DB. Неизменный admissionProbe с fake boundary принял четыре services только в иной сети: probeAccepted=true, 15 fake SQL calls. Реальных Docker/SQL/сетевых обращений не было."
+        },
+        {
+          "id": "QEP-02",
+          "owner": "qe-precision",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-4, ADR-002, DATA-01–04: snapshot/restore/live baseline включает существенные account/media/payment/referral/credit значения и связи по согласованной схеме; сохранение ID не позволяет скрыть изменение денежных/статусных/реферальных данных.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts"
+          ],
+          "evidence": "scripts/release-candidate.mjs:387,390,487,530: контракт принимает columns=[id] для всех девяти таблиц; probe SELECT и сравнение hash используют только эту проекцию. Исходная checkDataReceipt с fake file adapter приняла такой receipt. partner/partner_code/payment_event не имеют самостоятельного baseline. Реальный PostgreSQL не запускался."
+        },
+        {
+          "id": "QEP-03",
+          "owner": "qe-precision",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-4/FR-8, ADR-002: legacy copy разрешается только для подтверждённых synthetic test objects; foreign production reference блокируется до S3 copy даже при наличии DB ссылки, честных size/SHA и существующем test video ID.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts",
+            "tests/release-candidate-acid.test.ts"
+          ],
+          "evidence": "scripts/release-candidate.mjs:395,401,475,535,539: ownershipEvidence является type:uuid, probe подтверждает лишь наличие key в DB поле; synthetic/physical resource provenance не проверяется. Исходная checkDataReceipt приняла fake foreign-owner key с test video token. Raw copy затем читает такой key широким ключом. Реального S3/чужого медиа не читалось."
+        },
+        {
+          "id": "QEP-04",
+          "owner": "qe-precision",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-3/FR-4/FR-7, ADR-002, REL-03/DATA-03: повторный site release и совместимый rollback сохраняют созданное после начального переноса media в действующем namespace без требования raw legacy исходника.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate-acid.test.ts"
+          ],
+          "evidence": "scripts/release-candidate.mjs:539, decoded Python 213–219, JS digest(key) перед digest(dest): copy запускается для каждого непустого whitelist. Исходный JS через Node vm/in-memory SDK: legacy case exit0; already-prefixed case exit1 и единственный GET старого logical key. При таком отказе executor уже остановил apps и не выполняет up."
+        },
+        {
+          "id": "QEP-05",
+          "owner": "qe-precision",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "FR-1/FR-3/FR-4, ADR-001/002, REL-03/DATA-03: Cloud после успешного CJM с созданными media допускает новый выпуск и совместимый rollback при source-bound baseline и корректном namespace. Empty inventory применяется только к первоначальному переходу.",
+          "scope": [
+            "scripts/release-candidate.mjs",
+            "tests/release-candidate.test.ts",
+            "tests/release-candidate-acid.test.ts"
+          ],
+          "evidence": "scripts/release-candidate.mjs:479 безусловно отклоняет любые storageReferences для cloud-c во всех admission/observe. Embedded executor:539, decoded line216 также допускает непустой whitelist только site-test. После загрузки/рендера Cloud имеет такие references. Existing fake acid PROBE эту настоящую ветку не исполняет."
+        },
+        {
+          "id": "QEP-06",
+          "owner": "qe-precision",
+          "severity": "WARNING",
+          "classification": "structural",
+          "requirement": "FR-8, ADR-003, AM-18: общий fixture legacy network tests до мутаций сохраняет exact attempted keys и после ответа UploadId, неизвестные исходы и cleanup state, пригодные для recovery после остановки процесса.",
+          "scope": [
+            "tests/fixtures/environment.ts",
+            "tests/upload.integration.test.ts",
+            "tests/retention.integration.test.ts",
+            "tests/guest-pack.integration.test.ts"
+          ],
+          "evidence": "tests/fixtures/environment.ts:110,119: durable receipt хранит testName/prefix/state/unknownUploads count; startUpload/resolvedUpload не принимают key/ID. Legacy callers сохраняют нужные значения лишь в памяти. Основной storage-prefix integration имеет подробный отдельный receipt, который legacy tests не используют; namespace escape из этого не следует."
+        },
+        {
+          "id": "QEP-07",
+          "owner": "qe-precision",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Module-08 review convergence: actual native snapshot связывает relevant unchanged dependencies, от которых зависят проверенные SDK/quotas/payments/runtime свойства; расширение и новая привязка выполняются root штатной native процедурой с независимым review.",
+          "scope": [
+            "packages/s3/src/client.ts",
+            "apps/web/src/server/billing-runtime.ts",
+            "apps/worker/workers/stt.ts"
+          ],
+          "evidence": "Actual host manifest содержит 72 совпавших digest, но отсутствуют 12 самостоятельно прочитанных зависимостей (operations/multipart/presign/erasure, DB quota/transcription/selection/blogger-report, worker runtime/stt/download и billing-deps). Их точные supplementary hashes записаны в ownreport; они не заменяют native binding. Это условие полноты доказательства, не дополнительный дефект приложения."
+        }
+      ],
+      "verifications": [],
+      "newRisks": {
+        "assessment": "Исходные найденные риски и условие полноты snapshot явно перечислены в conditions; дополнительных условий вне этого списка не заявлено.",
+        "evidence": "Независимое чтение документов до кода; 107/107 scoped unit, 18/18 дополнительно адаптированных fake executor cases, независимые negative probes. Ownreport features/cloudru-release-parity/.fa-state/qe-reports/qe-precision.md; SHA-256 2451e9aa8ee879937ee8739161c605afac5dc2613ccd58c4dda034c55d28c655. Полный runtime/CJM и gate не выполнялись.",
+        "conditions": []
+      },
+      "authorAssessmentChecked": false,
+      "deltaVerification": null
+    }
+  ]
+}

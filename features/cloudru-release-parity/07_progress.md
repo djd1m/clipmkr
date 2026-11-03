@@ -1,3 +1,51 @@
+## 3 ноября: диск, полная сохранность и первый native QE
+
+- Расход диска действующего VPS разобран; проверенная точечная очистка и перенос
+  старых закрытых журналов освободили около 6,2 ГиБ, доступно около 9,7 ГиБ.
+  Подробности: `docs/incidents/2026-11-03-disk-space.md`. Это не допуск к выпуску.
+- Для обеих тестовых БД сняты новые readonly dumps, восстановлены отдельно
+  на PostgreSQL 16 с network none; **все 26 public tables** (без migration journal)
+  совпали по полным колонкам, count и каноническим хешам. Journals: Cloud 26,
+  site 28. Исходные БД, контейнеры и volumes не заменялись.
+- Через установленный OSS rclone (`--disable Copy`, точный whitelist) подготовлены
+  24 копии в tests/site. Каждый исходник и destination прочитан и проверен SHA-256,
+  исходник повторно прочитан после копирования. Оригиналы сохранены. Server-side
+  CopyObject в этом окружении давал timeout; его работоспособность не заявляется.
+- Принадлежность ключей 24 объектов канонически соответствует двум аккаунтам,
+  четырём video и десяти clip в существующей test DB. Историческое происхождение
+  всех объектов как controlled synthetic fixtures **не доказано**; одних DB-ссылок
+  недостаточно. Переключение site на новый namespace не выполнено. Владельцу
+  отправлено уточнение границы сохранения текущих реальных test uploads;
+  приватный полный перечень и материалы сверки находятся вне Git.
+- Первый native QE фактически evaluated: **unresolved**, один witnessed cycle,
+  девять условий qe-primary и семь qe-precision сохранены в родной истории.
+  Модели Astra и Sol независимо начали с требований и плана, затем нашли исходники.
+  Уточнение malformed initial condition scope выполнила сама originating role;
+  закрытие по авторскому утверждению не создавалось. После repair нужен штатный
+  begin-repair и собственные независимые verifications всех условий.
+- S3 repair: CopySource в query/header блокируется независимым предсетевым fence;
+  live opt-in требует durable private journal точных keys/UploadIDs. Обновлённый
+  Compose acceptance использует настоящий S3 без обязательного MinIO.
+  **47/47** проверок пяти storage files прошли на настоящем Cloud.ru S3 без skips
+  и с N5_ACCEPTANCE=1. Typecheck и lint прошли. Собственный старый QE MinIO
+  остановлен и удалён; его том не удалялся.
+- При отдельной readonly проверке найден один multipart старого неудачного
+  retention-прогона. Он связан с подлинным pending journal собственного run;
+  точечный recovery по exact key/UploadId дал HTTP 204 и повторный список пуст.
+  Старый неудачный receipt не переписан в PASS. Новые paginated scans Cloud test
+  prefix и site test prefix/24 legacy keys показывают ноль pending uploads.
+- Полный regression на 9b214f4 фактически завершился: **1425 passed, 2 failed,
+  1 skipped** из 1428. Два отказа — timeout archive-heavy controller checks;
+  skip — прежний real-resource placeholder. Это не полный PASS. Controller repair
+  и честное подключение существующего disposable Docker proof проверяются отдельно;
+  новый полный suite на итоговом commit ещё требуется.
+- Measured targets расширены неизменёнными runtime/schema/policy/dependency inputs
+  до 77; реальный K2: PASS, 9 FR, 3 ADR, один явно обозначенный skip проверки
+  acid-corpus, поскольку отдельный A<n> corpus не объявлен в 00. Это не QE closure.
+
+Новая версия на targets ещё не развёрнута. Настоящие A→B→A→B, Cloud 90/120-минутный
+CJM и согласованное TEST-shop окно остаются незавершёнными. Production не переключался.
+
 # Проверенный промежуточный результат
 
 03.11.2026. Это журнал выполнения, не акт завершения выпуска.

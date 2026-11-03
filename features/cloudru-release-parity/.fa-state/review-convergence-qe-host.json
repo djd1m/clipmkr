@@ -1,0 +1,521 @@
+{
+  "schema": "fa-review-convergence-1",
+  "phase": "qe",
+  "reviewers": [
+    {
+      "id": "qe-primary",
+      "family": "owner-exception"
+    },
+    {
+      "id": "qe-precision",
+      "family": "owner-exception"
+    }
+  ],
+  "snapshot": {
+    "nonce": "bc1f6e25-4822-48fa-a2fc-4669ff055fa0",
+    "revision": "afdcd9f79b5fb71661f534e766f09eae9292817d18e9462a59aac1cc7c31d644",
+    "manifest": [
+      {
+        "path": ".codex/config.toml",
+        "digest": "efdcd51ddb778e34bcb73aac546181f913eb57c624428709fd48d3a98873fc52"
+      },
+      {
+        "path": ".env.example",
+        "digest": "b22df778271aa5e6140e989a382f59722a3ceeaae83d541b0989007e9e8b68bd"
+      },
+      {
+        "path": "Dockerfile",
+        "digest": "5981b4042430a5bfe480022b23f5808f72ff4eb9f9db29690ad61d712cb5709c"
+      },
+      {
+        "path": "apps/web/src/app/health/route.ts",
+        "digest": "abcfa012109114f6afcc22288f3c3cbec85c80dc60847aef5f850fc75d152b5f"
+      },
+      {
+        "path": "apps/web/src/server/billing-handler.ts",
+        "digest": "90f1e800ac873bc5805c86e95767c6992d124152ca73e7697125338976efa377"
+      },
+      {
+        "path": "apps/web/src/server/billing-runtime.ts",
+        "digest": "5664b4115192962e4379fbda41552fe86f84b57adff227e8c63e1c55f0a8f083"
+      },
+      {
+        "path": "apps/web/src/server/environment.ts",
+        "digest": "26198017d74871d3ac67c6467bb15aff8f8230b230ac503b42bbde15fd7cb800"
+      },
+      {
+        "path": "apps/worker/workers/render.ts",
+        "digest": "f8a78c7957a0f3770b8e8b6172de48be4630da5d937acabd1806415a5b7fa736"
+      },
+      {
+        "path": "apps/worker/workers/stt.ts",
+        "digest": "434e9bfb0635ae169faa9689866c63f66d7becf046ba74d44ee08127ace0088d"
+      },
+      {
+        "path": "docker-compose.yml",
+        "digest": "277dc0b17ec0a566e3d0e26b29d2c83e61964491c9b41dd6ab2b88cb2a9f7566"
+      },
+      {
+        "path": "docs/runbooks/release-candidate.md",
+        "digest": "9e5570722b5dc8c10610214316d2d94b31e9aeafd18af915fcfeca4b8799d905"
+      },
+      {
+        "path": "features/cloudru-release-parity/00_complexity_assessment.md",
+        "digest": "9cad9df8210d89d822693398cdf7788b11de36e8a43e9ac45c475015398457aa"
+      },
+      {
+        "path": "features/cloudru-release-parity/01_requirements.md",
+        "digest": "744c459ba5d018bc041f194f21869f92fd64d8f79191b6456838f1109305f30f"
+      },
+      {
+        "path": "features/cloudru-release-parity/02_research.md",
+        "digest": "196187e28a341361839f48f5ce8d4c96fb957a23086c14eb761934ca2a271f25"
+      },
+      {
+        "path": "features/cloudru-release-parity/03.5_ideation_report.md",
+        "digest": "ea86dd509a70fd444f27981e3bf9cce8083ce733988efb2ec5c499a32a5b26d1"
+      },
+      {
+        "path": "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+        "digest": "9862940151449c27c2ab08bed7ff21e8f3bfce081814957004c037e1e881e680"
+      },
+      {
+        "path": "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+        "digest": "ef74f08733ed90bb0153b8eba6d9aae0715db6e94828ac6aa21da77ed306474d"
+      },
+      {
+        "path": "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+        "digest": "e0f99307114c39563b8b15b97b1a6f84ba715476759972bed7476f7caea9f56f"
+      },
+      {
+        "path": "features/cloudru-release-parity/04_domain_model.md",
+        "digest": "c9471027b8f885ce969b06893a88468aed5add35b71cae95b6df36d4e682dfba"
+      },
+      {
+        "path": "features/cloudru-release-parity/05_architecture.md",
+        "digest": "03142c85eb769ed247f238f148a2b5001a6b3aef09219c5e525d5164e4b1e33b"
+      },
+      {
+        "path": "features/cloudru-release-parity/06_implementation_plan.md",
+        "digest": "dab44a6e31a1ac7e44311d5d0514d3d90226af1d2edf1486ac8efc2859a3ab6f"
+      },
+      {
+        "path": "openspec/changes/cloudru-release-parity/.openspec.yaml",
+        "digest": "b6d27c089c6ee9596ce0433bd8f7f771b477758efe1ce7f7a7505af47316ecd0"
+      },
+      {
+        "path": "openspec/changes/cloudru-release-parity/README.md",
+        "digest": "337e2e1a68c86abebfaa50f5e2768691211a3dc5e18007863201337ecd4e0232"
+      },
+      {
+        "path": "openspec/changes/cloudru-release-parity/design.md",
+        "digest": "03f60c4a38d3b7e5c38fce4025fcba408abf4aba2644fd3fcb8bcbce57087ffd"
+      },
+      {
+        "path": "openspec/changes/cloudru-release-parity/proposal.md",
+        "digest": "921bbfbbad73c9d83da7a125a7302827a12a40eab9f6cea7494a305026fb77ff"
+      },
+      {
+        "path": "openspec/changes/cloudru-release-parity/specs/release-candidate/spec.md",
+        "digest": "56c985a4fc1b49d0a388f53143a2a114fc8fc1647e21314ab6ecc490aa3ea537"
+      },
+      {
+        "path": "openspec/changes/cloudru-release-parity/tasks.md",
+        "digest": "89e648fec18ac51cb2ed13ddc10fc62bc24b6832d4610ca8124e0f43ea3726d2"
+      },
+      {
+        "path": "openspec/config.yaml",
+        "digest": "85b53dd24fbe7d19c8b0f0ddccf5e82600c5c372c76b57a2a89dc34dfb0fc5b9"
+      },
+      {
+        "path": "ops/cloudru/compose.images.yml",
+        "digest": "e126fa455bece0421f6423bb055c2d4e26f6abff30ee8d94462ef2ced235b536"
+      },
+      {
+        "path": "packages/s3/src/client.ts",
+        "digest": "26cacf63dc70d341668ab849ad2b45461c259ce48ccf1045ada5685482bfc754"
+      },
+      {
+        "path": "packages/shared/src/config.ts",
+        "digest": "b16d5efb489361348ba501534be08598b7d0b129df5f1adcb3557bb150ec55fa"
+      },
+      {
+        "path": "patches/dz-name-check-app-source.patch",
+        "digest": "fb777bc802ad3d34bb540d13f4c31c881a61ffd1bf77d93f9bf5a023960d1031"
+      },
+      {
+        "path": "scripts/check-env-wiring.mjs",
+        "digest": "1926fbc46854805eb39a0bf60d93ed2052e9c08b52810f7549fab1d95e191a42"
+      },
+      {
+        "path": "scripts/install-process.sh",
+        "digest": "c4d3d444907803ccf44ee803cc3e7c6f9e4904c0a295fb76bb1164dbc2e0cd2a"
+      },
+      {
+        "path": "scripts/release-candidate.mjs",
+        "digest": "f133946bb2bfc36d135cc4de4bc4451942bc058738dd810cb831496bbb69f0da"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/chromium-dark-1440.png",
+        "digest": "8511031812814f0a3a61601de8849fbcf969816c1cc828c380b3e4421d9851c7"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/chromium-dark-320.png",
+        "digest": "827f64ecd9501d59217aafa0622a6bfed2b490aff571f0dbe7ae7a1f59395568"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/chromium-dark-375.png",
+        "digest": "4fcba6df1e25da881e7f473cfe407d8a3169be4e4c0c0dafd5ff904710b556eb"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/chromium-light-1440.png",
+        "digest": "07873f2d716d708f3d1df8621241c8bdf640f349a93bb4a862d15fecd304100e"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/chromium-light-320.png",
+        "digest": "d94effa9448c6e7cf87c7bc5817c6e7f5bec3dbad5d1d055adedc12de4bf3d7f"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/chromium-light-375.png",
+        "digest": "0fcc3cf60801746e458e6d716f3ce4fd85de0f58774b502c27374134a8469015"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/webkit-dark-1440.png",
+        "digest": "0bd431b82ee1bf423238e3b6b351a1215e657e28f230a71789c104b66a3b1576"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/webkit-dark-320.png",
+        "digest": "dc2a06d49373bd71f30b458c52b2a335d82b650e0c8cfaf708a6a52366156e0f"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/webkit-dark-375.png",
+        "digest": "99e47cd8718879c53a5d9dff733e664212605649dc5599a4861cb608051b50b1"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/webkit-light-1440.png",
+        "digest": "93aeea2e6b31f6ed20ad4601348c932d72b5e5e14e8706b4abb64849aa8b3d92"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/webkit-light-320.png",
+        "digest": "0ac0c3d9f9c3ef85d1fc806b9b5727181e75f1a346050d87aac61fe9af56067c"
+      },
+      {
+        "path": "tests/artifacts/blogger-cabinet/webkit-light-375.png",
+        "digest": "d1605590e5e3739d017e3f2cb667dbeb2ee4fdea0f860b0843bc12b79df77791"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/chromium-dark-1440.png",
+        "digest": "e2adf7994156222469650d7c85327128ff3679927fdc7a4ac8b1533cbe6b76b5"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/chromium-dark-320.png",
+        "digest": "a8412b0d4f0f0089bcb1ab4a7d5f263303883a56b1b82e7e7d035460ae2f60bd"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/chromium-dark-375.png",
+        "digest": "9cc43107752dbe7e7d672c18bd1377d33630178c234c7675d9f9db285759c01c"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/chromium-light-1440.png",
+        "digest": "4fa2fa538cc298778e9421c8df5375a736cf014a560e02387f4a75e26a9f4781"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/chromium-light-320.png",
+        "digest": "ce36f7911349e8062f0af9de7d0f306646c8e5247f60539492ac8206f8f04ae3"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/chromium-light-375.png",
+        "digest": "bef339cc4ad873f557de4b903b04fb2196b08ac037c7830346c0d22a369a1939"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/webkit-dark-1440.png",
+        "digest": "2e3404c4c15ff29fa357196c9b05713d29c4a28e7b6ec303708b0a2f474b8810"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/webkit-dark-320.png",
+        "digest": "2296c8d0dfe1e04ef796aea687eb3bc03f94027092247f89e24aa90557e9e2b0"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/webkit-dark-375.png",
+        "digest": "d6c7d9485b50bd38affbddbfa9a23be59010bdee3c86d3fe362376684333d2a1"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/webkit-light-1440.png",
+        "digest": "c85f6efae9b458634f0977734f611f695cd8bac451d00a8c0f45916e8359dd2b"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/webkit-light-320.png",
+        "digest": "b6dae82cc0966bcb1323b1fcbff5373789a5ffa5cb6424491585e23c36cdf420"
+      },
+      {
+        "path": "tests/artifacts/upload-lifecycle/webkit-light-375.png",
+        "digest": "4ef2f729a86dab7c0f47e85b338066c62fb02850eef1f1b177ff178d58801241"
+      },
+      {
+        "path": "tests/billing.integration.test.ts",
+        "digest": "bd8ad7844f353915be7f5e52942b61bf8f6f082f50f76f9c5568b2f6c8b726f2"
+      },
+      {
+        "path": "tests/blogger-report.integration.test.ts",
+        "digest": "e281bca6950f0fd30c5c7aae7ef41d85cf4295c23ff9e67577efb7c5ab4b71e2"
+      },
+      {
+        "path": "tests/feature-adr-paths.test.mjs",
+        "digest": "f09ca4b5e0e72a9068ca5cd7ff37a94b63395e7790bd5aa12796e936809652ed"
+      },
+      {
+        "path": "tests/fixtures/environment.ts",
+        "digest": "4b4ba4e4151e83ce8e42a318dbbee186b4fcb723075a65148b3072dcd4b94a45"
+      },
+      {
+        "path": "tests/guest-pack.integration.test.ts",
+        "digest": "0e62738ae815af134fb0d95387aadb5d0965022a585068bf4110e1ae656fa9aa"
+      },
+      {
+        "path": "tests/payments-guards.test.ts",
+        "digest": "f68c3f22b4d64a82192ddc7faf9d406e51462a1cb9f1200db0ecd5c579fa0e40"
+      },
+      {
+        "path": "tests/release-candidate-acid.test.ts",
+        "digest": "de5a9c1c1ae83d59192268b2d402752576c2aaf11ed2a66c5d3774970f99337d"
+      },
+      {
+        "path": "tests/release-candidate.test.ts",
+        "digest": "1b8361bddfdc950145181bbadb9f993cfe88c15abccf10c4536c84d01cdfb1da"
+      },
+      {
+        "path": "tests/retention.integration.test.ts",
+        "digest": "a1e87f72418b47b59069093d3cba85da21017c0fa0382bbff00da1a5331e0b0f"
+      },
+      {
+        "path": "tests/storage-prefix.integration.test.ts",
+        "digest": "51610c6c586e9b5c5b24164ea6aa5560f5a551acef17e8906dfc36de41eba271"
+      },
+      {
+        "path": "tests/storage-prefix.test.ts",
+        "digest": "ccefb9bae17f44d7df0a4ae6390bc508a1ddf328a981511108cc3724cf406a6a"
+      },
+      {
+        "path": "tests/upload.integration.test.ts",
+        "digest": "7032a078915878c7a5b54cf7a77af09232c786ee0720578cda9de55d617345cb"
+      },
+      {
+        "path": "tests/wiring.test.ts",
+        "digest": "f8edbdaadba7bed49e6737230e6d232fc51debd60e7791a78372f0799045d809"
+      }
+    ]
+  },
+  "conditions": [
+    {
+      "id": "QE-P01",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-4 / ADR-002 / DATA-07: допуск различает реально незавершённый multipart и сохранённый исторический UploadId; существующие завершённые записи допускаются без очистки пользовательских строк.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts"
+      ],
+      "evidence": "Завершённая загрузка ошибочно считается pending multipart. scripts/release-candidate.mjs:478 запрещает любую строку video с upload_id IS NOT NULL. Штатный complete в apps/web/src/server/video.ts:144,170–183 сохраняет upload_id, меняя actual_bytes/status/upload_enqueued_at. Сквозной поиск по apps/packages не нашёл штатного обнуления upload_id. Поэтому хотя бы одна успешно загруженная запись блокирует существующий site-test и последующие выпуски. Критерий исправления: Смоделировать done/queued-after-complete video с сохранённым UploadId и отсутствующим pending multipart в S3. Сейчас отказ до apply. Проверять состояние/принадлежность и фактический multipart, добавить positive завершённой загрузки и negative реально pending; не лечить удалением/перезаписью данных."
+    },
+    {
+      "id": "QE-P02",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-3/FR-4, REL-03 и ADR-002: повторный выпуск и совместимый rollback сохраняют уже используемый namespace и все новые объекты; legacy copy выполняется только для нуждающихся в переносе старых объектов.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate-acid.test.ts"
+      ],
+      "evidence": "Одноразовый перенос namespace применяется к каждому следующему выпуску. scripts/release-candidate.mjs:479 безусловно требует storageReferences=0 для cloud-c, включая повторный apply/reconcile. В embedded remoteExecutor на :539 блок objects всегда читает digest(logicalKey) без namespace до проверки уже существующего destination. После первого реального CJM Cloud непуст; новый site-объект, созданный уже в namespace, не имеет legacy unprefixed source. Оба штатных сценария повторного выпуска блокируются. checkDataReceipt :398–400 также требует originalShaAfter для каждого объекта. Критерий исправления: Разделить initial namespace transition и steady-state выпуск; привязать текущий namespace к проверенному state. Добавить A→B→A→B с новым Cloud video и новым site clip между фазами, source для нового объекта существует только в namespace. Нынешний fake A/B тест имеет пустые references/objectWhitelist и этого не проверяет."
+    },
+    {
+      "id": "QE-P03",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-6 / REL-05 / ADR-001: reconcile под lock должен уметь подтвердить уже завершённую связанную операцию по runtime/schema и закрыть локальный unknown без повторного apply.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate-acid.test.ts"
+      ],
+      "evidence": "Потерянный ответ после terminal success не восстанавливается reconcile. scripts/release-candidate.mjs:539, execute: reconcile требует state.status == pending. На успехе remote сначала атомарно пишет success, затем отправляет результат; controller :742–745 до ответа хранит unknown. Обрыв после remote atomic success оставляет корректный terminal state, который reconcile отвергает. Повторный reconcile после потерянного ответа самого reconcile имеет ту же проблему. Локально воспроизведено на неизменённом embedded executor: apply=(0,success), reconcile=(1,blocked), remote state=success; Docker fake, сеть отсутствует. Критерий исправления: Сделать повторную сверку terminal состояний идемпотентной с проверкой binding/runtime/schema; согласовать восстановление operator-blocked. Добавить fault после atomic success и после terminal записи reconcile, а не только существующий disconnect_after_up до terminal записи."
+    },
+    {
+      "id": "QE-P04",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-1/FR-3/FR-6, TASK-5: передача и повторный выпуск имеют привязанный к операции state, безопасное продолжение/сверку и одного writer; partial transfer не оставляет неразрешимый unknown.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts",
+        "tests/release-candidate-acid.test.ts",
+        "docs/runbooks/release-candidate.md"
+      ],
+      "evidence": "Передача артефактов не входит в восстанавливаемый state/lock-протокол. scripts/release-candidate.mjs:740 передаёт все архивы до saveState(:742) и remote lock(:539). artifactReceiver :561–562 всегда использует source.tar/web.tar/worker.tar и запрещает уже существующий файл. При обрыве второго transfer первый source.tar остаётся, локального request ещё нет: reconcile :678 нечего читать, retry снова падает на source.tar. После успешного A те же fixed staging paths блокируют B/rollback при неизменном профиле. Remote lock не сериализует staging и локальное чтение/запись state (:728–745). Критерий исправления: Нужен operation/release-bound staging, intent до первой передачи, точная проверка уже полученных bytes и единая сериализация controller state/staging/apply. Проверки: потеря ответа первого/второго transfer, повтор того же выпуска, B после A, два конкурентных controller процесса. Не удалять неизвестные stage artifacts автоматически."
+    },
+    {
+      "id": "QE-P05",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-4 / DATA-08 / ADR-001/002: effective DATABASE_URL/REDIS_URL каждого app и migrator должны вести именно к pinned infra в проверенной test network до SQL и mutations; проверяются network, alias и порт.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts",
+        "docker-compose.yml"
+      ],
+      "evidence": "Pinned DB проверяется отдельно от реального сетевого пути приложения. scripts/release-candidate.mjs:448–464 сравнивает hostname/database и наличие alias у pinned контейнера. Ни networks app-сервисов, ни неоднозначный alias в их сетях, ни URL ports не проверяются. SQL :465–466 выполняется через docker exec pinned DB, минуя application URL, тогда как migrator на :539 использует application DATABASE_URL. Локальный вызов фактического admissionProbe с fake Docker: все app в wrong-network, DB URL port=6543, Redis port=6380; admission принят, выполнены 15 fake SQL вызовов. Реальной сети/БД не было. Критерий исправления: Привязать effective service networks и фактическое разрешение host:port к pinned DB/Redis, в том числе one-off migrator; исключить неоднозначные aliases/неожиданные endpoint options. Positive split-project и negative wrong app network/port/alias должны проверять отказ до SQL. Иначе проверенная БД и реально изменяемая мигратором БД могут различаться."
+    },
+    {
+      "id": "QE-P06",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-8 / ADR-003 / AM-18: независимый requestHandler/fetch fence отвергает CopySource независимо от SDK middleware, включая query подписанного URL, до любого transport.",
+      "scope": [
+        "tests/fixtures/environment.ts",
+        "tests/storage-prefix.test.ts",
+        "tests/storage-prefix.integration.test.ts"
+      ],
+      "evidence": "Независимый S3 fence пропускает presigned CopySource в query. tests/fixtures/environment.ts:59 разрешает любой x-amz-* query, а :60 блокирует copy-source только в headers. :77–78 допускает PUT в свой destination. Реальный установленный AWS getSignedUrl(CopyObjectCommand) с фиктивными credentials переносит x-amz-copy-source в query. Отдельный probe safety.fetch с таким query достиг fakeFetch: 1 вызов вместо ожидаемых 0. Реальных HTTP не было; URL/подпись не выводились. Это позволяет независимому test fence пропустить чтение source вне run scope, если проверяемая middleware сломана/обойдена. Критерий исправления: Запретить CopySource и связанные копирующие параметры и в query, и в headers без учёта регистра; ограничить разрешённые signing query явным контрактом. Проверить настоящую SDK-подпись CopyObject/UploadPartCopy через fake transport со снятой app middleware. Общий production-wide key остаётся согласованным, новый IAM/key не требуется."
+    },
+    {
+      "id": "QE-P07",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-4 / DATA-01–04 / ADR-002: baseline и post-apply сверяют все значимые account/media/payment/referral/credit данные и связи, с проверяемым составом таблиц и исходных колонок.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts"
+      ],
+      "evidence": "Data baseline не покрывает существенные данные и допускает id-only проекции. scripts/release-candidate.mjs:387–391 и :485–492 ограничиваются девятью таблицами; partner, partner_code, growth_event, transcript, guest_pack/guest_pack_clip, clip_link и payment_event отсутствуют. При этом blogger-report.ts:50–71 и partner.ts:107–135 используют partner/code/events для владения и статистики. Изменение code/status/partner/account связи или потеря событий проходит эти hashes. Для включённых таблиц columns могут быть только [id], что прямо используется в tests/release-candidate.test.ts:256–260,288–289; суммы/балансы/содержимое тогда вообще не измеряются. count не сопоставляется с live count. Критерий исправления: Определить и проверять полную snapshot-derived проекцию значимых данных, с допустимыми добавленными миграцией колонками. Добавить негативные изменения referral owner/code/events, transcript/links, payment amount и credit balance при неизменных id; никаких успешных all-data claims на id-only receipts."
+    },
+    {
+      "id": "QE-P08",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-8 / AM-18: каждый реальный S3 прогон до первой мутации сохраняет private run/exact attempted keys/upload IDs/unknown outcomes; cleanup точный и его ошибка не скрывает первичную.",
+      "scope": [
+        "tests/fixtures/environment.ts",
+        "tests/storage-prefix.integration.test.ts",
+        "tests/upload.integration.test.ts",
+        "tests/guest-pack.integration.test.ts",
+        "tests/retention.integration.test.ts"
+      ],
+      "evidence": "Live S3 журналы и cleanup не выполняют обязательный recovery-контракт. tests/fixtures/environment.ts:104,112 и storage-prefix.integration.test.ts:54–68 разрешают реальную сеть без durable journal при N5_ACCEPTANCE != 1. Даже при acceptance legacy receipt :110–120 содержит лишь prefix/state/unknownUploads, без keys и UploadIds; resolvedUpload убирает счётчик сразу после создания, не записывая полученный ID. При падении процесса восстановление точных операций невозможно. retention :162 очищает через erasePrefix, а не собственные exact IDs/keys. guest :181–183 и retention :165 могут заменить исходную ошибку ошибкой cleanup; upload :111 бросает до DROP SCHEMA/pool.end. Критерий исправления: Сделать journal обязательным для explicit live opt-in, записывать intent keys и каждый upload ID/исход, использовать exact cleanup и сохранять обе ошибки. Проверить fake потерю ответа CreateMultipartUpload, crash после создания, первичный отказ вместе с cleanup failure и обязательное закрытие pool. Это defect тестовой безопасности, а не требование запуска live теста reviewer-ом."
+    },
+    {
+      "id": "QE-P09",
+      "owner": "qe-primary",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "TASK-3/CP1 и поправка владельца о настоящем S3: поддерживаемый сетевой acceptance путь использует explicit fenced real-S3 профиль без обязательной MinIO зависимости и без принятия skips за PASS.",
+      "scope": [
+        "docker-compose.yml",
+        "tests/storage-prefix.integration.test.ts",
+        "tests/upload.integration.test.ts",
+        "tests/guest-pack.integration.test.ts",
+        "tests/retention.integration.test.ts"
+      ],
+      "evidence": "Штатный acceptance test container остаётся привязан к MinIO и не получает live S3 профиль. docker-compose.yml:224–247 запускает N5_ACCEPTANCE=1, выставляет старые MinIO S3_* и depends_on minio; N5_PREFIX_RUN_S3/N5_PREFIX_S3_* и private receipt mount не передаются. После изменения tests/storage-prefix.integration.test.ts:19–25 этот стандартный контейнер падает Real S3 test profile required, три legacy network ветки skip. Экспорт новых переменных на host сам по себе не передаёт их внутрь Compose service. Это статически установленный разрыв test wiring, не результат запуска Docker. Критерий исправления: Дать поддерживаемый документированный private real-S3 acceptance профиль/override, передающий новые env и journal mount, без обязательного MinIO, сохранив opt-in и независимый fence. Проверять resolved test configuration и отсутствие вынужденных skips; не ослаблять N5_ACCEPTANCE."
+    },
+    {
+      "id": "QEP-01",
+      "owner": "qe-precision",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-4/FR-5, ADR-002, DATA-08: effective/runtime network приложения и мигратора однозначно связывает DATABASE_URL/REDIS_URL с pinned test containers; wrong network/alias collision отклоняется до SQL и mutations при допустимых разных app/infra projects.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts",
+        "tests/release-candidate-acid.test.ts"
+      ],
+      "evidence": "scripts/release-candidate.mjs:450,460,466 и embedded executor:539: infra alias проверен, app networks не проверены, baseline SQL идёт через local socket pinned DB. Неизменный admissionProbe с fake boundary принял четыре services только в иной сети: probeAccepted=true, 15 fake SQL calls. Реальных Docker/SQL/сетевых обращений не было."
+    },
+    {
+      "id": "QEP-02",
+      "owner": "qe-precision",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-4, ADR-002, DATA-01–04: snapshot/restore/live baseline включает существенные account/media/payment/referral/credit значения и связи по согласованной схеме; сохранение ID не позволяет скрыть изменение денежных/статусных/реферальных данных.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts"
+      ],
+      "evidence": "scripts/release-candidate.mjs:387,390,487,530: контракт принимает columns=[id] для всех девяти таблиц; probe SELECT и сравнение hash используют только эту проекцию. Исходная checkDataReceipt с fake file adapter приняла такой receipt. partner/partner_code/payment_event не имеют самостоятельного baseline. Реальный PostgreSQL не запускался."
+    },
+    {
+      "id": "QEP-03",
+      "owner": "qe-precision",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-4/FR-8, ADR-002: legacy copy разрешается только для подтверждённых synthetic test objects; foreign production reference блокируется до S3 copy даже при наличии DB ссылки, честных size/SHA и существующем test video ID.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts",
+        "tests/release-candidate-acid.test.ts"
+      ],
+      "evidence": "scripts/release-candidate.mjs:395,401,475,535,539: ownershipEvidence является type:uuid, probe подтверждает лишь наличие key в DB поле; synthetic/physical resource provenance не проверяется. Исходная checkDataReceipt приняла fake foreign-owner key с test video token. Raw copy затем читает такой key широким ключом. Реального S3/чужого медиа не читалось."
+    },
+    {
+      "id": "QEP-04",
+      "owner": "qe-precision",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-3/FR-4/FR-7, ADR-002, REL-03/DATA-03: повторный site release и совместимый rollback сохраняют созданное после начального переноса media в действующем namespace без требования raw legacy исходника.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate-acid.test.ts"
+      ],
+      "evidence": "scripts/release-candidate.mjs:539, decoded Python 213–219, JS digest(key) перед digest(dest): copy запускается для каждого непустого whitelist. Исходный JS через Node vm/in-memory SDK: legacy case exit0; already-prefixed case exit1 и единственный GET старого logical key. При таком отказе executor уже остановил apps и не выполняет up."
+    },
+    {
+      "id": "QEP-05",
+      "owner": "qe-precision",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "FR-1/FR-3/FR-4, ADR-001/002, REL-03/DATA-03: Cloud после успешного CJM с созданными media допускает новый выпуск и совместимый rollback при source-bound baseline и корректном namespace. Empty inventory применяется только к первоначальному переходу.",
+      "scope": [
+        "scripts/release-candidate.mjs",
+        "tests/release-candidate.test.ts",
+        "tests/release-candidate-acid.test.ts"
+      ],
+      "evidence": "scripts/release-candidate.mjs:479 безусловно отклоняет любые storageReferences для cloud-c во всех admission/observe. Embedded executor:539, decoded line216 также допускает непустой whitelist только site-test. После загрузки/рендера Cloud имеет такие references. Existing fake acid PROBE эту настоящую ветку не исполняет."
+    },
+    {
+      "id": "QEP-06",
+      "owner": "qe-precision",
+      "severity": "WARNING",
+      "classification": "structural",
+      "requirement": "FR-8, ADR-003, AM-18: общий fixture legacy network tests до мутаций сохраняет exact attempted keys и после ответа UploadId, неизвестные исходы и cleanup state, пригодные для recovery после остановки процесса.",
+      "scope": [
+        "tests/fixtures/environment.ts",
+        "tests/upload.integration.test.ts",
+        "tests/retention.integration.test.ts",
+        "tests/guest-pack.integration.test.ts"
+      ],
+      "evidence": "tests/fixtures/environment.ts:110,119: durable receipt хранит testName/prefix/state/unknownUploads count; startUpload/resolvedUpload не принимают key/ID. Legacy callers сохраняют нужные значения лишь в памяти. Основной storage-prefix integration имеет подробный отдельный receipt, который legacy tests не используют; namespace escape из этого не следует."
+    },
+    {
+      "id": "QEP-07",
+      "owner": "qe-precision",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Module-08 review convergence: actual native snapshot связывает relevant unchanged dependencies, от которых зависят проверенные SDK/quotas/payments/runtime свойства; расширение и новая привязка выполняются root штатной native процедурой с независимым review.",
+      "scope": [
+        "packages/s3/src/client.ts",
+        "apps/web/src/server/billing-runtime.ts",
+        "apps/worker/workers/stt.ts"
+      ],
+      "evidence": "Actual host manifest содержит 72 совпавших digest, но отсутствуют 12 самостоятельно прочитанных зависимостей (operations/multipart/presign/erasure, DB quota/transcription/selection/blogger-report, worker runtime/stt/download и billing-deps). Их точные supplementary hashes записаны в ownreport; они не заменяют native binding. Это условие полноты доказательства, не дополнительный дефект приложения."
+    }
+  ],
+  "reviewSeen": true,
+  "rework": false,
+  "changedPaths": []
+}

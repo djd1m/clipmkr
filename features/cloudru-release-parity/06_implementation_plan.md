@@ -171,6 +171,14 @@ tests/fixtures/environment.ts даёт минимальный reuse без но�
 Fake HTTP unit не выдаётся за live proof. Расширение code targets ниже относится
 к необходимой адаптации этих трёх сетевых integration tests.
 
+## Привязка существенных неизменённых зависимостей к QE
+
+Первое независимое ревью выявило недостаточную полноту measured scope (QEP-07).
+Следующие файлы объявлены targets для проверки неизменности и семантических
+зависимостей; само объявление не разрешает менять их поведение и не означает,
+что они были измерены в исходном QE snapshot. Исходные findings и история
+первого цикла сохраняются. Новый snapshot создаётся штатным begin-repair после
+фактических исправлений с обеими originating reviewer roles.
 
 EXPECTED_CODE_TARGETS:
 - scripts/release-candidate.mjs
@@ -200,3 +208,53 @@ EXPECTED_CODE_TARGETS:
 - tests/upload.integration.test.ts
 - tests/guest-pack.integration.test.ts
 - tests/retention.integration.test.ts
+- packages/s3/src/operations.ts
+- packages/s3/src/multipart.ts
+- packages/s3/src/presign.ts
+- packages/s3/src/erasure.ts
+- packages/db/src/migrate.ts
+- packages/db/src/quota.ts
+- packages/db/src/transcription.ts
+- packages/db/src/selection.ts
+- packages/db/src/blogger-report.ts
+- apps/worker/src/runtime.ts
+- apps/worker/src/workers/stt.ts
+- apps/worker/src/media/download.ts
+- apps/web/src/server/billing-deps.ts
+- apps/web/src/server/video.ts
+- apps/web/src/server/partner.ts
+- packages/db/src/index.ts
+- packages/db/migrations/001_init.sql
+- packages/db/migrations/002_growth_event_prefix.sql
+- packages/db/migrations/003_ipv6_legacy_cleanup.sql
+- packages/db/migrations/003_upload.sql
+- packages/db/migrations/004_ipv6_prefix_masklen.sql
+- packages/db/migrations/005_queue_probe.sql
+- packages/db/migrations/006_transcription.sql
+- packages/db/migrations/007_selection.sql
+- packages/db/migrations/008_render.sql
+- packages/db/migrations/009_short_link.sql
+- packages/db/migrations/010_guest_pack.sql
+- packages/db/migrations/011_partner.sql
+- packages/db/migrations/012_retention.sql
+- packages/db/migrations/013_watermark_geometry.sql
+- packages/db/migrations/014_music.sql
+- packages/db/migrations/015_teaser.sql
+- packages/db/migrations/016_partner_fairness.sql
+- packages/db/migrations/017_compaction.sql
+- packages/db/migrations/018_clip_music.sql
+- packages/db/migrations/019_music_skip_reason.sql
+- packages/db/migrations/020_clip_cta.sql
+- packages/db/migrations/021_payments.sql
+- packages/db/migrations/022_credit_packages.sql
+- packages/db/migrations/023_support_access.sql
+- packages/db/migrations/024_partner_landing_dedup.sql
+- packages/db/migrations/025_owner_unlimited.sql
+- packages/db/migrations/026_blogger_policy.sql
+- packages/db/migrations/027_payment_referral_snapshot.sql
+- AGENTS.md
+- CLAUDE.md
+- docs/acceptance/core-cjm.md
+- docs/review-policy.md
+- package.json
+- package-lock.json
