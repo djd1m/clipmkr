@@ -1,3 +1,22 @@
+## Дополнение: проверенные исправления до второго независимого цикла
+
+Controller repair заморожен после точечных проверок: фактический admissionProbe
+проверяет app/infra network и endpoint overrides до SQL; baseline охватывает все
+public tables; staging сохраняет intent до передачи и восстанавливает точные
+архивы; terminal reconcile идемпотентен; media verifier различает legacy и текущий
+namespace и повторно проверяет S3 после stop. До последних узких guard дополнений
+единый controller+acid дал 23/23 PASS без skips; после них прошли затронутые probe,
+artifact-transfer, post-stop-drift и A/B fake checks. Новый полный suite пока
+не выполнен, реальный apply не заявляется.
+
+`dz amendment-check --slug cloudru-release-parity --json` реально выполнен:
+**FAIL**, 11 resolved, 2 superseded, 5 name-absent-in-file. AM-3/AM-7 фактически
+реализованы в acid file при старой ссылке в плане; AM-10/AM-11/AM-12 требуют
+сверки и завершения предусмотренного acceptance coverage. Имена или формулировки
+не добавлялись ради зелёного результата. Native cycle 2 пока не открывается:
+нужно сначала уточнить границу существующих legacy uploads и закончить весь
+исправленный scope, сохранив все исходные условия и максимум штатных циклов.
+
 ## 3 ноября: диск, полная сохранность и первый native QE
 
 - Расход диска действующего VPS разобран; проверенная точечная очистка и перенос

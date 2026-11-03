@@ -69,12 +69,30 @@ build на controller; корневая рабочая директория не
 `composeProject` **infra**, `databaseContainerId`, `databaseVolume`,
 `postgresSystemIdentifier`, `databaseName`, `databaseOid`, `timezone`. Файл
 restore receipt содержит полный journal, account columns/hash и результат restore.
-Data evidence привязывается к этому backup SHA и identity, содержит snapshot/restore
-hashes и исходный список columns каждой таблицы account/video/clip/payment/payment_intent/attribution/credit ledger,
-пустой список `pendingMultipart` и whitelist `objects` с logical key, destination
-key, размерами, SHA source/destination/original-after и ссылкой на доказательство
-принадлежности. Фактические текущие hashes и DB keys должны совпасть с квитанцией.
-Hashes считаются по проекции исходных columns, сортировке JSONB строк и Python canonical JSON. Форматы evidence требуют дополнительного review до допуска изменений.
+Data evidence привязывается к этому backup SHA и identity и содержит все public
+base tables кроме `_schema_migration`, полный список columns из restore в порядке
+схемы, count и snapshot/restore hashes. На исходной схеме проверяются точные
+таблицы и columns; после forward migration разрешены только добавления, исходная
+проекция и данные остаются проверяемыми. Hashes считаются по проекции исходных
+columns, сортировке JSONB строк и Python canonical JSON.
+
+Каждый object whitelist указывает canonical logical key, account/video/clip IDs,
+назначение, размер и SHA. Для уже работающего namespace `kind: "prefixed"`
+проверяет только bytes по prefixed key. Первичный legacy-перенос требует
+`kind: "legacy-synthetic"`, неизменённый оригинал и отдельное подлинное
+историческое evidence с SHA и проверяемыми JSON pointers на владельца и ресурс;
+ссылка в самой test DB не заменяет provenance. Если фактическое evidence не
+содержит нужных полей, объект остаётся недопущенным; создавать историческое
+evidence из текущей DB нельзя. Копирование выполняется отдельно оператором
+потоковым способом; writer проверяет source/destination hashes и не вызывает
+server-side CopyObject.
+
+`multipartScan` содержит bucket, storageFingerprint, observedAt и scopes для
+test prefix и точных legacy keys. Каждый scope содержит pages с requestId,
+HTTP status, isTruncated, keyMarker, nextKeyMarker и пустым uploads; последняя
+страница завершённая. Scan действует два часа и проверяется вместе с фактическим
+ListMultipartUploads под target lock. Исторический upload_id завершённой записи
+сам по себе не означает незавершённую загрузку.
 
 Storage evidence содержит target/project/commit/time, endpoint/bucket/prefix и
 fingerprint фактических credentials. Поля `rawReceiptPath`, `unitReportPath` и
@@ -110,9 +128,31 @@ dockerPrefix, stageDir и stateDir; дополнительно `kind: "existing-
 уже существовать с mode 0700 у SSH-пользователя; последний compose файл — приватный
 image override с ID желаемого набора. Передача и runtime проверки не изменяют DB
 или Redis. Запуск writer допускается только после завершённых receipts и ревью.
-После обрыва состояние `unknown` сохраняется локально; `reconcile <profile>
-<manifest>` сверяет сохранённый intent и фактическое состояние, а не повторяет
-миграцию. Неоднозначный результат требует оператора.
+До первой передачи локально сохраняется intent с operation ID; transfer сохраняет
+под тем же target lock отдельный staging marker и проверяет size/SHA перед
+повторным использованием файлов. После обрыва стадии `staging` команда
+`reconcile <profile> <manifest>` показывает имеющиеся файлы; для продолжения
+нужен повтор той же операции с теми же evidence и manifest. После перехода в
+`unknown` reconcile сверяет связанную удалённую запись и фактическое состояние,
+включая уже записанный terminal result, не повторяя миграцию. Неоднозначный
+результат требует оператора; неизвестные артефакты автоматически не удаляются.
+
+Каждая операция имеет отдельный staging directory. Без очистки A→B→A→B может
+занять до четырёх наборов архивов сверх текущих и rollback images. До каждого
+этапа проверяется место на оставшиеся передачи, полный запас под image layers и
+2 GiB; Docker data-root и фактический incremental unpack дополнительно измеряет
+оператор. Результат проверки свободного места не является измерением layers.
+
+При необходимости оператор отдельно готовит точечный cleanup plan. До следующей
+операции нужно сохранить приватную terminal receipt текущей: при смене операции
+текущий state перезаписывается. Под обоими controller locks и target lock оператор
+сверяет сохранённую local receipt и remote intent с одинаковым operation ID и
+terminal `success` или `aborted`, проверяет SHA конкретных staging tar, наличие
+текущих и rollback image IDs и сохранённых на controller source/web/worker
+архивов с manifest и проверенными SHA. Только после этого
+разрешён отдельно проверенный план удаления именно этих terminal tar. Не удалять
+файлы `staging`, `pending`, `unknown` или `operator-blocked`, неизвестные файлы,
+образы либо volumes; автоматический cleanup и global prune не применяются.
 
 Форма executor profile на самой цели (значения здесь только placeholders):
 
