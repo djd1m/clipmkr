@@ -1,3 +1,5 @@
+> Публичная копия: идентификаторы инфраструктуры заменены обозначениями. SHA плана в отчёте относится к полной версии до этого редактирования.
+
 # Перекрёстная проверка эксплуатационного ревью
 
 03.11.2026. Reviewer `/root/cloud_plan_arch`; назначение `gpt-6-astra` — metadata, не runtime attestation. Проверен `/tmp/clipmkr-cloud-plan-ops-review.md` reviewer `gpt-6.1-sol` после собственного независимого первичного отчёта. Проект и инфраструктура не менялись, секреты не читались. Исходники перечитаны адресно; официальные Cloud.ru страницы проверены независимо. Проверка final plan будет добавлена после получения пути.
@@ -29,8 +31,8 @@
 
 Самостоятельно прочитан `/tmp/clipmkr-active-edge-reviewed.txt`, предоставленный root как read-only извлечение текущей конфигурации внешнего сервера. В нём явно:
 
-- `clipmkr.ru/api/webhooks/yookassa-test` переписывается в `/api/webhooks/yookassa` и направляется прямо в `n5-referral-paytest-20261028:3000`;
-- обычный `clipmkr.ru` идёт в `n5-clipmaker-proxy-1:80`;
+- `clipmkr.ru/api/webhooks/yookassa-test` переписывается в `/api/webhooks/yookassa` и направляется прямо в `TEST_WEB_CONTAINER:3000`;
+- обычный `clipmkr.ru` идёт в `PROD_PROXY_CONTAINER:80`;
 - `n5.clipmkr.ru` идёт в тот же test backend напрямую;
 - test-тракты задают XFF `remote.host, local.host`; `www.clipmkr.ru` даёт 308 на canonical clipmkr.ru.
 

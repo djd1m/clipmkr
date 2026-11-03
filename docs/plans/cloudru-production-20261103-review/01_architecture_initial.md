@@ -1,3 +1,5 @@
+> Публичная копия: идентификаторы инфраструктуры заменены обозначениями. SHA плана в отчёте относится к полной версии до этого редактирования.
+
 # Независимое ревью плана: данные и cutover
 
 Дата: 03.11.2026. Отдельная сессия `/root/cloud_plan_arch`, запрошенная модель `gpt-6-astra` — metadata назначения, не runtime attestation. Вход: AGENTS.md и `/tmp/clipmkr-cloudru-production-plan-draft.ru.md`; затем самостоятельное чтение CLAUDE.md, core-cjm.md, REPRODUCE.md, ops/cloudru/README.md, compose, исходников auth, retention, watchdog, queue, S3 и миграций. Старые coding-review отчёты не читались. Только чтение проекта, локальный отчёт; подключения к БД, секретам, инфраструктурные изменения, paid/API mutations отсутствуют.
