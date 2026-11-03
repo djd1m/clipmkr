@@ -9,6 +9,32 @@ import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
 import { loadCandidateProfile } from '../scripts/release-candidate.mjs';
 
+function embeddedDiskLibrary(source: string): string {
+  const parser = source.match(/const imageMeasurement = (String\.raw`[\s\S]*?`);/);
+  const disk = source.match(/const diskAdmission = (String\.raw`[\s\S]*?`);/);
+  if (!parser || !disk) throw new Error('embedded disk admission missing');
+  const measured = runInNewContext(parser[1]!) as string;
+  return measured.slice(0, measured.indexOf("if __name__=='__main__':")) + (runInNewContext(disk[1]!) as string);
+}
+const fakeDiskSystem = String.raw`
+def proc_info(prefix): return {'dockerd':[{'argv':[],'tmp':[]}],'containerd':[{'argv':['--root=/var/lib/containerd'],'tmp':[]}]}
+def daemon_configs(prefix,d,c): return {},{}
+def read_command(args):
+    return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
+def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]
+class FakeVolume:
+    f_frsize=4096; f_favail=10**9
+    @property
+    def f_bavail(self): return int(os.environ.get('FAKE_DISK_FREE',10**12))//4096
+def path_info(path,mounts): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},FakeVolume()
+def measure(path,expected_hash,image_id): return {'streamBytes':1,'allocationBytes':1,'entries':1}
+`;
+function embeddedExecutor(source: string): string {
+  const match = source.match(/^const remoteExecutor = diskLibrary \+ (.*);$/m);
+  if (!match) throw new Error('embedded executor missing');
+  return embeddedDiskLibrary(source) + fakeDiskSystem + JSON.parse(match[1]!);
+}
+
 const harness = String.raw`import contextlib, datetime, fcntl, hashlib, http.server, io, json, os, pathlib, shutil, subprocess, sys, tarfile, tempfile, threading, unittest
 E=os.environ['RELEASE_EXECUTOR']
 def H(x): return hashlib.sha256(x).hexdigest()
@@ -105,26 +131,45 @@ class TestExecutor(unittest.TestCase):
   state={'app':S,'containers':containers,'config':config,'observation':obs,'journal':old,'desired_journal':new,'revision':'1'*40,'desired_revision':'2'*40,'desired_images':images(newids)};self.save(state)
   self.http=http.server.HTTPServer(('127.0.0.1',0),Server);self.http.statefile=self.file;threading.Thread(target=self.http.serve_forever,daemon=True).start()
   origin='http://127.0.0.1:'+str(self.http.server_port)
-  profile={'kind':'existing-test-project','target':'site-test','project':'test','dockerPrefix':[],'root':str(self.root/'app'),'envFile':str(env),'stateDir':str(self.root/'state'),'stageDir':str(self.root/'stage'),'composeFiles':files,'origin':origin,'healthUrl':origin+'/health','admissionProbeSha256':H(PROBE.encode())}
+  profile={'kind':'existing-test-project','target':'site-test','project':'test','dockerPrefix':[],'root':str(self.root/'app'),'sourceDir':str(self.root/'source'),'envFile':str(env),'stateDir':str(self.root/'state'),'stageDir':str(self.root/'stage'),'composeFiles':files,'origin':origin,'healthUrl':origin+'/health','admissionProbeSha256':H(PROBE.encode())}
   profile.update({'databaseProject':'test','redisProject':'test','resources':{'database':containers['db']['Id'],'redis':containers['redis']['Id'],'databaseVolume':'dbvol','redisVolume':'redisvol'},'binding':{'databaseName':'test','databaseHost':'test-db','redisHost':'test-redis','network':'test-network'},'storagePrefix':'tests/site/'})
   pp=self.root/'profile.json';pp.write_text(json.dumps(profile));pp.chmod(0o600)
   identity={k:obs[k] for k in ('composeProject','databaseContainerId','databaseVolume','postgresSystemIdentifier','databaseName','databaseOid','timezone')}
   self.p={'action':'apply','operationId':self.op,'profilePath':str(pp),'admissionProbe':PROBE,'admission':{'identity':identity,'storageFingerprint':obs['storageFingerprint'],'environmentFingerprint':H(canon(envs)),'accountColumns':['id'],'tableColumns':{},'objectWhitelist':[],'accountRowsSha256':obs['accountRowsSha256'],'journal':old,'resourceIdentities':{'database':containers['db']['Id'],'redis':containers['redis']['Id'],'databaseVolume':'dbvol','redisVolume':'redisvol'},'composeFileSha256':[H(pathlib.Path(x).read_bytes()) for x in files],'envFileSha256':H(env.read_bytes()),'backupSha256':'a'*64,'scopeProofSha256':'b'*64,'inputBytes':1,'expectedObservation':obs},'previous':{'commit':'1'*40,'images':oldids,'journal':old},'desired':{'commit':'2'*40,'images':newids,'journal':new,'sourceSha256':H(src.read_bytes()),'archiveSha256':{x:H(paths[x].read_bytes()) for x in ('web','worker')}},'artifacts':{k:{'path':str(v),'sha256':H(v.read_bytes())} for k,v in paths.items()}}
   now=datetime.datetime.now(datetime.timezone.utc).isoformat()
   self.p['admission'].update({key:now for key in ('scopeObservedAt','multipartObservedAt','backupObservedAt','restoreObservedAt','dataObservedAt')})
-  self.p['expectedProfile']={k:profile[k] for k in ('target','project','databaseProject','redisProject','root','envFile','composeFiles','dockerPrefix','origin','resources','binding','storagePrefix','stateDir','stageDir')}
+  self.p['expectedProfile']={k:profile[k] for k in ('target','project','databaseProject','redisProject','root','sourceDir','envFile','composeFiles','dockerPrefix','origin','resources','binding','storagePrefix','stateDir','stageDir')}
   self.env=os.environ.copy();self.env['PATH']=str(self.root/'bin')+':'+self.env['PATH'];self.env['FAKE_FILE']=self.file
+  self.attach_disk(self.p)
  def tearDown(self):self.http.shutdown();self.http.server_close();self.t.cleanup()
  def save(self,s):pathlib.Path(self.file).write_text(json.dumps(s))
  def load(self):return json.loads(pathlib.Path(self.file).read_text())
+ def attach_disk(self,p):
+  artifacts=p['artifacts']
+  for item in artifacts.values(): item['size']=pathlib.Path(item['path']).stat().st_size
+  allocation=0;entries=0
+  try:
+   with tarfile.open(artifacts['source']['path']) as archive:
+    for item in archive:
+     entries+=1;allocation+=16384+(4096*((item.size+4095)//4096) if item.isfile() else 0)
+  except tarfile.TarError: allocation=1;entries=1
+  profile=json.loads(pathlib.Path(self.p['profilePath']).read_text())
+  p['disk']={'targetName':profile['target'],'appRoot':profile['root'],'stageDir':profile['stageDir'],'stateDir':profile['stateDir'],'sourceDir':str(self.root/'source'),'sourcePath':str(self.root/'source'/p['desired']['commit']/'source.tar'),'dockerPrefix':profile['dockerPrefix'],'inputBytes':p['admission']['inputBytes'],'commit':p['desired']['commit'],'operationId':p['operationId'],'artifacts':artifacts,'sourceMeasure':{'allocationBytes':allocation,'entries':entries},'measurements':{x:{'streamBytes':1,'allocationBytes':1,'entries':1} for x in ('web','worker')}}
+  return p
  def call(self,p=None):
-  r=subprocess.run([sys.executable,E],input=json.dumps(p or self.p),text=True,capture_output=True,env=self.env,timeout=20);self.assertEqual(r.stderr,'');return r.returncode,json.loads(r.stdout)
+  request=self.attach_disk(p or self.p)
+  r=subprocess.run([sys.executable,E],input=json.dumps(request),text=True,capture_output=True,env=self.env,timeout=20);self.assertEqual(r.stderr,'');return r.returncode,json.loads(r.stdout)
  def intent(self):return json.loads((self.root/'state/intent.json').read_text())
  def calls(self):
   f=pathlib.Path(self.file+'.log');return [json.loads(x) for x in f.read_text().splitlines()] if f.exists() else []
  def test_happy_migration(self):
   rc,out=self.call();self.assertEqual((rc,out['status']),(0,'success'));self.assertEqual(self.intent()['status'],'success');self.assertEqual(self.load()['journal'],self.p['desired']['journal'])
   calls=self.calls(); self.assertEqual(sum(a[0]=='load' for a in calls),2);self.assertTrue(any('run' in a for a in calls));self.assertTrue(any('up' in a for a in calls));self.assertTrue(all(not any(x in a for x in ('prune','down')) for a in calls))
+ def test_disk_free_blocks_before_load(self):
+  self.env['FAKE_DISK_FREE']='0'
+  self.assertEqual(self.call()[0],1)
+  self.assertFalse((self.root/'state/intent.json').exists())
+  self.assertFalse(any(x[0]=='load' for x in self.calls()))
  def test_initial_kind_guard_before_load(self):
   state=self.load(); state['revision']=None; self.save(state)
   self.p['previous']={'legacy':True,'commit':None,'journal':self.p['previous']['journal'],'images':self.p['previous']['images'],'containers':{x:{'containerId':state['containers'][x]['Id'],'startedAt':'now'} for x in S}}
@@ -244,14 +289,15 @@ class TestExecutor(unittest.TestCase):
     self.assertEqual(item['image'],current['desired_images'][service]);self.assertTrue(item['containerId']);self.assertTrue(item['startedAt'])
 if __name__=='__main__':unittest.main()
 `;
-async function exercise(cases: string[]) {
+async function exercise(cases: string[], removeDiskGate = false) {
   const directory = mkdtempSync(join(tmpdir(), 'release-executor-acid-'));
   try {
     const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
-    const match = source.match(/^const remoteExecutor = (.*);$/m);
-    if (!match) throw new Error('embedded executor missing');
+    const python = embeddedExecutor(source);
     const executor = join(directory, 'executor.py'), runner = join(directory, 'test.py');
-    writeFileSync(executor, JSON.parse(match[1]!), { mode: 0o600 });
+    const mutated = python.replace('        admit_disk(disk)\n', '        # disk admission removed by test mutant\n');
+    if (removeDiskGate) expect(mutated).not.toBe(python);
+    writeFileSync(executor, removeDiskGate ? mutated : python, { mode: 0o600 });
     writeFileSync(runner, harness, { mode: 0o600 });
     const result = await new Promise<{ status: number | null; output: string }>((done, reject) => {
       const child = spawn('python3', [runner, ...cases.map(name => `TestExecutor.${name}`)],
@@ -259,7 +305,8 @@ async function exercise(cases: string[]) {
       let output = ''; child.stdout.on('data', x => { output += x; }); child.stderr.on('data', x => { output += x; });
       child.on('error', reject); child.on('close', status => done({ status, output }));
     });
-    expect(result.status, result.output).toBe(0);
+    if (removeDiskGate) expect(result.status, result.output).not.toBe(0);
+    else expect(result.status, result.output).toBe(0);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 }
 
@@ -303,11 +350,13 @@ print(json.dumps({'path':path,'sha256':H(open(path,'rb').read()),'id':'sha256:'+
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   it('guards initial kinds under lock before loading images', async () => { await exercise(['test_initial_kind_guard_before_load']); });
+  it('rechecks disk free before docker load and detects removal of the gate', async () => {
+    await exercise(['test_disk_free_blocks_before_load']);
+    await exercise(['test_disk_free_blocks_before_load'], true);
+  }, 60000);
   it('verifies legacy and newly prefixed media without another legacy copy', async () => {
     const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
-    const match = source.match(/^const remoteExecutor = (.*);$/m);
-    if (!match) throw new Error('embedded executor missing');
-    const python = JSON.parse(match[1]!) as string;
+    const python = embeddedExecutor(source);
     const code = python.match(/^\s*verify_code=(".*")$/m);
     if (!code) throw new Error('media verifier missing');
     const verifier = JSON.parse(code[1]!) as string;
@@ -351,14 +400,20 @@ print(json.dumps({'path':path,'sha256':H(open(path,'rb').read()),'id':'sha256:'+
       const stageDir = join(dir, 'stage'), stateDir = join(dir, 'state'), root = join(dir, 'app');
       for (const path of [stageDir, stateDir, root]) mkdirSync(path, { mode: 0o700 });
       const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
-      const match = source.match(/const artifactReceiver = (`[\s\S]*?`);/);
+      const match = source.match(/const artifactReceiver = diskLibrary \+ (`[\s\S]*?`);/);
       if (!match) throw new Error('artifact receiver missing');
-      const receiver = runInNewContext(match[1]!) as string;
+      const receiver = embeddedDiskLibrary(source) + fakeDiskSystem + (runInNewContext(match[1]!) as string);
       const bytes = Buffer.from('verified release archive');
       const digest = createHash('sha256').update(bytes).digest('hex');
       const operationId = 'a'.repeat(64);
-      const data = { stageDir, stateDir, root, operationId, name: 'source', size: bytes.length, sha256: digest, requiredFree: 1 };
-      const call = (value: object, input: Buffer | string = '') => spawnSync('python3', ['-c', receiver, Buffer.from(JSON.stringify(value)).toString('base64')], { input, encoding: 'utf8' });
+      const disk = { targetName: 'site-test', appRoot: root, sourceDir: join(dir, 'source'), sourcePath: join(dir, 'source', '2'.repeat(40), 'source.tar'),
+        stageDir, stateDir, dockerPrefix: [], inputBytes: 1, commit: '2'.repeat(40), operationId,
+        artifacts: Object.fromEntries(['source','web','worker'].map(name => [name, { path: join(stageDir, operationId, `${name}.tar`), sha256: digest, size: bytes.length }])),
+        sourceMeasure: { allocationBytes: 1, entries: 1 }, measurements: { web: { streamBytes: 1, allocationBytes: 1, entries: 1 }, worker: { streamBytes: 1, allocationBytes: 1, entries: 1 } } };
+      const data = { targetName: 'site-test', stageDir, stateDir, root, operationId, name: 'source', size: bytes.length, sha256: digest, requiredFree: 1, disk };
+      const call = (value: object, input: Buffer | string = '', env = process.env) => spawnSync('python3', ['-c', receiver, Buffer.from(JSON.stringify(value)).toString('base64')], { input, encoding: 'utf8', env });
+      expect(call({ ...data, mode: 'write' }, bytes, { ...process.env, FAKE_DISK_FREE: '0' }).status).not.toBe(0);
+      expect(() => readFileSync(join(stateDir, 'staging.json'))).toThrow();
       expect(JSON.parse(call({ ...data, mode: 'check' }).stdout).status).toBe('missing');
       expect(call({ ...data, mode: 'write' }, bytes.subarray(0, 3)).status).not.toBe(0);
       expect(JSON.parse(call({ ...data, mode: 'check' }).stdout).status).toBe('missing');

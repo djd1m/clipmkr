@@ -64,9 +64,29 @@ function artifacts(dir: string) {
   });
   const m = manifest(); m.commit = head; m.ociRevision = head; m.journal = journal;
   m.sourceSha256 = createHash('sha256').update(readFileSync(source)).digest('hex');
-  const checksum = createHash('sha256').update('archive').digest('hex');
-  for (const name of ['web.tar', 'worker.tar']) writeFileSync(join(dir, name), 'archive');
-  m.images.web.archiveSha256 = checksum; m.images.worker.archiveSha256 = checksum;
+  const imageFixture = String.raw`
+import gzip,hashlib,io,json,os,sys,tarfile
+H=lambda b:hashlib.sha256(b).hexdigest()
+def add(t,n,b):
+ x=tarfile.TarInfo(n);x.size=len(b);t.addfile(x,io.BytesIO(b))
+for name in ('web','worker'):
+ stream=io.BytesIO()
+ with tarfile.open(fileobj=stream,mode='w') as t:add(t,'file',name.encode())
+ layer=stream.getvalue();packed=gzip.compress(layer,mtime=0)
+ config=json.dumps({'name':name,'rootfs':{'type':'layers','diff_ids':['sha256:'+H(layer)]}}).encode()
+ manifest=json.dumps([{'Config':'blobs/sha256/'+H(config),'Layers':['blobs/sha256/'+H(packed)]}]).encode()
+ path=os.path.join(sys.argv[1],name+'.tar')
+ with tarfile.open(path,'w') as t:
+  for n,b in [('manifest.json',manifest),('blobs/sha256/'+H(config),config),('blobs/sha256/'+H(packed),packed)]:add(t,n,b)
+ print(name,'sha256:'+H(config),H(open(path,'rb').read()))
+`;
+  const images = spawnSync('python3', ['-c', imageFixture, dir], { encoding: 'utf8' });
+  if (images.status !== 0) throw new Error(images.stderr);
+  for (const line of images.stdout.trim().split('\n')) {
+    const [key, imageId, checksum] = line.split(' ');
+    m.images[key as 'web' | 'worker'].id = imageId!;
+    m.images[key as 'web' | 'worker'].archiveSha256 = checksum!;
+  }
   m.images.web.ociRevision = head; m.images.worker.ociRevision = head;
   return m;
 }
@@ -112,6 +132,88 @@ function fakeGit(bin: string) {
   writeFileSync(join(bin, 'git'), `#!/bin/sh\nif [ "$1" = show ]; then case "$2" in *:packages/s3/src/client.ts) cat ${resolve('packages/s3/src/client.ts')} ; exit;; *:tests/storage-prefix.test.ts) cat ${resolve('tests/storage-prefix.test.ts')} ; exit;; *:tests/storage-prefix.integration.test.ts) cat ${resolve('tests/storage-prefix.integration.test.ts')} ; exit;; *:tests/fixtures/environment.ts) cat ${resolve('tests/fixtures/environment.ts')} ; exit;; esac; fi\nexec /usr/bin/git "$@"\n`, { mode: 0o755 });
 }
 describe('release candidate read-only admission', () => {
+  it('rejects site identity drift and insufficient incremental image archive space', () => {
+    const text = readFileSync('scripts/release-candidate.mjs', 'utf8');
+    const extract = (name: string) => {
+      const match = text.match(new RegExp('const ' + name + ' = (String\\.raw`[\\s\\S]*?`);'));
+      if (!match) throw new Error(name);
+      return runInNewContext(match[1]!) as string;
+    };
+    const parser = extract('imageMeasurement');
+    const library = parser.slice(0, parser.indexOf("if __name__=='__main__':")) + extract('diskAdmission');
+    const receiver = text.match(/const sourceReceiver = diskLibrary \+ (`[\s\S]*?`);/);
+    if (!receiver) throw new Error('source receiver missing');
+    const fake = String.raw`
+def proc_info(prefix): return {'dockerd':[{'argv':['--data-root=/unknown'] if os.environ.get('FAULT')=='root' else [],'tmp':['/unknown'] if os.environ.get('FAULT')=='temp' else []}],'containerd':[] if os.environ.get('FAULT')=='daemon' else [{'argv':['--root=/unknown'] if os.environ.get('FAULT')=='store' else ([] if os.environ.get('FAULT')=='unconfirmed-store' else ['--root=/var/lib/containerd']),'tmp':[]}]}
+def daemon_configs(prefix,d,c): return ({'data-root':'/unknown'} if os.environ.get('FAULT')=='config' else {}),({'root':'/unknown'} if os.environ.get('FAULT')=='store-config' else {})
+def read_command(args):
+ return json.dumps({'Driver':'vfs' if os.environ.get('FAULT')=='driver' else 'overlayfs','DriverStatus':[] if os.environ.get('FAULT')=='snapshotter' else [['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/unknown' if os.environ.get('FAULT')=='docker-info-root' else '/var/lib/docker'}) if 'info' in args else '29.0.0'
+def mount_table():
+ fault=os.environ.get('FAULT')
+ nested=os.environ['NESTED'] if fault=='nested' else ('/var/lib/containerd/io.containerd.content.v1.content/foreign' if fault=='content-mount' else ('/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/unknown/fs' if fault=='snapshot-mount' else None))
+ return [{'path':'/','device':'1:1','type':'ext4'}]+([{'path':nested,'device':'1:2','type':'overlay' if fault=='snapshot-mount' else 'ext4'}] if nested else [])
+class Volume:
+ f_frsize=4096
+ @property
+ def f_bavail(self): return int(os.environ.get('FAKE_FREE',10**12))//4096
+ @property
+ def f_favail(self): return int(os.environ.get('FAKE_INODES',10**9))
+def path_info(path,mounts):
+ fault=os.environ.get('FAULT'); bad=fault=='different-fs' and path.endswith('/stage')
+ return {'path':path,'observedAt':path,'mount':'/','device':'1:2' if bad else '1:1','fsType':'xfs' if fault=='fs-type' and path.endswith('/stage') else 'ext4','block':8192 if fault=='block' and path.endswith('/stage') else 4096,'stDev':2 if bad else 1},Volume()
+`;
+    const exercise = String.raw`
+import base64,gzip,io,hashlib,os,pathlib,shutil,subprocess,sys,tarfile,tempfile
+H=lambda b:hashlib.sha256(b).hexdigest()
+def add(t,name,data):
+ x=tarfile.TarInfo(name);x.size=len(data);t.addfile(x,io.BytesIO(data))
+def fails(p):
+ try: admit_disk(p);return False
+ except (ValueError,OSError,KeyError):return True
+with tempfile.TemporaryDirectory() as d:
+ r=pathlib.Path(d);stage=r/'stage';stage.mkdir();state=r/'state';state.mkdir();app=r/'app';app.mkdir();op='a'*64;folder=stage/op;folder.mkdir()
+ local=r/'local';local.mkdir();src=local/'source.tar'
+ with tarfile.open(src,'w') as t:add(t,'file.txt',b'source')
+ stream=io.BytesIO()
+ with tarfile.open(fileobj=stream,mode='w') as t:
+  for i in range(300):add(t,f'files/{i:04}.txt',b'x')
+ layer=stream.getvalue();packed=gzip.compress(layer,mtime=0)
+ config=json.dumps({'rootfs':{'type':'layers','diff_ids':['sha256:'+H(layer)]}}).encode();imageid='sha256:'+H(config)
+ manifest=json.dumps([{'Config':'blobs/sha256/'+H(config),'Layers':['blobs/sha256/'+H(packed)]}]).encode();image=local/'image.tar'
+ with tarfile.open(image,'w') as t:
+  for n,b in [('manifest.json',manifest),('blobs/sha256/'+H(config),config),('blobs/sha256/'+H(packed),packed)]:add(t,n,b)
+ files={'source':src,'web':image,'worker':image}
+ artifacts={k:{'path':str(folder/(k+'.tar')),'sha256':H(f.read_bytes()),'size':f.stat().st_size} for k,f in files.items()}
+ measured={k:measure(str(image),artifacts[k]['sha256'],imageid) for k in ('web','worker')}
+ assert measured['web']['entries']==300 and measured['web']['allocationBytes']>20*image.stat().st_size
+ p={'targetName':'site-test','appRoot':str(app),'sourceDir':str(r/'releases'),'sourcePath':str(r/'releases'/('2'*40)/'source.tar'),'stageDir':str(stage),'stateDir':str(state),'dockerPrefix':[],'inputBytes':1000,'commit':'2'*40,'operationId':op,'artifacts':artifacts,'measurements':measured,'sourceMeasure':source_measure(str(src),artifacts['source']['sha256'])}
+ os.environ['NESTED']=str(stage/'nested')
+ first=admit_disk(p);p['inputBytes']+=(-first['requiredBytes']*2731)%4096
+ first=admit_disk(p);required=first['requiredBytes'];assert required%4096==0 and required>sum(a['size'] for a in artifacts.values())+measured['web']['allocationBytes']
+ os.environ['FAKE_FREE']=str(required);assert admit_disk(p)
+ os.environ['FAKE_FREE']=str(required-1);assert fails(p)
+ os.environ['FAKE_FREE']=str(10**12)
+ p['expectedBinding']={**first['binding'],'dockerRoot':'/foreign'};assert fails(p);p['expectedBinding']=first['binding']
+ for fault in ('different-fs','fs-type','block','root','store','unconfirmed-store','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','content-mount','snapshot-mount'):
+  os.environ['FAULT']=fault;assert fails(p),fault
+ os.environ.pop('FAULT',None)
+ os.environ['FAKE_INODES']=str(first['requiredInodes']-1);assert fails(p)
+ os.environ['FAKE_INODES']=str(first['requiredInodes']);assert admit_disk(p)
+ p['retainedRollbackBytes']=10**12;assert admit_disk(p)['requiredBytes']==required
+ shutil.copy2(image,artifacts['web']['path']);partial=admit_disk(p);assert partial['requiredBytes']==required-image.stat().st_size
+ os.environ['FAKE_FREE']=str(((partial['requiredBytes']+4095)//4096)*4096);assert admit_disk(p)
+ pathlib.Path(artifacts['web']['path']).write_bytes(b'X'+image.read_bytes()[1:]);assert fails(p)
+ pathlib.Path(artifacts['web']['path']).unlink();os.environ['FAKE_FREE']=str(required-1)
+ args={'targetName':'site-test','sourceDir':p['sourceDir'],'root':str(app),'commit':p['commit'],'sourceSha256':artifacts['source']['sha256'],'disk':p}
+ call=subprocess.run([sys.executable,'-c',SOURCE_PROGRAM,base64.b64encode(json.dumps(args).encode()).decode()],input=src.read_bytes(),capture_output=True)
+ assert call.returncode!=0 and not pathlib.Path(p['sourceDir']).exists()
+print('disk scenarios passed')
+`;
+    const sourceProgram = library + fake + (runInNewContext(receiver[1]!) as string);
+    const result = spawnSync('python3', ['-c', library + fake + `\nSOURCE_PROGRAM=${JSON.stringify(sourceProgram)}\n` + exercise], { encoding: 'utf8', timeout: 30000 });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('disk scenarios passed');
+  }, 30000);
   it('rejects implicit production and unknown targets', () => {
     const f = fixture();
     try {
@@ -216,8 +318,8 @@ esac
       const known = join(f.dir, 'known_hosts'); writeFileSync(known, 'host key');
       const p = profile(); (p.targets[1] as { ssh: { knownHosts: string; config: string } }).ssh.knownHosts = known;
       (p.targets[1] as { ssh: { knownHosts: string; config: string } }).ssh.config = f.path; f.write(p);
-      const identity = { containerId: 'c'.repeat(64), imageId: `sha256:${h}`, startedAt: '2026-01-01T00:00:00Z' };
-      const observed = { revision: m.commit, services: Object.fromEntries(['web', 'worker-stt', 'worker-llm', 'worker-video'].map(k => [k, identity])) };
+      const identity = { containerId: 'c'.repeat(64), imageId: m.images.web.id, startedAt: '2026-01-01T00:00:00Z' };
+      const observed = { revision: m.commit, services: Object.fromEntries(['web', 'worker-stt', 'worker-llm', 'worker-video'].map(k => [k, { ...identity, imageId: k === 'web' ? m.images.web.id : m.images.worker.id }])) };
       const script = (v: unknown) => `#!/bin/sh\nprintf '%s\\n' '${JSON.stringify(v)}'\n`;
       for (const name of ['python3', 'ssh']) { writeFileSync(join(bin, name), script(observed), { mode: 0o755 }); }
       const run = () => spawnSync(process.execPath, [resolve('scripts/release-candidate.mjs'), 'inspect', f.path, file], { encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}` } });
@@ -232,21 +334,62 @@ esac
     try {
       const file = join(f.dir, 'manifest.json'); const m = artifacts(f.dir); writeFileSync(file, JSON.stringify(m));
       const bin = join(f.dir, 'ssh-bin'); mkdirSync(bin);
-      writeFileSync(join(bin, 'ssh'), '#!/bin/sh\nfor last do :; done\nexec /bin/sh -c "$last"\n', { mode: 0o755 });
+      const shim = String.raw`
+def proc_info(prefix): return {'dockerd':[{'argv':[],'tmp':[]}],'containerd':[{'argv':['--root=/var/lib/containerd'],'tmp':[]}]}
+def daemon_configs(prefix,d,c): return {},{}
+def read_command(args):
+ return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
+def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]
+class Volume:
+ f_frsize=4096;f_favail=10**9
+ @property
+ def f_bavail(self):return int(os.environ.get('FAKE_DISK_FREE',10**12))//4096
+def path_info(path,mounts): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},Volume()
+`;
+      const fakeSsh = `#!/usr/bin/python3
+import base64,os,re,sys
+remote=sys.argv[-1]
+target='cloud-c' if 'cloud-c' in sys.argv else 'site-test'
+if os.environ.get('FAKE_CLOUD_NO_DISK') and target=='cloud-c':os.environ['FAKE_DISK_FREE']='0'
+encoded=re.search(r'b64decode\\("([^"]+)"\\)',remote)
+if not encoded: raise SystemExit(3)
+code=base64.b64decode(encoded.group(1)).decode()
+with open(os.environ['FAKE_SSH_LOG'],'a') as f:f.write(target+(' source' if 'source admission' in code else ' preflight')+'\\n')
+args=re.findall(r"'([^']*)'",remote)
+marker=code.find('\\nimport base64')
+if marker<0:raise SystemExit(4)
+code=code[:marker]+${JSON.stringify(shim)}+code[marker:]
+sys.argv=['-c',args[-1]]
+exec(compile(code,'<fake-ssh>','exec'),{'__name__':'__main__'})
+`;
+      writeFileSync(join(bin, 'ssh'), fakeSsh, { mode: 0o755 });
       const p = profile();
-      (p.targets[0] as typeof p.targets[0] & { sourceDir: string }).sourceDir = join(f.dir, 'source-releases'); f.write(p);
-      const run = () => runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'site-test'], { ...process.env, PATH: `${bin}:${process.env.PATH}` });
+      for (const target of p.targets) {
+        Object.assign(target, { sourceDir: join(f.dir, target.name + '-releases'), stageDir: join(f.dir, target.name + '-stage'),
+          remoteStateDir: join(f.dir, target.name + '-state'), root: join(f.dir, target.name + '-app'), localStateDir: f.dir });
+        mkdirSync((target as typeof target & { stageDir: string }).stageDir, { mode: 0o700 });
+        mkdirSync((target as typeof target & { remoteStateDir: string }).remoteStateDir, { mode: 0o700 });
+        mkdirSync(target.root, { mode: 0o700 });
+      }
+      f.write(p);
+      const log = join(f.dir, 'ssh-events');
+      const run = (fault = false) => runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'site-test'],
+        { ...process.env, PATH: `${bin}:${process.env.PATH}`, FAKE_SSH_LOG: log, ...(fault ? { FAKE_CLOUD_NO_DISK: '1' } : {}) });
+      const rejected = await run(true); expect(rejected.status).not.toBe(0);
+      expect(readFileSync(log, 'utf8').trim().split('\n')).toEqual(['site-test preflight', 'cloud-c preflight']);
+      expect(() => readFileSync(join(f.dir, 'site-test-releases', m.commit, 'source.tar'))).toThrow();
       const first = await run(); expect(first.status, first.stderr).toBe(0);
+      expect(readFileSync(log, 'utf8').trim().split('\n').slice(2, 5)).toEqual(['site-test preflight', 'cloud-c preflight', 'site-test source']);
       const receipt = JSON.parse(first.stdout); expect(receipt.status).toBe('verified'); expect(receipt.commit).toBe(m.commit);
-      const inventory = JSON.parse(readFileSync(join(f.dir, 'source-releases', m.commit, 'inventory.json'), 'utf8'));
+      const inventory = JSON.parse(readFileSync(join(f.dir, 'site-test-releases', m.commit, 'inventory.json'), 'utf8'));
       expect(inventory.files['Dockerfile']).toBeDefined();
       const second = await run(); expect(second.status).not.toBe(0);
-      expect(readFileSync(join(f.dir, 'source-releases', m.commit, 'tree', 'Dockerfile'), 'utf8').length).toBeGreaterThan(0);
+      expect(readFileSync(join(f.dir, 'site-test-releases', m.commit, 'tree', 'Dockerfile'), 'utf8').length).toBeGreaterThan(0);
       const sshTarget = p.targets[0] as typeof p.targets[0] & { transport: string; sourceDir: string; ssh: { alias: string; config: string; knownHosts: string; expiresAt: string } };
       sshTarget.transport = 'ssh'; sshTarget.sourceDir = join(f.dir, 'ssh-source');
       sshTarget.ssh = { alias: 'fake', config: f.path, knownHosts: f.path, expiresAt: '2999-01-01T00:00:00Z' }; f.write(p);
       const overSsh = await runNode([resolve('scripts/release-candidate.mjs'), 'source-sync', f.path, file, 'site-test'],
-        { ...process.env, PATH: `${bin}:${process.env.PATH}` });
+        { ...process.env, PATH: `${bin}:${process.env.PATH}`, FAKE_SSH_LOG: log });
       expect(overSsh.status, overSsh.stderr).toBe(0);
       expect(JSON.parse(overSsh.stdout).status).toBe('verified');
     } finally { f.close(); }
@@ -406,7 +549,12 @@ esac
       const videoRows = [{ id: videoId, value: 'completed-upload-with-historic-id' }];
       const videoHash = createHash('sha256').update(JSON.stringify(videoRows)).digest('hex');
       for (const target of p.targets) {
-        target.root = f.dir; target.envFile = join(f.dir, 'env'); target.composeFiles = [join(f.dir, 'compose.yml')];
+        target.root = join(f.dir, target.name + '-app'); mkdirSync(target.root, { mode: 0o700 });
+        target.envFile = join(f.dir, 'env'); target.composeFiles = [join(f.dir, 'compose.yml')];
+        Object.assign(target, { sourceDir: join(f.dir, target.name + '-releases'), stageDir: join(f.dir, target.name + '-stage'),
+          remoteStateDir: join(f.dir, target.name + '-state'), executorProfilePath: join(f.dir, target.name + '-executor.json') });
+        mkdirSync((target as typeof target & { stageDir: string }).stageDir, { mode: 0o700 });
+        mkdirSync((target as typeof target & { remoteStateDir: string }).remoteStateDir, { mode: 0o700 });
         writeFileSync(target.envFile, 'fixture', { mode: 0o600 }); writeFileSync(target.composeFiles[0]!, 'fixture', { mode: 0o600 });
         const prefix = target.storagePrefix;
         const { proofPath } = storageFixture(f.dir, target.name, target.project, release.commit, prefix, fingerprint);
@@ -460,10 +608,47 @@ else: sys.exit(1)
       writeFileSync(join(bin, 'docker'), docker, { mode: 0o755 });
       const dockerSyntax = spawnSync('python3', ['-m', 'py_compile', join(bin, 'docker')], { encoding: 'utf8' });
       expect(dockerSyntax.status, dockerSyntax.stderr).toBe(0);
-      writeFileSync(join(bin, 'ssh'), `#!/bin/sh\ncase "$*" in *fake-site*) export FAKE_PROJECT=local-stage;; *) export FAKE_PROJECT=cloud-stage;; esac\nfor last do :; done\nexec /bin/sh -c "$last" 2>${join(f.dir, 'remote-error')}\n`, { mode: 0o755 });
+      const diskShim = String.raw`
+def proc_info(prefix): return {'dockerd':[{'argv':[],'tmp':[]}],'containerd':[{'argv':['--root=/var/lib/containerd'],'tmp':[]}]}
+def daemon_configs(prefix,d,c): return {},{}
+def read_command(args):
+ return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
+def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]
+class Volume: f_bavail=10**12;f_frsize=4096;f_favail=10**9
+def path_info(path,mounts): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},Volume()
+`;
+      const fakeSsh = `#!/usr/bin/python3
+import base64,json,os,re,sys
+remote=sys.argv[-1]
+site='fake-site' in sys.argv
+os.environ['FAKE_PROJECT']='local-stage' if site else 'cloud-stage'
+encoded=re.search(r'b64decode\\("([^"]+)"\\)',remote)
+if not encoded:raise SystemExit(3)
+code=base64.b64decode(encoded.group(1)).decode()
+if 'def execute(p):' in code:
+ print(json.dumps({'status':'success'}));raise SystemExit(0)
+args=re.findall(r"'([^']*)'",remote)
+if 'def admit_disk(p):' in code:
+ marker=code.find('\\nimport base64')
+ if marker<0:raise SystemExit(4)
+ code=code[:marker]+${JSON.stringify(diskShim)}+code[marker:]
+sys.argv=['-c',args[-1]]
+exec(compile(code,'<fake-ssh>','exec'),{'__name__':'__main__'})
+`;
+      writeFileSync(join(bin, 'ssh'), fakeSsh, { mode: 0o755 });
       const previous = previousSet(f.dir, file);
       const run = (fault = '') => runNode([resolve('scripts/release-candidate.mjs'), 'apply', f.path, file, previous], { ...process.env, ...(fault ? { [fault]: '1' } : {}), PATH: `${bin}:${process.env.PATH}` });
-      const valid = await run(); expect(valid.status).not.toBe(0); expect(valid.stderr).toContain('release disk admission blocked'); expect(readFileSync(marker, 'utf8')).toContain('sql');
+      const valid = await run(); expect(valid.status, valid.stderr).toBe(0);
+      expect(valid.stdout.trim().split('\n').map(line => JSON.parse(line).status)).toEqual(['success','success']);
+      expect(readFileSync(marker, 'utf8')).toContain('sql');
+      for (const target of p.targets) {
+        const state = JSON.parse(readFileSync(join(f.dir, `${target.name}.json`), 'utf8'));
+        expect(state.status).toBe('success');
+        for (const [name, item] of Object.entries(state.request.artifacts)) {
+          const staged = readFileSync((item as { path: string }).path);
+          expect(createHash('sha256').update(staged).digest('hex')).toBe((item as { sha256: string }).sha256);
+        }
+      }
       for (const fault of ['FAKE_BAD_DB','FAKE_BAD_PORT','FAKE_BAD_NETWORK','FAKE_ALIAS_COLLISION','FAKE_BAD_EXTRA','FAKE_BAD_LINKS','FAKE_BAD_MOUNT','FAKE_BAD_PG','FAKE_RUNTIME_EXTRA']) {
         rmSync(marker, { force: true }); const invalid = await run(fault); expect(invalid.status).not.toBe(0); expect(() => readFileSync(marker)).toThrow();
       }

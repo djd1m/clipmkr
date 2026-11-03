@@ -1,6 +1,6 @@
 # Кандидат: подготовка и проверка
 
-Состояние: **разработка и проверка не завершены**. Перед реальным выпуском нужны
+Состояние: **код дискового допуска реализован; живой выпуск и итоговая приёмка не завершены**. Перед реальным выпуском нужны
 фактические proof, сквозные fault-тесты, сверка копирования media и независимое ревью.
 Не направлять команду на production и не заменять test DB/Redis/volumes.
 
@@ -60,8 +60,9 @@ build на controller; корневая рабочая директория не
 `source-sync <profile> <manifest> <site-test|cloud-c>` передаёт только source.tar
 в новый каталог с именем commit и проверяет каждый распакованный файл. Команда
 не меняет app/DB/container; существующий или частично созданный каталог отклоняется.
-Перед передачей проверяются свободные место под source и системный резерв; это
-**не** доказательство достаточности места под image layers и rollback.
+Перед передачей controller проверяет обе цели по тем же измеренным архивам, что
+использует apply. Source receiver повторяет допуск под remote lock до записи
+`source.tar` и распаковки; уже созданный каталог ревизии не перезаписывается.
 `inspect <profile> <manifest>` проверяет фактические четыре image ID и health.
 
 Текущий формат backup binding: `target`, `project`, `observedAt`, `backupPath`,
@@ -114,7 +115,7 @@ SDK namespace ограничивает штатный код, а не IAM; от�
 не допускаются. Конкретное окно TEST shop, drain и возврат callback — отдельная
 операторская процедура по требованиям, не результат этой команды.
 
-## Незавершённый контракт выпуска
+## Контракт выпуска и граница дискового допуска
 
 `apply <profile> <manifest> <previous-set>` и `rollback` принимают закрытый
 `previous-set` 0600: `{"site-test":"/private/site-previous.json",
@@ -128,7 +129,7 @@ SDK namespace ограничивает штатный код, а не IAM; от�
 
 На каждой цели нужен приватный executor profile: те же target/project, отдельные
 databaseProject/redisProject, binding, resources, origin, root/env/composeFiles,
-dockerPrefix, stageDir и stateDir; дополнительно `kind: "existing-test-project"`,
+dockerPrefix, sourceDir, stageDir и stateDir; дополнительно `kind: "existing-test-project"`,
 `healthUrl` и `admissionProbeSha256` из `validate`. Каталоги staging/state должны
 уже существовать с mode 0700 у SSH-пользователя; последний compose файл — приватный
 image override с ID желаемого набора. Передача и runtime проверки не изменяют DB
@@ -143,10 +144,37 @@ image override с ID желаемого набора. Передача и runtim
 результат требует оператора; неизвестные артефакты автоматически не удаляются.
 
 Каждая операция имеет отдельный staging directory. Без очистки A→B→A→B может
-занять до четырёх наборов архивов сверх текущих и rollback images. До каждого
-этапа проверяется место на оставшиеся передачи, полный запас под image layers и
-2 GiB; Docker data-root и фактический incremental unpack дополнительно измеряет
-оператор. Результат проверки свободного места не является измерением layers.
+занять до четырёх наборов архивов сверх текущих и rollback images. Контроллер
+до первого writer проверяет обе цели; staging receiver перед каждой передачей и
+executor перед `docker load` повторяют проверку под remote lock. Проверяются
+точные SHA-256, размер и путь всех архивов, image ID → OCI index/platform
+manifest/config → gzip layers/rootfs diff IDs. Уже полностью staged tar сверяется
+и не считается новой записью; частичный или изменившийся tar блокирует операцию.
+
+Нужен Python ≥3.11 на целях для штатного чтения containerd TOML. Поддерживается
+только общий **ext4 с блоком 4096 байт** для app, source,
+staging/state, `/tmp`, DockerRootDir `/var/lib/docker` и отдельного containerd
+root `/var/lib/containerd`, явно подтверждённый флагом запущенного containerd
+или его config; молчаливый default не подтверждение. Проверяются также Docker tmp,
+containerd content и snapshotter store; внутри snapshotter допустимы только
+штатные overlay mounts `snapshots/<число>/fs`. Нужны Docker 29, driver `overlayfs`,
+`io.containerd.snapshotter.v1`, проверенные флаги запущенных dockerd/containerd,
+их config и `DOCKER_TMPDIR`. Разные/неизвестные FS, root, temp, config, driver
+или вложенные mounts под рабочими каталогами дают отказ. Для ещё не созданного
+пути читается ближайший существующий parent без `mkdir` на probe. Доступность
+берётся из `statvfs.f_bavail` и `f_favail`, без кредита за текущие и rollback images.
+
+Общий бюджет складывает будущие staged source/web/worker tar, будущий source-sync
+tar и allocation извлечённого дерева, два полных uncompressed layer stream и
+две полных unpacked allocation с metadata, 1 GiB накладных расходов, 2 GiB
+системного резерва и `3 × inputBytes` для media. Inode budget включает будущие
+архивы, source entries, двойное число layer entries и запас 4096. Dedup слоёв
+и удаление rollback images не дают кредит. Это консервативная эксплуатационная
+граница при указанных допущениях, не универсальная математическая гарантия:
+свободное место не является атомарной reservation от посторонних writers.
+Поэтому обязательны reserve и повторный допуск непосредственно перед записью
+и загрузкой. Отказ требует отдельного reviewable cleanup plan; global prune,
+очистка чужих проектов и удаление rollback images не выполняются.
 
 При необходимости оператор отдельно готовит точечный cleanup plan. До следующей
 операции нужно сохранить приватную terminal receipt текущей: при смене операции

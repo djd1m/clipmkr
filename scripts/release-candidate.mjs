@@ -88,9 +88,7 @@ function hashFile(path) {
   } finally { closeSync(fd); }
   return hash.digest('hex');
 }
-// Preliminary measurement only: it is not yet connected to an admission gate.
-// The apply/rollback block below remains in force until receiver and filesystem
-// checks can verify the same bound under the target lock.
+// The same parser is used locally and by the locked remote executor before load.
 const imageMeasurement = String.raw`
 import gzip, hashlib, json, re, sys, tarfile
 
@@ -102,7 +100,7 @@ META = 16384
 def need(value):
     if not value: raise ValueError('unsupported image archive')
 
-def digest(stream):
+def stream_digest(stream):
     h=hashlib.sha256()
     for chunk in iter(lambda: stream.read(1024*1024), b''): h.update(chunk)
     return h.hexdigest()
@@ -113,7 +111,7 @@ class Measured:
         data=self.stream.read(size); self.size+=len(data); need(self.size<=LIMIT); self.hash.update(data); return data
 
 def measure(path, expected_hash, image_id):
-    with open(path,'rb') as f: need(digest(f)==expected_hash)
+    with open(path,'rb') as f: need(stream_digest(f)==expected_hash)
     with tarfile.open(path,'r:') as outer:
         names=set()
         for entry in outer:
@@ -152,7 +150,7 @@ def measure(path, expected_hash, image_id):
             x=member(layer)
             match=re.fullmatch(r'blobs/sha256/([a-f0-9]{64})',layer)
             if match:
-                with outer.extractfile(x) as f: need(digest(f)==match.group(1))
+                with outer.extractfile(x) as f: need(stream_digest(f)==match.group(1))
             else:
                 need(bool(re.fullmatch(r'[a-f0-9]{64}/layer\.tar',layer)))
             with outer.extractfile(x) as compressed:
@@ -179,6 +177,166 @@ if __name__=='__main__':
     except Exception:
         print('image measurement failed',file=sys.stderr); sys.exit(1)
 `;
+const diskAdmission = String.raw`
+import os, stat, subprocess, tempfile, tomllib
+
+GIB=1024**3
+def disk_need(ok, why):
+    if not ok: raise ValueError('release disk admission: '+why)
+def read_command(args):
+    return subprocess.run(args,check=True,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=30).stdout.strip()
+def proc_info(prefix):
+    disk_need(prefix in ([],['sudo','-n']),'read prefix')
+    # Only selected daemon path/config flags and DOCKER_TMPDIR are returned.
+    code="""import json,os
+found={}
+for item in os.listdir('/proc'):
+ if not item.isdigit(): continue
+ try:
+  argv=open('/proc/'+item+'/cmdline','rb').read().split(b'\\0'); name=os.path.basename(argv[0].decode())
+  if name not in ('dockerd','containerd'): continue
+  env=open('/proc/'+item+'/environ','rb').read().split(b'\\0') if name=='dockerd' else []
+  tmp=[x.split(b'=',1)[1].decode() for x in env if x.startswith(b'DOCKER_TMPDIR=')]
+  args=[x.decode() for x in argv[1:] if x]; selected=('--config-file','--data-root','--exec-root','--containerd','--storage-driver','--graph','-g','--config','-c','--root','-r','--state')
+  visible=[]
+  for i,arg in enumerate(args):
+   if arg in selected:
+    visible.extend([arg,args[i+1] if i+1<len(args) else ''])
+   elif any(arg.startswith(x+'=') for x in selected): visible.append(arg)
+  found.setdefault(name,[]).append({'argv':visible,'tmp':tmp})
+ except (OSError,UnicodeError): pass
+print(json.dumps(found))"""
+    return json.loads(read_command(prefix+['python3','-c',code]))
+def flag(argv, names):
+    found=[]
+    for i,arg in enumerate(argv):
+        for name in names:
+            if arg==name:
+                disk_need(i+1<len(argv),'daemon flag'); found.append(argv[i+1])
+            elif arg.startswith(name+'='): found.append(arg[len(name)+1:])
+    disk_need(len(found)<=1,'duplicate daemon flag')
+    return found[0] if found else None
+def path_info(path, mounts):
+    disk_need(isinstance(path,str) and path.startswith('/') and os.path.normpath(path)==path,'path')
+    current=path
+    while not os.path.lexists(current):
+        parent=os.path.dirname(current); disk_need(parent!=current,'missing path parent'); current=parent
+    disk_need(os.path.realpath(current)==current and stat.S_ISDIR(os.lstat(current).st_mode),'path parent or symlink')
+    matches=[m for m in mounts if current==m['path'] or current.startswith(m['path'].rstrip('/')+'/')]
+    disk_need(bool(matches),'mount missing')
+    mount=max(matches,key=lambda x:len(x['path']))
+    st=os.stat(current); v=os.statvfs(current)
+    disk_need(mount['type']=='ext4' and v.f_frsize==4096 and st.st_dev==os.stat(mount['path']).st_dev,'unsupported filesystem')
+    return {'path':path,'observedAt':current,'mount':mount['path'],'device':mount['device'],'fsType':mount['type'],'block':v.f_frsize,'stDev':st.st_dev},v
+def mount_table():
+    mounts=[]
+    for line in open('/proc/self/mountinfo'):
+        left,right=line.rstrip().split(' - ',1); a=left.split(); b=right.split()
+        def unescape(s): return re.sub(r'\\([0-7]{3})',lambda m:chr(int(m.group(1),8)),s)
+        mounts.append({'path':unescape(a[4]),'device':a[2],'type':b[0]})
+    return mounts
+def daemon_configs(prefix, docker_config, containerd_config):
+    code="""import json,os,sys,tomllib
+d,c=sys.argv[1:]
+docker=json.load(open(d)) if os.path.exists(d) else {}
+containerd=tomllib.load(open(c,'rb')) if os.path.exists(c) else {}
+print(json.dumps({'docker':{k:docker[k] for k in ('data-root','exec-root','storage-driver','containerd') if k in docker},'containerd':{k:containerd[k] for k in ('root','state') if k in containerd}}))"""
+    result=json.loads(read_command(prefix+['python3','-c',code,docker_config,containerd_config]))
+    return result['docker'],result['containerd']
+def source_measure(path,expected):
+    with open(path,'rb') as f: disk_need(stream_digest(f)==expected,'source hash')
+    allocation=0; entries=0
+    with tarfile.open(path,'r:') as tar:
+        for item in tar:
+            disk_need(item.isfile() or item.isdir(),'source entry')
+            entries+=1; disk_need(entries<=MAX_ENTRIES,'source entries')
+            allocation+=META + (((item.size+BLOCK-1)//BLOCK)*BLOCK if item.isfile() else 0)
+            disk_need(allocation<=LIMIT,'source allocation')
+    return {'allocationBytes':allocation,'entries':entries}
+def admit_disk(p):
+    prefix=p['dockerPrefix']; disk_need(prefix in ([],['sudo','-n']),'Docker prefix')
+    disk_need(type(p['inputBytes']) is int and p['inputBytes']>0,'input size')
+    artifacts=p['artifacts']; disk_need(set(artifacts)=={'source','web','worker'},'artifacts')
+    disk_need(p.get('targetName') in ('site-test','cloud-c'),'target binding')
+    disk_need(os.path.commonpath((p['appRoot'],p['sourceDir'])) not in (p['appRoot'],p['sourceDir']) and
+              os.path.commonpath((p['stageDir'],p['sourceDir'])) not in (p['stageDir'],p['sourceDir']),'source layout')
+    op=p['operationId']; disk_need(bool(re.fullmatch(r'[a-f0-9]{64}',op)),'operation')
+    for key,item in artifacts.items():
+        disk_need(item['path']==os.path.join(p['stageDir'],op,key+'.tar') and type(item['size']) is int and item['size']>0 and bool(re.fullmatch(r'[a-f0-9]{64}',item['sha256'])),'artifact binding')
+    disk_need(p['sourcePath']==os.path.join(p['sourceDir'],p['commit'],'source.tar') and bool(re.fullmatch(r'[a-f0-9]{40}',p['commit'])),'source binding')
+    proc=proc_info(prefix); disk_need(len(proc.get('dockerd',[]))==1 and len(proc.get('containerd',[]))==1,'daemon identity')
+    dock=proc['dockerd'][0]; cont=proc['containerd'][0]
+    docker_config=flag(dock['argv'],['--config-file']) or '/etc/docker/daemon.json'
+    disk_need(docker_config=='/etc/docker/daemon.json','Docker config path')
+    docker_root=flag(dock['argv'],['--data-root']) or '/var/lib/docker'
+    disk_need(docker_root=='/var/lib/docker' and not flag(dock['argv'],['--graph','-g']) and (flag(dock['argv'],['--exec-root']) in (None,'/var/run/docker','/run/docker')) and
+              (flag(dock['argv'],['--containerd']) in (None,'/run/containerd/containerd.sock')) and
+              (flag(dock['argv'],['--storage-driver']) in (None,'overlayfs')),'Docker root/driver flags')
+    disk_need(dock['tmp'] in ([],['/tmp']),'Docker temp')
+    containerd_config=flag(cont['argv'],['--config','-c']) or '/etc/containerd/config.toml'
+    disk_need(containerd_config in ('/etc/containerd/config.toml','/etc/containerd/config-default.toml'),'containerd config path')
+    config,cconfig=daemon_configs(prefix,docker_config,containerd_config)
+    disk_need(isinstance(config,dict) and config.get('data-root','/var/lib/docker')=='/var/lib/docker' and
+              config.get('exec-root','/run/docker') in ('/run/docker','/var/run/docker') and
+              config.get('storage-driver','overlayfs')=='overlayfs' and
+              config.get('containerd','/run/containerd/containerd.sock')=='/run/containerd/containerd.sock','Docker custom layout')
+    disk_need(isinstance(cconfig,dict) and cconfig.get('root','/var/lib/containerd')=='/var/lib/containerd' and cconfig.get('state','/run/containerd')=='/run/containerd','containerd config root')
+    flagged_root=flag(cont['argv'],['--root','-r'])
+    configured_root=cconfig.get('root')
+    containerd_root=flagged_root or configured_root
+    disk_need(containerd_root=='/var/lib/containerd' and (flagged_root is None or flagged_root=='/var/lib/containerd') and
+              flag(cont['argv'],['--state']) in (None,'/run/containerd'),'containerd root unconfirmed or unsupported')
+    info=json.loads(read_command(prefix+['docker','info','--format','{{json .}}']))
+    version=read_command(prefix+['docker','version','--format','{{.Server.Version}}'])
+    status=info.get('DriverStatus') or []
+    disk_need(version.split('.')[0]=='29' and info.get('Driver')=='overlayfs' and info.get('DockerRootDir')==docker_root and any('io.containerd.snapshotter.v1' in row for row in status),'Docker driver/version/root')
+    content_root=os.path.join(containerd_root,'io.containerd.content.v1.content')
+    snapshot_root=os.path.join(containerd_root,'io.containerd.snapshotter.v1.overlayfs')
+    docker_tmp=os.path.join(docker_root,'tmp')
+    mounts=mount_table(); paths=[p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_root,docker_tmp,containerd_root,content_root,snapshot_root]
+    metadata=[]; volumes=[]
+    for path in paths:
+        meta,v=path_info(path,mounts); metadata.append(meta); volumes.append(v)
+    disk_need(all(x['fsType']=='ext4' and x['block']==4096 for x in metadata),'unsupported filesystem')
+    disk_need(len({(x['device'],x['mount'],x['stDev']) for x in metadata})==1,'different filesystem')
+    for root in (p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_tmp,content_root):
+        disk_need(not any(m['path']!=metadata[0]['mount'] and m['path'].startswith(root.rstrip('/')+'/') for m in mounts),'nested mount')
+    for m in mounts:
+        if m['path'].startswith(snapshot_root+'/'):
+            disk_need(m['type']=='overlay' and bool(re.fullmatch(re.escape(snapshot_root)+r'/snapshots/[0-9]+/fs',m['path'])),'unknown snapshotter mount')
+    free=min(v.f_bavail*v.f_frsize for v in volumes); inodes=min(v.f_favail for v in volumes)
+    future=0; inode_need=4096
+    for key,item in artifacts.items():
+        path=item['path']
+        if os.path.lexists(path):
+            st=os.lstat(path)
+            disk_need(stat.S_ISREG(st.st_mode) and st.st_size==item['size'] and os.path.realpath(path)==path,'staged artifact')
+            with open(path,'rb') as f: disk_need(stream_digest(f)==item['sha256'],'staged hash drift')
+        else:
+            future+=item['size']; inode_need+=1
+    src=p['sourceMeasure']; disk_need(type(src.get('allocationBytes')) is int and type(src.get('entries')) is int and src['allocationBytes']>0 and src['entries']>0,'source measure')
+    if not os.path.lexists(p['sourcePath']):
+        future+=artifacts['source']['size']+src['allocationBytes']; inode_need+=src['entries']+3
+    else:
+        st=os.lstat(p['sourcePath']); disk_need(stat.S_ISREG(st.st_mode) and st.st_size==artifacts['source']['size'],'source sync drift')
+        with open(p['sourcePath'],'rb') as f: disk_need(stream_digest(f)==artifacts['source']['sha256'],'source sync hash drift')
+        inventory_path=os.path.join(os.path.dirname(p['sourcePath']),'inventory.json')
+        inventory_stat=os.lstat(inventory_path)
+        disk_need(stat.S_ISREG(inventory_stat.st_mode) and os.path.realpath(inventory_path)==inventory_path,'source inventory path')
+        with open(inventory_path) as f: inventory=json.load(f)
+        disk_need(inventory.get('commit')==p['commit'] and inventory.get('sourceSha256')==artifacts['source']['sha256'] and bool(inventory.get('files')),'source inventory drift')
+    streams=0; allocations=0; layer_entries=0
+    for key in ('web','worker'):
+        x=p['measurements'][key]; disk_need(all(type(x.get(k)) is int and x[k]>0 for k in ('streamBytes','allocationBytes','entries')),'image measure')
+        streams+=x['streamBytes']; allocations+=x['allocationBytes']; layer_entries+=x['entries']
+    inode_need+=2*layer_entries
+    required=future+2*streams+2*allocations+GIB+2*GIB+3*p['inputBytes']
+    disk_need(free>=required and inodes>=inode_need,'insufficient bytes or inodes')
+    binding={'paths':metadata,'dockerRoot':docker_root,'containerdRoot':containerd_root,'dockerConfig':docker_config,'containerdConfig':containerd_config,'version':version,'driver':'overlayfs'}
+    if 'expectedBinding' in p: disk_need(binding==p['expectedBinding'],'filesystem identity drift')
+    return {'binding':binding,'freeBytes':free,'freeInodes':inodes,'requiredBytes':required,'requiredInodes':inode_need,'futureArchiveAndSourceBytes':future}
+`;
+const diskLibrary = imageMeasurement.slice(0, imageMeasurement.indexOf("if __name__=='__main__':")) + diskAdmission;
 function prepare(revision, output) {
   requireValue(commit.test(revision || ''), 'prepare requires a full Git SHA');
   requireValue(absolutePath(output), 'prepare requires a new absolute output directory');
@@ -283,20 +441,23 @@ function inspectTarget(target, manifest) {
 }
 // This operation creates a new private revision directory and never overwrites
 // an existing tree. Input is the locally verified Git archive, streamed on stdin.
-const sourceReceiver = `
-import hashlib,json,os,stat,sys,tarfile
+const sourceReceiver = diskLibrary + `
+import base64,fcntl,hashlib,json,os,stat,sys,tarfile
 p=json.loads(__import__('base64').b64decode(sys.argv[1]))
 def need(ok):
     if not ok: raise ValueError('source admission')
 base=p['sourceDir']; root=p['root']; rev=p['commit']
+need(p['disk']['targetName']==p['targetName'])
 need(os.path.isabs(base) and os.path.normpath(base)==base and os.path.commonpath([base,root])!=root)
+lock=os.open(os.path.join(p['disk']['stateDir'],'release.lock'),os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
+st=os.fstat(lock);need(stat.S_ISREG(st.st_mode) and st.st_uid==os.getuid() and stat.S_IMODE(st.st_mode)==0o600)
+fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+admit_disk(p['disk'])
 parent=os.path.dirname(base); st=os.lstat(parent)
 need(stat.S_ISDIR(st.st_mode) and not stat.S_ISLNK(st.st_mode) and st.st_uid==os.getuid() and not(st.st_mode&0o022) and os.path.realpath(parent)==parent)
 if not os.path.lexists(base): os.mkdir(base,0o700)
 st=os.lstat(base)
 need(stat.S_ISDIR(st.st_mode) and not stat.S_ISLNK(st.st_mode) and st.st_uid==os.getuid() and stat.S_IMODE(st.st_mode)==0o700 and os.path.realpath(base)==base)
-space=os.statvfs(base)
-need(space.f_bavail*space.f_frsize >= 2*1024**3 + 2*p['releaseBytes'])
 dest=os.path.join(base,rev); os.mkdir(dest,0o700)
 archive=os.path.join(dest,'source.tar'); digest=hashlib.sha256()
 with open(archive,'xb') as f:
@@ -346,13 +507,13 @@ with open(os.path.join(dest,'inventory.json'),'x') as f:
     os.chmod(f.name,0o600); json.dump({'commit':rev,'sourceSha256':p['sourceSha256'],'files':files},f,sort_keys=True,separators=(',',':')); f.flush(); os.fsync(f.fileno())
 print(json.dumps({'status':'verified','commit':rev,'sourceSha256':p['sourceSha256'],'files':len(files)}))
 `;
-function syncSource(target, manifest, archive) {
+function syncSource(target, manifest, archive, disk) {
   requireValue(absolutePath(target.sourceDir), 'invalid source destination');
   requireValue(target.sourceDir !== target.root && !target.sourceDir.startsWith(target.root + sep) && !target.root.startsWith(target.sourceDir + sep), 'source destination overlaps app root');
   const artifacts = ['source','web','worker'].map(name => lstatSync(join(dirname(archive), `${name}.tar`)));
   requireValue(artifacts.every(item => item.isFile() && !item.isSymbolicLink() && item.size > 0), 'complete release artifacts required for source disk admission');
   const releaseBytes = artifacts.reduce((sum, item) => sum + item.size, 0);
-  const data = Buffer.from(JSON.stringify({ sourceDir: target.sourceDir, root: target.root, commit: manifest.commit, sourceSha256: manifest.sourceSha256, releaseBytes })).toString('base64');
+  const data = Buffer.from(JSON.stringify({ targetName: target.name, sourceDir: target.sourceDir, root: target.root, commit: manifest.commit, sourceSha256: manifest.sourceSha256, releaseBytes, disk })).toString('base64');
   let binary; let args;
   {
     privateFile(target.ssh.config);
@@ -713,7 +874,7 @@ function compareAdmission(target, storage, backup, observed, data) {
     observed.storageBucket === storage.bucket && observed.storagePrefix === storage.prefix &&
     data.multipartScan.storageFingerprint === storage.sourceCredentialsFingerprint, 'storage evidence does not match effective Compose');
 }
-const remoteExecutor = "#!/usr/bin/env python3\n\"\"\"Prototype; stdin JSON non-secret request, no network/infra touched unless invoked.\nReview and fault testing required before integration or live use.\n\"\"\"\nimport base64, datetime, fcntl, hashlib, json, os, re, shutil, stat, subprocess, sys, tarfile, tempfile, urllib.parse, urllib.request\n\nSERVICES = ('web', 'worker-stt', 'worker-llm', 'worker-video')\nSHA = re.compile(r'^[a-f0-9]{64}$')\nNAME = re.compile(r'^[a-z0-9][a-z0-9_-]*$')\n\ndef require(condition, message):\n    if not condition: raise ValueError(message)\n\ndef canonical(x):\n    return json.dumps(x, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()\n\ndef digest(x): return hashlib.sha256(canonical(x)).hexdigest()\n\ndef filehash(path):\n    h = hashlib.sha256()\n    with open(path, 'rb') as f:\n        for block in iter(lambda: f.read(1024 * 1024), b''): h.update(block)\n    return h.hexdigest()\n\ndef private(path, directory=False):\n    require(os.path.isabs(path) and os.path.normpath(path) == path, 'path')\n    st = os.lstat(path)\n    require(not stat.S_ISLNK(st.st_mode) and st.st_uid == os.getuid(), 'ownership')\n    require((stat.S_ISDIR(st.st_mode) and stat.S_IMODE(st.st_mode) == 0o700) if directory else\n            (stat.S_ISREG(st.st_mode) and stat.S_IMODE(st.st_mode) == 0o600), 'permissions')\n    require(os.path.realpath(path) == path, 'symlink path')\n\ndef run(args, data=None):\n    return subprocess.run(args, input=data, text=True, check=True, stdout=subprocess.PIPE,\n                          stderr=subprocess.DEVNULL, timeout=600).stdout.strip()\n\ndef valid_journal(j):\n    require(isinstance(j, list) and bool(j), 'journal')\n    prev = ''\n    for e in j:\n        require(isinstance(e, dict) and set(e) == {'name','sha256'} and\n                re.fullmatch(r'\\d+_[a-z0-9_]+\\.sql', e['name']) and\n                e['name'] > prev and SHA.fullmatch(e['sha256']), 'journal entry')\n        prev = e['name']\n\ndef atomic(path, value):\n    parent = os.path.dirname(path)\n    fd, tmp = tempfile.mkstemp(prefix='.state-', dir=parent)\n    try:\n        os.fchmod(fd, 0o600)\n        with os.fdopen(fd, 'wb') as f:\n            f.write(canonical(value)); f.flush(); os.fsync(f.fileno())\n        os.replace(tmp, path)\n        d = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)\n        try: os.fsync(d)\n        finally: os.close(d)\n    finally:\n        if os.path.exists(tmp): os.unlink(tmp)\n\ndef execute(p):\n    require(p.get('action') in ('apply','rollback','reconcile'), 'action')\n    private(p['profilePath']); private(os.path.dirname(p['profilePath']), True)\n    with open(p['profilePath']) as f: profile = json.load(f)\n    require(all(profile.get(k)==p['expectedProfile'].get(k) for k in ('target','project','databaseProject','redisProject','root','envFile','composeFiles','dockerPrefix','origin','resources','binding','storagePrefix','stateDir','stageDir')), 'profile mismatch')\n    require(profile.get('kind') == 'existing-test-project' and profile.get('target') in ('cloud-c','site-test'), 'profile')\n    require(NAME.fullmatch(profile['project']) and not re.fullmatch(r'(n5|production|prod)',profile['project'],re.I), 'project')\n    require(profile['dockerPrefix'] in ([], ['sudo','-n']), 'docker prefix')\n    for key in ('root','envFile','stateDir','stageDir'):\n        require(os.path.isabs(profile[key]) and os.path.normpath(profile[key]) == profile[key] and os.path.realpath(profile[key]) == profile[key], 'profile path')\n    private(profile['stateDir'], True); private(profile['stageDir'], True); private(profile['envFile'])\n    require(os.path.commonpath((profile['root'],profile['stageDir'])) != profile['root'], 'staging inside app')\n    files = profile['composeFiles']\n    require(isinstance(files,list) and len(files) >= 3 and len(files) == len(set(files)), 'compose order')\n    require(all(os.path.isabs(f) and os.path.realpath(f) == f for f in files), 'compose paths')\n    private(files[-1]); private(os.path.dirname(files[-1]), True)\n    u=urllib.parse.urlsplit(profile['healthUrl']); origin=profile['origin']\n    require(u.scheme in ('http','https') and u.netloc and not u.username and not u.password and u.path == '/health' and not u.query and not u.fragment and u.scheme+'://'+u.netloc == origin, 'health origin')\n    require((profile['target']=='cloud-c' and origin=='https://c.clipmkr.ru') or (profile['target']=='site-test' and u.hostname not in ('clipmkr.ru','www.clipmkr.ru')), 'test origin')\n    probe=p['admissionProbe']\n    require(isinstance(probe,str) and SHA.fullmatch(profile['admissionProbeSha256']) and hashlib.sha256(probe.encode()).hexdigest()==profile['admissionProbeSha256'], 'trusted probe binding')\n    admission = p['admission']\n    require(isinstance(admission,dict) and all(k in admission for k in ('identity','storageFingerprint','environmentFingerprint','accountColumns','accountRowsSha256','journal','resourceIdentities','composeFileSha256','backupSha256','scopeProofSha256','inputBytes','envFileSha256','expectedObservation')),  'admission binding')\n    for k in ('storageFingerprint','environmentFingerprint','accountRowsSha256','backupSha256','scopeProofSha256'):\n        require(isinstance(admission[k],str) and SHA.fullmatch(admission[k]), 'admission hash')\n    require(isinstance(admission['inputBytes'],int) and not isinstance(admission['inputBytes'],bool) and admission['inputBytes'] > 0, 'input size')\n    valid_journal(admission['journal'])\n    columns = admission['accountColumns']\n    require(isinstance(columns,list) and 'id' in columns and len(set(columns)) == len(columns) and all(isinstance(c,str) and re.fullmatch(r'[a-z_][a-z0-9_]*',c) for c in columns), 'account columns')\n    docker = profile['dockerPrefix'] + ['docker']\n    base = docker + ['compose','--project-directory',profile['root'],'--project-name',profile['project'],'--env-file',profile['envFile']]\n    for f in files: base += ['-f',f]\n    lockpath = os.path.join(profile['stateDir'],'release.lock')\n    lockfd = os.open(lockpath, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)\n    try:\n        st = os.fstat(lockfd); require(stat.S_ISREG(st.st_mode) and st.st_uid == os.getuid() and stat.S_IMODE(st.st_mode)==0o600, 'lock file')\n        fcntl.flock(lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n        statepath = os.path.join(profile['stateDir'],'intent.json')\n        state = None\n        if os.path.lexists(statepath):\n            private(statepath)\n            with open(statepath) as f: state = json.load(f)\n        marker=os.path.join(profile['stateDir'],'staging.json')\n        private(marker)\n        with open(marker) as f: staging=json.load(f)\n        require(SHA.fullmatch(p.get('operationId','')) and staging.get('operationId')==p['operationId'], 'staging operation mismatch')\n        binding=digest({'profile':profile,'admission':admission,'probeSha256':profile['admissionProbeSha256']})\n        unstarted=False\n        if p['action'] == 'reconcile':\n            if state and state.get('operationId')==p['operationId']:\n                require(state.get('status') in ('pending','success','aborted','operator-blocked') and state.get('binding')==binding, 'no matching operation')\n            else:\n                require(not state or state.get('status') in ('success','aborted'), 'another operation pending')\n                previous=p['previous']; desired=p['desired']\n                valid_journal(previous['journal']); valid_journal(desired['journal'])\n                for release in (previous,desired):\n                    require(set(release['images'])=={'web','worker'} and all(re.fullmatch(r'sha256:[a-f0-9]{64}',v) for v in release['images'].values()), 'release images')\n                images=lambda release:{service:release['images']['web' if service=='web' else 'worker'] for service in SERVICES}\n                state={'status':'pending','operationId':p['operationId'],'binding':binding,'action':p['action'],\n                       'desiredImages':images(desired),'previousImages':images(previous),'desiredRevision':desired['commit'],'previousRevision':previous['commit'],\n                       'desiredJournal':desired['journal'],'previousJournal':previous['journal'],'accountRowsSha256':admission['accountRowsSha256'],'step':'not-started'}\n                unstarted=True\n        else:\n            require(not state or state.get('status') in ('success','aborted'), 'reconcile required')\n        require(admission['composeFileSha256'] == [filehash(f) for f in files], 'compose drift')\n        require(filehash(profile['envFile']) == admission['envFileSha256'], 'env file drift')\n        require(shutil.disk_usage(profile['stageDir']).free >= 3*admission['inputBytes']+2*1024**3, 'staging disk')\n        config = json.loads(run(base + ['config','--format','json']))\n        services = config['services']\n        envs = {s:services[s]['environment'] for s in SERVICES}\n        require(digest(envs) == admission['environmentFingerprint'], 'environment drift')\n        probe_args={'root':profile['root'],'project':profile['project'],'envFile':profile['envFile'],\n                    'composeFiles':files,'dockerPrefix':profile['dockerPrefix'],'accountColumns':columns,\n                    'origin':origin,'inputBytes':admission['inputBytes'],'target':profile['target'],\n                    'databaseProject':profile['databaseProject'],'redisProject':profile['redisProject'],\n                    'resources':profile['resources'],'binding':profile['binding'],'prefix':profile['storagePrefix'],\n                    'tableColumns':admission['tableColumns']}\n        probe_arg=base64.b64encode(canonical(probe_args)).decode()\n        def observe():\n            observed=json.loads(run([sys.executable,'-c',probe,probe_arg]))\n            expected_ob=admission['expectedObservation']\n            keys=('composeProject','databaseContainerId','databaseVolume','postgresSystemIdentifier',\n                  'databaseName','databaseOid','timezone','storageFingerprint','storageEndpoint','storageBucket','storagePrefix',\n                  'redisContainerId','redisVolume','referenceCount','referenceSha256','ownershipSha256','dataHashes','dataCounts')\n            require(all(k in observed and k in expected_ob and observed[k]==expected_ob[k] for k in keys),'probe identity drift')\n            require(all(table in observed.get('dataSchema',{}) and all(col in observed['dataSchema'][table] for col in cols) for table,cols in admission['tableColumns'].items()), 'schema baseline drift')\n            require(observed['storageFingerprint']==admission['storageFingerprint'], 'storage drift')\n            return observed\n        info=observe()\n        def container(service):\n            ids=run(base+['ps','--all','-q',service]).splitlines()\n            require(len(ids)==1,'container count')\n            ob=json.loads(run(docker+['inspect',ids[0]]))[0]\n            require(ob['Id']==ids[0] and ob['State']['Running'] and ob['Config']['Labels'].get('com.docker.compose.project')==profile['project'] and ob['Config']['Labels'].get('com.docker.compose.service')==service,'container identity')\n            return ob\n        resource=profile['resources']\n        require(resource==admission['resourceIdentities'], 'resource drift')\n        ident={k:info[k] for k in ('postgresSystemIdentifier','databaseName','databaseOid','timezone','composeProject','databaseContainerId','databaseVolume')}\n        require(ident==admission['identity'], 'database identity')\n        account=info['accountRowsSha256']\n        def runtime():\n            return {s:{'image': (ob:=container(s))['Image'], 'containerId':ob['Id'], 'startedAt': ob['State']['StartedAt']} for s in SERVICES}\n        def healthy(revision):\n            if profile['target']=='site-test':\n                web=container('web')\n                code=\"fetch('http://127.0.0.1:3000/health').then(async r=>{if(!r.ok)process.exit(1);console.log(JSON.stringify(await r.json()))}).catch(()=>process.exit(1))\"\n                h=json.loads(run(docker+['exec',web['Id'],'node','-e',code]))\n            else:\n                with urllib.request.urlopen(profile['healthUrl'],timeout=10) as resp:\n                    require(resp.geturl()==profile['healthUrl'] and resp.status==200,'health redirect'); h=json.load(resp)\n            return h.get('status')=='ok' and h.get('revision')==revision\n        def no_migration_inflight():\n            return not run(docker+['ps','-q','--filter','label=com.docker.compose.project='+profile['project'],'--filter','label=com.docker.compose.service=worker-stt','--filter','label=com.docker.compose.oneoff=True'])\n        if p['action']=='reconcile':\n            try:\n                require(no_migration_inflight(), 'migration still running')\n                observed=runtime()\n                images={s:observed[s]['image'] for s in SERVICES}\n                if not unstarted and images==state['desiredImages'] and info['journal']==state['desiredJournal'] and account==state['accountRowsSha256'] and healthy(state['desiredRevision']): status='success'\n                elif images==state['previousImages'] and info['journal']==state['previousJournal'] and account==state['accountRowsSha256'] and healthy(state['previousRevision']): status='aborted'\n                else: status='operator-blocked'\n            except Exception: status='operator-blocked'\n            state['status']=status; atomic(statepath,state)\n            return {'status':status}\n        require(no_migration_inflight(), 'migration still running')\n        now=datetime.datetime.now(datetime.timezone.utc)\n        for key, seconds in (('scopeObservedAt',7200),('multipartObservedAt',7200),('backupObservedAt',14400),('restoreObservedAt',14400),('dataObservedAt',14400)):\n            value=admission.get(key); require(isinstance(value,str), 'evidence timestamp')\n            timestamp=datetime.datetime.fromisoformat(value.replace('Z','+00:00'))\n            require(timestamp.tzinfo is not None and 0 <= (now-timestamp).total_seconds() <= seconds, 'evidence expired')\n        require(info['journal']==admission['journal'] and account==admission['accountRowsSha256'], 'baseline drift')\n        previous=p['previous']; desired=p['desired']\n        valid_journal(previous['journal']); valid_journal(desired['journal'])\n        require(previous['journal']==info['journal'], 'previous journal')\n        if p['action']=='rollback': require(previous['journal']==desired['journal'], 'rollback journal')\n        elif previous['journal'] != desired['journal']:\n            require(len(previous['journal'])==26 and len(desired['journal'])==28 and desired['journal'][:26]==previous['journal'] and [x['name'][:3] for x in desired['journal'][26:]]==['026','027'], 'migration transition')\n        require(re.fullmatch(r'[a-f0-9]{40}',desired['commit']) and set(desired['images'])=={'web','worker'} and all(re.fullmatch(r'sha256:[a-f0-9]{64}',x) for x in desired['images'].values()), 'desired release')\n        if previous.get('legacy'):\n            require(p['action']=='apply' and previous.get('commit') is None and set(previous['containers'])==set(SERVICES), 'initial inventory')\n        else: require(re.fullmatch(r'[a-f0-9]{40}',previous['commit']), 'previous revision')\n        require(set(previous['images'])=={'web','worker'} and all(re.fullmatch(r'sha256:[a-f0-9]{64}',x) for x in previous['images'].values()), 'previous images')\n        def expected(rel): return {s:rel['images']['web' if s=='web' else 'worker'] for s in SERVICES}\n        current=runtime(); require({s:current[s]['image'] for s in SERVICES}==expected(previous) and healthy(previous['commit']), 'previous runtime')\n        if previous.get('legacy'):\n            require(all(current[s]['containerId']==previous['containers'][s]['containerId'] and current[s]['startedAt']==previous['containers'][s]['startedAt'] for s in SERVICES), 'initial inventory drift')\n        require(all(services[s]['image']==desired['images']['web' if s=='web' else 'worker'] for s in SERVICES),'effective image override')\n        artifacts=p['artifacts']; require(set(artifacts)=={'source','web','worker'},'artifacts')\n        for key in artifacts:\n            entry=artifacts[key]; path=entry['path']\n            private(path)\n            require(SHA.fullmatch(p.get('operationId','')) and os.path.dirname(path)==os.path.join(profile['stageDir'],p['operationId']) and os.path.basename(path)==key+'.tar' and os.path.realpath(path)==path and SHA.fullmatch(entry['sha256']) and filehash(path)==entry['sha256'],'artifact')\n        require(artifacts['source']['sha256']==desired['sourceSha256'] and all(artifacts[k]['sha256']==desired['archiveSha256'][k] for k in ('web','worker')),'artifact binding')\n        with tarfile.open(artifacts['source']['path'], 'r:') as archive:\n            found=[]\n            for member in archive:\n                if member.name.startswith('packages/db/migrations/') and re.fullmatch(r'packages/db/migrations/\\d+_[a-z0-9_]+\\.sql',member.name):\n                    require(member.isfile(), 'migration entry')\n                    found.append({'name':member.name.rsplit('/',1)[-1], 'sha256':hashlib.sha256(archive.extractfile(member).read()).hexdigest()})\n            require(sorted(found,key=lambda e:e['name'])==desired['journal'], 'source journal inventory')\n        objects=admission['objectWhitelist']\n        require(isinstance(objects,list), 'object whitelist')\n        if previous.get('legacy'):\n            if profile['target']=='cloud-c': require(not objects, 'initial cloud must be empty')\n            else: require(all(isinstance(obj,dict) and obj.get('kind')=='legacy-preserved' for obj in objects), 'initial legacy required')\n        else: require(all(isinstance(obj,dict) and obj.get('kind')=='prefixed' for obj in objects), 'steady namespace required')\n        state={'status':'pending','operationId':p['operationId'],'binding':binding,'action':p['action'],'desiredImages':expected(desired),'previousImages':expected(previous),'desiredRevision':desired['commit'],'previousRevision':previous['commit'],'desiredJournal':desired['journal'],'previousJournal':previous['journal'],'accountRowsSha256':account,'step':'intent'}\n        atomic(statepath,state)\n        def step(s): state['step']=s; atomic(statepath,state)\n        for k in ('web','worker'):\n            run(docker+['load','-i',artifacts[k]['path']])\n            image=json.loads(run(docker+['image','inspect',desired['images'][k]]))[0]\n            require(image['Id']==desired['images'][k] and image['Config']['Labels'].get('org.opencontainers.image.revision')==desired['commit'],'image identity')\n        step('loaded')\n        verify_code=\"const {S3Client,GetObjectCommand,ListMultipartUploadsCommand}=require('@aws-sdk/client-s3');\\nconst {createHash}=require('node:crypto');\\nlet raw='';process.stdin.setEncoding('utf8');process.stdin.on('data',x=>raw+=x);\\nprocess.stdin.on('end',async()=>{try {\\n const p=JSON.parse(raw),bucket=process.env.S3_BUCKET,prefix=process.env.S3_KEY_PREFIX;\\n if(!bucket || prefix!==p.prefix || !['tests/site/','tests/cloud/'].includes(prefix)) throw Error('namespace');\\n const client=new S3Client({endpoint:process.env.S3_ENDPOINT,region:process.env.S3_REGION,credentials:{accessKeyId:process.env.S3_ACCESS_KEY,secretAccessKey:process.env.S3_SECRET_KEY},forcePathStyle:process.env.S3_FORCE_PATH_STYLE==='true'});\\n async function digest(key){const response=await client.send(new GetObjectCommand({Bucket:bucket,Key:key}),{abortSignal:AbortSignal.timeout(120000)});const hash=createHash('sha256');let size=0;for await(const part of response.Body){size+=part.length;hash.update(part);}return {size,sha256:hash.digest('hex')};}\\n const scopes=[prefix,...p.objects.filter(item=>item.kind==='legacy-preserved').map(item=>item.logicalKey)];\\n for(const scope of scopes){let keyMarker,uploadIdMarker;for(let page=0;;page++){\\n  if(page>=10000)throw Error('multipart pages');\\n  const result=await client.send(new ListMultipartUploadsCommand({Bucket:bucket,Prefix:scope,KeyMarker:keyMarker,UploadIdMarker:uploadIdMarker}),{abortSignal:AbortSignal.timeout(120000)});\\n  if((result.Uploads||[]).length)throw Error('pending multipart');\\n  if(!result.IsTruncated)break;\\n  if(!result.NextKeyMarker||!result.NextKeyMarker.startsWith(scope)||result.NextKeyMarker===keyMarker&&result.NextUploadIdMarker===uploadIdMarker)throw Error('multipart cursor');\\n  keyMarker=result.NextKeyMarker;uploadIdMarker=result.NextUploadIdMarker;\\n }}\\n for(const item of p.objects){const key=item.logicalKey,dest=prefix+key;\\n  if(typeof key!=='string'||!key||key.startsWith('/')||key.split('/').some(x=>!x||x==='.'||x==='..')||item.destinationKey!==dest||!['legacy-preserved','prefixed'].includes(item.kind))throw Error('key');\\n  const expected={size:item.sourceSize,sha256:item.sourceSha256};const same=x=>x&&x.size===expected.size&&x.sha256===expected.sha256;\\n  if(item.kind==='legacy-preserved'&&!same(await digest(key)))throw Error('legacy source');\\n  if(!same(await digest(dest)))throw Error('prefixed destination');\\n  if(item.kind==='legacy-preserved'&&!same(await digest(key)))throw Error('legacy original');\\n }\\n process.stdout.write(JSON.stringify({verified:p.objects.length}));\\n }catch {process.exitCode=1;}});\"\n        verified=json.loads(run(base+['run','--rm','--no-deps','-T','worker-stt','node','-e',verify_code], json.dumps({'prefix':profile['storagePrefix'],'objects':objects})))\n        require(verified.get('verified')==len(objects),'object verification')\n        step('objects-verified')\n        run(base+['stop',*SERVICES]); step('stopped')\n        stopped=observe()\n        require(stopped['journal']==admission['journal'] and stopped['accountRowsSha256']==account and stopped['dataHashes']==admission['expectedObservation']['dataHashes'], 'stopped baseline drift')\n        rechecked=json.loads(run(base+['run','--rm','--no-deps','-T','worker-stt','node','-e',verify_code], json.dumps({'prefix':profile['storagePrefix'],'objects':objects})))\n        require(rechecked.get('verified')==len(objects),'post-stop object verification')\n        if previous['journal'] != desired['journal']:\n            step('migration-started'); run(base+['run','--rm','--no-deps','-T','worker-stt','node','packages/db/dist/migrate.js']); step('migration-finished')\n        # Repeat exactly the controller's trusted full live admission under lock.\n        # This includes references, quota, memory, and the whole journal/account baseline.\n        after=observe()\n        require(after['journal']==desired['journal'] and after['accountRowsSha256']==account,'migration integrity')\n        require(filehash(profile['envFile'])==admission['envFileSha256'] and [filehash(f) for f in files]==admission['composeFileSha256'], 'configuration changed')\n        run(base+['up','-d','--no-build','--no-deps','--wait','--wait-timeout','180',*SERVICES]); step('started')\n        result=runtime(); require({s:result[s]['image'] for s in SERVICES}==expected(desired) and healthy(desired['commit']),'verification')\n        after=observe()\n        require(after['journal']==desired['journal'] and after['accountRowsSha256']==account,'post-start data drift')\n        require(after['databaseContainerId']==resource['database'] and after['databaseVolume']==resource['databaseVolume'] and after['redisContainerId']==resource['redis'] and after['redisVolume']==resource['redisVolume'], 'resource changed')\n        state['status']='success'; state['step']='verified'; atomic(statepath,state)\n        return {'status':'success','services':result,'revision':desired['commit']}\n    finally: os.close(lockfd)\n\nif __name__ == '__main__':\n    try:\n        result=execute(json.load(sys.stdin)); print(json.dumps(result))\n        if result['status'] not in ('success','aborted'): sys.exit(1)\n    except Exception:\n        print(json.dumps({'status':'blocked'})); sys.exit(1)\n";
+const remoteExecutor = diskLibrary + "\n#!/usr/bin/env python3\n\"\"\"Target executor; stdin JSON non-secret request, bounded disk admission before load.\n\"\"\"\nimport base64, datetime, fcntl, hashlib, json, os, re, shutil, stat, subprocess, sys, tarfile, tempfile, urllib.parse, urllib.request\n\nSERVICES = ('web', 'worker-stt', 'worker-llm', 'worker-video')\nSHA = re.compile(r'^[a-f0-9]{64}$')\nNAME = re.compile(r'^[a-z0-9][a-z0-9_-]*$')\n\ndef require(condition, message):\n    if not condition: raise ValueError(message)\n\ndef canonical(x):\n    return json.dumps(x, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()\n\ndef digest(x): return hashlib.sha256(canonical(x)).hexdigest()\n\ndef filehash(path):\n    h = hashlib.sha256()\n    with open(path, 'rb') as f:\n        for block in iter(lambda: f.read(1024 * 1024), b''): h.update(block)\n    return h.hexdigest()\n\ndef private(path, directory=False):\n    require(os.path.isabs(path) and os.path.normpath(path) == path, 'path')\n    st = os.lstat(path)\n    require(not stat.S_ISLNK(st.st_mode) and st.st_uid == os.getuid(), 'ownership')\n    require((stat.S_ISDIR(st.st_mode) and stat.S_IMODE(st.st_mode) == 0o700) if directory else\n            (stat.S_ISREG(st.st_mode) and stat.S_IMODE(st.st_mode) == 0o600), 'permissions')\n    require(os.path.realpath(path) == path, 'symlink path')\n\ndef run(args, data=None):\n    return subprocess.run(args, input=data, text=True, check=True, stdout=subprocess.PIPE,\n                          stderr=subprocess.DEVNULL, timeout=600).stdout.strip()\n\ndef valid_journal(j):\n    require(isinstance(j, list) and bool(j), 'journal')\n    prev = ''\n    for e in j:\n        require(isinstance(e, dict) and set(e) == {'name','sha256'} and\n                re.fullmatch(r'\\d+_[a-z0-9_]+\\.sql', e['name']) and\n                e['name'] > prev and SHA.fullmatch(e['sha256']), 'journal entry')\n        prev = e['name']\n\ndef atomic(path, value):\n    parent = os.path.dirname(path)\n    fd, tmp = tempfile.mkstemp(prefix='.state-', dir=parent)\n    try:\n        os.fchmod(fd, 0o600)\n        with os.fdopen(fd, 'wb') as f:\n            f.write(canonical(value)); f.flush(); os.fsync(f.fileno())\n        os.replace(tmp, path)\n        d = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)\n        try: os.fsync(d)\n        finally: os.close(d)\n    finally:\n        if os.path.exists(tmp): os.unlink(tmp)\n\ndef execute(p):\n    require(p.get('action') in ('apply','rollback','reconcile'), 'action')\n    private(p['profilePath']); private(os.path.dirname(p['profilePath']), True)\n    with open(p['profilePath']) as f: profile = json.load(f)\n    require(all(profile.get(k)==p['expectedProfile'].get(k) for k in ('target','project','databaseProject','redisProject','root','sourceDir','envFile','composeFiles','dockerPrefix','origin','resources','binding','storagePrefix','stateDir','stageDir')), 'profile mismatch')\n    require(profile.get('kind') == 'existing-test-project' and profile.get('target') in ('cloud-c','site-test'), 'profile')\n    require(NAME.fullmatch(profile['project']) and not re.fullmatch(r'(n5|production|prod)',profile['project'],re.I), 'project')\n    require(profile['dockerPrefix'] in ([], ['sudo','-n']), 'docker prefix')\n    for key in ('root','sourceDir','envFile','stateDir','stageDir'):\n        require(os.path.isabs(profile[key]) and os.path.normpath(profile[key]) == profile[key] and os.path.realpath(profile[key]) == profile[key], 'profile path')\n    private(profile['stateDir'], True); private(profile['stageDir'], True); private(profile['envFile'])\n    require(os.path.commonpath((profile['root'],profile['stageDir'])) != profile['root'], 'staging inside app')\n    files = profile['composeFiles']\n    require(isinstance(files,list) and len(files) >= 3 and len(files) == len(set(files)), 'compose order')\n    require(all(os.path.isabs(f) and os.path.realpath(f) == f for f in files), 'compose paths')\n    private(files[-1]); private(os.path.dirname(files[-1]), True)\n    u=urllib.parse.urlsplit(profile['healthUrl']); origin=profile['origin']\n    require(u.scheme in ('http','https') and u.netloc and not u.username and not u.password and u.path == '/health' and not u.query and not u.fragment and u.scheme+'://'+u.netloc == origin, 'health origin')\n    require((profile['target']=='cloud-c' and origin=='https://c.clipmkr.ru') or (profile['target']=='site-test' and u.hostname not in ('clipmkr.ru','www.clipmkr.ru')), 'test origin')\n    probe=p['admissionProbe']\n    require(isinstance(probe,str) and SHA.fullmatch(profile['admissionProbeSha256']) and hashlib.sha256(probe.encode()).hexdigest()==profile['admissionProbeSha256'], 'trusted probe binding')\n    admission = p['admission']\n    require(isinstance(admission,dict) and all(k in admission for k in ('identity','storageFingerprint','environmentFingerprint','accountColumns','accountRowsSha256','journal','resourceIdentities','composeFileSha256','backupSha256','scopeProofSha256','inputBytes','envFileSha256','expectedObservation')),  'admission binding')\n    for k in ('storageFingerprint','environmentFingerprint','accountRowsSha256','backupSha256','scopeProofSha256'):\n        require(isinstance(admission[k],str) and SHA.fullmatch(admission[k]), 'admission hash')\n    require(isinstance(admission['inputBytes'],int) and not isinstance(admission['inputBytes'],bool) and admission['inputBytes'] > 0, 'input size')\n    valid_journal(admission['journal'])\n    columns = admission['accountColumns']\n    require(isinstance(columns,list) and 'id' in columns and len(set(columns)) == len(columns) and all(isinstance(c,str) and re.fullmatch(r'[a-z_][a-z0-9_]*',c) for c in columns), 'account columns')\n    docker = profile['dockerPrefix'] + ['docker']\n    base = docker + ['compose','--project-directory',profile['root'],'--project-name',profile['project'],'--env-file',profile['envFile']]\n    for f in files: base += ['-f',f]\n    lockpath = os.path.join(profile['stateDir'],'release.lock')\n    lockfd = os.open(lockpath, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)\n    try:\n        st = os.fstat(lockfd); require(stat.S_ISREG(st.st_mode) and st.st_uid == os.getuid() and stat.S_IMODE(st.st_mode)==0o600, 'lock file')\n        fcntl.flock(lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n        statepath = os.path.join(profile['stateDir'],'intent.json')\n        state = None\n        if os.path.lexists(statepath):\n            private(statepath)\n            with open(statepath) as f: state = json.load(f)\n        marker=os.path.join(profile['stateDir'],'staging.json')\n        private(marker)\n        with open(marker) as f: staging=json.load(f)\n        require(SHA.fullmatch(p.get('operationId','')) and staging.get('operationId')==p['operationId'], 'staging operation mismatch')\n        binding=digest({'profile':profile,'admission':admission,'probeSha256':profile['admissionProbeSha256']})\n        unstarted=False\n        if p['action'] == 'reconcile':\n            if state and state.get('operationId')==p['operationId']:\n                require(state.get('status') in ('pending','success','aborted','operator-blocked') and state.get('binding')==binding, 'no matching operation')\n            else:\n                require(not state or state.get('status') in ('success','aborted'), 'another operation pending')\n                previous=p['previous']; desired=p['desired']\n                valid_journal(previous['journal']); valid_journal(desired['journal'])\n                for release in (previous,desired):\n                    require(set(release['images'])=={'web','worker'} and all(re.fullmatch(r'sha256:[a-f0-9]{64}',v) for v in release['images'].values()), 'release images')\n                images=lambda release:{service:release['images']['web' if service=='web' else 'worker'] for service in SERVICES}\n                state={'status':'pending','operationId':p['operationId'],'binding':binding,'action':p['action'],\n                       'desiredImages':images(desired),'previousImages':images(previous),'desiredRevision':desired['commit'],'previousRevision':previous['commit'],\n                       'desiredJournal':desired['journal'],'previousJournal':previous['journal'],'accountRowsSha256':admission['accountRowsSha256'],'step':'not-started'}\n                unstarted=True\n        else:\n            require(not state or state.get('status') in ('success','aborted'), 'reconcile required')\n        require(admission['composeFileSha256'] == [filehash(f) for f in files], 'compose drift')\n        require(filehash(profile['envFile']) == admission['envFileSha256'], 'env file drift')\n        require(shutil.disk_usage(profile['stageDir']).free >= 3*admission['inputBytes']+2*1024**3, 'staging disk')\n        config = json.loads(run(base + ['config','--format','json']))\n        services = config['services']\n        envs = {s:services[s]['environment'] for s in SERVICES}\n        require(digest(envs) == admission['environmentFingerprint'], 'environment drift')\n        probe_args={'root':profile['root'],'project':profile['project'],'envFile':profile['envFile'],\n                    'composeFiles':files,'dockerPrefix':profile['dockerPrefix'],'accountColumns':columns,\n                    'origin':origin,'inputBytes':admission['inputBytes'],'target':profile['target'],\n                    'databaseProject':profile['databaseProject'],'redisProject':profile['redisProject'],\n                    'resources':profile['resources'],'binding':profile['binding'],'prefix':profile['storagePrefix'],\n                    'tableColumns':admission['tableColumns']}\n        probe_arg=base64.b64encode(canonical(probe_args)).decode()\n        def observe():\n            observed=json.loads(run([sys.executable,'-c',probe,probe_arg]))\n            expected_ob=admission['expectedObservation']\n            keys=('composeProject','databaseContainerId','databaseVolume','postgresSystemIdentifier',\n                  'databaseName','databaseOid','timezone','storageFingerprint','storageEndpoint','storageBucket','storagePrefix',\n                  'redisContainerId','redisVolume','referenceCount','referenceSha256','ownershipSha256','dataHashes','dataCounts')\n            require(all(k in observed and k in expected_ob and observed[k]==expected_ob[k] for k in keys),'probe identity drift')\n            require(all(table in observed.get('dataSchema',{}) and all(col in observed['dataSchema'][table] for col in cols) for table,cols in admission['tableColumns'].items()), 'schema baseline drift')\n            require(observed['storageFingerprint']==admission['storageFingerprint'], 'storage drift')\n            return observed\n        info=observe()\n        def container(service):\n            ids=run(base+['ps','--all','-q',service]).splitlines()\n            require(len(ids)==1,'container count')\n            ob=json.loads(run(docker+['inspect',ids[0]]))[0]\n            require(ob['Id']==ids[0] and ob['State']['Running'] and ob['Config']['Labels'].get('com.docker.compose.project')==profile['project'] and ob['Config']['Labels'].get('com.docker.compose.service')==service,'container identity')\n            return ob\n        resource=profile['resources']\n        require(resource==admission['resourceIdentities'], 'resource drift')\n        ident={k:info[k] for k in ('postgresSystemIdentifier','databaseName','databaseOid','timezone','composeProject','databaseContainerId','databaseVolume')}\n        require(ident==admission['identity'], 'database identity')\n        account=info['accountRowsSha256']\n        def runtime():\n            return {s:{'image': (ob:=container(s))['Image'], 'containerId':ob['Id'], 'startedAt': ob['State']['StartedAt']} for s in SERVICES}\n        def healthy(revision):\n            if profile['target']=='site-test':\n                web=container('web')\n                code=\"fetch('http://127.0.0.1:3000/health').then(async r=>{if(!r.ok)process.exit(1);console.log(JSON.stringify(await r.json()))}).catch(()=>process.exit(1))\"\n                h=json.loads(run(docker+['exec',web['Id'],'node','-e',code]))\n            else:\n                with urllib.request.urlopen(profile['healthUrl'],timeout=10) as resp:\n                    require(resp.geturl()==profile['healthUrl'] and resp.status==200,'health redirect'); h=json.load(resp)\n            return h.get('status')=='ok' and h.get('revision')==revision\n        def no_migration_inflight():\n            return not run(docker+['ps','-q','--filter','label=com.docker.compose.project='+profile['project'],'--filter','label=com.docker.compose.service=worker-stt','--filter','label=com.docker.compose.oneoff=True'])\n        if p['action']=='reconcile':\n            try:\n                require(no_migration_inflight(), 'migration still running')\n                observed=runtime()\n                images={s:observed[s]['image'] for s in SERVICES}\n                if not unstarted and images==state['desiredImages'] and info['journal']==state['desiredJournal'] and account==state['accountRowsSha256'] and healthy(state['desiredRevision']): status='success'\n                elif images==state['previousImages'] and info['journal']==state['previousJournal'] and account==state['accountRowsSha256'] and healthy(state['previousRevision']): status='aborted'\n                else: status='operator-blocked'\n            except Exception: status='operator-blocked'\n            state['status']=status; atomic(statepath,state)\n            return {'status':status}\n        require(no_migration_inflight(), 'migration still running')\n        now=datetime.datetime.now(datetime.timezone.utc)\n        for key, seconds in (('scopeObservedAt',7200),('multipartObservedAt',7200),('backupObservedAt',14400),('restoreObservedAt',14400),('dataObservedAt',14400)):\n            value=admission.get(key); require(isinstance(value,str), 'evidence timestamp')\n            timestamp=datetime.datetime.fromisoformat(value.replace('Z','+00:00'))\n            require(timestamp.tzinfo is not None and 0 <= (now-timestamp).total_seconds() <= seconds, 'evidence expired')\n        require(info['journal']==admission['journal'] and account==admission['accountRowsSha256'], 'baseline drift')\n        previous=p['previous']; desired=p['desired']\n        valid_journal(previous['journal']); valid_journal(desired['journal'])\n        require(previous['journal']==info['journal'], 'previous journal')\n        if p['action']=='rollback': require(previous['journal']==desired['journal'], 'rollback journal')\n        elif previous['journal'] != desired['journal']:\n            require(len(previous['journal'])==26 and len(desired['journal'])==28 and desired['journal'][:26]==previous['journal'] and [x['name'][:3] for x in desired['journal'][26:]]==['026','027'], 'migration transition')\n        require(re.fullmatch(r'[a-f0-9]{40}',desired['commit']) and set(desired['images'])=={'web','worker'} and all(re.fullmatch(r'sha256:[a-f0-9]{64}',x) for x in desired['images'].values()), 'desired release')\n        if previous.get('legacy'):\n            require(p['action']=='apply' and previous.get('commit') is None and set(previous['containers'])==set(SERVICES), 'initial inventory')\n        else: require(re.fullmatch(r'[a-f0-9]{40}',previous['commit']), 'previous revision')\n        require(set(previous['images'])=={'web','worker'} and all(re.fullmatch(r'sha256:[a-f0-9]{64}',x) for x in previous['images'].values()), 'previous images')\n        def expected(rel): return {s:rel['images']['web' if s=='web' else 'worker'] for s in SERVICES}\n        current=runtime(); require({s:current[s]['image'] for s in SERVICES}==expected(previous) and healthy(previous['commit']), 'previous runtime')\n        if previous.get('legacy'):\n            require(all(current[s]['containerId']==previous['containers'][s]['containerId'] and current[s]['startedAt']==previous['containers'][s]['startedAt'] for s in SERVICES), 'initial inventory drift')\n        require(all(services[s]['image']==desired['images']['web' if s=='web' else 'worker'] for s in SERVICES),'effective image override')\n        artifacts=p['artifacts']; require(set(artifacts)=={'source','web','worker'},'artifacts')\n        for key in artifacts:\n            entry=artifacts[key]; path=entry['path']\n            private(path)\n            require(SHA.fullmatch(p.get('operationId','')) and os.path.dirname(path)==os.path.join(profile['stageDir'],p['operationId']) and os.path.basename(path)==key+'.tar' and os.path.realpath(path)==path and SHA.fullmatch(entry['sha256']) and filehash(path)==entry['sha256'],'artifact')\n        require(artifacts['source']['sha256']==desired['sourceSha256'] and all(artifacts[k]['sha256']==desired['archiveSha256'][k] for k in ('web','worker')),'artifact binding')\n        disk=p['disk']\n        require(disk['targetName']==profile['target'] and disk['appRoot']==profile['root'] and disk['sourceDir']==profile['sourceDir'] and disk['stageDir']==profile['stageDir'] and disk['stateDir']==profile['stateDir'] and disk['inputBytes']==admission['inputBytes'] and disk['operationId']==p['operationId'] and disk['commit']==desired['commit'] and disk['dockerPrefix']==profile['dockerPrefix'],'disk profile binding')\n        require(disk['artifacts']==artifacts and all(disk['artifacts'][k]['size']==os.stat(artifacts[k]['path']).st_size for k in artifacts),'disk artifact binding')\n        require(source_measure(artifacts['source']['path'],artifacts['source']['sha256'])==disk['sourceMeasure'],'source allocation drift')\n        for k in ('web','worker'):\n            require(measure(artifacts[k]['path'],artifacts[k]['sha256'],desired['images'][k])==disk['measurements'][k],'image archive measurement drift')\n        admit_disk(disk)\n        with tarfile.open(artifacts['source']['path'], 'r:') as archive:\n            found=[]\n            for member in archive:\n                if member.name.startswith('packages/db/migrations/') and re.fullmatch(r'packages/db/migrations/\\d+_[a-z0-9_]+\\.sql',member.name):\n                    require(member.isfile(), 'migration entry')\n                    found.append({'name':member.name.rsplit('/',1)[-1], 'sha256':hashlib.sha256(archive.extractfile(member).read()).hexdigest()})\n            require(sorted(found,key=lambda e:e['name'])==desired['journal'], 'source journal inventory')\n        objects=admission['objectWhitelist']\n        require(isinstance(objects,list), 'object whitelist')\n        if previous.get('legacy'):\n            if profile['target']=='cloud-c': require(not objects, 'initial cloud must be empty')\n            else: require(all(isinstance(obj,dict) and obj.get('kind')=='legacy-preserved' for obj in objects), 'initial legacy required')\n        else: require(all(isinstance(obj,dict) and obj.get('kind')=='prefixed' for obj in objects), 'steady namespace required')\n        state={'status':'pending','operationId':p['operationId'],'binding':binding,'action':p['action'],'desiredImages':expected(desired),'previousImages':expected(previous),'desiredRevision':desired['commit'],'previousRevision':previous['commit'],'desiredJournal':desired['journal'],'previousJournal':previous['journal'],'accountRowsSha256':account,'step':'intent'}\n        atomic(statepath,state)\n        def step(s): state['step']=s; atomic(statepath,state)\n        for k in ('web','worker'):\n            run(docker+['load','-i',artifacts[k]['path']])\n            image=json.loads(run(docker+['image','inspect',desired['images'][k]]))[0]\n            require(image['Id']==desired['images'][k] and image['Config']['Labels'].get('org.opencontainers.image.revision')==desired['commit'],'image identity')\n        step('loaded')\n        verify_code=\"const {S3Client,GetObjectCommand,ListMultipartUploadsCommand}=require('@aws-sdk/client-s3');\\nconst {createHash}=require('node:crypto');\\nlet raw='';process.stdin.setEncoding('utf8');process.stdin.on('data',x=>raw+=x);\\nprocess.stdin.on('end',async()=>{try {\\n const p=JSON.parse(raw),bucket=process.env.S3_BUCKET,prefix=process.env.S3_KEY_PREFIX;\\n if(!bucket || prefix!==p.prefix || !['tests/site/','tests/cloud/'].includes(prefix)) throw Error('namespace');\\n const client=new S3Client({endpoint:process.env.S3_ENDPOINT,region:process.env.S3_REGION,credentials:{accessKeyId:process.env.S3_ACCESS_KEY,secretAccessKey:process.env.S3_SECRET_KEY},forcePathStyle:process.env.S3_FORCE_PATH_STYLE==='true'});\\n async function digest(key){const response=await client.send(new GetObjectCommand({Bucket:bucket,Key:key}),{abortSignal:AbortSignal.timeout(120000)});const hash=createHash('sha256');let size=0;for await(const part of response.Body){size+=part.length;hash.update(part);}return {size,sha256:hash.digest('hex')};}\\n const scopes=[prefix,...p.objects.filter(item=>item.kind==='legacy-preserved').map(item=>item.logicalKey)];\\n for(const scope of scopes){let keyMarker,uploadIdMarker;for(let page=0;;page++){\\n  if(page>=10000)throw Error('multipart pages');\\n  const result=await client.send(new ListMultipartUploadsCommand({Bucket:bucket,Prefix:scope,KeyMarker:keyMarker,UploadIdMarker:uploadIdMarker}),{abortSignal:AbortSignal.timeout(120000)});\\n  if((result.Uploads||[]).length)throw Error('pending multipart');\\n  if(!result.IsTruncated)break;\\n  if(!result.NextKeyMarker||!result.NextKeyMarker.startsWith(scope)||result.NextKeyMarker===keyMarker&&result.NextUploadIdMarker===uploadIdMarker)throw Error('multipart cursor');\\n  keyMarker=result.NextKeyMarker;uploadIdMarker=result.NextUploadIdMarker;\\n }}\\n for(const item of p.objects){const key=item.logicalKey,dest=prefix+key;\\n  if(typeof key!=='string'||!key||key.startsWith('/')||key.split('/').some(x=>!x||x==='.'||x==='..')||item.destinationKey!==dest||!['legacy-preserved','prefixed'].includes(item.kind))throw Error('key');\\n  const expected={size:item.sourceSize,sha256:item.sourceSha256};const same=x=>x&&x.size===expected.size&&x.sha256===expected.sha256;\\n  if(item.kind==='legacy-preserved'&&!same(await digest(key)))throw Error('legacy source');\\n  if(!same(await digest(dest)))throw Error('prefixed destination');\\n  if(item.kind==='legacy-preserved'&&!same(await digest(key)))throw Error('legacy original');\\n }\\n process.stdout.write(JSON.stringify({verified:p.objects.length}));\\n }catch {process.exitCode=1;}});\"\n        verified=json.loads(run(base+['run','--rm','--no-deps','-T','worker-stt','node','-e',verify_code], json.dumps({'prefix':profile['storagePrefix'],'objects':objects})))\n        require(verified.get('verified')==len(objects),'object verification')\n        step('objects-verified')\n        run(base+['stop',*SERVICES]); step('stopped')\n        stopped=observe()\n        require(stopped['journal']==admission['journal'] and stopped['accountRowsSha256']==account and stopped['dataHashes']==admission['expectedObservation']['dataHashes'], 'stopped baseline drift')\n        rechecked=json.loads(run(base+['run','--rm','--no-deps','-T','worker-stt','node','-e',verify_code], json.dumps({'prefix':profile['storagePrefix'],'objects':objects})))\n        require(rechecked.get('verified')==len(objects),'post-stop object verification')\n        if previous['journal'] != desired['journal']:\n            step('migration-started'); run(base+['run','--rm','--no-deps','-T','worker-stt','node','packages/db/dist/migrate.js']); step('migration-finished')\n        # Repeat exactly the controller's trusted full live admission under lock.\n        # This includes references, quota, memory, and the whole journal/account baseline.\n        after=observe()\n        require(after['journal']==desired['journal'] and after['accountRowsSha256']==account,'migration integrity')\n        require(filehash(profile['envFile'])==admission['envFileSha256'] and [filehash(f) for f in files]==admission['composeFileSha256'], 'configuration changed')\n        run(base+['up','-d','--no-build','--no-deps','--wait','--wait-timeout','180',*SERVICES]); step('started')\n        result=runtime(); require({s:result[s]['image'] for s in SERVICES}==expected(desired) and healthy(desired['commit']),'verification')\n        after=observe()\n        require(after['journal']==desired['journal'] and after['accountRowsSha256']==account,'post-start data drift')\n        require(after['databaseContainerId']==resource['database'] and after['databaseVolume']==resource['databaseVolume'] and after['redisContainerId']==resource['redis'] and after['redisVolume']==resource['redisVolume'], 'resource changed')\n        state['status']='success'; state['step']='verified'; atomic(statepath,state)\n        return {'status':'success','services':result,'revision':desired['commit']}\n    finally: os.close(lockfd)\n\nif __name__ == '__main__':\n    try:\n        result=execute(json.load(sys.stdin)); print(json.dumps(result))\n        if result['status'] not in ('success','aborted'): sys.exit(1)\n    except Exception:\n        print(json.dumps({'status':'blocked'})); sys.exit(1)\n";
 function sshCommand(target, code, data, input, timeout = 600000) {
   privateFile(target.ssh.config);
   const known = lstatSync(target.ssh.knownHosts);
@@ -727,9 +888,10 @@ function sshCommand(target, code, data, input, timeout = 600000) {
   requireValue(!result.error && result.status === 0, 'SSH outcome unknown; reconcile before retry');
   return JSON.parse(result.stdout);
 }
-const artifactReceiver = `
+const artifactReceiver = diskLibrary + `
 import base64,fcntl,hashlib,json,os,re,shutil,stat,sys,tempfile
 p=json.loads(base64.b64decode(sys.argv[1])); base=p['stageDir']; root=p['root']; state=p['stateDir']; op=p['operationId']
+if 'disk' in p and p['disk'].get('targetName')!=p.get('targetName'): raise ValueError('target disk binding')
 def need(value):
     if not value: raise ValueError('staging admission')
 def private(path):
@@ -764,6 +926,8 @@ try:
         need(os.path.isfile(intent))
         with open(intent) as f:old=json.load(f)
         need(old.get('operationId')==prior.get('operationId') and old.get('status') in ('success','aborted'))
+    if p['mode']=='write': need('disk' in p)
+    if 'disk' in p: admit_disk(p['disk'])
     if not prior or prior.get('operationId')!=op: atomic(marker,{'operationId':op})
     directory=os.path.join(base,op)
     if not os.path.lexists(directory):
@@ -820,13 +984,38 @@ function artifactPlan(target, manifest, artifactDir, operationId) {
     return [name, { path: `${target.stageDir}/${operationId}/${name}.tar`, sha256: name === 'source' ? manifest.sourceSha256 : manifest.images[name].archiveSha256, size: st.size }];
   }));
 }
-function stageArtifacts(target, artifactDir, operationId, artifacts) {
+function measureDiskArtifacts(manifest, artifactDir) {
+  const sourcePath = join(artifactDir, 'source.tar');
+  const source = spawnSync('python3', ['-c', diskLibrary + "\nimport sys,json; p=json.load(sys.stdin); print(json.dumps(source_measure(p['path'],p['sha256'])))"],
+    { input: JSON.stringify({ path: sourcePath, sha256: manifest.sourceSha256 }), encoding: 'utf8', timeout: 600000 });
+  requireValue(!source.error && source.status === 0, 'source allocation measurement failed');
+  const sourceMeasure = JSON.parse(source.stdout);
+  const measurements = {};
+  for (const key of ['web','worker']) {
+    const result = spawnSync('python3', ['-c', imageMeasurement], { input: JSON.stringify({ path: join(artifactDir, `${key}.tar`),
+      sha256: manifest.images[key].archiveSha256, id: manifest.images[key].id }), encoding: 'utf8', timeout: 600000 });
+    requireValue(!result.error && result.status === 0, `${key} archive measurement failed`);
+    measurements[key] = JSON.parse(result.stdout);
+  }
+  return { sourceMeasure, measurements };
+}
+function diskPayload(target, manifest, artifacts, operationId, measured) {
+  requireValue(absolutePath(target.sourceDir) && absolutePath(target.stageDir) && absolutePath(target.remoteStateDir), 'disk paths required');
+  return { targetName: target.name, appRoot: target.root, sourceDir: target.sourceDir, sourcePath: `${target.sourceDir}/${manifest.commit}/source.tar`,
+    stageDir: target.stageDir, stateDir: target.remoteStateDir, dockerPrefix: target.dockerPrefix,
+    inputBytes: target.inputBytes, commit: manifest.commit, operationId, artifacts, ...measured };
+}
+function diskPreflight(target, disk) {
+  const code = diskLibrary + "\nimport base64,json,sys; p=json.loads(base64.b64decode(sys.argv[1])); print(json.dumps(admit_disk(p)))";
+  const result = sshCommand(target, code, disk, { input: '' });
+  requireValue(result?.binding && Number.isSafeInteger(result.requiredBytes) && Number.isSafeInteger(result.freeBytes) &&
+    result.freeBytes >= result.requiredBytes && result.freeInodes >= result.requiredInodes, 'release disk admission failed');
+  return { ...disk, expectedBinding: result.binding };
+}
+function stageArtifacts(target, artifactDir, operationId, artifacts, disk) {
   const entries = Object.entries(artifacts);
-  const layerAllowance = artifacts.web.size + artifacts.worker.size;
-  let remaining = entries.reduce((sum, [, item]) => sum + item.size, 0);
   for (const [name,item] of entries) {
-    const requiredFree = remaining + layerAllowance + 2 * 1024 ** 3;
-    const data = { stageDir: target.stageDir, stateDir: target.remoteStateDir, root: target.root, operationId, name, sha256: item.sha256, size: item.size, requiredFree };
+    const data = { targetName: target.name, stageDir: target.stageDir, stateDir: target.remoteStateDir, root: target.root, operationId, name, sha256: item.sha256, size: item.size, requiredFree: 0, disk };
     let receipt = sshCommand(target, artifactReceiver, { ...data, mode: 'check' }, { input: '' });
     if (receipt.status === 'missing') {
       const fd = openSync(join(artifactDir, `${name}.tar`), 'r');
@@ -834,7 +1023,6 @@ function stageArtifacts(target, artifactDir, operationId, artifacts) {
       finally { closeSync(fd); }
     }
     requireValue(receipt.status === 'staged' && receipt.name === name && receipt.sha256 === item.sha256, 'staging verification failed');
-    remaining -= item.size;
   }
 }
 
@@ -853,7 +1041,7 @@ function remoteRequest(target, request) {
 function mutationPayload(target, manifest, previous, artifacts, storage, backup, data, observed) {
   requireValue(absolutePath(target.executorProfilePath) && absolutePath(target.remoteStateDir) && absolutePath(target.stageDir), 'remote executor profile and private directories required');
   const expectedProfile = { target: target.name, project: target.project, databaseProject: target.databaseProject, redisProject: target.redisProject,
-    root: target.root, envFile: target.envFile, composeFiles: target.composeFiles, dockerPrefix: target.dockerPrefix,
+    root: target.root, sourceDir: target.sourceDir, envFile: target.envFile, composeFiles: target.composeFiles, dockerPrefix: target.dockerPrefix,
     origin: target.allowedOrigins[0], resources: target.resources, binding: target.binding, storagePrefix: target.storagePrefix,
     stateDir: target.remoteStateDir, stageDir: target.stageDir };
   const admission = { identity: backup.binding.sourceIdentity, resourceIdentities: target.resources,
@@ -878,7 +1066,7 @@ function main(args) {
   requireValue((['source-sync','apply','rollback'].includes(command) ? extra.length === 1 : !extra.length) && ['validate', 'inspect', 'source-sync', 'apply', 'reconcile', 'rollback'].includes(command), 'usage: release-candidate.mjs validate <profile> <manifest>');
   requireValue(profilePath && manifestPath, 'explicit profile and manifest required');
   const profile = loadCandidateProfile(profilePath);
-  if (['apply','rollback','reconcile'].includes(command) && process.env.CLIPMKR_RELEASE_LOCKED !== '1' &&
+  if (['source-sync','apply','rollback','reconcile'].includes(command) && process.env.CLIPMKR_RELEASE_LOCKED !== '1' &&
       profile.targets.every(target => absolutePath(target.localStateDir))) {
     const locks = profile.targets.map(target => {
       privateDirectory(target.localStateDir);
@@ -896,10 +1084,19 @@ function main(args) {
   validateReleaseManifest(manifest);
   const artifactDir = dirname(resolve(manifestPath));
   verifySource(manifest, join(artifactDir, 'source.tar'));
+  if (['source-sync','apply','rollback'].includes(command)) {
+    for (const key of ['web','worker']) requireValue(hashFile(join(artifactDir, `${key}.tar`)) === manifest.images[key].archiveSha256, 'image archive checksum mismatch');
+  }
   if (command === 'source-sync') {
     const selected = profile.targets.find(t => t.name === extra[0]);
     requireValue(selected, 'explicit known source target required');
-    process.stdout.write(JSON.stringify({ target: selected.name, ...syncSource(selected, manifest, join(artifactDir, 'source.tar')) }) + '\n');
+    const measured = measureDiskArtifacts(manifest, artifactDir);
+    const disks = profile.targets.map(target => {
+      const operationId = createHash('sha256').update(stableJson({ command, target: target.name, manifest })).digest('hex');
+      const artifacts = artifactPlan(target, manifest, artifactDir, operationId);
+      return { target, disk: diskPreflight(target, diskPayload(target, manifest, artifacts, operationId, measured)) };
+    });
+    process.stdout.write(JSON.stringify({ target: selected.name, ...syncSource(selected, manifest, join(artifactDir, 'source.tar'), disks.find(x => x.target.name === selected.name).disk) }) + '\n');
     return;
   }
   for (const target of ['web', 'worker']) {
@@ -990,21 +1187,25 @@ function main(args) {
       compareAdmission(target, storage, backup, observed, data);
       return { target, storage, backup, data, observed, statePath };
     });
-    // No verified Docker data-root incremental layer estimate exists in this contract.
-    // Fail closed before staging until a measured admission design is available.
-    throw new Error('release disk admission blocked: Docker data-root incremental estimate unavailable');
+    const measured = measureDiskArtifacts(manifest, artifactDir);
+    // Both targets pass the same measured bound before the first local intent or remote writer.
+    const planned = proofs.map(proof => {
+      const { target, backup } = proof;
+      const operationId = createHash('sha256').update(stableJson({ target: target.name, command, manifest, previous: previousByTarget[target.name], backup: backup.binding.sha256, storage: hashFile(target.storageEvidencePath), data: hashFile(target.dataEvidencePath) })).digest('hex');
+      const artifacts = artifactPlan(target, manifest, artifactDir, operationId);
+      const disk = diskPreflight(target, diskPayload(target, manifest, artifacts, operationId, measured));
+      return { ...proof, operationId, artifacts, disk };
+    });
     let failed = false;
-    for (const { target, storage, backup, data, observed, statePath } of proofs) {
+    for (const { target, storage, backup, data, observed, statePath, operationId, artifacts, disk } of planned) {
       try {
-        const operationId = createHash('sha256').update(stableJson({ target: target.name, command, manifest, previous: previousByTarget[target.name], backup: backup.binding.sha256, storage: hashFile(target.storageEvidencePath), data: hashFile(target.dataEvidencePath) })).digest('hex');
-        const artifacts = artifactPlan(target, manifest, artifactDir, operationId);
-        const request = { ...mutationPayload(target, manifest, previousByTarget[target.name], artifacts, storage, backup, data, observed), action: command, operationId };
+        const request = { ...mutationPayload(target, manifest, previousByTarget[target.name], artifacts, storage, backup, data, observed), action: command, operationId, disk };
         if (existsSync(statePath)) {
           privateFile(statePath); const saved = JSON.parse(readFileSync(statePath, 'utf8'));
           if (saved.status === 'staging') requireValue(saved.operationId === operationId && stableJson(saved.request) === stableJson(request), 'staging operation mismatch');
         }
         saveState(statePath, { target: target.name, status: 'staging', operationId, request });
-        stageArtifacts(target, artifactDir, operationId, artifacts);
+        stageArtifacts(target, artifactDir, operationId, artifacts, disk);
         saveState(statePath, { target: target.name, status: 'unknown', operationId, request });
         const receipt = remoteRequest(target, request);
         requireValue(receipt.status === 'success', 'target operation failed');
