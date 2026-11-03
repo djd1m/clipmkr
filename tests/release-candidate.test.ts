@@ -3,7 +3,7 @@ import { runInNewContext } from 'node:vm';
 import * as fs from 'node:fs';
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, normalize, resolve, sep } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { loadCandidateProfile, validateReleaseManifest } from '../scripts/release-candidate.mjs';
@@ -74,6 +74,17 @@ function previousSet(dir: string, manifestPath: string) {
   const path = join(dir, 'previous.json');
   writeFileSync(path, JSON.stringify({ 'site-test': manifestPath, 'cloud-c': manifestPath }), { mode: 0o600 });
   return path;
+}
+function dataValidators() {
+  const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
+  const shared = source.slice(source.indexOf('function requireValue('), source.indexOf('export function loadCandidateProfile('));
+  const receipt = source.slice(source.indexOf('function checkDataReceipt('), source.indexOf('// Read-only target inventory.'));
+  const compare = source.slice(source.indexOf('function compareAdmission('), source.indexOf('const remoteExecutor ='));
+  const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+  return runInNewContext(`${shared}\n${receipt}\n${compare}\n({checkDataReceipt, compareAdmission, stableJson})`, {
+    lstatSync: fs.lstatSync, realpathSync: fs.realpathSync, readFileSync, dirname, isAbsolute, normalize, sep,
+    repo: resolve('.'), process, sha: /^[a-f0-9]{64}$/, createHash, hashFile: (path: string) => digest(readFileSync(path)), Date,
+  });
 }
 function multipartScan(prefix: string, fingerprint: string) {
   return { bucket: 'shared-bucket', storageFingerprint: fingerprint, observedAt: new Date().toISOString(), scopes: [{ prefix, pages: [{ requestId: 'request', httpStatus: 200, isTruncated: false, keyMarker: null, nextKeyMarker: null, uploads: [] }] }] };
@@ -308,12 +319,8 @@ esac
   it('preserves owner-approved legacy media and rejects unbound preservation evidence', () => {
     const f = fixture();
     try {
-      const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
-      const body = source.slice(source.indexOf('function checkDataReceipt('), source.indexOf('// Read-only target inventory.'));
-      const stableJson = (value: unknown) => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item);
-      const privateFile = (path: string) => { const st = fs.lstatSync(path); if (!st.isFile() || st.isSymbolicLink() || (st.mode & 0o777) !== 0o600 || fs.realpathSync(path) !== path) throw Error('private'); };
+      const { checkDataReceipt: check, stableJson } = dataValidators();
       const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
-      const check = runInNewContext(`(${body.trim()})`, { privateFile, readFileSync, realpathSync: fs.realpathSync, hashFile: (path: string) => digest(readFileSync(path)), sha: /^[a-f0-9]{64}$/, requireValue: (v: unknown, m: string) => { if (!v) throw Error(m); }, createHash, stableJson, Date });
       const target = profile().targets[0]!, identity = { database: 'site' }, backup = { binding: { sha256: h, sourceIdentity: identity } };
       const accountId = '00000000-0000-4000-8000-000000000002', videoId = '00000000-0000-4000-8000-000000000001';
       const logicalKey = `videos/${accountId}/${videoId}/source.mp4`;
@@ -326,12 +333,59 @@ esac
       const save = () => { writeFileSync(approvalPath, JSON.stringify(approval), { mode: 0o600 }); data.preservationApprovalSha256 = digest(readFileSync(approvalPath)); writeFileSync(dataPath, JSON.stringify(data), { mode: 0o600 }); };
       const validate = () => check(dataPath, target, backup, { kind: 'initial-inventory' });
       save(); expect(validate).not.toThrow();
+      chmodSync(approvalPath, 0o644); expect(validate).toThrow(); chmodSync(approvalPath, 0o600);
+      chmodSync(f.dir, 0o755); expect(validate).toThrow(); chmodSync(f.dir, 0o700);
+      const link = join(f.dir, 'approval-link.json'); fs.symlinkSync(approvalPath, link);
+      data.preservationApprovalPath = link; writeFileSync(dataPath, JSON.stringify(data)); expect(validate).toThrow();
+      data.preservationApprovalPath = approvalPath; save();
+      const alias = join(f.dir, 'directory-link'); fs.symlinkSync(f.dir, alias);
+      data.preservationApprovalPath = join(alias, 'approval.json'); writeFileSync(dataPath, JSON.stringify(data)); expect(validate).toThrow();
+      data.preservationApprovalPath = join(f.dir, 'missing.json'); writeFileSync(dataPath, JSON.stringify(data)); expect(validate).toThrow();
+      data.preservationApprovalPath = approvalPath; save();
       for (const key of ['target','project','storageBucket','destinationPrefix','objectWhitelistSha256','evidenceReference','decision','schema'] as const) { const old = approval[key]; approval[key] = ''; save(); expect(validate).toThrow(); approval[key] = old; }
       approval.sourceIdentity = { database: 'other' }; save(); expect(validate).toThrow(); approval.sourceIdentity = identity;
       save(); data.preservationApprovalSha256 = 'b'.repeat(64); writeFileSync(dataPath, JSON.stringify(data)); expect(validate).toThrow();
       save(); object.originalShaAfter = 'b'.repeat(64); save(); expect(validate).toThrow(); object.originalShaAfter = h;
       object.kind = 'prefixed'; save(); expect(validate).toThrow();
       object.kind = 'legacy-preserved'; data.pendingMultipart.push('pending'); save(); expect(validate).toThrow();
+    } finally { f.close(); }
+  });
+  it('preserves nonempty site data and rejects foreign copy and pending multipart', () => {
+    const f = fixture();
+    try {
+      const { checkDataReceipt, compareAdmission, stableJson } = dataValidators();
+      const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+      const target = profile().targets[0]!;
+      const identity = { composeProject: 'infra-stage', databaseContainerId: 'c'.repeat(64), databaseVolume: 'candidate-db-volume', postgresSystemIdentifier: '123', databaseName: 'n5_test', databaseOid: '456', timezone: 'UTC' };
+      const journal = [{ name: '026_policy.sql', sha256: h }];
+      const backup = { binding: { sha256: h, sourceIdentity: identity }, restored: { account_rows_sha256: h, schema_journal: journal } };
+      const accountId = '00000000-0000-4000-8000-000000000002', videoId = '00000000-0000-4000-8000-000000000001', clipId = '00000000-0000-4000-8000-000000000003';
+      const object = (logicalKey: string, ownershipEvidence: string, ownerClip: string | null) => ({ kind: 'legacy-preserved', logicalKey, accountId, videoId, clipId: ownerClip, ownershipEvidence, sourceSize: 17, sourceSha256: h, destinationKey: `tests/site/${logicalKey}`, destinationSize: 17, destinationSha256: h, originalShaAfter: h });
+      const objects = [object(`videos/${accountId}/${videoId}/source.mp4`, `video:${videoId}`, null), object(`clips/paid/${videoId}/${clipId}.mp4`, `clip:${clipId}`, clipId)];
+      const tables = Object.fromEntries(dataTables.map((name, i) => { const rows = Array.from({ length: i + 1 }, (_, n) => ({ id: n + 1, value: { table: name, accountId, videoId, clipId, payment: n * 100, referral: n, credit: n + 1 } })); const hash = digest(JSON.stringify(rows)); return [name, { snapshotSha256: hash, restoredSha256: hash, count: rows.length, columns: ['id','value'] }]; }));
+      const scan = multipartScan('tests/site/', h); for (const obj of objects) scan.scopes.push({ ...scan.scopes[0]!, prefix: obj.logicalKey });
+      const path = join(f.dir, 'data.json'), approvalPath = join(f.dir, 'approval.json');
+      const fields = ['logicalKey','accountId','videoId','clipId','ownershipEvidence','sourceSize','sourceSha256','destinationKey'];
+      const whitelist = objects.map(obj => Object.fromEntries(fields.map(key => [key, obj[key as keyof typeof obj]]))).sort((a,b) => String(a.logicalKey).localeCompare(String(b.logicalKey)));
+      const approval = { schema: 'clipmkr-legacy-preservation-1', decision: 'preserve-all-existing-site-test-data', evidenceReference: 'инструкция владельца 03.11.2026', target: 'site-test', project: target.project, sourceIdentity: identity, storageBucket: target.storageBucket, destinationPrefix: target.storagePrefix, objectWhitelistSha256: digest(stableJson(whitelist)) };
+      writeFileSync(approvalPath, JSON.stringify(approval), { mode: 0o600 });
+      const data = { target: target.name, project: target.project, backupSha256: h, sourceIdentity: identity, observedAt: new Date().toISOString(), tables, pendingMultipart: [] as string[], multipartScan: scan, objects, preservationApprovalPath: approvalPath, preservationApprovalSha256: digest(readFileSync(approvalPath)) };
+      const storage = { sourceCredentialsFingerprint: h, endpoint: 'https://storage.example', bucket: target.storageBucket, prefix: target.storagePrefix };
+      const keys = objects.map(o => o.logicalKey).sort();
+      const owners = objects.map(({ accountId, clipId, logicalKey, ownershipEvidence, videoId }) => ({ accountId, clipId, logicalKey, ownershipEvidence, videoId })).sort((a,b) => a.logicalKey < b.logicalKey ? -1 : 1);
+      const observed = { ...identity, journal, accountRowsSha256: h, dataHashes: Object.fromEntries(Object.entries(tables).map(([name, row]) => [name,row.snapshotSha256])), dataCounts: Object.fromEntries(Object.entries(tables).map(([name,row]) => [name,row.count])), dataSchema: Object.fromEntries(Object.entries(tables).map(([name,row]) => [name,row.columns])), referenceCount: keys.length, referenceSha256: digest(JSON.stringify(keys)), ownershipSha256: digest(JSON.stringify(owners)), storageFingerprint: h, storageEndpoint: storage.endpoint, storageBucket: storage.bucket, storagePrefix: storage.prefix };
+      const save = () => writeFileSync(path, JSON.stringify(data), { mode: 0o600 });
+      const receipt = (previous: unknown = { kind:'initial-inventory' }) => { save(); return checkDataReceipt(path, target, backup, previous); };
+      const verify = () => compareAdmission(target, storage, backup, observed, receipt());
+      expect(Object.keys(tables)).toHaveLength(26); expect(verify).not.toThrow();
+      for (const table of dataTables) { const original = observed.dataHashes[table]; observed.dataHashes[table] = digest('foreign row'); expect(verify).toThrow('live data baseline drift'); observed.dataHashes[table] = original!; }
+      observed.databaseOid = 'wrong'; expect(verify).toThrow('live database identity'); observed.databaseOid = identity.databaseOid;
+      observed.ownershipSha256 = digest('foreign owner'); expect(verify).toThrow('ownership mismatch'); observed.ownershipSha256 = digest(JSON.stringify(owners));
+      objects[0]!.destinationSha256 = digest('foreign copy'); expect(() => receipt()).toThrow('object copy evidence'); objects[0]!.destinationSha256 = h;
+      objects[0]!.accountId = '00000000-0000-4000-8000-000000000099'; expect(() => receipt()).toThrow('noncanonical'); objects[0]!.accountId = accountId;
+      data.pendingMultipart.push('pending'); expect(() => receipt()).toThrow('pending uploads'); data.pendingMultipart.length = 0;
+      scan.scopes[1]!.pages[0]!.uploads = ['pending'] as never[]; expect(() => receipt()).toThrow('multipart page'); scan.scopes[1]!.pages[0]!.uploads = [];
+      for (const obj of objects) obj.kind = 'prefixed'; scan.scopes.splice(1); expect(() => receipt({ kind:'release' })).not.toThrow(); expect(() => receipt()).toThrow('object kind');
     } finally { f.close(); }
   });
   it('accepts split app infra projects and rejects database URL binding mismatches', async () => {
