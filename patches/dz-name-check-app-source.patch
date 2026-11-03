@@ -1,0 +1,47 @@
+--- a/node_modules/@dzhechkov/harness-cli/dist/cli.js
++++ b/node_modules/@dzhechkov/harness-cli/dist/cli.js
+@@ -16074,8 +16074,42 @@
+ // scans the workspace SOURCE, never `dist` (ADR-001: a stale build answers "free" confidently).
+ function nameCheckScan(repoRoot) {
+     const pkgsRoot = join(repoRoot, 'packages', '@dzhechkov');
+-    if (!existsSync(pkgsRoot))
+-        return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true };
++    if (!existsSync(pkgsRoot)) {
++        // Clipmkr compatibility: scan actual application source, not a synthetic harness workspace.
++        const commands = new Set();
++        const modules = new Map();
++        const exportsFound = new Map();
++        let files = 0;
++        let packages = 0;
++        const visit = (dir) => {
++            for (const entry of readdirSync(dir, { withFileTypes: true })) {
++                if (['node_modules', 'dist', '.next', '.git'].includes(entry.name)) continue;
++                const full = join(dir, entry.name);
++                if (entry.isDirectory()) visit(full);
++                else if (entry.isFile() && /\.(?:[cm]?js|tsx?)$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
++                    const rel = full.slice(repoRoot.length + 1);
++                    const base = entry.name.replace(/\.[^.]+$/, '');
++                    if (!modules.has(base)) modules.set(base, rel);
++                    for (const name of exportedNamesIn(readFileSync(full, 'utf8'))) {
++                        if (!exportsFound.has(name)) exportsFound.set(name, rel);
++                    }
++                    files++;
++                }
++            }
++        };
++        try {
++            for (const root of ['apps', 'packages', 'scripts']) {
++                const path = join(repoRoot, root);
++                if (existsSync(path)) { visit(path); packages++; }
++            }
++            const pkg = join(repoRoot, 'package.json');
++            if (existsSync(pkg)) for (const name of Object.keys(JSON.parse(readFileSync(pkg, 'utf8')).scripts ?? {})) commands.add(name);
++        } catch {
++            return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true };
++        }
++        if (!files) return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true };
++        return { commands, modules, exports: exportsFound, scanned: { packages, files, exports: exportsFound.size, commands: commands.size } };
++    }
+     const commands = new Set();
+     const modules = new Map();
+     const exportsFound = new Map();

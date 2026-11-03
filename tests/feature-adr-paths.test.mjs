@@ -5,6 +5,28 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+test('K1 scans nested application source, refuses collisions and an empty workspace', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'clipmkr-k1-source-'));
+  const cli = resolve('node_modules/@dzhechkov/harness-cli/dist/bin.js');
+  const run = (...args) => spawnSync(process.execPath, [cli, 'name-check', '--project', directory, '--json', ...args], { encoding: 'utf8' });
+  try {
+    assert.equal(run('--module', 'candidate').status, 2, 'empty source is not a successful scan');
+    mkdirSync(join(directory, 'apps/web/src/nested'), { recursive: true });
+    writeFileSync(join(directory, 'apps/web/src/nested/candidate.ts'), 'export const takenCandidate = 1;\n');
+    writeFileSync(join(directory, 'package.json'), JSON.stringify({ scripts: { candidate: 'node scripts/candidate.mjs' } }));
+    for (const query of [['--module', 'candidate'], ['--export', 'takenCandidate'], ['--command', 'candidate']]) {
+      const result = run(...query);
+      assert.equal(result.status, 1, result.stdout + result.stderr);
+    }
+    const free = run('--module', 'fresh-candidate', '--export', 'freshCandidate');
+    assert.equal(free.status, 0, free.stdout + free.stderr);
+    mkdirSync(join(directory, 'packages/storage/src/deep'), { recursive: true });
+    writeFileSync(join(directory, 'packages/storage/src/deep/fresh-candidate.mjs'), 'export function freshCandidate() {}\n');
+    const added = run('--module', 'fresh-candidate', '--export', 'freshCandidate');
+    assert.equal(added.status, 1, added.stdout + added.stderr);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
 test('K2 accepts Next routes and rejects malformed or traversing paths', () => {
   const directory = mkdtempSync(join(tmpdir(), 'clipmkr-k2-paths-'));
   const feature = join(directory, 'feature'); mkdirSync(feature);
