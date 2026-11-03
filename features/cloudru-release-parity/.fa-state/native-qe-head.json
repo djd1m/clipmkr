@@ -4,8 +4,8 @@
   "featurePath": "/home/clipmkr/features/cloudru-release-parity",
   "ceiling": 3,
   "schema": "native-qe-head-1",
-  "sequence": 6,
-  "eventDigest": "01a75b6bcd5c07d0d723b5631004064b289741f517e95d4dda767c28cb342e3d",
-  "activeCycle": "724359fc-7019-4ccf-a3a3-779510242e2f",
-  "hostProjectionDigest": "8d567ab94c7eca5409a45c41cd97f30134d3987ce59c115ef27353aeb07c79a2"
+  "sequence": 8,
+  "eventDigest": "5f625de2c1156c9a289ba2d7c492ca59dee66be9245babf237a4372db7397a9f",
+  "activeCycle": "2ce38153-6e2e-48dc-ad04-2bb2f9ad658e",
+  "hostProjectionDigest": "825ac3fdce820ec8efa8f3aedff1f6692f1c4c761abb870346b65e774522d939"
 }

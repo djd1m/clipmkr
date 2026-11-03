@@ -12,16 +12,20 @@
     }
   ],
   "snapshot": {
-    "nonce": "2bb33bfb-7366-4621-964d-72f4992cd261",
-    "revision": "e84c1f27a050cf6c098dc99afc06e7f496e306be81894824ed82f67bec8256a0",
+    "nonce": "899f8764-ba24-4ff4-9d70-de96fd2af72f",
+    "revision": "69b7a5e4768f022098e87100a913668d5c5989613d0749301d07089d48c894f7",
     "manifest": [
       {
         "path": ".codex/config.toml",
         "digest": "efdcd51ddb778e34bcb73aac546181f913eb57c624428709fd48d3a98873fc52"
       },
       {
+        "path": ".dockerignore",
+        "digest": "8e96bc8a89b4c45c6c74bdf1a4c4ffd878a06d8326c3e6cf3302062233759860"
+      },
+      {
         "path": ".env.example",
-        "digest": "191248cf7dbe536590600be506d515bd39855466418cf20a7dc7e300a77c9020"
+        "digest": "ba8ac10cdcef682d303cbf7b3c4c33f9019607ebf0b52bd346ec87f52e04dbcc"
       },
       {
         "path": "AGENTS.md",
@@ -33,7 +37,7 @@
       },
       {
         "path": "Dockerfile",
-        "digest": "5981b4042430a5bfe480022b23f5808f72ff4eb9f9db29690ad61d712cb5709c"
+        "digest": "de1e085275a78268c5b61c767588fc021cd874d0c146cb9e82935a2befb115f9"
       },
       {
         "path": "apps/web/src/app/health/route.ts",
@@ -85,11 +89,19 @@
       },
       {
         "path": "docker-compose.yml",
-        "digest": "de545fff5f556b53a6f64bd7ed384609ea38db06e30e11802cf1e1f90dd7f075"
+        "digest": "abd690988f28279faa59fe86735a5e92954b5e5eaddcbbf4bb69bfe8037958bf"
+      },
+      {
+        "path": "docs/REPRODUCE.md",
+        "digest": "40921dc242ab3916009942642acb14ea907e40f1735c34a4c7b62937c8d6b50d"
       },
       {
         "path": "docs/acceptance/core-cjm.md",
         "digest": "57959d202a7b92f7ce1b0a2b06255435422e0012b28d53f2d1d176912f62be5a"
+      },
+      {
+        "path": "docs/features/cloudru-provider-foundation/05_completion.md",
+        "digest": "ae4a350990c770f45eb8b91ee25cff85bc7b240b4a9ee85e5088d956ad6a647f"
       },
       {
         "path": "docs/incidents/2026-11-03-disk-space.md",
@@ -101,7 +113,7 @@
       },
       {
         "path": "docs/runbooks/release-candidate.md",
-        "digest": "1040c399d2dfc0e8a8d8768787e11ef7cd65fa46996e526e1c58941a5b75254a"
+        "digest": "467e3c0a641c7d1236712995ea6ae6909b3375edad308f8d6f189c270c74bcbb"
       },
       {
         "path": "features/cloudru-release-parity/00_complexity_assessment.md",
@@ -141,7 +153,7 @@
       },
       {
         "path": "features/cloudru-release-parity/06_implementation_plan.md",
-        "digest": "bcd74b5f2447ebbbd5f594d52fa615b2ae85ba1048b9e9351755fbb8e105a16c"
+        "digest": "e0532a1db989da95fee618a28645cc9421696a4ccf3c67fce7ff617ad68b62f4"
       },
       {
         "path": "openspec/changes/cloudru-release-parity/.openspec.yaml",
@@ -357,7 +369,15 @@
       },
       {
         "path": "scripts/release-candidate.mjs",
-        "digest": "1e06ee58ee4c8d72850011405ba10f96f41ec3947bb4cced10d14d5007121010"
+        "digest": "45239baab415ab087cf83fa50d8ac338e60422b86bb6c48e8ef3e45af7da1466"
+      },
+      {
+        "path": "scripts/test-skip-reporter.ts",
+        "digest": "a55addd49aefaf2b48c8ce8c0efb9ad421458985bbbbbfbb9534928bd0e58fbd"
+      },
+      {
+        "path": "scripts/test.mjs",
+        "digest": "dda18b9aabd2ae546f766d39f23af59ba0c1c238cee88f23af0536b5141df3b9"
       },
       {
         "path": "tests/artifacts/blogger-cabinet/chromium-dark-1440.png",
@@ -472,6 +492,10 @@
         "digest": "16b5ab518d47bd90a0a88643e62fc6ea24d7cde91108eb52d07e5e985c8c0691"
       },
       {
+        "path": "tests/fixtures/release-candidate-fixture.ts",
+        "digest": "69b9d2da22cf99d4bac0f926513b9b7d0b6449ce88aad70e53524ee21ebabcdb"
+      },
+      {
         "path": "tests/guest-pack.integration.test.ts",
         "digest": "5193b316ea8a08ed362c146cb4baaa8e589aa64751dc1175cf1a8f579bdb32d3"
       },
@@ -481,11 +505,15 @@
       },
       {
         "path": "tests/release-candidate-acid.test.ts",
-        "digest": "27a2f7e5a0c894f13fb3487977ae529b4c7d5e287c2e8163221a4b5b04a898b8"
+        "digest": "c03ce698b4bd9719c9675edff8c975a2244d0f32cf5399bdbd1d1ef4f55b2bb5"
       },
       {
         "path": "tests/release-candidate.test.ts",
-        "digest": "3ef645f00598e9c28779ac8364fa02452a0a2def7db5a260ae55e797177ccb73"
+        "digest": "3b2672bce0b6da0260cd63d9e85e132d7f246ba670b2779c378b532f1e76cebf"
+      },
+      {
+        "path": "tests/release-disk-admission.test.ts",
+        "digest": "1316712b03935e2fe04af05ca49654bad8daea43767723396ebf088680e8b589"
       },
       {
         "path": "tests/retention.integration.test.ts",
@@ -500,12 +528,16 @@
         "digest": "aa2c62df9d4d1c36077e55052e85e5f9b045c3704b2f8456ff2a7238d631ed2d"
       },
       {
+        "path": "tests/test-db.test.ts",
+        "digest": "9fbe728fe727527c705d15ad9f8885a236677996383f12bd074d9a90b4c94c36"
+      },
+      {
         "path": "tests/upload.integration.test.ts",
         "digest": "bc04b6f4bffcd188155b46ef6da7a12493daabedeac8b181dddc4297e0b8bbe7"
       },
       {
         "path": "tests/wiring.test.ts",
-        "digest": "c813b559ec9f328d27ecba3de6d530dc17bc9c7967c5728a0ae9175a87e60de9"
+        "digest": "22b705b15924e69d2a1164e050981bee6f8dd61118118b7b4c0edc1f9aa03877"
       }
     ]
   },
@@ -737,79 +769,5 @@
   ],
   "reviewSeen": true,
   "rework": true,
-  "changedPaths": [
-    ".env.example",
-    "AGENTS.md",
-    "CLAUDE.md",
-    "apps/web/src/server/billing-deps.ts",
-    "apps/web/src/server/partner.ts",
-    "apps/web/src/server/video.ts",
-    "apps/worker/src/media/download.ts",
-    "apps/worker/src/runtime.ts",
-    "apps/worker/src/workers/stt.ts",
-    "docker-compose.yml",
-    "docs/acceptance/core-cjm.md",
-    "docs/incidents/2026-11-03-disk-space.md",
-    "docs/review-policy.md",
-    "docs/runbooks/release-candidate.md",
-    "features/cloudru-release-parity/01_requirements.md",
-    "features/cloudru-release-parity/03.5_ideation_report.md",
-    "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
-    "features/cloudru-release-parity/04_domain_model.md",
-    "features/cloudru-release-parity/05_architecture.md",
-    "features/cloudru-release-parity/06_implementation_plan.md",
-    "openspec/changes/cloudru-release-parity/design.md",
-    "openspec/changes/cloudru-release-parity/specs/release-candidate/spec.md",
-    "openspec/changes/cloudru-release-parity/tasks.md",
-    "package-lock.json",
-    "package.json",
-    "packages/db/migrations/001_init.sql",
-    "packages/db/migrations/002_growth_event_prefix.sql",
-    "packages/db/migrations/003_ipv6_legacy_cleanup.sql",
-    "packages/db/migrations/003_upload.sql",
-    "packages/db/migrations/004_ipv6_prefix_masklen.sql",
-    "packages/db/migrations/005_queue_probe.sql",
-    "packages/db/migrations/006_transcription.sql",
-    "packages/db/migrations/007_selection.sql",
-    "packages/db/migrations/008_render.sql",
-    "packages/db/migrations/009_short_link.sql",
-    "packages/db/migrations/010_guest_pack.sql",
-    "packages/db/migrations/011_partner.sql",
-    "packages/db/migrations/012_retention.sql",
-    "packages/db/migrations/013_watermark_geometry.sql",
-    "packages/db/migrations/014_music.sql",
-    "packages/db/migrations/015_teaser.sql",
-    "packages/db/migrations/016_partner_fairness.sql",
-    "packages/db/migrations/017_compaction.sql",
-    "packages/db/migrations/018_clip_music.sql",
-    "packages/db/migrations/019_music_skip_reason.sql",
-    "packages/db/migrations/020_clip_cta.sql",
-    "packages/db/migrations/021_payments.sql",
-    "packages/db/migrations/022_credit_packages.sql",
-    "packages/db/migrations/023_support_access.sql",
-    "packages/db/migrations/024_partner_landing_dedup.sql",
-    "packages/db/migrations/025_owner_unlimited.sql",
-    "packages/db/migrations/026_blogger_policy.sql",
-    "packages/db/migrations/027_payment_referral_snapshot.sql",
-    "packages/db/src/blogger-report.ts",
-    "packages/db/src/index.ts",
-    "packages/db/src/migrate.ts",
-    "packages/db/src/quota.ts",
-    "packages/db/src/selection.ts",
-    "packages/db/src/transcription.ts",
-    "packages/s3/src/erasure.ts",
-    "packages/s3/src/multipart.ts",
-    "packages/s3/src/operations.ts",
-    "packages/s3/src/presign.ts",
-    "scripts/release-candidate.mjs",
-    "tests/fixtures/environment.ts",
-    "tests/guest-pack.integration.test.ts",
-    "tests/release-candidate-acid.test.ts",
-    "tests/release-candidate.test.ts",
-    "tests/retention.integration.test.ts",
-    "tests/storage-prefix.integration.test.ts",
-    "tests/storage-prefix.test.ts",
-    "tests/upload.integration.test.ts",
-    "tests/wiring.test.ts"
-  ]
+  "changedPaths": []
 }
