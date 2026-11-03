@@ -324,6 +324,8 @@ Fake HTTP unit не выдаётся за live proof. Расширение code 
 фактических исправлений с обеими originating reviewer roles.
 
 EXPECTED_CODE_TARGETS:
+- tests/test-db.test.ts
+- docs/features/cloudru-provider-foundation/05_completion.md
 - .dockerignore
 - scripts/test.mjs
 - scripts/test-skip-reporter.ts
