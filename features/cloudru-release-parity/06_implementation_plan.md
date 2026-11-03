@@ -181,8 +181,8 @@ callback и проверить delivery, открыть только site checko
 notifications; real charges off; fan-out/симуляция/polling не native proof.
 Окно/drain/UI switch/return — обязательная операторская E2E-приёмка с private receipts;
 кодовый gate TASK-8 проверяется отдельно и сам по себе не закрывает payment/полный CJM.
-Кодирует gpt-6.1-terra; проверяют gpt-6-astra и gpt-6.1-sol, которые не писали проверяемый
-код, в независимых сессиях: сначала только requirements/ADR/architecture/plan, затем
+Кодируют gpt-6.1-terra и gpt-6-sol; проверяют gpt-6-astra и gpt-6.1-sol, которые не писали
+проверяемый код, в независимых сессиях: сначала только requirements/ADR/architecture/plan, затем
 самостоятельное нахождение реализации. История/выводы автора не стартовый контекст.
 Фактические model/session IDs обязательны. Full suite/typecheck/lint/workspace builds,
 storage/provider/browser regressions, extended reference QE, code/spec anti-drift и
