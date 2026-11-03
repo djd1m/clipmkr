@@ -179,10 +179,14 @@ if __name__=='__main__':
 `;
 const diskAdmission = String.raw`
 import os, stat, subprocess, tempfile, tomllib
+from types import SimpleNamespace
 
 GIB=1024**3
 def disk_need(ok, why):
     if not ok: raise ValueError('release disk admission: '+why)
+def path_exists(path):
+    try: os.lstat(path); return True
+    except FileNotFoundError: return False
 def read_command(args):
     return subprocess.run(args,check=True,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=30).stdout.strip()
 def proc_info(prefix):
@@ -222,18 +226,43 @@ def flag(argv, names):
                 disk_need(bool(arg[len(name)+1:]),'daemon flag'); found.append(arg[len(name)+1:])
     disk_need(len(found)<=1,'duplicate daemon flag')
     return found[0] if found else None
-def path_info(path, mounts):
+def path_info(path, mounts, existing=False):
     disk_need(isinstance(path,str) and path.startswith('/') and os.path.normpath(path)==path,'path')
     current=path
-    while not os.path.lexists(current):
-        parent=os.path.dirname(current); disk_need(parent!=current,'missing path parent'); current=parent
-    disk_need(os.path.realpath(current)==current and stat.S_ISDIR(os.lstat(current).st_mode),'path parent or symlink')
+    while True:
+        try: st=os.lstat(current); break
+        except FileNotFoundError:
+            disk_need(not existing,'missing system path')
+            parent=os.path.dirname(current); disk_need(parent!=current,'missing path parent'); current=parent
+    disk_need(os.path.realpath(current)==current and stat.S_ISDIR(st.st_mode),'path parent or symlink')
     matches=[m for m in mounts if current==m['path'] or current.startswith(m['path'].rstrip('/')+'/')]
     disk_need(bool(matches),'mount missing')
     mount=max(matches,key=lambda x:len(x['path']))
-    st=os.stat(current); v=os.statvfs(current)
+    v=os.statvfs(current)
     disk_need(mount['type']=='ext4' and v.f_frsize==4096 and st.st_dev==os.stat(mount['path']).st_dev,'unsupported filesystem')
     return {'path':path,'observedAt':current,'mount':mount['path'],'device':mount['device'],'fsType':mount['type'],'block':v.f_frsize,'stDev':st.st_dev},v
+def system_path_info(path, mounts, prefix):
+    disk_need(prefix in ([],['sudo','-n']),'system read prefix')
+    if not prefix: return path_info(path,mounts,True)
+    disk_need(isinstance(path,str) and path.startswith('/') and os.path.normpath(path)==path,'system path')
+    matches=[m for m in mounts if path==m['path'] or path.startswith(m['path'].rstrip('/')+'/')]
+    disk_need(bool(matches),'system mount missing')
+    mount=max(matches,key=lambda x:len(x['path']))
+    code="""import json,os,sys
+p,m=sys.argv[1:];s=os.lstat(p);v=os.statvfs(p);base=os.stat(m)
+print(json.dumps({'mode':s.st_mode,'realpath':os.path.realpath(p),'stDev':s.st_dev,
+ 'mountDev':base.st_dev,'block':v.f_frsize,'freeBlocks':v.f_bavail,'freeInodes':v.f_favail}))"""
+    observed=json.loads(read_command(prefix+['python3','-c',code,path,mount['path']]))
+    fields={'mode','realpath','stDev','mountDev','block','freeBlocks','freeInodes'}
+    disk_need(type(observed) is dict and set(observed)==fields,'system metadata shape')
+    disk_need(all(type(observed[k]) is int and observed[k]>=0 for k in fields-{'realpath'}) and
+              observed['realpath']==path and stat.S_ISDIR(observed['mode']) and
+              observed['stDev']==observed['mountDev'] and mount['type']=='ext4' and observed['block']==4096,
+              'system metadata or filesystem')
+    meta={'path':path,'observedAt':path,'mount':mount['path'],'device':mount['device'],
+          'fsType':mount['type'],'block':observed['block'],'stDev':observed['stDev']}
+    volume=SimpleNamespace(f_frsize=observed['block'],f_bavail=observed['freeBlocks'],f_favail=observed['freeInodes'])
+    return meta,volume
 def mount_table():
     mounts=[]
     for line in open('/proc/self/mountinfo'):
@@ -337,29 +366,32 @@ def admit_disk(p):
     content_root=os.path.join(containerd_root,'io.containerd.content.v1.content')
     snapshot_root=os.path.join(containerd_root,'io.containerd.snapshotter.v1.overlayfs')
     docker_tmp=os.path.join(docker_root,'tmp')
-    mounts=mount_table(); paths=[p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_root,docker_tmp,containerd_root,content_root,snapshot_root]
+    mounts=mount_table(); user_paths=[p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp']
+    system_paths=[docker_root,docker_tmp,containerd_root,content_root,snapshot_root]
     metadata=[]; volumes=[]
-    for path in paths:
+    for path in user_paths:
         meta,v=path_info(path,mounts); metadata.append(meta); volumes.append(v)
+    for path in system_paths:
+        meta,v=system_path_info(path,mounts,prefix); metadata.append(meta); volumes.append(v)
     disk_need(all(x['fsType']=='ext4' and x['block']==4096 for x in metadata),'unsupported filesystem')
     disk_need(len({(x['device'],x['mount'],x['stDev']) for x in metadata})==1,'different filesystem')
-    for root in (p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_tmp,content_root):
+    for root in (p['appRoot'],p['sourceDir'],p['stageDir'],p['stateDir'],'/tmp',docker_root,content_root):
         disk_need(not any(m['path']!=metadata[0]['mount'] and m['path'].startswith(root.rstrip('/')+'/') for m in mounts),'nested mount')
     for m in mounts:
-        if m['path'].startswith(snapshot_root+'/'):
-            disk_need(m['type']=='overlay' and bool(re.fullmatch(re.escape(snapshot_root)+r'/snapshots/[0-9]+/fs',m['path'])),'unknown snapshotter mount')
+        if m['path'].startswith(containerd_root+'/'):
+            disk_need(m['type']=='overlay' and bool(re.fullmatch(re.escape(snapshot_root)+r'/snapshots/[0-9]+/fs',m['path'])),'unknown containerd mount')
     free=min(v.f_bavail*v.f_frsize for v in volumes); inodes=min(v.f_favail for v in volumes)
     future=0; inode_need=4096
     for key,item in artifacts.items():
         path=item['path']
-        if os.path.lexists(path):
+        if path_exists(path):
             st=os.lstat(path)
             disk_need(stat.S_ISREG(st.st_mode) and st.st_size==item['size'] and os.path.realpath(path)==path,'staged artifact')
             with open(path,'rb') as f: disk_need(stream_digest(f)==item['sha256'],'staged hash drift')
         else:
             future+=item['size']; inode_need+=1
     src=p['sourceMeasure']; disk_need(type(src.get('allocationBytes')) is int and type(src.get('entries')) is int and src['allocationBytes']>0 and src['entries']>0,'source measure')
-    if not os.path.lexists(p['sourcePath']):
+    if not path_exists(p['sourcePath']):
         future+=artifacts['source']['size']+src['allocationBytes']; inode_need+=src['entries']+3
     else:
         st=os.lstat(p['sourcePath']); disk_need(stat.S_ISREG(st.st_mode) and st.st_size==artifacts['source']['size'],'source sync drift')

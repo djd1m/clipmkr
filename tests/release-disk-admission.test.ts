@@ -88,6 +88,58 @@ print('effective dump scenarios passed')
     expect(mutant).not.toBe(program);
     expect(run(mutant).status).not.toBe(0); // A fabricated root must break the missing-root negative.
   }, 30000);
+  it('observes protected system paths exactly and fails closed on inaccessible metadata', () => {
+    const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
+    const parser = source.match(/const imageMeasurement = (String\.raw`[\s\S]*?`);/);
+    const disk = source.match(/const diskAdmission = (String\.raw`[\s\S]*?`);/);
+    if (!parser || !disk) throw new Error('disk program missing');
+    const measured = runInNewContext(parser[1]!) as string;
+    const library = measured.slice(0, measured.indexOf("if __name__=='__main__':")) + (runInNewContext(disk[1]!) as string);
+    const check = String.raw`
+import errno,os,pathlib,stat,subprocess,tempfile
+from unittest.mock import patch
+with tempfile.TemporaryDirectory() as tmp:
+ root=pathlib.Path(tmp);protected=root/'protected';protected.mkdir();future=root/'future'
+ mounts=[{'path':str(root),'device':'test-device','type':'ext4'}]
+ native_lstat=os.lstat
+ def denied(path,*args,**kwargs):
+  if str(path)==str(protected):raise PermissionError(errno.EACCES,'blocked',str(path))
+  return native_lstat(path,*args,**kwargs)
+ def must_fail(action):
+  try:action()
+  except (OSError,ValueError,subprocess.CalledProcessError):return
+  raise AssertionError('inaccessible metadata admitted')
+ def read_command(args):
+  assert args[:4]==['sudo','-n','python3','-c'] and args[-2] in (str(protected),str(future)) and args[-1]==str(root)
+  return subprocess.run(args[2:],check=True,capture_output=True,text=True).stdout.strip()
+ with patch('os.lstat',side_effect=denied):
+  must_fail(lambda:path_info(str(protected),mounts))
+  must_fail(lambda:path_exists(str(protected)))
+  metadata,volume=system_path_info(str(protected),mounts,['sudo','-n'])
+  assert metadata['observedAt']==str(protected) and metadata['path']==str(protected)
+  assert metadata['stDev']==native_lstat(protected).st_dev and volume.f_frsize==4096
+ assert path_info(str(future),mounts)[0]['observedAt']==str(root)
+ must_fail(lambda:system_path_info(str(future),mounts,['sudo','-n']))
+ must_fail(lambda:system_path_info(str(protected),[{**mounts[0],'type':'xfs'}],['sudo','-n']))
+ with patch('os.lstat',side_effect=NotADirectoryError(errno.ENOTDIR,'invalid',str(future))):
+  must_fail(lambda:path_info(str(future),mounts))
+ with patch('os.lstat',side_effect=OSError(errno.EIO,'failed',str(future))):
+  must_fail(lambda:path_info(str(future),mounts))
+ def failed_sudo(args):raise subprocess.CalledProcessError(1,args)
+ read_command=failed_sudo;must_fail(lambda:system_path_info(str(protected),mounts,['sudo','-n']))
+ def malformed(args):return '{}'
+ read_command=malformed;must_fail(lambda:system_path_info(str(protected),mounts,['sudo','-n']))
+print('protected metadata scenarios passed')
+`;
+    const run = (program: string) => spawnSync('python3', ['-c', program + check], { encoding: 'utf8', timeout: 30000 });
+    const result = run(library);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('protected metadata scenarios passed');
+    const oldProbe = "while True:\n        try: st=os.lstat(current); break\n        except FileNotFoundError:\n            disk_need(not existing,'missing system path')\n            parent=os.path.dirname(current); disk_need(parent!=current,'missing path parent'); current=parent";
+    expect(library).toContain(oldProbe);
+    const mutant = library.replace(oldProbe, "while not os.path.lexists(current):\n        parent=os.path.dirname(current); current=parent\n    st=os.lstat(current)");
+    expect(run(mutant).status).not.toBe(0);
+  }, 30000);
   it('rejects site identity drift and insufficient incremental image archive space', () => {
     const text = readFileSync('scripts/release-candidate.mjs', 'utf8');
     const extract = (name: string) => {
@@ -103,18 +155,24 @@ print('effective dump scenarios passed')
 def proc_info(prefix): return {'dockerd':[{'argv':['--data-root=/unknown'] if os.environ.get('FAULT')=='root' else [],'tmp':['/unknown'] if os.environ.get('FAULT')=='temp' else []}],'containerd':[] if os.environ.get('FAULT')=='daemon' else [{'argv':['--root=/unknown'] if os.environ.get('FAULT')=='store' else [],'tmp':[]}]}
 def daemon_configs(prefix,d,c,cont): return ({'data-root':'/unknown'} if os.environ.get('FAULT')=='config' else {}),({'root':'/unknown' if os.environ.get('FAULT')=='store-config' else '/var/lib/containerd','state':'/run/containerd'} if os.environ.get('FAULT')!='missing-dump-root' else {'state':'/run/containerd'})
 def read_command(args):
+ if 'python3' in args:
+  fault=os.environ.get('FAULT')
+  if fault=='helper-fail':raise subprocess.CalledProcessError(1,args)
+  if fault=='helper-malformed':return '{}'
+  path=args[-2]
+  return json.dumps({'mode':stat.S_IFDIR|0o755,'realpath':path,'stDev':1,'mountDev':1,'block':4096,'freeBlocks':int(os.environ.get('FAKE_FREE',10**12))//4096,'freeInodes':int(os.environ.get('FAKE_INODES',10**9))})
  return json.dumps({'Driver':'vfs' if os.environ.get('FAULT')=='driver' else 'overlayfs','DriverStatus':[] if os.environ.get('FAULT')=='snapshotter' else [['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/unknown' if os.environ.get('FAULT')=='docker-info-root' else '/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table():
  fault=os.environ.get('FAULT')
- nested=os.environ['NESTED'] if fault=='nested' else ('/var/lib/containerd/io.containerd.content.v1.content/foreign' if fault=='content-mount' else ('/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/unknown/fs' if fault=='snapshot-mount' else None))
- return [{'path':'/','device':'1:1','type':'ext4'}]+([{'path':nested,'device':'1:2','type':'overlay' if fault=='snapshot-mount' else 'ext4'}] if nested else [])
+ nested=os.environ['NESTED'] if fault=='nested' else ('/var/lib/containerd/io.containerd.content.v1.content/foreign' if fault=='content-mount' else ('/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/unknown/fs' if fault=='snapshot-mount' else ('/var/lib/docker/foreign' if fault=='docker-nested' else ('/var/lib/docker' if fault=='docker-root-mount' else ('/var/lib/containerd' if fault=='containerd-root-mount' else None)))))
+ return [{'path':'/','device':'1:1','type':'ext4'}]+([{'path':nested,'device':'1:2','type':'overlay' if fault=='snapshot-mount' else 'xfs' if fault in ('docker-root-mount','containerd-root-mount') else 'ext4'}] if nested else [])
 class Volume:
  f_frsize=4096
  @property
  def f_bavail(self): return int(os.environ.get('FAKE_FREE',10**12))//4096
  @property
  def f_favail(self): return int(os.environ.get('FAKE_INODES',10**9))
-def path_info(path,mounts):
+def path_info(path,mounts,existing=False):
  fault=os.environ.get('FAULT'); bad=fault=='different-fs' and path.endswith('/stage')
  return {'path':path,'observedAt':path,'mount':'/','device':'1:2' if bad else '1:1','fsType':'xfs' if fault=='fs-type' and path.endswith('/stage') else 'ext4','block':8192 if fault=='block' and path.endswith('/stage') else 4096,'stDev':2 if bad else 1},Volume()
 `;
@@ -125,7 +183,7 @@ def add(t,name,data):
  x=tarfile.TarInfo(name);x.size=len(data);t.addfile(x,io.BytesIO(data))
 def fails(p):
  try: admit_disk(p);return False
- except (ValueError,OSError,KeyError):return True
+ except (ValueError,OSError,KeyError,subprocess.CalledProcessError):return True
 with tempfile.TemporaryDirectory() as d:
  r=pathlib.Path(d);stage=r/'stage';stage.mkdir();state=r/'state';state.mkdir();app=r/'app';app.mkdir();op='a'*64;folder=stage/op;folder.mkdir()
  local=r/'local';local.mkdir();src=local/'source.tar'
@@ -150,9 +208,19 @@ with tempfile.TemporaryDirectory() as d:
  os.environ['FAKE_FREE']=str(required-1);assert fails(p)
  os.environ['FAKE_FREE']=str(10**12)
  p['expectedBinding']={**first['binding'],'dockerRoot':'/foreign'};assert fails(p);p['expectedBinding']=first['binding']
- for fault in ('different-fs','fs-type','block','root','store','missing-dump-root','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','content-mount','snapshot-mount'):
+ for fault in ('different-fs','fs-type','block','root','store','missing-dump-root','store-config','docker-info-root','driver','snapshotter','daemon','temp','config','nested','content-mount','snapshot-mount','docker-nested'):
   os.environ['FAULT']=fault;assert fails(p),fault
  os.environ.pop('FAULT',None)
+ p.pop('expectedBinding');p['targetName']='cloud-c';p['dockerPrefix']=['sudo','-n']
+ cloud=admit_disk(p)
+ assert all(item['observedAt']==item['path'] for item in cloud['binding']['paths'][5:])
+ for fault in ('docker-root-mount','containerd-root-mount','helper-fail','helper-malformed'):
+  os.environ['FAULT']=fault;assert fails(p),fault
+  if fault in ('helper-fail','helper-malformed'):
+   args={'targetName':'cloud-c','sourceDir':p['sourceDir'],'root':str(app),'commit':p['commit'],'sourceSha256':artifacts['source']['sha256'],'disk':p}
+   call=subprocess.run([sys.executable,'-c',SOURCE_PROGRAM,base64.b64encode(json.dumps(args).encode()).decode()],input=src.read_bytes(),capture_output=True)
+   assert call.returncode!=0 and not pathlib.Path(p['sourceDir']).exists(),fault
+ os.environ.pop('FAULT',None);p['targetName']='site-test';p['dockerPrefix']=[]
  os.environ['FAKE_INODES']=str(first['requiredInodes']-1);assert fails(p)
  os.environ['FAKE_INODES']=str(first['requiredInodes']);assert admit_disk(p)
  p['retainedRollbackBytes']=10**12;assert admit_disk(p)['requiredBytes']==required

@@ -139,7 +139,7 @@ class Volume:
  f_frsize=4096;f_favail=10**9
  @property
  def f_bavail(self):return int(os.environ.get('FAKE_DISK_FREE',10**12))//4096
-def path_info(path,mounts): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},Volume()
+def path_info(path,mounts,existing=False): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},Volume()
 `;
       const fakeSsh = `#!/usr/bin/python3
 import base64,os,re,sys
@@ -410,7 +410,7 @@ def read_command(args):
  return json.dumps({'Driver':'overlayfs','DriverStatus':[['driver-type','io.containerd.snapshotter.v1']],'DockerRootDir':'/var/lib/docker'}) if 'info' in args else '29.0.0'
 def mount_table(): return [{'path':'/','device':'1:1','type':'ext4'}]
 class Volume: f_bavail=10**12;f_frsize=4096;f_favail=10**9
-def path_info(path,mounts): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},Volume()
+def path_info(path,mounts,existing=False): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},Volume()
 `;
       const fakeSsh = `#!/usr/bin/python3
 import base64,json,os,re,sys

@@ -26,7 +26,7 @@ class FakeVolume:
     f_frsize=4096; f_favail=10**9
     @property
     def f_bavail(self): return int(os.environ.get('FAKE_DISK_FREE',10**12))//4096
-def path_info(path,mounts): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},FakeVolume()
+def path_info(path,mounts,existing=False): return {'path':path,'observedAt':path,'mount':'/','device':'1:1','fsType':'ext4','block':4096,'stDev':1},FakeVolume()
 def measure(path,expected_hash,image_id): return {'streamBytes':1,'allocationBytes':1,'entries':1}
 `;
 function embeddedExecutor(source: string): string {

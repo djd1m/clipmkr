@@ -53,7 +53,7 @@ OpenSSL, Docker CLI/Compose, Bash и util-linux (`flock`). Docker socket не м
       "composeFiles": ["/srv/test-app/docker-compose.yml", "/srv/private/limits.yml", "/srv/private/site-images.yml"],
       "sourceDir": "/srv/releases", "stageDir": "/srv/private/site-stage",
       "remoteStateDir": "/srv/private/site-state", "localStateDir": "/srv/private/operator-state",
-      "executorProfilePath": "/srv/private/site-executor.json", "dockerPrefix": ["sudo", "-n"],
+      "executorProfilePath": "/srv/private/site-executor.json", "dockerPrefix": [],
       "allowedOrigins": ["https://test.example.invalid"], "inputBytes": 1000000,
       "storageBucket": "existing-bucket", "storagePrefix": "tests/site/",
       "resources": {"database": "FULL_DB_CONTAINER_ID", "redis": "FULL_REDIS_CONTAINER_ID", "databaseVolume": "test-db-volume", "redisVolume": "test-redis-volume"},
@@ -68,7 +68,7 @@ OpenSSL, Docker CLI/Compose, Bash и util-linux (`flock`). Docker socket не м
       "composeFiles": ["/srv/cloud-app/docker-compose.yml", "/srv/private/cloud-limits.yml", "/srv/private/cloud-images.yml"],
       "sourceDir": "/srv/cloud-releases", "stageDir": "/srv/private/cloud-stage",
       "remoteStateDir": "/srv/private/cloud-state", "localStateDir": "/srv/private/operator-state",
-      "executorProfilePath": "/srv/private/cloud-executor.json", "dockerPrefix": [],
+      "executorProfilePath": "/srv/private/cloud-executor.json", "dockerPrefix": ["sudo", "-n"],
       "allowedOrigins": ["https://c.clipmkr.ru"], "inputBytes": 1000000,
       "storageBucket": "existing-bucket", "storagePrefix": "tests/cloud/",
       "resources": {"database": "FULL_DB_CONTAINER_ID", "redis": "FULL_REDIS_CONTAINER_ID", "databaseVolume": "cloud-db-volume", "redisVolume": "cloud-redis-volume"},
@@ -201,8 +201,15 @@ containerd content и snapshotter store; внутри snapshotter допусти
 штатные overlay mounts `snapshots/<число>/fs`. Нужны Docker 29, driver `overlayfs`,
 `io.containerd.snapshotter.v1`, проверенные флаги запущенных dockerd/containerd,
 их config и `DOCKER_TMPDIR`. Разные/неизвестные FS, root, temp, config, driver
-или вложенные mounts под рабочими каталогами дают отказ. Для ещё не созданного
-пути читается ближайший существующий parent без `mkdir` на probe. Доступность
+или вложенные mounts под рабочими каталогами дают отказ. Все существующие системные
+Docker/containerd roots, включая Docker tmp, content и snapshotter, наблюдаются
+точно по своему пути. На Cloud read-only Python helper читает только выбранные
+`lstat`, `statvfs`, device и block через `dockerPrefix: ["sudo", "-n"]`; на site
+проверка идёт от обычного пользователя с `dockerPrefix: []`. Sudo не применяется
+к source/staging/state и не меняет владельцев или права. Для ещё не созданного
+собственного пути ближайший parent допустим только при настоящем `ENOENT`;
+`EACCES`, `ENOTDIR`, ошибка helper или неполные метаданные блокируют допуск.
+Доступность
 берётся из `statvfs.f_bavail` и `f_favail`, без кредита за текущие и rollback images.
 
 Общий бюджет складывает будущие staged source/web/worker tar, будущий source-sync
@@ -237,7 +244,7 @@ terminal `success` или `aborted`, проверяет SHA конкретных
   "databaseProject": "test-infra", "redisProject": "test-infra",
   "root": "/srv/test-app", "envFile": "/srv/private/site.env",
   "composeFiles": ["/srv/test-app/docker-compose.yml", "/srv/private/limits.yml", "/srv/private/site-images.yml"],
-  "dockerPrefix": ["sudo", "-n"],
+  "dockerPrefix": [],
   "origin": "https://test.example.invalid", "healthUrl": "https://test.example.invalid/health",
   "resources": {"database": "FULL_DB_CONTAINER_ID", "redis": "FULL_REDIS_CONTAINER_ID", "databaseVolume": "test-db-volume", "redisVolume": "test-redis-volume"},
   "binding": {"databaseName": "test_database", "databaseHost": "test-db", "redisHost": "test-redis", "network": "test-network"},
@@ -250,4 +257,4 @@ terminal `success` или `aborted`, проверяет SHA конкретных
 локальным профилем. Хеш probe привязывает исполняемую проверку к проверенному
 controller; пример не является готовым профилем для запуска.
 
-**Текущий статус допуска диска:** измеряемый admission из раздела выше включён в controller, source-sync, staging и receiver до записи и `docker load`. Read-only probe 03.11.2026 21:42 UTC на обеих целях отказал при прежней проверке root containerd из явного флага/файла; этот код исправлен для штатного `config dump`, но повторного живого probe после исправления пока нет. RES-03 и выпуск не объявлены пройденными. При фактическом отказе или неподтверждённых layout, месте либо inode apply/rollback/source-sync остаются заблокированы без очистки образов и чужих проектов.
+**Текущий статус допуска диска:** измеряемый admission включён в controller, source-sync, staging и receiver до записи и `docker load`. Read-only probe Cloud 03.11.2026 22:47 UTC выявил ложное наблюдение родителя вместо трёх недоступных UID1000 системных каталогов. Проверка исправлена, но root ещё должен повторить живой read-only probe на обеих целях. RES-03 и выпуск не объявлены пройденными. При фактическом отказе или неподтверждённых layout, месте либо inode apply/rollback/source-sync остаются заблокированы без очистки образов и чужих проектов.
