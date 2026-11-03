@@ -1,0 +1,359 @@
+{
+  "schema": "fa-review-convergence-1",
+  "phase": "ideation",
+  "nonce": "e9449a2e-0b4f-463b-b686-e7a15eb7134a",
+  "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+  "author": {
+    "addressed": [
+      "RISK-01",
+      "RISK-02",
+      "RISK-03",
+      "QQ-01",
+      "QQ-02",
+      "QQ-03",
+      "QQ-04",
+      "QT-01",
+      "QT-02",
+      "QT-03",
+      "QT-04",
+      "QT-05",
+      "QT-06"
+    ],
+    "changedScope": [
+      "features/cloudru-release-parity/01_requirements.md",
+      "features/cloudru-release-parity/02_research.md",
+      "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+      "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+      "features/cloudru-release-parity/05_architecture.md"
+    ],
+    "classification": "structural",
+    "delta": "Исправления всего rework: вместо cookie selector сохранение изолированных test DB in-place; restore/account baseline и S3 scope proof; отдельный native shop либо blocked; schema-aware rollback; lock/state/reconcile/SSH preflight; числовые ресурсные/атомарные quota допуски. Финальная поправка: REL-03 требует image IDs всех app-сервисов каждой цели каждой фазы и сохранность данных после rollback; RES-01/02 требуют реальные disposable OOM/ENOSPC с проверкой неизменности других контейнеров. 02 приведён к in-place ADR.",
+    "evidence": "01_requirements.md FR-1..7 и CJM/REL/DATA/RES; ADR-001/002; 04_domain_model.md,05_architecture.md. Только дизайн: реализации и E2E ещё нет.",
+    "newRisks": {
+      "assessment": "Обновление существующей тестовой БД требует окна и повторной сверки; первоначальный rollback 28→26 по умолчанию запрещён. Native магазин остаётся внешней зависимостью.",
+      "evidence": "ADR-002 Consequences/Review; FR-5/7; архитектура про blocked и явную границу production.",
+      "conditions": []
+    }
+  },
+  "reviews": [
+    {
+      "reviewer": "qcsd-risk",
+      "family": "owner-exception",
+      "independent": true,
+      "verdict": "clean",
+      "conditions": [
+        {
+          "id": "RISK-01",
+          "owner": "qcsd-risk",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "До планирования закрепить контракт изоляции candidate/legacy на общем hostname: независимые session/signing secrets и имена auth-cookie, host-only selection cookie с явными Path/SameSite/TTL/revocation, отсутствие утечки через shared cache; переходы и истечение selection cookie не отправляют candidate mutations в legacy. Confirmation должен проверять legacy login → candidate login → logout/expiry и отсутствие чужих данных/записей.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "ADR-002:34–46 определяет Secure/HttpOnly selector и legacy default, но не жизненный цикл, auth-cookie namespace и cache. Архитектура:24–28 не определяет переход с действующей legacy session; Confirmation ADR-002:51–53 ограничен выбором backend и spoofed IP."
+        },
+        {
+          "id": "RISK-02",
+          "owner": "qcsd-risk",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "До планирования определить native маршрут реального тестового магазина: отдельный магазин либо однозначное владение provider payment ID/intent и безопасная маршрутизация уведомлений между действующим test и candidate. Закрепить защиту текущего test, pending/retry, повтор без второго grant, отказ чужому shop/test-mode/intent и проверку прямой/проксированной IP-цепочки без browser cookie. Смена единственного callback магазина без такого решения запрещена.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "02_research: существующий магазин уведомляет прежний test. ADR-002:38–39 требует IP и provider verification; архитектура:27–35 оставляет маршрут не определённым. Эти проверки сами по себе не устанавливают принадлежность candidate intent и сохранение существующих test callbacks (FR-5)."
+        },
+        {
+          "id": "RISK-03",
+          "owner": "qcsd-risk",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "До планирования определить отказоустойчивый протокол обратного SSH: проверенные host identity и loopback bind, preflight срока ключа/transient unit, запрет расширять/продлевать доступ автоматически, запись remote apply state и сверка runtime после потери соединения до повторного apply. Зафиксировать один writer/lock на цель, безопасное возобновление и доступный оператору путь восстановления; disconnect/expiry между apply и receipt не равен доказанному откату или успеху.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "01_requirements:59–60 фиксирует временный туннель/expiry; ADR-001 требует частичного receipt, архитектура:7–15 — проверенного SSH. Не определено, как отличить завершённый remote apply от прерванного после исчезновения обратного туннеля, и кто исключает конкурентный apply."
+        }
+      ],
+      "verifications": [
+        {
+          "id": "RISK-01",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "ADR-002 Decision заменяет два backend одного origin обновлением существующей отдельной test copy: cookie selector отсутствует, c.clipmkr.ru имеет единственный backend для всех ролей/referral/return. Production secrets не наследуются; после смены session secret нужен новый вход. Архитектура «Данные и запуск» и CJM-08 закрепляют раздельные browser sessions и запрет чужих данных. Опасный fallback при expiry устранён из дизайна, а не объявлен испытанным.",
+          "implementationVerified": true
+        },
+        {
+          "id": "RISK-02",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "FR-5, CJM-10/11 и архитектура «Точный контракт платежного допуска» задают отдельный shop_id/secret/test mode, HTTPS c.clipmkr.ru/api/webhooks/yookassa; нынешний n5 shop/callback не меняется. Native callback требует IP/proxy, provider lookup, принадлежность intent, shop/mode и идемпотентный grant. До реального подтверждения off/blocked. Временное окно прежнего магазина требует отдельного решения, отсутствия pending и возврата callback; fan-out неизвестных событий запрещён.",
+          "implementationVerified": true
+        },
+        {
+          "id": "RISK-03",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "FR-6, REL-05, ADR-001 Decision и архитектура «Remote apply и восстановление» определяют один remote writer/lock, приватный atomic state до изменения контейнеров, unknown после disconnect, inspect/reconcile runtime/state/schema до retry; preflight проверяет host key, loopback tunnel и срок ключа/transient unit. Автоматическое расширение доступа запрещено; при unknown оператор сверяет состояние до следующего apply. Это проверка контракта ideation, не выполненный SSH fault injection.",
+          "implementationVerified": true
+        }
+      ],
+      "newRisks": {
+        "assessment": "Дополнительных серьёзных рисков после проверки полного structural delta и затронутых зависимостей не выявлено; in-place upgrade, resource admission и внешний native shop имеют явные gates/STOP/BLOCKED.",
+        "evidence": "Текущие FR-4..7, CJM/REL/DATA matrix, ADR-001/002 и архитектура; авторская оценка обновления test DB и запрета rollback 28→26 проверена независимо. Сохранность требует будущих backup/restore/reconciliation, не объявленных выполненными.",
+        "conditions": []
+      },
+      "authorAssessmentChecked": true,
+      "deltaVerification": {
+        "classification": "structural",
+        "evidence": "Независимо прочитаны все текущие измеренные design inputs и авторский handoff; checked removal cookie switch, in-place data preservation/media STOP, отдельный native shop/blocked, SSH unknown/reconcile, journal-compatible rollback, числовые resource/quota guards и матрица приёмки. Все 7 SHA-256 сверены с host manifest. implementationVerified относится только к исправленным артефактам ideation; код, E2E, restore и облачные изменения не проверялись. Финальный delta: REL-03 требует image IDs каждого сервиса каждой цели каждой фазы и сохранность после rollback; RES-01/02 ограничивают реальный OOM/ENOSPC disposable worker без production и проверяют container IDs/StartedAt/restarts остальных контейнеров. 02_research теперь согласован с in-place ADR. Прочитан актуальный author handoff; classification structural подтверждена, новых серьёзных рисков не выявлено.",
+        "implementationVerified": true
+      }
+    },
+    {
+      "reviewer": "qcsd-quality",
+      "family": "owner-exception",
+      "independent": true,
+      "verdict": "clean",
+      "conditions": [
+        {
+          "id": "QQ-01",
+          "owner": "qcsd-quality",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Определить и проверить доступ к кандидату для каждого нового контекста владельца, блогера и привлечённого пользователя, сохранение referral/payment return и разделение session/cookie/cache между legacy и кандидатом на общем origin. Без валидного допуска контекст не должен случайно завершать CJM на legacy; основная маршрутизация сохраняется.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md",
+            "features/cloudru-release-parity/01_requirements.md"
+          ],
+          "evidence": "ADR-002:34–46 и архитектура:24–28 задают cookie выбора backend, но не поведение новых контекстов, session-cookie и ссылок. FR-2 требует core-CJM с тремя разными браузерными контекстами; новый контекст не наследует candidate cookie. Это пробел контракта, не найденный дефект реализации."
+        },
+        {
+          "id": "QQ-02",
+          "owner": "qcsd-quality",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Зафиксировать способ реальной доставки тестового webhook к кандидату без нарушения прежнего тестового получателя; определить принадлежность платежа контуру, обработку неизвестного/повторного события и критерии проверки обеих сред. Пока зависимости не разрешены, платёжная приёмка имеет blocked, а не passed.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md",
+            "features/cloudru-release-parity/01_requirements.md"
+          ],
+          "evidence": "FR-5 запрещает нарушение действующей тестовой оплаты; исследование указывает единственный текущий маршрут в прежний тест. Архитектура:27–35 вводит отдельный путь, но не объясняет, как магазин доставит туда событие и как сохранится прежний маршрут. IP и provider lookup сами по себе не задают принадлежность контуру."
+        },
+        {
+          "id": "QQ-03",
+          "owner": "qcsd-quality",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Определить проверяемую совместимость предыдущего manifest с текущей схемой БД до отката; включить миграцию как отдельный этап с фиксацией схемы и отказом отката при несовместимости. Подтвердить сценарий неудачной миграции/старта, сохранение данных и частичный итог по целям без автоматического восстановления БД.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+            "features/cloudru-release-parity/04_domain_model.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "ADR-001 обещает предыдущий совместимый manifest и откат, но признаки совместимости не заданы. Исследование фиксирует 26/28 миграций и migrator в reuse; поток архитектуры:7–15 не описывает порядок миграции, failure state и precondition rollback. Один health не доказывает чтение/запись старым приложением новой схемы."
+        },
+        {
+          "id": "QQ-04",
+          "owner": "qcsd-quality",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Зафиксировать измеримые до запуска и во время приёмки лимиты/резервы памяти и диска для candidate плюс legacy, ограничение параллельности и бюджета реальных STT/LLM вызовов, условия остановки только кандидата и сохранения legacy. Привязать ресурсный расчёт к обязательным 90/120-минутным файлам и максимальному согласованному тестовому объёму.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md",
+            "features/cloudru-release-parity/01_requirements.md"
+          ],
+          "evidence": "ADR-002:30–32 требует проверки лимитов, но не задаёт измеримый критерий достаточности и защиту legacy в ходе нагрузки. FR-2 включает 90/120 минут и индивидуальный предел; требования к бюджету отсылают к настройкам без stop condition. На общей ВМ раздельный Compose не ограничивает конкуренцию за CPU/RAM/диск."
+        }
+      ],
+      "verifications": [
+        {
+          "id": "QQ-01",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "ADR-002 Decision заменяет общий origin с selector на обновление одной существующей test copy: один backend для referral/return и всех персон, отдельные secrets и повторный login. 01_requirements CJM-08/09/10 задаёт независимые контексты и свидетельства. Архитектура «Данные и запуск» повторяет контракт; классы риска selector/cache устранены самим решением. Это проверка исправленного дизайна, не browser execution.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QQ-02",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "FR-5, CJM-10/11 и архитектура «Точный контракт платежного допуска»: основной вариант отдельный test shop_id, callback, mode, source-IP/provider lookup/intent; прежний callback сохраняется, неизвестные и повторные события не дают grant. Использование прежнего магазина требует отдельного решения; до native proof payment и полный core-CJM BLOCKED. Архитектура определила безопасный выбранный путь и критерии, не заявляя его настройку.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QQ-03",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "FR-6/7, DATA-01..04, REL-03..05 и ADR-001: полный journal для одинаковой схемы, запрет автоматического 28→26, A→B→A→B на схеме 28; migration отдельный шаг приватного state, reconcile при неуспехе, без восстановления БД вслепую; backup baseline и аккаунты сравниваются. 04_domain_model сохраняет per-target receipt и запрет отката пользовательской истории. Проектный порядок и критерии отказа проверены; код не существует. Текущая REL-03 дополнительно требует image IDs каждого сервиса каждой цели каждой фазы и сохранность всех созданных данных после rollback/повторного B.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QQ-04",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "FR-7 и «Допуск ресурсов и провайдеров»: 2 ГиБ свободной памяти, finite memory limits, диск 3×input+2 ГиБ, один процесс, последовательные 90/120 только на Cloud; quota caps 240 минут и 4 LLM, каждый retry учитывается, допуск до dispatch, остаток quota_counter, отказ при постороннем расходовании. OOM/резерв/нулевой бюджет останавливают только test worker. Денежный hard cap не обещан. Дополнительная параллельная legacy app на Cloud устранена; production вне цели. Текущие RES-01/02 задают реальный cgroup OOM и ENOSPC только в disposable worker; отдельные свидетельства чужих container IDs/StartedAt/restarts, без fault injection рабочего задания.",
+          "implementationVerified": true
+        }
+      ],
+      "newRisks": {
+        "assessment": "Новых неохваченных серьёзных рисков после focused delta не выявлено",
+        "evidence": "Изолированные OOM/ENOSPC не применяются к рабочим jobs, полный CJM остаётся blocked до native payment, production cutover запрещён. Результаты исполнения не утверждаются.",
+        "conditions": []
+      },
+      "authorAssessmentChecked": true,
+      "deltaVerification": {
+        "classification": "structural",
+        "implementationVerified": true,
+        "evidence": "Самостоятельно перечитаны текущие семь design documents; SHA-256 всех входов проверены. Изменение REL-03 усиливает per-service/per-target/per-phase runtime и data preservation критерий; RES-01/02 ограничивают fault injection disposable worker и проверяют остальные контейнеры; 02_research согласован с принятым in-place ADR-002. Author handoff подтверждён. QQ-01..04 сохраняют закрытие на текущей ideation revision; код/E2E не проверялись."
+      }
+    },
+    {
+      "reviewer": "qcsd-testability",
+      "family": "owner-exception",
+      "independent": true,
+      "verdict": "conditional",
+      "conditions": [
+        {
+          "id": "QT-01",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Зафиксировать матрицу приёмки core-CJM с наблюдаемыми результатами и доказательствами: на опубликованном Cloud в трёх отдельных контекстах проверить 90 минут и отказ выше, 120 минут, индивидуальный предел/сброс/запрет повышения, прерывание и продолжение передачи, транскрипт, фрагменты, готовый клип, Chromium Play с декодированными кадрами и скачанный файл; referral → регистрация → использование → оплата → сверка статистики владельца и блогера, изоляция данных и идемпотентность. Для каждого сценария указать источник свидетельства, субъект и критерий pass/fail/blocked; платёжная часть и зависящий полный CJM остаются blocked до native proof.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "FR-2 ссылается на core-CJM, а ADR-002:67–69 перечисляет контексты без матрицы наблюдений и негативных критериев. Архитектура:54–58 признаёт платёж blocked; core-cjm §§1–3 задаёт дополнительные проверки."
+        },
+        {
+          "id": "QT-02",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Определить измеримое доказательство A→B→A→B на обеих явно выбранных целях: идентичность полного SHA, каждого запущенного сервиса web/worker и соответствующих image ID на каждой фазе, наблюдаемое изменение B на Cloud, совместимость по полному journal, сохранность данных; отрицательные тесты stale runtime, пропущенной цели, неверного manifest, неподходящего journal и частичного отказа должны вызывать отказ общего успеха.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "ADR-001:54–59 и архитектура:39–43 задают общие проверки и последовательность, но не определяют свидетельства для всех четырёх фаз и сервисов и сохранности данных после отката."
+        },
+        {
+          "id": "QT-03",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Определить воспроизводимую проверку происхождения: чистый checkout полного SHA, проверка совпадения содержимого исходного архива с этим SHA на Cloud, связка сборки с контекстом и OCI revision, checksum передачи и независимая сверка image ID каждого запущенного контейнера; негативные испытания устаревшего образа с правильной меткой, подменённого архива и несовпадающего runtime должны отказывать.",
+          "scope": [
+            "features/cloudru-release-parity/03_adr/001-release-manifest.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "ADR-001:26–35 требует label, checksum и архив того же SHA, но не описывает проверку содержимого архива и связи артефакта с контекстом; одна метка версии не доказывает происхождение сборки."
+        },
+        {
+          "id": "QT-04",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "До применения определить для каждой тестовой БД идентифицированный backup и restore в отдельную изолированную цель с проверкой целостности, полного journal и сравнимого набора аккаунтов/существенных данных до и после; повреждённый, чужой или невосстановимый backup и несовпадение исходной схемы блокируют apply. Зафиксировать свидетельства и не подменять проверку автоматически восстановлением рабочей БД.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "FR-4 и ADR-002:33–39 требуют backup и реальный restore; ADR-002:67 требует сверку аккаунтов после миграции, но критерии пригодности восстановленной копии и связь backup с каждой целью не заданы."
+        },
+        {
+          "id": "QT-05",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Определить до платного запуска измеряемые числовые потолки и источники остатка бюджета для обеих интеграций, единицу учёта попыток включая retries, атомарный допуск перед каждым вызовом и журнал расходов/отказов без секретов. Подтвердить что 90/120-минутные файлы укладываются в два STT-прохода и четыре LLM-вызова либо явно остановить приёмку; тесты нулевого остатка, превышения диска, OOM и параллельного запуска должны доказать остановку только тестовой обработки.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "FR-7 и архитектура:47–52 задают лимиты проходов и общий остаток, но не определяют величину бюджета, единицы учёта попыток и механизм допуска до каждого вызова; неизвестные ceilings не являются доказательством достаточности."
+        },
+        {
+          "id": "QT-06",
+          "owner": "qcsd-testability",
+          "severity": "HIGH",
+          "classification": "structural",
+          "requirement": "Установить критерии native YooKassa proof: реальный тестовый shop и путь от инициированного candidate intent через уведомление провайдера к проверенному статусу и единственному grant, отмена/отказ, повтор, повторный вход, оплаченная функция и корректная атрибуция; доказать сохранение прежнего test receiver и отказ чужих/неизвестных intent. До подтверждения магазина и доставки соответствующие проверки и полный зависимый CJM blocked.",
+          "scope": [
+            "features/cloudru-release-parity/01_requirements.md",
+            "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
+            "features/cloudru-release-parity/05_architecture.md"
+          ],
+          "evidence": "ADR-002:49–52 и архитектура:54–58 корректно оставляют маршрут blocked, но не задают полную матрицу proof из core-cjm §§2–3 и свидетельство сохранения прежнего получателя."
+        }
+      ],
+      "verifications": [
+        {
+          "id": "QT-01",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "CJM-01–12 определяют субъектов, наблюдения, статусы и доказательства; полный зависимый CJM blocked до native оплаты.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QT-02",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "REL-03 требует SHA, image IDs каждого web/worker на каждой цели и фазе A→B→A→B, видимую разницу и сверку данных/journal после rollback и повторного B; REL-04/DATA-04 покрывают отрицательные и несовместимый journal.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QT-03",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "REL-01/02 связывают Git archive выбранного commit со сборкой, передачей и runtime image IDs; REL-04 требует отрицательных проверок stale label, checksum и runtime mismatch.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QT-04",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "DATA-01–04 задают источник и hash каждой копии, отдельный restore и snapshot baseline, сравнение journal и аккаунтов и отказ при несовпадении; FR-7 запрещает автоматический restore рабочей БД.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QT-05",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "FR-7 и раздел допуска задают quota 240 минут/4 LLM, учёт retry и атомарный допуск; RES-01/02 требуют OOMKilled и реальный ENOSPC disposable worker, сверку IDs, StartedAt и restart counts прочих контейнеров, quota/параллельность проверяются отдельно.",
+          "implementationVerified": true
+        },
+        {
+          "id": "QT-06",
+          "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+          "classification": "structural",
+          "evidence": "CJM-09–12 и архитектура задают native intent/callback/lookup/grant, отмену, повтор, права и attribution; существующий receiver сохраняется, магазин и полный CJM blocked до доказательства.",
+          "implementationVerified": true
+        }
+      ],
+      "newRisks": {
+        "assessment": "Новых существенных рисков в проверенной области не выявлено; native оплата остаётся внешней зависимостью.",
+        "evidence": "Focused review семи design inputs, включая REL-03, RES-01/02 и исследование; исполнения не было.",
+        "conditions": []
+      },
+      "authorAssessmentChecked": true,
+      "deltaVerification": {
+        "classification": "structural",
+        "evidence": "Независимо проверены семь измеренных входов, REL-03, RES-01/02 и согласованность исследования с ADR in-place; структурная поправка и собственные QT-01–06 подтверждены на уровне ideation. Код и живые проверки не выполнялись.",
+        "implementationVerified": true
+      }
+    }
+  ]
+}
