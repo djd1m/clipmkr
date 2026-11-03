@@ -88,6 +88,97 @@ function hashFile(path) {
   } finally { closeSync(fd); }
   return hash.digest('hex');
 }
+// Preliminary measurement only: it is not yet connected to an admission gate.
+// The apply/rollback block below remains in force until receiver and filesystem
+// checks can verify the same bound under the target lock.
+const imageMeasurement = String.raw`
+import gzip, hashlib, json, re, sys, tarfile
+
+LIMIT = 64 * 1024**3
+MAX_ENTRIES = 2000000
+BLOCK = 4096
+META = 16384
+
+def need(value):
+    if not value: raise ValueError('unsupported image archive')
+
+def digest(stream):
+    h=hashlib.sha256()
+    for chunk in iter(lambda: stream.read(1024*1024), b''): h.update(chunk)
+    return h.hexdigest()
+
+class Measured:
+    def __init__(self, stream): self.stream=stream; self.hash=hashlib.sha256(); self.size=0
+    def read(self, size=-1):
+        data=self.stream.read(size); self.size+=len(data); need(self.size<=LIMIT); self.hash.update(data); return data
+
+def measure(path, expected_hash, image_id):
+    with open(path,'rb') as f: need(digest(f)==expected_hash)
+    with tarfile.open(path,'r:') as outer:
+        names=set()
+        for entry in outer:
+            need(len(names)<MAX_ENTRIES and entry.name not in names and (entry.isdir() or entry.isfile()))
+            names.add(entry.name)
+        def member(name):
+            x=outer.getmember(name); need(x.isfile() and x.size<=LIMIT and not x.sparse); return x
+        def small(name):
+            x=member(name); need(x.size<=16*1024*1024); return outer.extractfile(x).read()
+        manifest=json.loads(small('manifest.json')); need(isinstance(manifest,list) and len(manifest)==1)
+        config_path=manifest[0]['Config']; layers=manifest[0]['Layers']
+        need(isinstance(layers,list) and 0<len(layers)<=256 and len(set(layers))==len(layers))
+        config=small(config_path); config_id='sha256:'+hashlib.sha256(config).hexdigest()
+        if config_id != image_id:
+            # Newer Docker stores the image ID as an OCI index digest. Bind the
+            # selected platform manifest, its config and every compressed layer.
+            def descriptor(d):
+                ident=d['digest']; need(re.fullmatch(r'sha256:[a-f0-9]{64}',ident))
+                raw=small('blobs/sha256/'+ident[7:]); need(len(raw)==d['size'] and 'sha256:'+hashlib.sha256(raw).hexdigest()==ident)
+                return json.loads(raw)
+            index=json.loads(small('index.json')); refs=index['manifests']
+            roots=[d for d in refs if d['digest']==image_id]; need(len(roots)==1)
+            root=descriptor(roots[0]); candidates=[]
+            for ref in root['manifests']:
+                if ref.get('platform',{}).get('os')!='linux': continue
+                obj=descriptor(ref)
+                if obj.get('config',{}).get('digest')==config_id: candidates.append(obj)
+            need(len(candidates)==1)
+            obj=candidates[0]; need(obj['config']['size']==len(config))
+            need([d['digest'] for d in obj['layers']]==['sha256:'+x.rsplit('/',1)[-1] for x in layers])
+            need(all(member(layer).size==d['size'] for layer,d in zip(layers,obj['layers'])))
+        config_json=json.loads(config); diffs=config_json['rootfs']['diff_ids']
+        need(config_json['rootfs']['type']=='layers' and len(diffs)==len(layers))
+        total_stream=0; total_alloc=0; entries=0
+        for layer,diff in zip(layers,diffs):
+            x=member(layer)
+            match=re.fullmatch(r'blobs/sha256/([a-f0-9]{64})',layer)
+            if match:
+                with outer.extractfile(x) as f: need(digest(f)==match.group(1))
+            else:
+                need(bool(re.fullmatch(r'[a-f0-9]{64}/layer\.tar',layer)))
+            with outer.extractfile(x) as compressed:
+                magic=compressed.read(2)
+                compressed.seek(0)
+                if match: need(magic==b'\x1f\x8b')
+                stream=gzip.GzipFile(fileobj=compressed) if magic==b'\x1f\x8b' else compressed
+                measured=Measured(stream)
+                with tarfile.open(fileobj=measured,mode='r|') as nested:
+                    for item in nested:
+                        entries+=1; need(entries<=MAX_ENTRIES and not item.sparse and not any(k.startswith('GNU.sparse') for k in item.pax_headers))
+                        need(item.isfile() or item.isdir() or item.issym() or item.islnk() or (item.ischr() and item.devmajor==0 and item.devminor==0 and item.name.rsplit('/',1)[-1].startswith('.wh.')))
+                        total_alloc+=META
+                        if item.isfile(): total_alloc+=((item.size+BLOCK-1)//BLOCK)*BLOCK
+                        need(total_alloc<=LIMIT)
+                for _ in iter(lambda:measured.read(1024*1024),b''): pass
+                need('sha256:'+measured.hash.hexdigest()==diff)
+                total_stream+=measured.size; need(total_stream<=LIMIT)
+        return {'streamBytes':total_stream,'allocationBytes':total_alloc,'entries':entries}
+
+if __name__=='__main__':
+    try:
+        p=json.load(sys.stdin); print(json.dumps(measure(p['path'],p['sha256'],p['id'])))
+    except Exception:
+        print('image measurement failed',file=sys.stderr); sys.exit(1)
+`;
 function prepare(revision, output) {
   requireValue(commit.test(revision || ''), 'prepare requires a full Git SHA');
   requireValue(absolutePath(output), 'prepare requires a new absolute output directory');

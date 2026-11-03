@@ -264,6 +264,44 @@ async function exercise(cases: string[]) {
 }
 
 describe('remote executor injected faults', () => {
+  it('measures gzip layer content and rejects image identity and diff-id substitutions', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'release-image-measure-'));
+    try {
+      const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
+      const match = source.match(/const imageMeasurement = String\.raw`([\s\S]*?)`;/);
+      if (!match) throw new Error('image measurement missing');
+      const fixture = String.raw`
+import gzip, hashlib, io, json, os, sys, tarfile
+H=lambda x:hashlib.sha256(x).hexdigest()
+def add(t,name,data):
+    i=tarfile.TarInfo(name); i.size=len(data); t.addfile(i,io.BytesIO(data))
+buf=io.BytesIO()
+with tarfile.open(fileobj=buf,mode='w') as t:
+    for name,data in [('small-a',b'a'),('small-b',b'b')]: add(t,name,data)
+layer=buf.getvalue(); packed=gzip.compress(layer,mtime=0)
+diff='sha256:'+H(layer)
+if sys.argv[2]=='bad-diff': diff='sha256:'+'f'*64
+config=json.dumps({'rootfs':{'type':'layers','diff_ids':[diff]}}).encode()
+config_name='blobs/sha256/'+H(config); layer_name='blobs/sha256/'+H(packed)
+manifest=json.dumps([{'Config':config_name,'Layers':[layer_name]}]).encode()
+path=os.path.join(sys.argv[1],sys.argv[2]+'.tar')
+with tarfile.open(path,'w') as t:
+    for name,data in [('manifest.json',manifest),(config_name,config),(layer_name,packed)]: add(t,name,data)
+print(json.dumps({'path':path,'sha256':H(open(path,'rb').read()),'id':'sha256:'+H(config),'streamBytes':len(layer)}))
+`;
+      const make = (mode: string) => {
+        const result = spawnSync('python3', ['-c', fixture, dir, mode], { encoding: 'utf8' });
+        expect(result.status, result.stderr).toBe(0); return JSON.parse(result.stdout);
+      };
+      const run = (data: object) => spawnSync('python3', ['-c', match[1]!], { input: JSON.stringify(data), encoding: 'utf8' });
+      const valid = make('valid'); const measured = run(valid);
+      expect(measured.status, measured.stderr).toBe(0);
+      expect(JSON.parse(measured.stdout)).toEqual({ streamBytes: valid.streamBytes, allocationBytes: 2 * (4096 + 16384), entries: 2 });
+      expect(run({ ...valid, id: `sha256:${'f'.repeat(64)}` }).status).not.toBe(0);
+      expect(run({ ...valid, sha256: 'f'.repeat(64) }).status).not.toBe(0);
+      expect(run(make('bad-diff')).status).not.toBe(0);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
   it('guards initial kinds under lock before loading images', async () => { await exercise(['test_initial_kind_guard_before_load']); });
   it('verifies legacy and newly prefixed media without another legacy copy', async () => {
     const source = readFileSync('scripts/release-candidate.mjs', 'utf8');
