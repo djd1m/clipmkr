@@ -29,6 +29,7 @@ x-s3-env: &s3-env
   S3_ACCESS_KEY: ${S3_ACCESS_KEY:?ключ S3 не задан}
   S3_SECRET_KEY: ${S3_SECRET_KEY:?секрет S3 не задан}
   S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
+  S3_KEY_PREFIX: ${S3_KEY_PREFIX-}
 
 services:
   web:
@@ -48,6 +49,7 @@ services:
       N5_METRIKA_COUNTER_ID: ${N5_METRIKA_COUNTER_ID:-}
       # Оплата ЮKassa (фича 30, ADR-019). Дефис БЕЗ двоеточия: не задана → off (экран интереса); явно ПУСТАЯ строка
       # доезжает до web и валит старт (honest-configuration CFG-I2), а не превращается в off молча.
+      N5_CHECKOUT_ENABLED: ${N5_CHECKOUT_ENABLED-true}
       N5_PAYMENTS_MODE: ${N5_PAYMENTS_MODE-off}
       N5_MAIL_MODE: ${N5_MAIL_MODE-disabled}
       N5_RESEND_API_KEY: ${N5_RESEND_API_KEY-}

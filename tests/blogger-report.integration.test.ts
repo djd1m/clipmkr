@@ -3,6 +3,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { createPool, type Pool } from '../packages/db/src/index';
 import { migrate } from '../packages/db/src/migrate';
 import { bloggerReport } from '../packages/db/src/blogger-report';
+import { PartnerService } from '../apps/web/src/server/partner';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
 
 const url = process.env.DATABASE_URL;
@@ -62,6 +63,60 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
     if (result.kind !== 'ok') throw new Error(`Unexpected report: ${result.kind}`);
     return result;
   };
+  it('matches monthly per-link totals rates exclusions and immutable attribution', async () => {
+    const start = '2029-12-31T21:00:00Z', end = '2030-01-31T21:00:00Z';
+    await attribute(visitor, code, '2029-12-01T00:00:00Z');
+    const sale = async (link: string, amount: 99000 | 149000 | 399000, opts: { account?: string; status?: string; intentStatus?: string; review?: boolean; fulfilled?: boolean; at?: string } = {}) => {
+      const intent = randomUUID(), provider = randomUUID(), who = opts.account ?? visitor;
+      const sku = amount === 99000 ? 'start_v1' : amount === 149000 ? 'addon_v1' : 'pro_v1';
+      const seconds = amount === 99000 ? 18000 : amount === 149000 ? 36000 : 108000;
+      await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+        VALUES($1::uuid,$2,$3,$1::text,$4,$5,$6,'credits_v1_d00',$7,$8,'2029-12-01',$9)`,
+        [intent, who, amount, provider, opts.intentStatus ?? 'succeeded', sku, seconds, opts.fulfilled === false ? null : start, link]);
+      await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
+        VALUES($1,$2,'yookassa',$3,$4,$5,$6,$7,$8)`, [intent, who, provider, amount, opts.status ?? 'succeeded', opts.review ?? false, opts.review ? 'amount_mismatch' : null, opts.at ?? start]);
+      return intent;
+    };
+    await sale(code, 99000, { at: start });
+    const refundable = await sale(code, 149000, { at: '2030-01-10T00:00:00Z' });
+    await pool.query("UPDATE partner_code SET status='blocked' WHERE id=$1", [code]);
+    await pool.query("UPDATE attribution SET partner_code_id=$2,assigned_at='2030-01-11' WHERE account_id=$1", [visitor, campaign]);
+    await sale(campaign, 399000, { at: '2030-01-12T00:00:00Z' });
+    const totals = async (rate: 20 | 30 | null, revenues: [number, number, number]) => {
+      await pool.query('UPDATE account SET blogger_commission_percent=$2 WHERE id=$1', [blogger, rate]);
+      const result = await report('2030-01'); const entry = result.bloggers.find(row => row.account_id === blogger)!;
+      const r1 = entry.codes.find(row => row.id === code)!.counters, r2 = entry.codes.find(row => row.id === campaign)!.counters;
+      for (const [counter, revenue] of [[r1, revenues[0]], [r2, revenues[1]], [entry.counters, revenues[2]]] as const) {
+        expect(counter.revenue_minor).toBe(revenue);
+        expect(counter.commission_estimate_minor).toBe(rate === null ? null : Math.floor(revenue * rate / 100));
+      }
+      expect(r1.paying_users).toBe(1); expect(r2.paying_users).toBe(1); expect(entry.counters.paying_users).toBe(1);
+      return entry;
+    };
+    for (const rate of [null, 20, 30] as const) {
+      const entry = await totals(rate, [248000, 399000, 647000]);
+      expect(entry.counters.payments).toBe(3);
+      expect(entry.codes.find(row => row.id === code)!.counters.payments).toBe(2);
+      expect(entry.codes.find(row => row.id === campaign)!.counters.payments).toBe(1);
+    }
+    // The blogger cabinet is all-time; at this point its only sales are the January fixture.
+    const cabinet = new PartnerService(pool, 'test-secret');
+    expect((await cabinet.dashboard(blogger)).counters).toMatchObject({ purchases: 3, revenue_minor: 647000 });
+    expect((await cabinet.dashboard(blogger, code)).counters).toMatchObject({ purchases: 2, revenue_minor: 248000 });
+    expect((await cabinet.dashboard(blogger, campaign)).counters).toMatchObject({ purchases: 1, revenue_minor: 399000 });
+    expect((await cabinet.dashboard(second)).counters).toMatchObject({ purchases: 0, revenue_minor: 0 });
+    await expect(cabinet.dashboard(second, code)).rejects.toMatchObject({ status: 403 });
+    for (const opts of [{ status: 'refunded' }, { intentStatus: 'canceled' }, { intentStatus: 'created' },
+      { review: true }, { fulfilled: false }, { account: blogger }, { at: end }]) {
+      await sale(code, 99000, opts);
+      expect((await totals(20, [248000, 399000, 647000])).counters.payments).toBe(3);
+    }
+    expect(await bloggerReport(pool, visitor, '2030-01')).toEqual({ kind: 'forbidden' });
+    await pool.query("UPDATE payment SET status='refunded' WHERE intent_id=$1", [refundable]);
+    for (const rate of [null, 20, 30] as const) {
+      const entry = await totals(rate, [99000, 399000, 498000]); expect(entry.counters.payments).toBe(2);
+    }
+  });
   it('monthly report counts unique people and verified payments', async () => {
     await attribute(); await attribute(another, campaign);
     await video(); await video(); await video(another);

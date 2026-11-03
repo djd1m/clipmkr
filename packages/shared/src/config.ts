@@ -92,7 +92,9 @@ export function loadWebConfig(env: Environment) {
   if (Buffer.byteLength(sessionSecret) < 32 || sessionSecret !== sessionSecret.trim()) {
     throw new Error('SESSION_SECRET непригодно: короткий секрет ослабляет защиту сессий; нужно не менее 32 байт без краевых пробелов');
   }
-  return Object.freeze({ ...connections, limits, publicOrigin, sessionSecret, billingMode: loadBillingMode(env),
+  const checkout = env.N5_CHECKOUT_ENABLED ?? 'true';
+  if (checkout !== 'true' && checkout !== 'false') throw new Error('N5_CHECKOUT_ENABLED: нужно true или false');
+  return Object.freeze({ ...connections, limits, publicOrigin, sessionSecret, billingMode: loadBillingMode(env), checkoutEnabled: checkout === 'true',
     s3: Object.freeze({ ...loadS3Config(env), publicEndpoint: loadS3PublicEndpoint(env) }),
     support: loadSupportConfig(env), mail: loadMailConfig(env),
     trustedProxyHops: loadTrustedProxyHops(env), payments: loadPaymentsConfig(env) });
@@ -115,7 +117,10 @@ export function loadS3Config(env: Environment) {
   }
   const forcePathStyle = required(env, 'S3_FORCE_PATH_STYLE', 'не определён способ адресации бакета');
   if (!['true', 'false'].includes(forcePathStyle)) throw new Error('S3_FORCE_PATH_STYLE непригодно: нужно true или false');
+  const keyPrefix = env.S3_KEY_PREFIX ?? '';
+  if (keyPrefix && !/^(?:[a-z0-9_-]+\/)+$/.test(keyPrefix)) throw new Error('S3_KEY_PREFIX: нужен канонический prefix с завершающим /');
   return Object.freeze({ endpoint,
+    ...(keyPrefix ? { keyPrefix } : {}),
     region: required(env, 'S3_REGION', 'невозможно подписать загрузку'),
     bucket: required(env, 'S3_BUCKET', 'не определено хранилище файлов'),
     accessKeyId: required(env, 'S3_ACCESS_KEY', 'невозможно подписать загрузку'),

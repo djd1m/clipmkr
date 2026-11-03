@@ -118,3 +118,27 @@ describe('гостевая страница при включённой опла
     expect(off).toContain('id="pro-interest"'); expect(off).not.toContain('/upgrade');
   });
 });
+
+it('pauses checkout creation while webhook and status remain live', async () => {
+  const { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhookHandler } = await import('../apps/web/src/server/billing-handler');
+  const createIntent = vi.fn(), createPayment = vi.fn();
+  const provider = { name: 'fake', createPayment, getPayment: vi.fn(), verifyNotification: vi.fn().mockResolvedValue({ kind: 'ignored' }) };
+  const deps = { checkoutEnabled: false, publicOrigin: 'https://clipmkr.test', trustedProxyHops: 1,
+    provider, authenticate: vi.fn().mockResolvedValue({ account_id: 'account' }), allowMutation: vi.fn().mockResolvedValue(true),
+    allowRead: vi.fn().mockResolvedValue(true), createIntent, setIntentPayment: vi.fn(), markCanceled: vi.fn(),
+    readIntent: vi.fn().mockResolvedValue({ id: '00000000-0000-4000-8000-000000000000', status: 'succeeded', account_plan: 'free', plan_source: 'none', plan_paid_until: null }),
+    applyPayment: vi.fn(), recordRefund: vi.fn(), log: vi.fn() } as unknown as import('../apps/web/src/server/billing-handler').BillingDependencies;
+  const headers = { origin: 'https://clipmkr.test', cookie: '__Host-n5_session=' + 'a'.repeat(43), 'x-forwarded-for': '198.51.100.7, 127.0.0.1', 'content-type': 'application/json' };
+  for (const body of ['not-json', '{"idempotency_key":"repeat-key"}']) {
+    const request = new Request('https://clipmkr.test/api/checkout', { method: 'POST', headers, body });
+    expect((await createCheckoutHandler(deps)(request)).status).toBe(503);
+    expect(request.bodyUsed).toBe(false);
+  }
+  expect(createIntent).not.toHaveBeenCalled(); expect(createPayment).not.toHaveBeenCalled();
+  expect((await createCheckoutHandler(deps)(new Request('https://clipmkr.test/api/checkout', { method: 'POST', headers: { ...headers, origin: 'https://foreign.test' }, body: '{}' }))).status).toBe(403);
+  const id = '00000000-0000-4000-8000-000000000000';
+  expect((await createCheckoutStatusHandler(deps)(new Request('https://clipmkr.test/api/checkout/' + id, { headers }), id)).status).toBe(200);
+  const hook = new Request('https://clipmkr.test/api/webhooks/yookassa', { method: 'POST', headers: { 'x-forwarded-for': '185.71.76.10, 127.0.0.1' }, body: '{}' });
+  expect((await createPaymentWebhookHandler(deps)(hook)).status).toBe(200);
+  expect(provider.verifyNotification).toHaveBeenCalledOnce();
+});

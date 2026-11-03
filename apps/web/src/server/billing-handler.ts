@@ -29,6 +29,7 @@ export const PAYMENT_DESCRIPTION = `КлипМейкер: тариф ${PAID_PLAN
 
 export interface BillingDependencies {
   billingMode?: BillingMode;
+  checkoutEnabled?: boolean;
   billingPolicy?: (accountId:string)=>Promise<string|null>;
   publicOrigin: string;
   trustedProxyHops: number;
@@ -98,6 +99,7 @@ export function createCheckoutHandler(deps: BillingDependencies) {
     if (!provider) return notFound();
     const entry = await guardMutation(request, deps);
     if (entry instanceof Response) return entry;
+    if (deps.checkoutEnabled === false) return fail(503, 'checkout_paused', 'Оформление оплаты временно приостановлено. Попробуйте позже');
     if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail(422, 'invalid_body', 'Ожидается JSON');
     const raw = await readRawBody(request, MAX_CHECKOUT_BYTES);
     let body: unknown;

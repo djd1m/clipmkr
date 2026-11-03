@@ -30,6 +30,9 @@ describe('Проверяемость проброса окружения', () =>
       for (const folder of ['apps/web/src', 'apps/worker', 'packages/shared/src', 'packages/queue/src']) {
         cpSync(folder, path.join(dir, folder), { recursive: true });
       }
+      cpSync('Dockerfile', path.join(dir, 'Dockerfile'));
+      cpSync('package.json', path.join(dir, 'package.json'));
+      cpSync('apps/web/package.json', path.join(dir, 'apps/web/package.json'));
       cpSync('packages/db/src', path.join(dir, 'packages/db/src'), { recursive: true });
       cpSync('packages/s3/src', path.join(dir, 'packages/s3/src'), { recursive: true });
       const file = path.join(dir, 'packages/shared/src/config.ts');
@@ -39,6 +42,47 @@ describe('Проверяемость проброса окружения', () =>
       expect(checkWiring(compose(), dir)).toContain('web: N5_TEST_UNWIRED');
       writeFileSync(file, source);
       expect(checkWiring(compose(), dir)).toEqual([]);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+  it('classifies release revision as build-time and still detects broken build and runtime wiring', () => {
+    const config = compose();
+    delete config.services.web!.environment.NEXT_PUBLIC_RELEASE_REVISION;
+    expect(checkWiring(config)).toEqual([]);
+    delete config.services.web!.environment.N5_PUBLIC_ORIGIN;
+    expect(checkWiring(config)).toContain('web: N5_PUBLIC_ORIGIN');
+    const dir = mkdtempSync(path.join(tmpdir(), 'n5-build-wiring-'));
+    try {
+      for (const folder of ['apps/web/src', 'apps/worker', 'packages/shared/src', 'packages/queue/src', 'packages/db/src', 'packages/s3/src']) cpSync(folder, path.join(dir, folder), { recursive: true });
+      cpSync('Dockerfile', path.join(dir, 'Dockerfile')); cpSync('package.json', path.join(dir, 'package.json')); cpSync('apps/web/package.json', path.join(dir, 'apps/web/package.json'));
+      const df = path.join(dir, 'Dockerfile'); const original = readFileSync(df, 'utf8');
+      writeFileSync(df, original.replace('ENV NEXT_PUBLIC_RELEASE_REVISION=$RELEASE_REVISION', 'ENV NEXT_PUBLIC_RELEASE_REVISION=wrong'));
+      expect(() => checkWiring(compose(), dir)).toThrow('build-time');
+      writeFileSync(df, original);
+      const app = path.join(dir, 'apps/web/src/app/health/route.ts');
+      writeFileSync(app, readFileSync(app, 'utf8') + '\nconst unrelated = process.env.NEXT_PUBLIC_UNKNOWN;\n');
+      expect(checkWiring(compose(), dir)).toContain('web: NEXT_PUBLIC_UNKNOWN');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+  it('wires S3_KEY_PREFIX to web and storage workers', () => {
+    for (const role of ['web', 'worker-stt', 'worker-video']) {
+      const config = compose(); delete config.services[role]!.environment.S3_KEY_PREFIX;
+      expect(checkWiring(config)).toContain(`${role}: S3_KEY_PREFIX`);
+    }
+    const config = compose(); delete config.services['worker-llm']!.environment.S3_KEY_PREFIX;
+    expect(checkWiring(config)).toEqual([]);
+    const dir = mkdtempSync(path.join(tmpdir(), 'n5-prefix-wiring-'));
+    try {
+      for (const folder of ['apps/web/src', 'apps/worker', 'packages/shared/src', 'packages/queue/src', 'packages/db/src', 'packages/s3/src']) cpSync(folder, path.join(dir, folder), { recursive: true });
+      cpSync('Dockerfile', path.join(dir, 'Dockerfile')); cpSync('package.json', path.join(dir, 'package.json')); cpSync('apps/web/package.json', path.join(dir, 'apps/web/package.json'));
+      for (const role of ['stt', 'render']) {
+        const file = path.join(dir, `apps/worker/workers/${role}.ts`); const source = readFileSync(file, 'utf8');
+        writeFileSync(file, source.replace('S3_KEY_PREFIX: process.env.S3_KEY_PREFIX,', ''));
+        expect(checkWiring(compose(), dir)).toContain(`${role === 'stt' ? 'worker-stt' : 'worker-video'} adapter: S3_KEY_PREFIX`);
+        writeFileSync(file, source);
+      }
+      const file = path.join(dir, 'apps/web/src/server/environment.ts');
+      writeFileSync(file, readFileSync(file, 'utf8').replace('S3_KEY_PREFIX: process.env.S3_KEY_PREFIX,', ''));
+      expect(checkWiring(compose(), dir)).toContain('web environment.ts: S3_KEY_PREFIX');
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   it('S3_ENDPOINT не режется до S; динамическое чтение не пропускается', () => {

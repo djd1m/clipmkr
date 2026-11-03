@@ -2,6 +2,7 @@
 export function readEnvironment() {
   return {
     S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_KEY_PREFIX: process.env.S3_KEY_PREFIX,
     S3_PUBLIC_ENDPOINT: process.env.S3_PUBLIC_ENDPOINT,
     S3_REGION: process.env.S3_REGION,
     S3_BUCKET: process.env.S3_BUCKET,
@@ -43,6 +44,7 @@ export function readEnvironment() {
     SESSION_SECRET: process.env.SESSION_SECRET,
     // Оплата ЮKassa (фича 30): режим и ключи магазина читает только web.
     N5_BILLING_MODE: process.env.N5_BILLING_MODE,
+    N5_CHECKOUT_ENABLED: process.env.N5_CHECKOUT_ENABLED,
     N5_PAYMENTS_MODE: process.env.N5_PAYMENTS_MODE,
     YOOKASSA_SHOP_ID: process.env.YOOKASSA_SHOP_ID,
     YOOKASSA_SECRET_KEY: process.env.YOOKASSA_SECRET_KEY,

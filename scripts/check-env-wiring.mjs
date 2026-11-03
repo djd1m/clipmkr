@@ -101,6 +101,22 @@ export function collectWebConfigEnvironment(projectRoot) {
   if (!names.size) throw new Error('Требования loadWebConfig не найдены');
   return names;
 }
+// NEXT_PUBLIC_RELEASE_REVISION is substituted into the bundle during the build.
+function checkReleaseBuild(projectRoot) {
+  const dockerfile = fs.readFileSync(path.join(projectRoot, 'Dockerfile'), 'utf8');
+  const lines = dockerfile.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'));
+  const start = lines.findIndex((line) => /^FROM\s+\S+\s+AS\s+build$/i.test(line));
+  if (start < 0) throw new Error('Нет Docker build stage');
+  const end = lines.findIndex((line, i) => i > start && /^FROM\s/i.test(line));
+  const stage = lines.slice(start + 1, end < 0 ? undefined : end);
+  const arg = stage.findIndex((line) => /^ARG RELEASE_REVISION(?:=\S+)?$/.test(line));
+  const env = stage.findIndex((line) => /^ENV NEXT_PUBLIC_RELEASE_REVISION=\$\{?RELEASE_REVISION\}?$/.test(line));
+  const build = stage.findIndex((line) => /^RUN npm run build$/.test(line));
+  if (arg < 0 || env <= arg || build <= env || stage.slice(env + 1, build).some((line) => /^(?:ARG|ENV)\s+(?:NEXT_PUBLIC_RELEASE_REVISION|RELEASE_REVISION)(?:=|\s|$)/.test(line))) throw new Error('Нарушена build-time цепочка RELEASE_REVISION');
+  const root = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+  const web = JSON.parse(fs.readFileSync(path.join(projectRoot, 'apps/web/package.json'), 'utf8'));
+  if (!/npm run build --workspace=apps\/web(?:\s|$)/.test(root.scripts?.build ?? '') || !/(?:^|\s)next build(?:\s|$)/.test(web.scripts?.build ?? '')) throw new Error('Next build не входит в сборку');
+}
 export function checkWiring(compose, projectRoot = process.cwd()) {
   if (!compose?.services || typeof compose.services !== 'object') throw new Error('Пустой compose');
   const missing = [];
@@ -108,6 +124,7 @@ export function checkWiring(compose, projectRoot = process.cwd()) {
     const environment = compose.services[service]?.environment;
     if (!environment || typeof environment !== 'object' || Array.isArray(environment)) throw new Error(`Недоступен environment: ${service}`);
     const names = collectEnvironment(entries, projectRoot);
+    if ((service === 'worker-stt' || service === 'worker-video') && !names.has('S3_KEY_PREFIX')) missing.push(`${service} adapter: S3_KEY_PREFIX`);
     if (service === 'web') {
       const reader = collectEnvironment(['apps/web/src/server/environment.ts'], projectRoot);
       for (const name of collectWebConfigEnvironment(projectRoot)) {
@@ -116,6 +133,7 @@ export function checkWiring(compose, projectRoot = process.cwd()) {
       }
     }
     for (const name of names) {
+      if (service === 'web' && name === 'NEXT_PUBLIC_RELEASE_REVISION') { checkReleaseBuild(projectRoot); continue; }
       if (!(name in EXCEPTIONS) && (environment[name] === undefined || environment[name] === null)) missing.push(`${service}: ${name}`);
     }
   }

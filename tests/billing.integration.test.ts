@@ -41,9 +41,10 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
   afterAll(async () => { await yk?.close(); if (pool) { await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); await pool.end(); } });
 
   const yookassa = () => createYooKassaProvider({ shopId: SHOP_ID, secretKey: SECRET, testMode: true, apiBase: yk.apiBase });
-  function wire(provider: PaymentProvider | null = yookassa()) {
+  function wire(provider: PaymentProvider | null = yookassa(), checkoutEnabled = true) {
     const deps = createBillingDependencies({ pool, publicOrigin: PUBLIC, trustedProxyHops: 2, provider, allowMutation: async () => true,
       allowRead: async () => true, authenticate: async (token) => (sessions.has(token) ? { account_id: sessions.get(token)! } : null), log: () => {} });
+    deps.checkoutEnabled = checkoutEnabled;
     const call = async (handler: (r: Request) => Promise<Response>, url: string, init: RequestInit) => {
       const r = await handler(new Request(url, init));
       return { status: r.status, body: await r.json() as Json };
@@ -91,6 +92,21 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     yk.pay(payment.id);
     return { intent, paymentId: payment.id };
   }
+
+  it('pauses checkout creation while webhook and status remain live', async () => {
+    const a = await account(); const normal = wire(); const frozen = wire(yookassa(), false); const idempotency = key();
+    const before = await normal.checkout(a.token, { idempotency_key: idempotency });
+    expect(before.status).toBe(201);
+    const intent = before.body.data!.intent_id as string; const payment = yk.byOrder(intent)!;
+    const countBefore = await count('SELECT count(*)::int AS n FROM payment_intent WHERE account_id=$1', [a.id]);
+    expect((await frozen.checkout(a.token, { idempotency_key: idempotency })).status).toBe(503);
+    expect((await frozen.checkout(a.token, { idempotency_key: key() })).status).toBe(503);
+    expect(await count('SELECT count(*)::int AS n FROM payment_intent WHERE account_id=$1', [a.id])).toBe(countBefore);
+    yk.pay(payment.id);
+    expect((await frozen.notify(yk.notification(payment.id))).body.data).toMatchObject({ applied: true });
+    expect((await frozen.notify(yk.notification(payment.id))).body.data).toMatchObject({ applied: false, reason: 'duplicate' });
+    expect((await frozen.status(a.token, intent)).body.data).toMatchObject({ status: 'succeeded' });
+  });
 
   it('snapshots valid referral once under the account lock and excludes self, rejected and unknown', async () => {
     const a = await account(), first = await account(), second = await account();
