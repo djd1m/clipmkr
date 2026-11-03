@@ -252,7 +252,7 @@ AM-8 (последнее явное решение владельца, ADR-003):
 AM-9 (владелец, FR-1): cloud-c/site-test только через SSH, controller localdevstage исключён. Confirmation: правильные две цели используют SSH, прежняя local цель отвергнута → test `uses SSH for cloud-c and site-test and rejects localdevstage` in `tests/release-candidate.test.ts` (fails if reverted).
 AM-10 (владелец, FR-4/ADR-002): непустой site сохраняет все 5 accounts/4 videos/10 clips/6 payments/referrals, copy только whitelist с size/SHA, originals и logical DB keys прежние; pending uploads разрешены до смены namespace. Confirmation: чужая ссылка/copy mismatch/pending блокируют apply → test `preserves nonempty site data and rejects foreign copy and pending multipart` in `tests/release-candidate.test.ts` (fails if reverted).
 AM-11 (владелец, FR-5): superseded by AM-20. Требование согласованного TEST shop окна сохранено; несуществующий CLI переключения callback и вымышленный unit test не являются способом операторской приёмки.
-AM-12 (inventory, FR-7): site 3,6 ГБ/97%, фактический incremental image/archive admission, без global prune/удаления rollback images. Confirmation: дефицит или чужой site source отклоняются → test `rejects site identity drift and insufficient incremental image archive space` in `tests/release-candidate.test.ts` (fails if reverted).
+AM-12 (inventory, FR-7): site 3,6 ГБ/97%, фактический incremental image/archive admission, без global prune/удаления rollback images. Confirmation: дефицит или чужой site source отклоняются → test `rejects site identity drift and insufficient incremental image archive space` in `tests/release-disk-admission.test.ts` (fails if reverted).
 AM-13 (реальный full-suite source 71e7812, FR-9): точная build-time release var классификация, runtime/build wiring guard сохранён, 7 failures не скрываются. Confirmation: broken binding/unknown public var/runtime omission находят ошибки → test `classifies release revision as build-time and still detects broken build and runtime wiring` in `tests/wiring.test.ts` (fails if reverted).
 AM-14 (actual Docker labels/root, FR-4): app/infra projects отдельные, pinned containers/volumes/networks, SQL DB из application DATABASE_URL = binding.dbName и host → test DB, не POSTGRES_DB default/main. Confirmation: valid split topology проходит, любой binding mismatch до SQL отказывает → test `accepts split app infra projects and rejects database URL binding mismatches` in `tests/release-candidate.test.ts` (fails if reverted).
 AM-15 (import graph/wiring, FR-8): optional S3_KEY_PREFIX явно проходит web/stt/render adapters и fixtures, worker-llm не получает storage key. Confirmation: пропущенное поле adapter/Compose обнаруживается → test `wires S3_KEY_PREFIX to web and storage workers` in `tests/wiring.test.ts` (fails if reverted).
@@ -294,6 +294,11 @@ Git/Python и остальные реально используемые тес�
 штатный путь. Confirmation: → test `runs acceptance with Git metadata and mandatory resource proof`
 in `tests/wiring.test.ts` проверяет положительную проводку и отказ при потере
 обязательных входов. Итог проверяется настоящим test image с полным suite.
+Lint выявил 761 строку в controller test: helpers выносятся в
+`tests/fixtures/release-candidate-fixture.ts` с единственным новым export
+`releaseCandidateFixture`; disk cases — в `tests/release-disk-admission.test.ts`.
+Смысл тестов сохраняется, лимит 500 строк и проверки не ослабляются. Новые имена
+требуют настоящего K1; релевантные `.dockerignore` и test runner входят в snapshot.
 
 ## Поправка владельца: настоящие S3 проверки
 
@@ -319,6 +324,11 @@ Fake HTTP unit не выдаётся за live proof. Расширение code 
 фактических исправлений с обеими originating reviewer roles.
 
 EXPECTED_CODE_TARGETS:
+- .dockerignore
+- scripts/test.mjs
+- scripts/test-skip-reporter.ts
+- tests/fixtures/release-candidate-fixture.ts
+- tests/release-disk-admission.test.ts
 - docs/REPRODUCE.md
 - scripts/release-candidate.mjs
 - Dockerfile
