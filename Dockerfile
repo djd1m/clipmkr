@@ -25,11 +25,15 @@ RUN npm prune --omit=dev
 
 # ── build: один раз для обеих рантайм-целей ──
 FROM deps AS build
+ARG RELEASE_REVISION=unversioned
+ENV NEXT_PUBLIC_RELEASE_REVISION=$RELEASE_REVISION
 COPY . .
 RUN npm run build
 
 # ── web: SSR Next.js; НЕТ ffmpeg/ffprobe (канон §6: медиа-инструменты только у воркеров) ──
 FROM node:22.22-alpine AS web
+ARG RELEASE_REVISION=unversioned
+LABEL org.opencontainers.image.revision=$RELEASE_REVISION
 WORKDIR /app
 ENV NODE_ENV=production TZ=Europe/Moscow
 COPY --from=prod-deps /app/node_modules ./node_modules
@@ -44,6 +48,8 @@ CMD ["sh", "-c", "node apps/web/.next/preflight/preflight.js && exec node node_m
 
 # ── worker: ffmpeg 7 и ffprobe; один образ на три контейнера, команда задаётся в compose ──
 FROM node:22.22-alpine AS worker
+ARG RELEASE_REVISION=unversioned
+LABEL org.opencontainers.image.revision=$RELEASE_REVISION
 WORKDIR /app
 # ffmpeg в alpine приносит ffprobe той же версии; проверяется при сборке, а не предполагается.
 # python3 и OpenCV — ради поиска лиц (FR-2): кадрирование ставится по ЛЮДЯМ, а не по половинам
