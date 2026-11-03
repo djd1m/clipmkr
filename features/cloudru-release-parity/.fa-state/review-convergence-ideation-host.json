@@ -16,8 +16,8 @@
     }
   ],
   "snapshot": {
-    "nonce": "e9449a2e-0b4f-463b-b686-e7a15eb7134a",
-    "revision": "c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6",
+    "nonce": "3a6d97cf-4396-4b28-be4e-d8b47c69eb3a",
+    "revision": "88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a",
     "manifest": [
       {
         "path": "features/cloudru-release-parity/00_complexity_assessment.md",
@@ -25,27 +25,31 @@
       },
       {
         "path": "features/cloudru-release-parity/01_requirements.md",
-        "digest": "70c102e732fafcd84d9d25df69dd055486f8d514a7fbf61473359e543ffe4827"
+        "digest": "0ec1ef39c89cf3addd5d9d3601976ae0fe0f5cc80baf3cfd3c4961b337501d47"
       },
       {
         "path": "features/cloudru-release-parity/02_research.md",
-        "digest": "0911cb015b5370477d54050c80ab3160d1ee4edf641de4910f9901eadb76d434"
+        "digest": "cb03ed3789a44ee99133e892abf4f42355afed7b0961be090a313696e0863208"
       },
       {
         "path": "features/cloudru-release-parity/03_adr/001-release-manifest.md",
-        "digest": "e236488a9e4e57259a8a70596fb6b229687b64f000e938805ba626513f1b8660"
+        "digest": "9862940151449c27c2ab08bed7ff21e8f3bfce081814957004c037e1e881e680"
       },
       {
         "path": "features/cloudru-release-parity/03_adr/002-isolated-cloud-candidate.md",
-        "digest": "4b80e40e2dbaab320b372dc19a9ae958c142f4a4f1a1ac472374f28e6a3e21ad"
+        "digest": "ef74f08733ed90bb0153b8eba6d9aae0715db6e94828ac6aa21da77ed306474d"
+      },
+      {
+        "path": "features/cloudru-release-parity/03_adr/003-same-bucket-prefix.md",
+        "digest": "f656aa047ad26f89b51f5bc4aed7b72195fee5ba5ad5deb04317cc30d65e2cb3"
       },
       {
         "path": "features/cloudru-release-parity/04_domain_model.md",
-        "digest": "c7078a373182b9c0333aec49d26b0cd99ee19595bf9c72d1b69bef59b62a000e"
+        "digest": "c9471027b8f885ce969b06893a88468aed5add35b71cae95b6df36d4e682dfba"
       },
       {
         "path": "features/cloudru-release-parity/05_architecture.md",
-        "digest": "c8fcc55a70f45b0f740a26df7d5db79be24e71edd45c6dde0a3a992ffc86ff9c"
+        "digest": "45526716fe0bc40f1b943571fc0e3e07052146ead18dc65aa2390dab3cdec5f4"
       }
     ]
   },
@@ -214,6 +218,18 @@
         "features/cloudru-release-parity/05_architecture.md"
       ],
       "evidence": "ADR-002:49–52 и архитектура:54–58 корректно оставляют маршрут blocked, но не задают полную матрицу proof из core-cjm §§2–3 и свидетельство сохранения прежнего получателя."
+    },
+    {
+      "id": "QT-07",
+      "owner": "qcsd-testability",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Дополнить матрицу CJM-12 измеримыми сценариями выбранного месяца и разбивки по каждому блогеру и ссылке: 20% и 30% от подтверждённой выручки пакетов, отсутствие расчёта без назначенной ставки, исключение возвратов, платежей на разборе и неподтверждённых платежей, неизменность attribution намерения после смены ссылки. Для каждого задать входные данные, ожидаемые суммы/принадлежность и evidence обеих ролей; до фактического proof соответствующая строка и полный core-CJM не PASS.",
+      "scope": [
+        "features/cloudru-release-parity/01_requirements.md",
+        "features/cloudru-release-parity/05_architecture.md"
+      ],
+      "evidence": "01_requirements.md CJM-12 требует совпадение регистраций/использования/оплат и оценку 20/30%, но не задаёт выбранный месяц, разбивку по каждой ссылке, отсутствие ставки, исключаемые статусы или сохранение attribution при смене ссылки. docs/acceptance/core-cjm.md §3 требует эти правила; TASK-7 лишь ссылается на CJM-01–12 и обе статистики. Без различающих входов и ожидаемых результатов сумма может совпасть при неверной выборке."
     }
   ],
   "reviewSeen": true,

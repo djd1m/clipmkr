@@ -1,11 +1,32 @@
 # Проект решения
 
-Два ADR и архитектура находятся в `features/cloudru-release-parity/`.
+Три ADR и архитектура находятся в `features/cloudru-release-parity/`.
 Manifest связывает полный SHA, source archive, image IDs и checksum доставки.
 Только явные тестовые цели, отдельные state/lock/receipt; после обрыва сначала
-reconcile. Существующие test DB/Redis/аккаунты сохраняются, S3 отделяется до
-запуска фоновых процессов. Автоматический откат требует одинаковой схемы.
+reconcile. Controller `/home/clipmkr`, targets cloud-c/site-test только SSH;
+localdevstage исключён. ВСЕ test DB/Redis/accounts/media/payments/referrals сохраняются.
+Site-test app web/workers и DB/Redis имеют разные compose projects. Профиль связывает
+applicationProject/databaseProject/redisProject, pinned containers/volumes/network;
+SQL использует DB из application DATABASE_URL = binding.dbName и host → exact test
+DB container, не POSTGRES_DB default/main. DB/Redis create/up/dependency start запрещены.
+Новый site sourceIdentity/account SHA/journal matched реальный restore test.dump 5/28
+получен root; до apply drift check и baseline прочих данных.
+
+S3: owner явно выбрал нынешний общий key с полными production-правами, только SDK
+boundary bucket+tests/cloud/ либо tests/site/. Новых key/SA/policy и provider403 нет.
+Root read-only: policy отсутствует, CORS c/n5 PUT допускает, versioning disabled;
+production settings прежние. AWS SDK middleware на internal/signing clients,
+logical DB keys/erasure/multipart/retention прежние. MinIO wire+outside canary proof,
+Cloud canary только внутри tests. Site media копируется по DB-whitelist с size/SHA,
+старые объекты сохраняются; старые multipart разрешить до namespace change.
+Автоматический app rollback требует одинаковых схемы и namespace.
 
 Cloud использует обычный тестовый origin без cookie выбора backend. Native
-платёжная доставка остаётся явной зависимостью. Отсутствие её настройки не
-подменяется симуляцией. Ресурсные и provider-бюджеты конечны.
+платёжная доставка нынешнего TEST shop требует конкретного окна/UI-оператора/drain/
+switch/native-replay-credits-referrals/drain/возврата n5 callback. До окна callback
+не меняется; shop Basic auth API не управляет notifications, реальные списания off.
+Ресурсные бюджеты конечны: site 3,6 ГБ/97% требует фактического release admission
+incremental images/archives с сохранением rollback images, без global prune.
+Семь failures full-suite source 71e7812 требуют точного build-time wiring fix,
+immutable health уже build-tested; baseline full PASS пока нет.
+Revision pending: root prepare/три actual focused QCSD/K1/K2, coding приостановлен.

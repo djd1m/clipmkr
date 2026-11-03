@@ -1,22 +1,27 @@
 # Требования к версии Cloud.ru и общему пути обновления
 
-Статус: подготовка по указанию владельца 03.11.2026. Код доставки и новый
-Cloud.ru-кандидат ещё не реализованы и не приняты.
+Статус: revision pending focused QCSD после уточнений владельца 03.11.2026.
+Есть частичный controller; доставка и полный Cloud CJM ещё не приняты.
 
 ## Участники
 
 Владелец принимает кандидат и отдельно решает о production; оператор изменяет
-код на текущем VPS; пользователи, блогеры и владелец используют существующий CJM.
+код в controller workspace `/home/clipmkr`; пользователи, блогеры и владелец используют существующий CJM.
 
 ## Функциональные требования
 
 ### FR-1 — единая исходная версия
 
-После правки на текущем VPS оператор фиксирует проверенный Git-коммит. Одна
-команда доставки разворачивает согласованную версию на явно выбранных тестовых
-целях текущего VPS и Cloud.ru. После успеха обе цели подтверждают тот же commit
+После правки в `/home/clipmkr` оператор фиксирует проверенный Git-коммит. Одна
+команда доставки разворачивает версию на двух явных SSH-целях: `cloud-c`
+(Cloud, c.clipmkr.ru) и `site-test` (существующий n5 test на сервере сайта).
+После успеха обе цели подтверждают тот же commit
 и ожидаемые образы. Ошибка одной цели не превращается в общий успешный результат.
 Прямые несохранённые правки работающих контейнеров не являются источником версии.
+По уточнению владельца «сервер сайта и сервер разработки — одно и то же»;
+под «этим VPS» он понимает site-server. Физический controller workspace по inventory
+расположен отдельно; это не третья цель. Старый `localdevstage` исключён,
+новый dev-контур не создаётся. Оба targets используют SSH, локального executor нет.
 
 ### FR-2 — E2E на Cloud.ru
 
@@ -29,28 +34,67 @@ Cloud.ru-кандидат ещё не реализованы и не приня�
 ### FR-3 — демонстрация повторного изменения
 
 После первого успешного выпуска выполняется отдельная небольшая проверяемая
-правка на текущем VPS, новый коммит и повторная доставка на обе тестовые цели.
+правка в controller workspace, новый коммит и повторная доставка на обе SSH-цели.
 Подтверждаются новая версия и видимый результат на Cloud.ru; откат возвращает
 предыдущий согласованный выпуск без отката пользовательской БД вслепую.
 
 ### FR-4 — изоляция и сохранность
 
 Перед запуском кандидата сняты inventory и независимые backup существующих БД.
-Кандидат не получает права изменения production S3 и не делит production
-PostgreSQL/Redis/секреты. Изолированные существующие тестовые БД можно обновлять
-на месте только добавляющими миграциями после backup/restore и сверки аккаунтов.
-Прежние данные Cloud.ru не стираются и не заменяются production-копией.
-Восстановление копии проверяется отдельно.
+Кандидат не делит production PostgreSQL/Redis/session secrets. S3 — явное owner
+exception FR-8: нынешний общий key сохраняет полные production-права, безопасность
+тестовых операций обеспечивается кодом/SDK namespace, IAM-изоляция не заявляется.
+Общий bucket допустим. Cloud: 3 аккаунта,
+0 media/payments, journal 26; `site-test`: 5 аккаунтов, 4 видео, 10 клипов,
+6 платежей, journal 28. Сохраняются ВСЕ аккаунты, медиа, платежи и реферальные
+данные обеих копий, их DB/Redis/volumes; отсутствуют reset/seed/подмена другой БД.
+Cloud получает только добавляющие 026/027; site уже на 28, без повторного применения.
+Root уже переснял site sourceIdentity и live account SHA/full journal и сверил с
+реально восстановленным test.dump: 5 accounts/28 migrations match. Это input текущей
+ревизии; localstage binding исключён. Перед apply повторно проверить отсутствие drift
+и дополнить baseline всеми существенными media/payment/referral/credit строками.
+Перед namespace change остановить test writers и безопасно разрешить старые pending
+multipart. Копировать только DB-whitelist synthetic objects в `tests/site/`, проверить
+каждый size и SHA-256, сохранить исходники. Чужие production-ссылки блокируют apply;
+нельзя молча добавлять им prefix. DB keys остаются logical, без переписывания строк.
+
+Actual labels site: web/workers принадлежат application compose project, DB/Redis —
+другому старому test infra project, main production отдельно. Profile явно задаёт
+applicationProject, databaseProject/redisProject, pinned container/volume/network
+identities. Не сводить projects в один, не создавать/не выполнять up новых DB/Redis.
+SQL выбирает database из application DATABASE_URL, сверяет с binding.dbName и
+точным test DB container; активное имя отличается от POSTGRES_DB default контейнера.
+DATABASE_URL host обязан соответствовать этому container в test network, не main DB.
+Несовпадение database/host/container/project/volume блокирует любые migrations/apply.
 
 ### FR-5 — явная граница production
 
 До отдельного решения владельца не меняются маршрутизация основного сайта,
 production DNS, production БД/очереди и его web/worker. Команда тестового выпуска
 по умолчанию не имеет production-цели; попытка выбрать production отклоняется.
-Настоящие платежи не включаются. Для живого E2E оплаты необходим отдельный
-тестовый магазин/подтверждённый маршрут без нарушения нынешней тестовой оплаты.
-До его настройки статус платежной приёмки blocked; ручная подстановка события
-или polling не дают passed. Действующий callback не перенаправляется молча.
+Настоящие списания не включаются. Временно используется нынешний TEST shop;
+отдельный shop не обязателен. До согласования конкретных начала/конца окна и
+завершения pending intents callback не меняется. В окне UI-оператор сохраняет n5
+callback, меняет HTTP notifications на `https://c.clipmkr.ru/api/webhooks/yookassa`,
+проверяет native checkout/replay/credits/referrals, дожидается завершения Cloud
+intents и возвращает текущий n5 callback с проверкой восстановления доставки.
+Shop API Basic auth не управляет этими webhooks. Нужны UI-оператор и частная
+квитанция окна; без них платежная приёмка blocked. Симуляция/polling не дают passed.
+
+Для окна обязателен серверный gate `N5_CHECKOUT_ENABLED` (default true для
+прежнего поведения): false запрещает ВСЕ новые и повторные POST /api/checkout
+до чтения тела, createIntent и provider create. Сохраняются исходные rate/origin/auth
+проверки; ответ 503 с понятным сообщением. GET статуса, webhook receiver и проверка
+provider остаются рабочими: N5_PAYMENTS_MODE=off не заменяет checkout gate.
+Сначала закрываются checkout ОБОИХ test-контуров, подтверждаются 503, завершение
+старых in-flight requests/старого web и drain прежних intents по БД+provider.
+Только затем оператор меняет callback на Cloud; после подтверждения маршрута
+открывается Cloud, site остаётся закрыт. Перед возвратом снова закрыть Cloud,
+drain его intents и callbacks, вернуть n5 URL и только после подтверждения открыть
+site. Cloud checkout остаётся закрыт после окна. Нулевой pending до freeze,
+только UI-скрытие кнопки либо mode=off не доказывают безопасное окно. Проверки
+creation после freeze и during transition дают 503 и ноль новых intents/calls;
+callback/status уже созданного платежа завершается и начисляет ровно один раз.
 
 ### FR-6 — восстановление частичной доставки
 
@@ -76,9 +120,57 @@ LLM-вызовами; повторы требуют анализа причин�
 Нулевой остаток бюджета, OOM или свободный системный резерв ниже 2 ГиБ прекращает
 приёмку; старый production не очищается и не останавливается.
 
+На site-server по inventory свободно 3,6 ГБ, диск заполнен на 97%. До apply
+нужен фактический допуск места под передаваемые source/image archives, временное
+распаковывание, incremental image layers, текущие и rollback images и резерв.
+Медиадопуск ×3+2 ГиБ не заменяет этот release admission. Нельзя заранее обещать
+достаточность места, делать global prune, удалять чужие проекты или rollback images.
+Разрешены read-only inventory собственного кэша и отдельный reviewable cleanup plan.
+
+### FR-8 — namespace S3 по bucket и prefix
+
+Явное решение владельца после разъяснения границ: «Нынешний общий ключ;
+ограничиваем тесты в коде». В общем рабочем bucket разрешены `tests/cloud/` и
+`tests/site/`; общий текущий key полностью сохраняет production-права. Новые
+SA/key/BucketPolicy не требуются и не создаются. Это осознанное owner exception:
+только code/SDK namespace boundary, без настоящей IAM-изоляции или scope proof.
+При обходе SDK либо компрометации key доступ к production остаётся возможен.
+По read-only проверке root policy отсутствует, CORS уже допускает c и n5 PUT,
+versioning disabled. Production storage settings не меняем; IAM rollout/403 не blocker.
+
+Минимальная реализация — AWS SDK middleware существующего StorageClient,
+без новых dependencies. Валидируемый `S3_KEY_PREFIX` по умолчанию пуст:
+production сохраняет прежнее поведение; test profiles обязаны задать точный prefix.
+Один контракт действует на internal client и public signing; проверяет Bucket,
+преобразует Key/Prefix/KeyMarker и обратные response Key/NextKeyMarker.
+Обходы `..`, slash/backslash/encoded path и неизвестные команды отклоняются;
+точная allowlist и пагинация — ADR-003. GetBucketVersioning read допустим,
+bucket-wide mutations запрещены при непустом namespace. Erasure/multipart/retention
+получают прежние logical keys. Admission сравнивает bucket+prefix, а не bucket inequality.
+
+Проверка SDK — настоящий MinIO с двумя prefixes и outside canary: size/SHA до/после,
+public PUT/GET, list/multipart/retention/erasure. Capture всех wire requests доказывает
+physical prefix всех object/list операций; unsafe input/unknown commands/bucket
+mutations отказывают до сети. GetBucketVersioning exact bucket read — исключение
+без object prefix. Outside canary изменяется только fixture setup/teardown, не SDK.
+Реальный Cloud canary оператор выполняет только внутри tests/cloud/ и tests/site/,
+без мутаций рабочих namespaces. Общий key не даёт требуемого denial: 403 не ожидаем,
+не требуем и не заявляем; Cloud canary подтверждает совместимость, не IAM scope.
+
+### FR-9 — точный build-time env и полная регрессия
+
+На source `71e7812b70017a3dff5c1c262233f0da90bb9901` полный suite обнаружил
+7 failures в 3 файлах: wiring ошибочно требует runtime NEXT_PUBLIC_RELEASE_REVISION.
+Исправить точную классификацию этой build-time переменной в `scripts/check-env-wiring.mjs`
+и добавить regression в `tests/wiring.test.ts`: проверяем build wiring Dockerfile,
+не освобождаем все NEXT_PUBLIC_* и не убираем guard runtime-required env.
+Dockerfile/health уже build-tested: HTTP 200, no-store, runtime override не подделывает
+immutable revision. Эти результаты сохраняются, но baseline full PASS нельзя
+заявлять до исправления семи failures и реального повторного полного suite.
+
 ## Нефункциональные требования
 
-Повторяемость по SHA и digest; минимальные права; ключи только в закрытых профилях;
+Повторяемость по SHA и digest; минимальные права с owner exception общего S3 key FR-8; ключи только в закрытых профилях;
 строгая проверка SSH host keys; понятный частичный результат; сохранение текущего
 единого стека. Документы на русском, частые проверенные коммиты и push.
 
@@ -86,8 +178,8 @@ LLM-вызовами; повторы требуют анализа причин�
 
 Существующий план переноса — входной материал, не разрешение на cutover.
 Туннель временный, разрешение ключа до 04.11 около 15:01 UTC; юнит transient.
-Нужны inventory обоих хостов, изолированное S3, тестовый магазин и маршрут его
-уведомлений. Бюджеты реальных STT/модельных проверок должны опираться на текущие
+Нужны повторная проверка site binding/drift и полный data baseline, SDK/MinIO proof, disk admission,
+согласованное окно текущего TEST shop и UI-оператор. Бюджеты реальных STT/модельных проверок должны опираться на текущие
 настройки и ограниченный объём приёмки; неизвестное не выдаётся за подтверждённое.
 
 ## Границы реализации
@@ -98,12 +190,12 @@ freeze/relay/DNS/перенос рабочей БД. Новый стек и но
 
 ## Открытые вопросы, разрешаемые inventory
 
-- Какие данные и версии уже находятся на Cloud.ru и доступны ли реальные backup?
-- Какие существующие ops-блоки пригодны для одной команды доставки?
-- Как изолировать S3 и доставить реальное тестовое уведомление в Cloud.ru-кандидат?
-- Какие hooks поддерживает закреплённый dz в текущем host runtime и чем это доказано?
-- Вторая тестовая цель — хост разработки либо нынешний сервер n5: вопрос задан
-  владельцу асинхронно; от ответа не зависят read-only inventory и backup.
+- Проверить новый site binding (5 accounts/28 match) на drift и дополнить полный data baseline/DB-whitelist; привязать раздельные app/infra projects и DATABASE_URL database/host.
+- Состояние старых pending multipart и безопасный порядок их завершения/abort до смены namespace.
+- SDK namespace/wire/canary proof и Cloud canary только внутри tests prefixes; IAM rollout не требуется.
+- Реальное место под incremental images/archives на site; при нехватке отдельный cleanup plan.
+- Конкретное окно TEST shop, отсутствие pending intents с обеих сторон и UI-оператор.
+- Новые prepare/три focused QCSD, K1 namespace/exports и K2; старые receipts не переиспользуются.
 
 ## Матрица приёмки
 
@@ -137,16 +229,22 @@ freeze/relay/DNS/перенос рабочей БД. Новый стек и но
 
 | ID | Проверка | Свидетельство |
 |---|---|---|
-| REL-01 | A на двух явных целях | Полный SHA, SHA-256 source archive, OCI revision, image IDs каждого web/worker, runtime inspect и health |
+| REL-01 | A на SSH-целях cloud-c и site-test | Полный SHA, SHA-256 source archive, OCI revision, image IDs каждого web/worker, runtime inspect и health; localdevstage отвергается |
 | REL-02 | Источник действительно соответствует SHA | Архив строится Git archive из выбранного commit, из него собираются образы; checksum сверяется после передачи и извлечения |
 | REL-03 | Кодовая правка B, A→B→A→B | Наблюдаемая разница ответа health из приложения; на КАЖДОЙ цели и КАЖДОЙ фазе A→B→A→B сохраняются полный SHA, archive SHA, OCI revision, реальные image IDs КАЖДОГО web/worker и HTTP health. После rollback и повторного B сравниваются schema journal, прежние аккаунты и все созданные к этому моменту данные; исходники B на Cloud |
 | REL-04 | Подмена/пропуск/неподходящий journal | Негативные synthetic и acid проверки stale image с правильной label, неверного archive checksum, runtime mismatch, отсутствующей цели, частичного отказа |
 | REL-05 | Потеря SSH и конкуренция | Remote lock исключает второго writer; после disconnect state=unknown, inspect/reconcile до retry, без auto-resume и расширения ключа |
-| DATA-01 | Каждая изменяемая test DB имеет backup | Сохранены источник, PG version, полные journal SHA, archive size/hash, время и приватные агрегаты/идентичности аккаунтов |
+| DATA-01 | Каждая изменяемая test DB имеет backup | Новый site sourceIdentity/account SHA/journal match test.dump: 5/28; перед apply drift check и полный data baseline, не localstage |
 | DATA-02 | Restore и сравнение | pg_restore в отдельную пустую БД с network none и без app/worker; полный journal, counts и хеши значимых строк совпадают со snapshot-derived baseline; повреждённый/чужой backup отклоняется |
-| DATA-03 | Обновление 26→28 | Journal до совпадает с backup, после содержит прежние SHA и только новые 026/027; аккаунты и их существенные поля сохранены |
+| DATA-03 | Cloud 26→28, site 28→28 | Cloud добавляет только 026/027; site не мигрирует повторно; сверены все прежние аккаунты/медиа/платежи/referrals и созданные после baseline данные |
 | DATA-04 | Схема при rollback | A и B имеют одинаковые полные journal; иной journal блокирует автоматический откат; БД/volumes не откатываются |
-| DATA-05 | S3 и секреты | Разные identities/buckets; Get/Put/Delete/Multipart в production canary отклонены, в своём разрешены; реальные пользовательские объекты не используются |
+| DATA-05 | Owner exception общего ключа | Полные production-права сохранены; нет новых SA/key/policy/IAM proof/требования 403. Root read-only: policy отсутствует, CORS c/n5 PUT, versioning disabled; Cloud canary только внутри tests prefixes |
+| DATA-06 | Code/SDK граница test copies и production objects | Реальный MinIO: один bucket, tests/cloud/ и tests/site/, весь object/list wire трафик и signing prefixed; markers/responses/public signing/retention/multipart; unsafe/unknown mutations без сети; outside canary size/SHA до/после прежние |
+| DATA-07 | Переход непустого site-test | DB-whitelist synthetic objects скопирован с size/SHA в tests/site/; оригиналы сохранены, DB keys прежние; чужая ссылка/неснятый pending multipart блокирует смену namespace |
+| DATA-08 | Раздельные app/infra projects и точная DB | applicationProject ≠ test infra допустим; pinned containers/volumes/network сохранены, DATABASE_URL DB = binding.dbName и host → exact test DB container; POSTGRES_DB default/main DB/mismatch отклоняются, DB/Redis up отсутствует |
+| PAY-01 | Окно нынешнего TEST shop | Согласованы начало/конец, drained intents; UI-оператор переключил native notifications, проверены replay/credits/referrals; callback n5 восстановлен после завершения Cloud intents |
+| RES-03 | Release admission site-server | Фактический disk/layers/archive peak с резервом и сохранёнными rollback images; при нехватке apply blocked, global prune отсутствует |
+| REG-01 | Build-time wiring и полная регрессия | Точный NEXT_PUBLIC_RELEASE_REVISION/ARG contract, отрицательные runtime/build guards; 7 прежних failures устранены, полный suite реально повторён |
 
 Snapshot-derived baseline снимается из согласованного архива. Для backup→restore
 не сравниваем рабочую изменяемую БД в другое время как будто это тот же snapshot.
@@ -176,7 +274,7 @@ Spend log считает секунды и вызовы, не подтвержд
 попытки ограничены существующим кодом; выход за quota останавливает тест.
 
 Обе реальные длинные обработки выполняются только на Cloud и последовательно;
-локальная цель проверяет доставку/повторный выпуск, а не дублирует платный STT.
+site-test проверяет доставку/повторный выпуск и сохранность медиа, не дублирует платный STT.
 Минимальная доступная память до старта 2 ГиБ, диск ≥3×input+2 ГиБ, memory limits
 включены. OOM, нехватка резерва или нулевой остаток прекращают тестовый worker;
 production и чужие проекты не очищаются. Отрицательные проверки quota/параллельности
@@ -191,3 +289,30 @@ production и чужие проекты не очищаются. Отрицат�
 Production isolation проверяется сравнением container IDs, StartedAt и restart counts
 по read-only инвентаризации. Fault injection не выполняется внутри рабочего media job.
 
+
+## Расчёт реферальной оценки: независимый числовой оракул (QT-07)
+
+Детерминированный PostgreSQL сценарий (не native-платёжный E2E): месяц 2030-01,
+Europe/Moscow, paid_at от 2029-12-31T21:00:00Z включительно до
+2030-01-31T21:00:00Z исключительно. Блогер B, две ссылки R1/R2, один и тот же
+плательщик C: подтверждённые пакеты R1 99000+149000 коп., R2 399000 коп.;
+payment/intent согласованы, fulfilled, needs_review=false. Ожидаются R1:2 платежа,
+248000 коп.,1 плательщик; R2:1,399000,1; B:3,647000,ОДИН distinct плательщик.
+При ставке20% оценки R1=49600,R2=79800,B=129400 коп.; при30% —
+74400,119700,194100 коп.; при null все три estimate=null с прежней выручкой.
+
+Дополнительные canceled/pending/refunded/needs_review/self-referral и unfulfilled
+intent, а также paid_at ровно на верхней границе месяца, не меняют эти суммы.
+Каждая исключаемая запись проверяется отдельно, нижняя граница включается.
+После смены/деактивации кода и текущей referral записи платежи со snapshot R1
+остаются у R1; новые платежи со snapshot R2 учитываются R2. Возврат именно
+R1-платежа149000 коп. даёт R1=99000,R2=399000,total498000; @20%
+19800/79800/99600, @30%29700/119700/149400 коп.
+
+Сверяются владелец и собственный кабинет B; другая учётка не видит эти данные.
+Результат фиксирует входные строки/идентификаторы и агрегаты только приватно.
+Переиспользуются blogger-report PostgreSQL tests; недостающие cases добавляются
+в тот же файл. На живом Cloud отдельно сопоставляются реальные registration/usage
+и native test payments по каждой использованной ссылке, обе ставки и null через
+owner UI, исходные суммы из provider-confirmed receipts и independent integer
+calculation. Не выдаём seeded January fixture за native события текущего месяца.

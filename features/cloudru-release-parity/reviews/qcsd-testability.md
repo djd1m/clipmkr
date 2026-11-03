@@ -77,3 +77,23 @@ Revision `66284678bde50395c267c00f0751dab7255b073eee398c0b7e1659e8b68b40ff`, non
 ## Повторная focused verification
 
 Revision `c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6`, nonce `e9449a2e-0b4f-463b-b686-e7a15eb7134a`; хеши семи входов совпали со snapshot. QT-01–06 подтверждены на уровне ideation. REL-03 теперь фиксирует image IDs каждого web/worker на каждой цели и фазе и проверку данных после rollback/repeat B. RES-01/02 задают реальные OOM и ENOSPC на disposable worker и сравнение состояния остальных контейнеров. Исследование согласовано с in-place ADR. Это не подтверждение кода или исполнения; native оплата и зависящий полный CJM остаются BLOCKED до реального доказательства.
+
+## Focused ideation revision 438e9f3392df
+
+Модель `gpt-6.1-terra`; новая CLI-сессия `01a1a23d-e893-7482-b789-bae0434e5ab7`, source `exec`, без fork: подтверждено отфильтрованными session metadata/turn_context. Это независимая проверка дизайна до кодирования; final code review другими моделями остаётся отдельной задачей.
+
+Входы: AGENTS.md, docs/review-policy.md, docs/acceptance/core-cjm.md, 00/01/02, ADR-001/002/003, 04/05, 06 plan, actual author handoff и host snapshot; восемь SHA-256 совпали, nonce `45a15542-cba7-4ac0-bdf0-f671e3404baf`. Handoff не использован как доказательство исполнения.
+
+Вердикт **CONDITIONAL**. QT-01–06 сохранены без изменения и проверены на уровне дизайна: CJM matrix; восемь фаз и runtime IDs; Git archive/build/runtime provenance; source-bound restore и baseline; квоты/ресурсные faults; окно native YooKassa с drain и возвратом n5. Фактическое наличие ресурсов и receipts остаётся непроверенным.
+
+**QT-07 — HIGH, structural:** CJM-12 не задаёт различающие проверки выбранного месяца и каждой ссылки, отсутствующей ставки, исключения возвратов/спорных/неподтверждённых платежей и неизменности attribution при смене ссылки, обязательных core-cjm §3. Нужны входы, ожидаемые суммы и принадлежность для обеих ролей и доказательства; до них соответствующая строка и полный CJM не PASS. Область: `01_requirements.md`, `05_architecture.md`.
+
+SDK design требует wire capture и реальный MinIO, whitelist-copy с SHA и multipart drain, split-project и точный DATABASE_URL binding, отдельный disk admission до операций. Общий key сохраняет production-права: это owner exception, не IAM isolation; 403 и новый key не требуются. Текущий shop зависит от согласованного окна и native proof. Код, тесты, инфраструктура, backup, платежи и E2E в этой сессии не проверялись; `implementationVerified` в ideation означает только проверку дизайна. Production cutover не разрешён.
+
+## Focused ideation revision 88a51b4e4a3a
+
+Модель `gpt-6.1-terra`, CLI session `01a1a23d-e893-7482-b789-bae0434e5ab7` (ранее сверены `turn_context` и `exec` без fork). Проверены восемь хешей snapshot и actual author handoff; nonce `3a6d97cf-4396-4b28-be4e-d8b47c69eb3a`. Входы: 00/01/02, ADR-001/002/003, 04/05, 06, core-cjm и review policy.
+
+**Вердикт CLEAN по дизайну роли:** QT-01–07 подтверждены структурно. QT-07: явный январский R1/R2 оракул охватывает периоды, ставки/null, distinct payer, отдельные исключения, snapshot и refund; fixture PostgreSQL отделена от live native receipts и расчёта. QT-06: freeze обеих копий, прекращение in-flight и drain предшествуют switch, webhook/status остаются live, обратный переход симметричен. Новых серьёзных условий в проверенной области нет.
+
+Это не проверка кода, тестов, payment, backup, инфраструктуры или E2E. Полный CJM остаётся зависим от реальных доказательств, включая окно TEST shop; общий ключ сохраняет production-права, IAM proof и 403 не заявляются. `implementationVerified` относится только к ideation design.

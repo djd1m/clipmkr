@@ -90,3 +90,46 @@ Author assessment проверен: классификация structural вер
 Вердикт: CLEAN только для ideation. Самостоятельно перечитаны семь измеренных документов, их SHA-256 совпадают с host. REL-03 теперь требует image IDs каждого сервиса каждой цели каждой фазы A→B→A→B и сохранность данных после rollback. RES-01/02 задают реальный OOM/ENOSPC в disposable worker с проверкой остальных контейнеров; исследование согласовано с in-place ADR. Author structural handoff подтверждён; новых серьёзных рисков не выявлено. Исходные QQ-01..04 сохранены, собственные verifications обновлены. Код, deploy и E2E не проверялись.
 
 Nonce `e9449a2e-0b4f-463b-b686-e7a15eb7134a`, revision `c1cb6d4e9fd23bf3ab2315c7dd0de3b04da7909379740ec5d80d9e2a6d3842d6`. Запись атомарная под общим review.lock; чужие entries и author сохранены.
+
+
+## Focused QCSD новой revision 438e9f33 — 03.11.2026
+
+Вердикт роли: **CONDITIONAL**, только design/ideation. Предыдущие CLEAN относятся к прежним снимкам. Точная модель `gpt-6-astra` подтверждена `turn_context.model` собственной CLI-сессии; новая session alias `qcsd-quality-438e9f33`, session ID `01a1a23d-e8a2-72c3-9cba-11b9452a941b`, turn ID `01a1a23d-eb4f-72a0-8948-ddd1beac435c`. Контекст кодирования не передавался; агенты не запускались.
+
+Inputs: AGENTS.md, CLAUDE.md, docs/review-policy.md, docs/acceptance/core-cjm.md; текущие 00/01/02, ADR-001/002/003, 04/05 и 06; host/review JSON и actual author handoff; закреплённый feature-adr `scripts/check-review-convergence.mjs`, modules/08-qe.md (схема/смысл verification) и modules/03.5-ideation-swarm.md. Историческая собственная entry/отчёт прочитаны для сохранения исходных условий, не как доказательство текущего дизайна; чужие отчёты не использованы.
+
+Самостоятельно пересчитаны **8/8 SHA-256**, совпали с manifest; aggregate revision `438e9f3392dfaa4d2a2b559c8b93424f287a711cfc4072cf1d0d6c09ad436f99`, nonce `45a15542-cba7-4ac0-bdf0-f671e3404baf`. План 06 — дополнительный контекст вне восьмифайлового manifest; его SHA-256 `c78d59ad5d1e3ad4d30f307339e68a31902a840f68a3aaf8db7bb5af4e769878`.
+
+Исходные QQ-01..04 (ID, meaning/requirement, scope, evidence) сохранены дословно в JSON. Собственная проверка текущей revision:
+
+| Условие | Результат ideation |
+|---|---|
+| QQ-01 | Подтверждено: один backend/origin вместо selector, отдельные sessions, referral/return и три контекста в CJM |
+| QQ-02 — HIGH / structural | **Не подтверждено:** штатное окно не исключает новые checkout на контуре, чей callback отдан другой копии |
+| QQ-03 | Подтверждено: полный journal, отдельные migration/unknown/reconcile, совместимый app+namespace rollback без отката данных |
+| QQ-04 | Подтверждено: конечные лимиты и stop conditions, отдельный release admission до transfer, сохранение production/rollback images |
+
+QQ-02: `05_architecture.md:139–154`, `03_adr/002-isolated-cloud-candidate.md:87–97`, FR-5 и `06_implementation_plan.md:77` требуют drain и UI-switch/return, но запрещают новые checkout лишь при неизвестном исходе/превышении окна. Между финальным pending check и switch либо во время Cloud-окна n5 может создать новый intent: уведомление придёт Cloud, где intent чужой, и n5 не получит оплаченные права/реферальный учёт. Обратный переход имеет ту же гонку. Это сценарий, допускаемый неполным дизайном, а не обнаруженный кодовый дефект.
+
+Для закрытия исходного QQ-02 нужно определить исключительный допуск checkout по текущему receiver: запрет новых и завершение начатых create-intent запросов ДО финального drain, n5 закрыт для создания intent до проверенного возврата callback, Cloud допускается только после проверенного switch и закрывается перед обратным drain. Receivers остаются доступны для завершения уведомлений; пользователю показывается понятное состояние временно недоступной оплаты. Confirmation должен покрыть попытки checkout на обеих границах окна и отсутствие потерянных/двойных grant и статистики. Это конкретизация сохранённого условия, без нового дублирующего ID и без требования отдельного shop.
+
+Отдельных новых HIGH/BLOCKER не выявлено. SDK-контракт включает internal/signing middleware, command allowlist, wire/pagination/response проверки, реальный MinIO и outside canary. Copy/preflight задают DB-whitelist, drain, streaming size/SHA/source preservation, неизменные logical keys/PG volumes, split projects и точный DATABASE_URL→pinned DB вместо POSTGRES_DB default, disk peak до операций. Общий production-wide S3 key принят как owner exception; это только code/SDK boundary, **не IAM isolation**. Новый key/policy/403 не требуется. FR-9 требует точного build-time fix без ослабления guard и реального full-suite повторения.
+
+Actual author assessment прочитан и проверен: structural корректно; полного закрытия дельты нет из-за QQ-02. `implementationVerified=true` у QQ-01/03/04 означает проверку исправленного дизайна; false у QQ-02 и deltaVerification — неполноту дизайна. Реализация новой revision, appcode, тесты, MinIO/SSH/DB/infra и browser/native checkout не исследовались и не запускались. Сведения о source71, 7 failures, прежних 10 tests и root inventory не выдаются за самостоятельно подтверждённые runtime receipts. Полный CJM не объявляется passed; production cutover запрещён.
+
+Собственная entry записана под общим `review-convergence-ideation-review.lock` через `fcntl.flock` и atomic temp + `os.replace`; author/другие роли сохранены. Host/inputdocs не изменены, этот отчёт только дополнен.
+
+
+## Focused verification revision 88a51b4e — 03.11.2026
+
+Вердикт **CLEAN только для ideation**. Модель текущего turn `gpt-6-astra` повторно подтверждена собственным `turn_context.model`; session `01a1a23d-e8a2-72c3-9cba-11b9452a941b`, turn `01a1a246-07f2-7f91-b774-7ef7ca243937`, alias `qcsd-quality-88a51b4e`. Это focused продолжение независимой review-сессии без coding context, не новая сессия/code QE.
+
+Inputs: текущие host/review и actual author handoff; изменённые 01_requirements, ADR-002, 05_architecture, план 06 и связанные ранее прочитанные входы 00/02/ADR-001/ADR-003/04. Самостоятельно проверены 8/8 SHA-256 и aggregate revision `88a51b4e4a3a5c8a19eda3941712c8fd424e34e4b645baf33068755e2b02984a`, nonce `3a6d97cf-4396-4b28-be4e-d8b47c69eb3a`. Дополнительный контекст 06 вне manifest: SHA-256 `a8dba153b1b6e497a7bfe05c7e13b1827c16ef40b9f4d9568f96d0cc9bd7826a`.
+
+**QQ-02 закрыто в дизайне:** FR-5, уточнение ADR-002, 05 Checkout gate и TASK-8/AM-16 задают server freeze обеих копий и завершение старых in-flight ДО drain/switch; 503 после rate/origin/auth и до body/createIntent/provider create; callback/status остаются live. После подтверждённого Cloud callback открывается только Cloud; перед возвратом снова freeze/drain, после подтверждения n5 открывается только site, Cloud остаётся закрыт. Проверки требуют ноль новых intents/calls и единственное начисление по старому callback. Snapshot pending=0 до freeze и mode=off не принимаются за proof.
+
+QQ-01/03/04 подтверждены на текущей revision: единый origin/backend и разделение контекстов; schema/namespace compatibility, сохранность данных и reconcile; измеримый resource admission/бюджеты. Исходные четыре condition ID/requirement/scope/evidence сохранены неизменными; чужие RISK/QT условия не верифицировались от их имени.
+
+Actual changes/dependencies: самостоятельно пересчитан January/R1/R2 оракул: 248000+399000=647000 коп., 129400@20/194100@30; после refund149000 — 498000, 99600@20/149400@30, per-link суммы также совпали. Контракт включает null, отдельные исключения, distinct payer, границы Moscow/paid_at, source snapshot после смены ссылки и обе роли. PG fixture отделён от реальных Cloud receipts текущего месяца; TASK-9/AM-17 не добавляют STT. Новых серьёзных рисков не выявлено. Общий S3 key остаётся production-wide по owner exception; SDK/copy/preflight ограничения сохранены.
+
+Actual author handoff прочитан, structural delta проверена самостоятельно. `implementationVerified=true` для собственных conditions/delta означает только исправленный дизайн. Код, тесты, SSH/DB/infra и native/browser E2E не проверялись; K2/старые receipts не приняты за implementation proof. Полный CJM не объявляется passed, production cutover не разрешён. Обновлены только собственная entry и этот append под общим flock через atomic replace; author/другие роли/host сохранены.
