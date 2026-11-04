@@ -73,7 +73,7 @@ Description: one standalone runner --base/--fixture/--out, Playwright existing p
 содержательные assertions ниже. No auto seed/new infra/production test hooks/React internals.
 SPARC Phase:refinement. Files:scripts/check-workspace-presentation.test.mjs;
 scripts/workspace-presentation-local.mjs; tests/workspace-presentation.test.ts. Depends:TASK-2/TASK-3. Estimate:4–6h.
-Test:A–H ниже, both engines. Success Criteria:192 geometry cases отдельно от state tests;
+Test:A–H ниже, both engines; AM-11 exact mount budgets/player lifecycle discrimination и AM-12 scoped text200 regression в existing tests/workspace-presentation.test.ts. Success Criteria:192 geometry cases отдельно от state tests;
 каждое обязательное precondition проверено, недостаток данных=exit 2, нарушение=exit 1, чисто=exit 0.
 Raw JSON/counts/screenshots private; нет cookies/body/File bytes/private media URLs/trace/HAR вGit.
 
@@ -248,6 +248,30 @@ focused unit/syntax/lint, отдельный commit. Исторические id
 verbatim; source130102f старого review не объявляется проверкой новых bytes. Root готовит новую
 измеренную native QE revision без reset истории после этого delivery-only amendment.
 
+## AM-11/AM-12: устранение независимых QE gaps без расширения targets
+
+Primary QE source130102f: initial PartnerPanel mount на /dashboard даёт ровно один
+GET /api/trpc/partner.dashboard. Private consumeDashboardMountRead в existing runner
+принимает одноразовый ticket только H(initial), N(explicit dashboard reload/Link return).
+Ticket закрывается после navigation; repeat/wrong endpoint/phase и любой I request отклоняются.
+Нет общего разрешения N/API и нет вычитания baseline. Точный endpoint/query/method остаются
+реальными browser observations; known poll/refresh guards не ослабляются.
+Private assertWorkspacePlayerSnapshot проверяет same connected DOM, fixed src/version,
+!paused и строгое реальное увеличение currentTime после toggle и каждого из двух polls;
+guest draft/consent, focus и scroll фиксируются после действий Settings и до polls. Paused nonzero
+проверяется отдельно. Both helpers используются runner и unit discrimination: stall/remount/
+src change/pause/focus theft/scroll reset и duplicate/wrong-phase read обязаны давать RED.
+Unit discrimination читает actual private function bytes через VM; это проверка pure guards,
+не actual Next E2E. Новых module/export/command names нет; K1 native CLI честно exit2 из-за
+жёсткого packages/@dzhechkov scanner, vendor patch не применяется. Helper target не меняется.
+
+Root согласовал CSS-only R8 fix: исходный vw h1 не масштабируется text200 на1024/1440.
+Existing globals.css получает только scoped h1 rem fallback и typed-math enhancement с прежней
+100%типографикой. Existing Mtest проверяет actual UpgradeScreen+CSS, оба engines, themes/layouts,
+ширины1024/1440, неизменный textZoomRule; palette/public checks сохраняются. CSS/M07 пишет
+отдельный upload author, runner/Mtest/06 — workspace author, без overlap. 12targets неизменны.
+До кода K2 M/admission; новых K1 export/module/command нет, результаты/ограничения в M07.
+
 ## Amendments
 - AM-1 (coordinator-implementation-proposal;Q1/R1): первый shell-инкремент сохраняет ClipCard вместо нового hero/listbox. Confirmation: прежний playing video DOM сохраняется → test `playing_clip_survives_layout_switch` in `scripts/check-workspace-presentation.test.mjs` (падает при remount).
 - AM-2 (owner-steer запрет remount; transport boundary coordinator proposal): сохранять File и активную передачу. Confirmation: completed+pending parts/identity после toggle → test `layout_switch_preserves_active_upload` in `scripts/check-workspace-presentation.test.mjs` (падает при keylayout).
@@ -263,6 +287,9 @@ verbatim; source130102f старого review не объявляется про
 - AM-9 (координатор согласовал 04.11.2026): одно состояние global config на окно; обязательные OFF+ON того же web и noDates actual component boundary сохраняют все NFR states без fake SSR fixture. Confirmation: фазовый witness/SSR predicates и объединение трёх identity-bound отчётов → test `catalog_phase_has_actual_server_witness` in `scripts/check-workspace-presentation.test.mjs`; компонентный сценарий catalog_no_dates_component_boundary в scripts/workspace-presentation-local.mjs проверяет noDates guard/actions/CSS отдельным слоем.
 
 - AM-10 (прямое owner-steer04.11.2026 20:15): обязательная owner manual acceptance на существующем clipmkr.ru/n5-clipmaker;77 только optional internal regression. Confirmation: closed-set project/origin pair guard отклоняет arbitrary/cross pairs до сети → test `delivery_target_binding_is_exact` in `scripts/check-workspace-presentation.test.mjs`; sourceSha/imageDigest/private mode witness checks сохранены.
+
+- AM-11 (primary independent QE/root): exact mount cause budgets и полный player post-poll lifecycle. Confirmation: duplicate/N-unarmed/I read, stalled/remounted/src-changed/paused player и lost focus/scroll отклоняются → tests `dashboard mount read requires one explicit cause` и `player snapshot rejects lifecycle regressions` in `tests/workspace-presentation.test.ts`; stage `playing_clip_survives_layout_switch` использует тот же assertion после каждого tick.
+- AM-12 (root-approved existing NFR-1/TASK-3): scoped text200 CSS correction. Confirmation: actual noDates title масштабируется обоими engines на desktop без R8 → test `workspace desktop text scales to 200 percent` in `tests/workspace-presentation.test.ts`; исходный CSS даёт различающий RED.
 
 EXPECTED_CODE_TARGETS:
 - apps/web/src/lib/workspace-layout.ts

@@ -141,6 +141,22 @@ async function idleToggle(page, state) {
   await toggles(page); await page.clock.runFor(50); await page.waitForTimeout(50);
   assert.deepEqual(state.attempts.slice(before).filter(relevant), [], 'toggle must cause zero RPC/RSC/navigation, including prefetch');
 }
+function consumeDashboardMountRead(state, entry) {
+  const ticket = state.dashboardMount;
+  if (entry.method !== 'GET' || entry.endpoint !== '/api/trpc/partner.dashboard' || !ticket
+    || !['H', 'N'].includes(entry.phase) || ticket.phase !== entry.phase || ticket.remaining !== 1) return false;
+  ticket.remaining--; entry.cause = `named PartnerPanel mount: ${ticket.cause}`; return true;
+}
+function assertWorkspacePlayerSnapshot(actual, before) {
+  assert.equal(actual.same, true, 'player DOM remounted'); assert.equal(actual.src, before.src, 'player version changed');
+  assert.equal(actual.paused, false, 'playing clip paused'); assert.ok(Number.isFinite(actual.time) && actual.time > before.time, 'playing clip stalled or reset');
+  assert.equal(actual.focusSame, true, 'poll stole focus'); assert.ok(actual.scrollDistance <= 1, 'poll changed scroll');
+}
+async function dashboardMount(page, state, cause, navigate) {
+  state.phase = 'N'; state.dashboardMount = { phase: 'N', cause, remaining: 1 };
+  const read = page.waitForResponse(response => new URL(response.url()).pathname === '/api/trpc/partner.dashboard');
+  await navigate(); await (await read).finished(); assert.equal(state.dashboardMount.remaining, 0); state.dashboardMount = null;
+}
 async function nativeRefreshes(page, state) {
   for (const timed of [false, true]) {
     state.phase = 'F'; const before = state.attempts.length, response = page.waitForResponse(res => res.request().headers().rsc === '1');
@@ -162,7 +178,7 @@ async function stageChecks(base, fixture, out) {
       async function scenario(name, route, action, options = {}) {
         const role = options.role ?? 'ordinary';
         const context = await browser.newContext({ storageState: options.anonymous ? undefined : fixture.roles[role].storage, viewport: options.viewport ?? { width: 1440, height: 900 } });
-        const state = { phase: 'H', attempts: [], violations: [], creates: 0, puts: [], completes: 0, checkouts: [], poll: 0, release: null };
+        const state = { dashboardMount: route === '/dashboard' && !options.anonymous && !options.erasure ? { phase: 'H', cause: 'initial hydration', remaining: 1 } : null, phase: 'H', attempts: [], violations: [], creates: 0, puts: [], completes: 0, checkouts: [], poll: 0, release: null };
         const gate = new Promise(resolveGate => { state.release = resolveGate; });
         const page = await context.newPage(); const errors = []; page.setDefaultTimeout(10_000); page.setDefaultNavigationTimeout(20_000);
         await page.clock.install({ time: new Date() });
@@ -221,8 +237,9 @@ async function stageChecks(base, fixture, out) {
           }
           if (mutation) return fail('unexpected mutation attempt');
           if (endpoint.startsWith('/api/')) {
-            if (state.phase !== 'H' || !fixture.safeReadEndpoints.includes(endpoint)) return fail('undeclared API read/phase');
-            entry.cause = 'named initial existing read';
+            if (endpoint === '/api/trpc/partner.dashboard') { if (!consumeDashboardMountRead(state, entry)) return fail('undeclared PartnerPanel mount/read'); }
+            else if (state.phase !== 'H' || !fixture.safeReadEndpoints.includes(endpoint)) return fail('undeclared API read/phase');
+            if (entry.cause === 'unclassified') entry.cause = 'named initial existing read';
           } else if (rsc || request.isNavigationRequest()) {
             if (!['H', 'N', 'F', 'U'].includes(state.phase)) return fail('unexpected navigation/RSC phase');
             if (!/^\/(?:dashboard(?:\/videos\/[\da-f-]+|\/bloggers)?|upgrade(?:\/return)?|c\/[^/]+|g\/[^/]+)?$/.test(endpoint)) return fail('undeclared document/RSC route');
@@ -235,6 +252,7 @@ async function stageChecks(base, fixture, out) {
         });
         try {
           const response = await page.goto(base + route, { waitUntil: 'networkidle' });
+          if (state.dashboardMount) { assert.equal(state.dashboardMount.remaining, 0, 'initial PartnerPanel read absent'); state.dashboardMount = null; }
           if (options.expectedStatus) assert.equal(response?.status(), options.expectedStatus);
           else if (!options.redirect && (!response || response.status() >= 400 || new URL(page.url()).pathname !== route.split('?')[0])) throw unavailable('route/auth precondition');
           if (!options.public && !options.erasure && !options.redirect && !options.expectedStatus) await page.locator('.workspace-settings').waitFor();
@@ -291,7 +309,7 @@ async function stageChecks(base, fixture, out) {
           assert.match(html, /Компоновка/); await observed(page, layout, theme);
           assert.match(html, new RegExp(`aria-pressed="${theme === 'light'}"`));
           assert.match(html, new RegExp(`<option value="${layout}" selected=""`));
-          await idleToggle(page, state); state.phase = 'N'; await page.reload({ waitUntil: 'networkidle' }); await observed(page, layout, theme);
+          await idleToggle(page, state); await dashboardMount(page, state, 'hard reload', () => page.reload({ waitUntil: 'networkidle' })); await observed(page, layout, theme);
         }, { layout, theme });
       }
       await scenario('next_cached_routes_and_refresh_keep_preferences', '/dashboard', async (page, state) => {
@@ -303,7 +321,7 @@ async function stageChecks(base, fixture, out) {
         await openSettings(page); await page.getByLabel('Компоновка').selectOption('studio'); await page.getByRole('button', { name: 'Светлая тема', exact: true }).click();
         await observed(page, 'studio', 'light'); await page.goBack({ waitUntil: 'networkidle' }); await observed(page, 'studio', 'light');
         await page.goForward({ waitUntil: 'networkidle' }); await observed(page, 'studio', 'light');
-        await page.getByRole('link', { name: 'Мои записи', exact: true }).click(); await page.waitForURL('**/dashboard');
+        await dashboardMount(page, state, 'Link return', async () => { await page.getByRole('link', { name: 'Мои записи', exact: true }).click(); await page.waitForURL('**/dashboard'); });
         await nativeRefreshes(page, state); await observed(page, 'studio', 'light'); await idleToggle(page, state);
       });
       for (const denied of ['throw', 'silent']) for (const saved of ['default', 'saved']) await scenario(`blocked_cookie_keeps_current_document:${denied}:${saved}`, '/dashboard', async (page, state) => {
@@ -363,10 +381,16 @@ async function stageChecks(base, fixture, out) {
         await form.getByLabel('Имя гостя').fill('Синтетический гость');
         await form.locator('input[type=checkbox][required]').check();
         await idleToggle(page, state);
-        assert.equal(await player.evaluate(node => node.isConnected && node === document.querySelectorAll('.clip-card video')[1]), true);
-        assert.equal(await video.getAttribute('src'), start.src);
-        assert.equal(await video.evaluate(node => node.paused), false);
-        assert.ok(await video.evaluate(node => node.currentTime) >= start.time);
+        assert.equal(await page.getByRole('button', { name: 'Светлая тема', exact: true }).evaluate(node => node === document.activeElement), true);
+        const continuity = await page.evaluateHandle(() => ({ focus: document.activeElement, x: scrollX, y: scrollY }));
+        let previous = start;
+        const checkPlayer = async () => {
+          await page.waitForTimeout(200); // Media time must advance in real time, independently of the paused JS clock.
+          const actual = await player.evaluate((node, saved) => ({ same: node.isConnected && node === document.querySelectorAll('.clip-card video')[1], src: node.getAttribute('src'), paused: node.paused, time: node.currentTime,
+            focusSame: document.activeElement === saved.focus, scrollDistance: Math.max(Math.abs(scrollX - saved.x), Math.abs(scrollY - saved.y)) }), continuity);
+          assertWorkspacePlayerSnapshot(actual, previous); previous = actual;
+        };
+        await checkPlayer();
         for (let tick = 0; tick < 2; tick++) {
           state.poll = tick; state.phase = 'P'; const before = state.attempts.length;
           await page.clock.runFor(5000); await page.waitForLoadState('networkidle');
@@ -375,7 +399,7 @@ async function stageChecks(base, fixture, out) {
           assert.equal(polls.filter(row => row.endpoint.endsWith('clip.list')).length, 1);
           assert.equal(polls.length, 2);
           await page.getByText(fixture.processingScenario.syntheticResponses[tick].expectedUiText, { exact: false }).first().waitFor();
-          assert.equal(await player.evaluate(node => node.isConnected), true);
+          await checkPlayer();
         }
         assert.equal(await form.getByLabel('Имя гостя').inputValue(), 'Синтетический гость');
         assert.equal(await form.getByRole('checkbox').nth(1).isChecked(), true); assert.equal(await form.locator('input[type=checkbox][required]').isChecked(), true);

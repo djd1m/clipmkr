@@ -170,3 +170,38 @@ Private raw CSS baseline/probe/JSON/logs: /root/.config/clipmkr/release-parity-2
 Изолированный CSS probe не доказывает full-app clipping/keyboard/Next stage, реальный page zoom200%,
 effective320 или OS keyboard. Последние остаются отдельной ручной проверкой NFR-1. NoDates R9
 остаётся открытым UX gap; прежние88 cases не объявлены целиком зелёными. Full suite не повторялся.
+
+## AM-11/AM-12: причинный mount и различающий player oracle
+
+После primary independent QE source130102f изменены только existing runner/Mtest/06 (12 targets).
+До кода actual K2 M require-requirements PASS0/0/0 и code-target admitted
+e470a5d2f1313c8972e4eab4f292549d0c0b68e227172b0b729e58fe528ba566.
+Официальный fresh npm-ci dz name-check не умеет этот layout: scanner ожидает packages/@dzhechkov,
+actual exit2 NOT ESTABLISHED. Старый /home/clipmkr CLI имел локальную compatibility patch;
+она не перенесена, прежний free не переиспользован. Выбран минимальный private-function путь:
+нет новых module/export/command, local helper не меняется. Это не native K1 PASS.
+
+Один GET partner.dashboard атрибутируется actual PartnerPanel useEffect mount: initial H/dashboard,
+явный hard reload N и Link return N. One-use ticket закрывается после навигации. Повторный GET,
+wrong endpoint/method/phase/unarmed N и toggle I отвергаются; общий N allow-list не добавлен.
+Media/poll/30s guards не менялись. После toggle и каждого из двух poll ticks player assertion
+требует тот же connected DOM, прежний src с fixed version, paused=false и строгое увеличение
+currentTime в реальном времени (200ms host wait независимо от paused JS clock). После пользовательских
+Settings actions фиксируются actual activeElement и scroll; оба polls обязаны их сохранить.
+Guest draft/selection/consent и отдельный paused nonzero case остаются обязательны.
+
+Unit tests исполняют извлечённые actual private pure function bytes через Node VM. Положительные
+H/N tickets проходят, duplicate/unarmed/wrong endpoint/method и I/F/P/U проходят в RED branch.
+Player discrimination отклоняет remount, смену версии, pause, stall, reset, NaN, focus theft и scroll
+reset. Это проверка pure guards, не доказательство actual Next hydration/playback/network lifecycle.
+AM-12 permanent regression использует actual UpgradeScreen+CSS в обоих браузерах, четыре preference
+сочетания и1024/1440, неизменный textZoomRule. R8 CSS author отдельно сохранил baseline16RED→0GREEN;
+наш тест на итоговом CSS GREEN. Типизированный noDates prop здесь undefined; actual nullprop
+component boundary в local helper сохранён. Требования и bound ADR/OpenSpec не ослаблены.
+
+Focused workspace/theme/billing —67/67 PASS; lint, tests TypeScript, node --check, git diff --check
+успешны. Missing fixture и invalid catalog-phase отдельно дают exit2, не false clean. Main runner
+494 строки. Amendment-check разрешает13 confirmations для12 amendments; это trace, не test PASS.
+Stage OFF/ON witnesses/reports не созданы. Remaining R9 state×preferences grid, actual public
+before/shell/after, real browser focus и absent-cookie branch явно ещё не закрыты этим commit;
+feature GO/full A–H coverage не заявляются. Native independent QE/history остаются у root.

@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
+import nodeAssert from 'node:assert/strict';
+import { runInNewContext } from 'node:vm';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { themeCookie, themeFromCookie } from '../apps/web/src/lib/theme';
 import { ThemeToggle } from '../apps/web/src/app/ThemeToggle';
 import { readFileSync } from 'node:fs';
 import { chromium, webkit } from 'playwright';
+import { textZoomRule } from '../scripts/responsive/rules.mjs';
 import { workspacePalette } from '../scripts/workspace-presentation-local.mjs';
 
 const loadPreferences = () => import('../apps/web/src/lib/workspace-layout');
@@ -121,4 +124,62 @@ it('upload_actions_and_status_precede_optional_settings_in_dom_order',async()=>{
   const sequence=['id="source-file"','id="source-file-help"','1 кредит = 60 секунд записи.','Создать клипы →','role="status"','type="checkbox"','id="upload-cta-kind"'];
   const positions=sequence.map(marker=>{const position=html.indexOf(marker);expect(position,marker).toBeGreaterThanOrEqual(0);return position;});
   for(let index=1;index<positions.length;index++)expect(positions[index],`${sequence[index-1]} before ${sequence[index]}`).toBeGreaterThan(positions[index-1]!);
+});
+
+it('workspace desktop text scales to 200 percent', async () => {
+  const { UpgradeScreen } = await import('../apps/web/src/app/upgrade/UpgradeScreen');
+  const css = readFileSync(new URL('../apps/web/src/app/globals.css', import.meta.url), 'utf8');
+  const markup = renderToStaticMarkup(createElement('div', { className: 'workspace-shell' },
+    createElement('main', { className: 'container' }, createElement(UpgradeScreen, {
+      creditMode: true, salesEnabled: true, purchaseWindows: undefined, title: 'Pro', price: '990 ₽', days: 30,
+      paidMinutes: 270, current: { plan: 'free', plan_source: 'default', plan_paid_until: null },
+    }))));
+  for (const launcher of [chromium, webkit]) {
+    const browser = await launcher.launch({ headless: true });
+    try {
+      for (const width of [1024, 1440]) for (const theme of ['dark', 'light']) for (const layout of ['workspace', 'studio']) {
+        const page = await browser.newPage({ viewport: { width, height: 900 } });
+        try {
+          await page.setContent(`<!doctype html><html data-theme="${theme}" data-workspace-layout="${layout}"><head><style>${css}</style></head><body>${markup}</body></html>`);
+          expect(await page.locator('#credit-title').count()).toBe(1);
+          expect((await textZoomRule(page)).filter((row: { severity: string }) => row.severity === 'error')).toEqual([]);
+        } finally { await page.close(); }
+      }
+    } finally { await browser.close(); }
+  }
+}, 30_000);
+
+// Execute the actual private pure guard bytes; this does not claim a Next/browser lifecycle run.
+it('dashboard mount read requires one explicit cause', () => {
+  const source = readFileSync(new URL('../scripts/check-workspace-presentation.test.mjs', import.meta.url), 'utf8');
+  const body = source.match(/function consumeDashboardMountRead\([^]*?\n}/)?.[0];
+  expect(body).toBeTruthy();
+  const consume = runInNewContext(`(${body})`);
+  for (const phase of ['H', 'N']) {
+    const state = { dashboardMount: { phase, cause: 'explicit fixture navigation', remaining: 1 } };
+    const entry = { method: 'GET', endpoint: '/api/trpc/partner.dashboard', phase, cause: 'unclassified' };
+    expect(consume(state, entry)).toBe(true);
+    expect(entry.cause).toBe('named PartnerPanel mount: explicit fixture navigation');
+    expect(consume(state, entry)).toBe(false);
+  }
+  for (const patch of [{ method: 'POST' }, { endpoint: '/api/trpc/video.get' }, { phase: 'I' }, { phase: 'F' }, { phase: 'P' }, { phase: 'U' }, { phase: 'H' }]) {
+    expect(consume({ dashboardMount: { phase: 'N', cause: 'return', remaining: 1 } }, {
+      method: 'GET', endpoint: '/api/trpc/partner.dashboard', phase: 'N', ...patch,
+    })).toBe(false);
+  }
+  expect(consume({ dashboardMount: null }, { method: 'GET', endpoint: '/api/trpc/partner.dashboard', phase: 'N' })).toBe(false);
+});
+
+it('player snapshot rejects lifecycle regressions', () => {
+  const source = readFileSync(new URL('../scripts/check-workspace-presentation.test.mjs', import.meta.url), 'utf8');
+  const body = source.match(/function assertWorkspacePlayerSnapshot\([^]*?\n}/)?.[0];
+  expect(body).toBeTruthy();
+  const check = runInNewContext(`(${body})`, { assert: nodeAssert });
+  const before = { src: '/api/clips/fixed/file?v=7', time: 1 };
+  const healthy = { ...before, same: true, paused: false, time: 1.2, focusSame: true, scrollDistance: 0 };
+  expect(() => check(healthy, before)).not.toThrow();
+  for (const patch of [{ same: false }, { src: '/api/clips/fixed/file?v=8' }, { paused: true },
+    { time: 1 }, { time: 0 }, { time: NaN }, { focusSame: false }, { scrollDistance: 2 }]) {
+    expect(() => check({ ...healthy, ...patch }, before), JSON.stringify(patch)).toThrow();
+  }
 });
