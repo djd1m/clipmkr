@@ -1,6 +1,6 @@
 # Первый инкремент workspace: исполнимый план после Q/R/T
 
-Proposed; formal snapshot/convergence и реализация pending. 11 code targets, Tier:M (AM-8: только SSR test fixture).
+Proposed; formal snapshot/convergence и реализация pending. 12 code targets, Tier:M (AM-8 SSR fixture; AM-9 local test helper).
 Inputs read: 00_complexity_assessment.md, 01_requirements.md, 03_adr/001-workspace-preferences.md, 03.5_quality.md, 05_architecture.md; три raw QC quality/risk/testability; pinned modules/06 и реальный checker.
 
 ## Goal state
@@ -72,7 +72,7 @@ R9 failure requiring purchase text hiding/new UX becomes explicit UX follow-up, 
 Description: one standalone runner --base/--fixture/--out, Playwright existing primitives плюс
 содержательные assertions ниже. No auto seed/new infra/production test hooks/React internals.
 SPARC Phase:refinement. Files:scripts/check-workspace-presentation.test.mjs;
-tests/workspace-presentation.test.ts. Depends:TASK-2/TASK-3. Estimate:4–6h.
+scripts/workspace-presentation-local.mjs; tests/workspace-presentation.test.ts. Depends:TASK-2/TASK-3. Estimate:4–6h.
 Test:A–H ниже, both engines. Success Criteria:192 geometry cases отдельно от state tests;
 каждое обязательное precondition проверено, недостаток данных=exit 2, нарушение=exit 1, чисто=exit 0.
 Raw JSON/counts/screenshots private; нет cookies/body/File bytes/private media URLs/trace/HAR вGit.
@@ -83,9 +83,37 @@ sourceSha/imageDigest + operatorObservedAt/stackReceiptPath; roles{ordinary,owne
 с privateStorageStateFile/account ownership receipt; ownedVideoId/ownedOtherAccountVideoId,
 ≥2clipIds/fixedPublishedVersions/expectedSyntheticTitles/readyState; private safeMediaPath/digest/
 provenance(создано offline, разрешено, декодируемо, длительность≥15s); existingOwnedCompletionTarget;
-processingScenario{syntheticResponses}; catalog{ownerUnlimited,salesEnabled,catalogOnly,purchaseWindows}
+processingScenario{syntheticResponses}; catalogPhase=on|off, catalogModeWitnessPath;
+catalogCases ON={available,owner,catalogOnly}, OFF={salesOff,owner,catalogOnly}
 с expected server-rendered states и отдельными accounts/paths; public c/g paths для regression.
 Не печатать values/credentials/URLs/query signatures; отчёт ссылается на digest manifest.
+
+### AM-9: последовательные окна того же web и component boundary
+
+Stage CLI обязательно `--catalog-phase=off|on`; flag должен совпасть с private fixture/catalog witness.
+OFF: paymentsMode=off; ON: paymentsMode=live, providerTestMode=true, checkoutEnabled=true;
+billingMode=credits_v1. Одного checkoutEnabled=false недостаточно для salesOff SSR текущей страницы.
+Private witness JSON0600 schema workspace-catalog-window-1: windowPairId/windowId (UUID), phase,
+operatorObservedAt, actualHttpsOrigin, composeProject, sourceSha/imageDigest, webService=web,
+runtimeContainerId и observedConfig{billingMode,paymentsMode,checkoutEnabled,providerTestMode}.
+Root получает witness из реально работающего web, без секретов; runner не меняет config/deploy.
+Оба окна последовательно используют ТОТ ЖЕ project/origin/sourceSha/imageDigest; container ID
+может меняться при app-only restart того же web. windowPairId связывает три обязательных отчёта.
+ON требует SSR available/owner/catalogOnly и delayed intercepted checkout ДО provider;
+OFF требует SSR salesOff/owner/catalogOnly. Checkout OFF получает required-in-on-window,
+не PASS/SKIP. Прочие state/geometry checks выполняются в каждом окне с реальными preconditions.
+
+`--catalog-component=no-dates --fixture <phase-manifest> --base <same-origin> --out <private-dir>`
+использует тот же source-bound identity, но локальный actual UpgradeScreen+globals.css,
+purchaseWindows:null,creditMode:true,salesEnabled:true,catalogOnly:false,ownerUnlimited:false.
+Это component-boundary, НЕ SSR: три purchase buttons disabled, dates absent, объяснение и enabled
+return, оба layout/theme/engines, geometry/contrast/reflow/R9 проверяются настоящими assertions.
+Stable SSR noDates fixture не существует: active credits_v1 всегда получает dates, legacy является
+catalogOnly, а межзапросная смена политики/статуса была бы race. Fake role/debug endpoint запрещены.
+Ни один phase/component report отдельно не feature PASS: обязательны OFF+ON+component complete
+с совпадающими identity и явным покрытием каждого обязательного catalog case. Runner aggregation
+`--catalog-verify-reports <off.json,on.json,component.json> --out <private-dir>` проверяет три отчёта;
+даже их PASS не доказывает backend checkout/provider E2E, который здесь перехвачен браузером.
 
 Origin/stack/SHA/auth/владение/SSR clip count/catalog props подтверждаются до теста.
 Safe media предоставлено оператором заранее: runner не создаёт clip через pipeline, не вызывает
@@ -134,13 +162,14 @@ Synthetic create/complete используют existingOwnedCompletionTarget, ч
   focus/30s RSC цепочка; U release→штатный Complete/navigation. Method/endpoint/ordinal/phase/
   cause обязательны, unknown request fail; не averages/ignore-all-GET/RSC. Media Range/prefetch
   разрешены только при установленной причине. `checkout_state_survives_toggle`: один mocked
-  delayed checkout→toggle→отказ; прежниеkey/busy/error, request total1; не новое тело/ключ. A7.
+  delayed checkout (только ON window)→toggle→отказ; прежниеkey/busy/error, request total1; не новое тело/ключ. A7.
 - G `first_screen_actions_have_real_preconditions`, `settings_keyboard_and_reflow`:
  192light cases correct route/auth/layout/theme+geometry, separateR9viewports изNFR-1;
  R9 ДО domRules/click/focus, scrollY=0, both-axis bounds/enabled/hit-test. Explicit upload targets
  file input/ready create/busy pause+status; result first available clip actions, empty/partial
  не притворяются ready; packages enabled offer purchase+conditions либо explanation+return для
- owner/sales-off/catalogOnly/no-dates. Учитываются настоящийTESTbanner/owner nav/credit copy/dates.
+ owner/sales-off/catalogOnly в соответствующих actual SSR windows; no-dates — обязательный
+ component-boundary UpgradeScreen+CSS с nullprop, без приписывания SSR. Учитываются настоящийTESTbanner/owner nav/credit copy/dates.
  Selector labels из actual render, не nth button/disabled purchase. Отдельно Tab/ShiftTab, summary
  Enter/Space/select arrows/toggle, focus stays same control, closed details no internalTab,
  no hidden duplicate/trap/positiveTabindex/CSS order mismatch. Text200% все controls достижимы,
@@ -167,7 +196,9 @@ SPARC Phase:completion. Files:actual receipts/completion docs, не новые r
 Depends:TASK-4+settled recovery integration для Uploader evidence.
 Commands изexecution worktree: `npm test -- tests/workspace-presentation.test.ts tests/theme.test.ts`;
 `node node_modules/vitest/vitest.mjs run --config vitest.browser.config.ts tests/browser/upload-lifecycle.test.ts tests/browser/video-screen.test.ts`;
-`node scripts/check-workspace-presentation.test.mjs --base "$WORKSPACE_STAGE_ORIGIN" --fixture "$WORKSPACE_FIXTURE_PATH" --out "$WORKSPACE_PRIVATE_OUT"`;
+`node scripts/check-workspace-presentation.test.mjs --base "$WORKSPACE_STAGE_ORIGIN" --fixture "$WORKSPACE_FIXTURE_PATH" --catalog-phase=off --out "$WORKSPACE_PRIVATE_OFF_OUT"`;
+повтор того же command с actual ON manifest и `--catalog-phase=on --out "$WORKSPACE_PRIVATE_ON_OUT"`;
+component command `node scripts/check-workspace-presentation.test.mjs --catalog-component=no-dates --base "$WORKSPACE_STAGE_ORIGIN" --fixture "$WORKSPACE_FIXTURE_PATH" --out "$WORKSPACE_PRIVATE_COMPONENT_OUT"`;
 `node scripts/check-responsive.mjs --base "$WORKSPACE_STAGE_ORIGIN" --fixture "$WORKSPACE_RESPONSIVE_FIXTURE_PATH" --out "$WORKSPACE_RESPONSIVE_OUT"`;
 `npm test`, `npm run typecheck`, `npm run lint`, `npm run build` с явной ведомостью skips.
 Task env переменные берутся из validated private manifest, не выдуманногоURL. npm test сам
@@ -180,7 +211,7 @@ Success Criteria: A–H outcomes/geometry/manual gaps сSHA/digest; scope чес
 Cloud; production/DNS отдельно. Сейчас origin готовится, stage evidence pending, auto seed/paid calls нет.
 
 ## Dependency order / checkpoints / risks
-TASK0→1→2→3→4→5, один writer worktree,11 targets (AM-8 fixture-only). Helper/shell независимы от transport L;
+TASK0→1→2→3→4→5, один writer worktree,12 targets (AM-8 fixture, AM-9 test helper). Helper/shell независимы от transport L;
 presentationUploader hunk только после recovery merge, одинintegration owner. Ни recovery pack,
 ни main в этом документном поручении не меняются. Если новый target—routing/план обновляются.
 Доcode:formal snapshot/ownreviewer conditions/K1/K2; послеshell:Next/cache/denial; послеCSS:
@@ -208,6 +239,8 @@ K1 новых names изADR/Settings/WorkspacePreferenceSync и runner выпо�
 
 - AM-8 (координатор согласовал 04.11.2026): существующий payment-label unit вызывает root SSR layout вне Next request; добавить только mock next/headers, сохранить assertions test/live/off. Confirmation: все прежние варианты режима и label → test `test payment environment is explicitly labelled` in `tests/billing.unit.test.ts`.
 
+- AM-9 (координатор согласовал 04.11.2026): одно состояние global config на окно; обязательные OFF+ON того же web и noDates actual component boundary сохраняют все NFR states без fake SSR fixture. Confirmation: фазовый witness/SSR predicates и объединение трёх identity-bound отчётов → test `catalog_phase_has_actual_server_witness` in `scripts/check-workspace-presentation.test.mjs`; компонентный сценарий catalog_no_dates_component_boundary в scripts/workspace-presentation-local.mjs проверяет noDates guard/actions/CSS отдельным слоем.
+
 EXPECTED_CODE_TARGETS:
 - apps/web/src/lib/workspace-layout.ts
 - apps/web/src/app/WorkspaceSettings.tsx
@@ -220,3 +253,4 @@ EXPECTED_CODE_TARGETS:
 - tests/workspace-presentation.test.ts
 - tests/billing.unit.test.ts
 - scripts/check-workspace-presentation.test.mjs
+- scripts/workspace-presentation-local.mjs

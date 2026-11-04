@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { createServer } from 'vite';
 import { chromium, webkit } from 'playwright';
 import { resolve } from 'node:path';
-import { mkdir, chmod, writeFile, readFile, stat, mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, chmod, writeFile, readFile, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { domRules, axeRule, textZoomRule, firstScreenRule, FIRST_SCREEN_VIEWPORTS } from './responsive/rules.mjs';
-import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
+import { runLocalWorkspaceChecks, runCatalogNoDates, workspacePalette as palette } from './workspace-presentation-local.mjs';
 const uploadPartBytes = 10 * 1024 * 1024;
 async function denyPreferences(context, mode) {
   await context.addInitScript(mode => {
@@ -16,72 +16,33 @@ async function denyPreferences(context, mode) {
     } });
   }, mode);
 }
-async function localHandlers(out) {
-  const entry = '\0workspace-handler-entry';
-  const cacheDir = await mkdtemp(resolve(tmpdir(), 'clipmkr-workspace-vite-'));
-  const server = await createServer({ configFile: false, root: process.cwd(),
-    cacheDir, esbuild: { jsx: 'automatic' },
-    optimizeDeps: { include: ['react', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime'] },
-    server: { host: '127.0.0.1', port: 0, watch: null },
-    plugins: [{ name: 'workspace-real-handlers',
-      resolveId(id) { if (id === entry) return entry; },
-      load(id) { if (id === entry) return `import React from 'react';
-        import {createRoot} from 'react-dom/client';
-        import {WorkspaceSettings,WorkspacePreferenceSync} from '/apps/web/src/app/WorkspaceSettings.tsx';
-        const root=createRoot(document.getElementById('root'));
-        const render=()=>root.render(React.createElement(React.Fragment,null,
-          React.createElement(WorkspacePreferenceSync,{initialLayout:'workspace',initialTheme:'dark'}),
-          React.createElement(WorkspaceSettings,{initialLayout:'workspace',initialTheme:'dark'})));
-        render();window.fixtureRerender=render;`; },
-      configureServer(vite) { vite.middlewares.use('/fixture.html', async (_req, res) => {
-        res.setHeader('content-type', 'text/html');
-        res.end(await vite.transformIndexHtml('/fixture.html', `<!doctype html><html lang="ru" data-theme="dark" data-workspace-layout="workspace"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#0e1311"><link rel="stylesheet" href="/apps/web/src/app/globals.css"></head><body><div class="workspace-shell"><nav class="navigation"><div id="root"></div></nav></div><script type="module" src="/@id/__x00__workspace-handler-entry"></script></body></html>`));
-      }); },
-    }],
-  });
-  const results = [];
-  await server.listen();
-  const base = `http://127.0.0.1:${server.httpServer.address().port}`;
-  try {
-    for (const [engine, launcher] of Object.entries({ chromium, webkit })) {
-      const browser = await launcher.launch({ headless: true });
-      try {
-        for (const denied of ['throw', 'silent']) {
-          const context = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await context.newPage();
-          page.setDefaultTimeout(10_000);
-          const errors = []; page.on('pageerror', error => errors.push(error.name));
-          await denyPreferences(context, denied);
-          await page.goto(base + '/fixture.html');
-          await page.getByText('Настройки', { exact: true }).click();
-          await page.getByLabel('Компоновка').selectOption('studio');
-          await page.getByRole('button', { name: 'Светлая тема', exact: true }).click();
-          await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
-          await observed(page, 'studio', 'light'); assert.deepEqual(errors, []);
-          await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; document.documentElement.dataset.workspaceLayout = 'workspace'; window.fixtureRerender(); });
-          await page.waitForFunction(() => document.documentElement.dataset.theme === 'light' && document.documentElement.dataset.workspaceLayout === 'studio');
-          await observed(page, 'studio', 'light');
-          assert.match(await page.getByRole('status').textContent(), /сохранить не удалось/);
-          await settingsKeyboard(page);
-          results.push({ engine, denied, outcome: 'passed' }); await context.close();
-        }
-      } finally { await browser.close(); }
-    }
-  } finally { await server.close(); await rm(cacheDir, { recursive: true, force: true }); }
-  await writeFile(resolve(out, 'local-handlers.json'), JSON.stringify({ scope: 'local React handlers; not Next E2E', results }, null, 2), { mode: 0o600 });
-}
 const uuid = value => typeof value === 'string' && /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(value);
 const unavailable = message => new Error(`NOT ESTABLISHED: ${message}`);
-async function privateJson(file) {
+async function privateJson(file, maxBytes = 1_000_000) {
   if (!file) throw unavailable('не задан private fixture/receipt');
   const info = await stat(file);
-  if (!info.isFile() || (info.mode & 0o077) || info.size > 1_000_000) throw unavailable('private fixture/receipt требует mode 0600 и size ≤1MB');
+  if (!info.isFile() || (info.mode & 0o077) || info.size > maxBytes) throw unavailable('private JSON требует mode 0600 и допустимый size budget');
   try { return JSON.parse(await readFile(file, 'utf8')); } catch { throw unavailable('fixture/receipt не JSON'); }
 }
-async function loadStageFixture(base, path) {
+async function catalog_phase_has_actual_server_witness(fixture, phase) {
+  if (!['on', 'off'].includes(phase) || fixture.catalogPhase !== phase) throw unavailable('нужна совпадающая catalog-phase=on|off');
+  if (fixture.composeProject !== 'clipmkr-stage-20261028' || !/^[a-f0-9]{40}$/.test(fixture.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(fixture.imageDigest)) throw unavailable('catalog artifact identity отсутствует');
+  const witness = await privateJson(fixture.catalogModeWitnessPath), config = witness.observedConfig;
+  const identityKeys = ['actualHttpsOrigin', 'composeProject', 'sourceSha', 'imageDigest', 'windowPairId'];
+  if (witness.schema !== 'workspace-catalog-window-1' || witness.phase !== phase || !uuid(witness.windowId)
+    || !uuid(witness.windowPairId) || witness.webService !== 'web' || !/^[a-f0-9]{64}$/.test(witness.runtimeContainerId)
+    || !Number.isFinite(Date.parse(witness.operatorObservedAt)) || identityKeys.some(key => witness[key] !== fixture[key])) throw unavailable('catalog mode witness identity/provenance mismatch');
+  if (config?.billingMode !== 'credits_v1' || (phase === 'off' ? config.paymentsMode !== 'off'
+    : config.paymentsMode !== 'live' || config.providerTestMode !== true || config.checkoutEnabled !== true)) throw unavailable('catalog observed config не соответствует окну');
+  fixture.identity = Object.fromEntries(identityKeys.map(key => [key, fixture[key]]));
+  fixture.modeWitnessDigest = createHash('sha256').update(await readFile(fixture.catalogModeWitnessPath)).digest('hex');
+}
+async function loadStageFixture(base, path, phase) {
   const fixture = await privateJson(path);
   if (fixture.schemaVersion !== 1 || fixture.composeProject !== 'clipmkr-stage-20261028') throw unavailable('неверная schema/project fixture');
   if (!base || new URL(base).protocol !== 'https:' || new URL(base).origin !== base || fixture.actualHttpsOrigin !== base) throw unavailable('нужен подтверждённый HTTPS origin');
   if (!/^[a-f0-9]{40}$/.test(fixture.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(fixture.imageDigest)) throw unavailable('нужен artifact SHA/digest');
+  await catalog_phase_has_actual_server_witness(fixture, phase);
   const witness = await privateJson(fixture.stackReceiptPath);
   for (const key of ['composeProject', 'sourceSha', 'imageDigest', 'actualHttpsOrigin']) if (witness[key] !== fixture[key]) throw unavailable('operator stack witness не совпадает');
   if (!Number.isFinite(Date.parse(witness.operatorObservedAt)) || !witness.dataPreserved || !witness.backupVerified
@@ -107,7 +68,8 @@ async function loadStageFixture(base, path) {
   if (fixture.media.length > 5_000_000 || createHash('sha256').update(fixture.media).digest('hex') !== fixture.safeMedia.sha256) throw unavailable('media digest/budget mismatch');
   if (!Array.isArray(fixture.processingScenario?.syntheticResponses) || fixture.processingScenario.syntheticResponses.length !== 2) throw unavailable('нужны два явных synthetic poll response');
   if (!Array.isArray(fixture.safeReadEndpoints) || !fixture.safeReadEndpoints.every(p => typeof p === 'string' && p.startsWith('/api/'))) throw unavailable('нет named safe reads');
-  if (!fixture.catalogCases || !['available', 'owner', 'salesOff', 'catalogOnly', 'noDates'].every(key => fixture.catalogCases[key]?.role && fixture.catalogCases[key]?.expectedText)) throw unavailable('нет server-rendered catalog cases');
+  const catalogCases = phase === 'on' ? ['available', 'owner', 'catalogOnly'] : ['salesOff', 'owner', 'catalogOnly'];
+  if (!fixture.catalogCases || Object.keys(fixture.catalogCases).length !== 3 || !catalogCases.every(key => fixture.catalogCases[key]?.role && fixture.catalogCases[key]?.expectedText)) throw unavailable('нет точных SSR cases текущего catalog window');
   for (const item of Object.values(fixture.catalogCases)) {
     if (!fixture.roles[item.role]) throw unavailable('неизвестная catalog role');
     if (typeof item.path !== 'string' || !/^\/upgrade(?:\?[^#]*)?$/.test(item.path)) throw unavailable('catalog case должен вести на /upgrade');
@@ -181,43 +143,10 @@ async function nativeRefreshes(page, state) {
     assert.equal(state.attempts.slice(before).filter(row => row.rsc && row.cause === 'named native refresh').length, 1, `${timed ? '30s' : 'focus'} must produce one native RSC refresh`);
   }
 }
-async function palette(page) {
-  const findings = await page.evaluate(() => {
-    const failures = [], color = value => value.match(/[\d.]+/g)?.map(Number);
-    const background = node => {
-      const c = color(getComputedStyle(node).backgroundColor);
-      if (!c) throw new Error('unreadable color');
-      if ((c[3] ?? 1) === 1) return c.slice(0, 3);
-      const base = node.parentElement ? background(node.parentElement) : [255, 255, 255], alpha = c[3] ?? 1;
-      return base.map((channel, index) => channel * (1 - alpha) + c[index] * alpha);
-    };
-    const light = c => c.map(x => x / 255).map(x => x <= .04045 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4).reduce((n, x, i) => n + x * [.2126, .7152, .0722][i], 0);
-    const ratio = (a, b) => (Math.max(light(a), light(b)) + .05) / (Math.min(light(a), light(b)) + .05);
-    const visible = node => node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden';
-    for (const node of document.querySelectorAll('html,body,.workspace-shell,.navigation,.upload-panel,input:not([type=checkbox]):not([type=radio]),select,.clip-card,section[aria-labelledby=credit-title] > section[aria-label]')) {
-      if (!visible(node)) continue;
-      const bg = background(node);
-      if (Math.max(...bg) - Math.min(...bg) > .01) failures.push(`non-neutral surface: ${node.tagName}.${node.className}`);
-    }
-    for (const node of document.querySelectorAll('.workspace-shell p,.workspace-shell label,.workspace-shell summary,.workspace-shell button,.workspace-shell a,.workspace-shell select,.workspace-shell input:not([type=file]):not([type=checkbox]):not([type=radio]),body > [role=status],.support-launcher')) {
-      if (!visible(node)) continue;
-      const style = getComputedStyle(node), fg = color(style.color), bg = background(node);
-      if (fg && ratio(fg, bg) < 4.5) failures.push(`text contrast: ${node.tagName}.${node.className}`);
-      if (node.matches('select,input:not([type=checkbox]):not([type=radio]):not([type=file])')) {
-        const border = color(style.borderTopColor);
-        if (border && ratio(border, bg) < 3) failures.push(`control border: ${node.tagName}`);
-      }
-      if (node === document.activeElement && style.outlineStyle !== 'none') {
-        const outline = color(style.outlineColor), adjacent = node.parentElement ? background(node.parentElement) : bg;
-        if (outline && ratio(outline, adjacent) < 3) failures.push('focus contrast');
-      }
-    }
-    return failures;
-  });
-  assert.deepEqual(findings, []);
-}
 async function stageChecks(base, fixture, out) {
-  const report = { scope: 'actual Next / browser-isolated mutations; not provider/DB verification', artifactSha: fixture.sourceSha,
+  const report = { schema: 'workspace-catalog-evidence-1', layer: 'actual-next', catalogPhase: fixture.catalogPhase, identity: fixture.identity,
+    modeWitnessDigest: fixture.modeWitnessDigest, outcome: 'incomplete', deferred: fixture.catalogPhase === 'off' ? ['checkout:required-in-on-window', 'noDates:required-component-boundary'] : ['noDates:required-component-boundary'],
+    scope: 'actual Next / browser-isolated mutations; not provider/DB verification', artifactSha: fixture.sourceSha,
     imageDigest: fixture.imageDigest, fixtureDigest: fixture.manifestDigest, results: [], manual: ['actual page zoom 200%', 'mobile OS keyboard'], requests: [] };
   for (const [engine, launcher] of Object.entries({ chromium, webkit })) {
       const browser = await launcher.launch({ headless: true }).catch(() => { throw unavailable('browser runtime не готов'); });
@@ -445,7 +374,7 @@ async function stageChecks(base, fixture, out) {
         await video.evaluate(node => { node.pause(); node.currentTime = 3; }); await idleToggle(page, state);
         assert.equal(await video.evaluate(node => node.paused), true); assert.ok(Math.abs(await video.evaluate(node => node.currentTime) - 3) < .3);
       });
-      await scenario('checkout_state_survives_toggle', '/upgrade', async (page, state) => {
+      if (fixture.catalogPhase === 'on') await scenario('checkout_state_survives_toggle', '/upgrade', async (page, state) => {
         const buy = page.locator('section[aria-labelledby="credit-title"] > section[aria-label] button:enabled').first();
         if (!(await buy.count())) throw unavailable('нет enabled checkout server fixture');
         state.phase = 'C'; await buy.click(); await page.waitForFunction(() => [...document.querySelectorAll('button')].some(node => node.textContent.includes('Переходим к оплате')));
@@ -483,16 +412,50 @@ async function stageChecks(base, fixture, out) {
       }, { viewport: { width: viewport.w, height: viewport.h } });
     } finally { await browser.close(); }
   }
-  return report;
+  report.outcome = 'phase-passed'; await writeFile(resolve(out, 'stage-report.json'), JSON.stringify(report, null, 2), { mode: 0o600 }); return report;
+}
+async function verifyCatalogReports(paths, out) {
+  if (paths.length !== 3) throw unavailable('нужны ровно OFF,ON,component reports');
+  const reports = await Promise.all(paths.map(path => privateJson(path, 16_000_000))), [off, on, component] = ['off', 'on', 'component'].map(kind => reports.find(report => kind === 'component' ? report.layer === 'component-boundary' : report.layer === 'actual-next' && report.catalogPhase === kind));
+  if (!off || !on || !component || reports.some(report => report.schema !== 'workspace-catalog-evidence-1' || !report.results?.length || report.results.some(row => row.outcome !== 'passed'))) throw unavailable('нет трёх complete catalog layers');
+  if (off.outcome !== 'phase-passed' || on.outcome !== 'phase-passed' || component.outcome !== 'component-passed' || component.case !== 'noDates') throw unavailable('catalog layer не завершён');
+  if (!uuid(off.identity?.windowPairId) || !/^[a-f0-9]{40}$/.test(off.identity.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(off.identity.imageDigest)
+    || off.identity.composeProject !== 'clipmkr-stage-20261028' || !/^https:\/\//.test(off.identity.actualHttpsOrigin)) throw unavailable('catalog report identity неполная');
+  for (const report of reports) assert.deepEqual(report.identity, off.identity, 'catalog artifact/project/origin/windowPairId mismatch');
+  for (const report of reports) if (!/^[a-f0-9]{64}$/.test(report.modeWitnessDigest)) throw unavailable('нет mode witness digest');
+  for (const report of [off, on]) {
+    for (const engine of ['chromium', 'webkit']) for (const name of [report.catalogPhase === 'on' ? 'available' : 'salesOff', 'owner', 'catalogOnly']) assert.ok(report.results.some(row => row.engine === engine && row.name === `catalog_server_preconditions:${name}`));
+  }
+  for (const engine of ['chromium', 'webkit']) assert.ok(on.results.some(row => row.engine === engine && row.name === 'checkout_state_survives_toggle'));
+  const componentKeys = new Set(component.results.map(row => JSON.stringify([row.engine, row.layout, row.theme, row.viewport.width, row.viewport.height, row.viewport.firstScreen])));
+  const viewports = [...[320,360,390,414,672,768,1024,1440].map(width => ({ width, height:844, firstScreen:false })), ...FIRST_SCREEN_VIEWPORTS.map(({w,h}) => ({ width:w, height:h, firstScreen:true }))], expected = [];
+  for (const engine of ['chromium', 'webkit']) for (const layout of ['workspace', 'studio']) for (const theme of ['dark', 'light']) for (const viewport of viewports) expected.push(JSON.stringify([engine, layout, theme, viewport.width, viewport.height, viewport.firstScreen]));
+  assert.deepEqual([...componentKeys].sort(), expected.sort()); assert.equal(component.results.length, 88);
+  await writeFile(resolve(out, 'catalog-evidence.json'), JSON.stringify({ outcome: 'catalog-evidence-complete', identity: off.identity, layers: ['actual-next:off', 'actual-next:on', 'component-boundary:noDates'], limitation: 'not backend/provider E2E or feature acceptance' }, null, 2), { mode: 0o600 });
 }
 const args = process.argv.slice(2);
-const value = flag => { const index = args.indexOf(flag); return index < 0 ? undefined : args[index + 1]; };
+const value = flag => {
+  const inline = args.filter(arg => arg.startsWith(flag + '=')), positions = args.flatMap((arg, index) => arg === flag ? [index] : []);
+  if (inline.length + positions.length > 1) throw unavailable(`повторный CLI flag ${flag}`);
+  return inline[0]?.slice(flag.length + 1) ?? (positions.length ? args[positions[0] + 1] : undefined);
+};
 try {
   const out = value('--out');
   if (!out) throw unavailable('нужен приватный --out');
   await mkdir(out, { recursive: true, mode: 0o700 }); await chmod(out, 0o700);
-  if (args.includes('--local-handlers')) await localHandlers(out);
-  else { const base = value('--base'), fixture = await loadStageFixture(base, value('--fixture')); await stageChecks(base, fixture, out); }
+  const phase = value('--catalog-phase'), component = value('--catalog-component'), reports = value('--catalog-verify-reports');
+  if ([args.includes('--local-handlers'), !!component, !!reports].filter(Boolean).length > 1) throw unavailable('выберите один local/component/aggregation mode');
+  if (phase !== undefined && !['on', 'off'].includes(phase)) throw unavailable('catalog-phase должно быть on|off');
+  if (args.includes('--local-handlers')) await runLocalWorkspaceChecks(out, { denyPreferences, observed, settingsKeyboard });
+  else if (reports) await verifyCatalogReports(reports.split(','), out);
+  else if (component) {
+    if (component !== 'no-dates') throw unavailable('catalog-component должно быть no-dates');
+    const fixture = await privateJson(value('--fixture')); await catalog_phase_has_actual_server_witness(fixture, phase ?? fixture.catalogPhase);
+    if (fixture.actualHttpsOrigin !== value('--base') || execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() !== fixture.sourceSha
+      || execFileSync('git', ['status', '--porcelain', '--untracked-files=all', '--', 'apps/web/src', 'packages/shared/src/tariff.ts'], { encoding: 'utf8' }).trim()) throw unavailable('component source/origin не совпадает с artifact witness');
+    const report = await runCatalogNoDates(out, { identity: fixture.identity, modeWitnessDigest: fixture.modeWitnessDigest, observed, firstScreenViewports: FIRST_SCREEN_VIEWPORTS });
+    if (report.outcome !== 'component-passed') process.exitCode = report.outcome === 'not-established' ? 2 : 1;
+  } else { const base = value('--base'), fixture = await loadStageFixture(base, value('--fixture'), phase); await stageChecks(base, fixture, out); }
 } catch (error) {
   process.stderr.write(`${error.message.split('\n').slice(0, 3).join('\n')}\n`);
   process.exitCode = error.message.includes('NOT ESTABLISHED') || error.code === 'ENOENT' ? 2 : 1;
