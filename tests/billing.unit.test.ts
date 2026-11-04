@@ -21,6 +21,7 @@ import { ProInterest } from '../apps/web/src/app/dashboard/ProInterest';
 import { environment } from './fixtures/environment';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/' }));
 vi.mock('../apps/web/src/app/theme-server', () => ({ requestTheme: async () => 'light' }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ cookie: 'n5_theme=light' }) }));
 
 const LIVE = { N5_PAYMENTS_MODE: 'live', YOOKASSA_SHOP_ID: '123456', YOOKASSA_SECRET_KEY: 'test_secret', YOOKASSA_TEST_MODE: 'true' };
 

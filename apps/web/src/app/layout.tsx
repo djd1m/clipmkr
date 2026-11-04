@@ -1,4 +1,7 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
+import { workspaceLayoutFromCookie } from '../lib/workspace-layout';
+import { WorkspacePreferenceSync } from './WorkspaceSettings';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { SupportLauncher } from './SupportLauncher';
@@ -17,6 +20,7 @@ export async function generateViewport(): Promise<Viewport> {
 }
 export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await requestTheme();
+  const layout = workspaceLayoutFromCookie((await headers()).get('cookie') ?? undefined);
   const env = readEnvironment(), payments = loadPaymentsConfig(env);
-  return <html lang="ru" data-theme={theme}><body>{payments.mode === 'live' && payments.testMode && <div role="status">Тестовый стенд ЮKassa. Реальных списаний нет. Суммы и расчёты в кабинетах — учебные.</div>}{children}<SupportLauncher /><AcquisitionAnalytics counter={counterId(env.N5_METRIKA_COUNTER_ID)} /></body></html>;
+  return <html lang="ru" data-theme={theme} data-workspace-layout={layout}><body><WorkspacePreferenceSync initialLayout={layout} initialTheme={theme} />{payments.mode === 'live' && payments.testMode && <div role="status">Тестовый стенд ЮKassa. Реальных списаний нет. Суммы и расчёты в кабинетах — учебные.</div>}{children}<SupportLauncher /><AcquisitionAnalytics counter={counterId(env.N5_METRIKA_COUNTER_ID)} /></body></html>;
 }
