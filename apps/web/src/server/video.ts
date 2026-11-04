@@ -39,6 +39,9 @@ export class VideoService {
     const parsed = createVideoSchema.safeParse(input);
     if (!parsed.success || !z.string().uuid().safeParse(key).success) throw new UploadError('invalid', 'Проверьте имя, размер файла и ключ запроса', 422);
     const body = parsed.data, now = this.clock();
+    if (body.account_scope !== undefined && body.account_scope !== account) {
+      throw new UploadError('conflict', 'Аккаунт изменился. Обновите страницу', 409);
+    }
     // Призыв разбирается ДО заявки ключа и квоты: непригодный адрес не тратит слот загрузки.
     let cta;
     try { cta = parseCtaTarget(body.cta_kind, body.cta_url); }

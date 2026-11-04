@@ -79,3 +79,20 @@ it('JSON лимит потока не обходит Content-Length; чужой 
   expect(complete).not.toHaveBeenCalled();
 });
 
+
+it('create_scope_schema_and_legacy_compatibility', () => {
+  const body = { declared_bytes: 10, filename: 'a.mp4', source: 'upload' };
+  expect(createVideoSchema.safeParse(body).success).toBe(true);
+  expect(createVideoSchema.safeParse({...body, account_scope: randomUUID()}).success).toBe(true);
+  for (const account_scope of ['bad', null, 5]) expect(createVideoSchema.safeParse({...body, account_scope}).success).toBe(false);
+});
+it('create_scope_mismatch_has_no_side_effects', async () => {
+  const { VideoService } = await import('../apps/web/src/server/video');
+  const pool = {connect: vi.fn(() => { throw new Error('transaction entered'); }), query: vi.fn()};
+  const storage = {sign: vi.fn(), initiate: vi.fn(), list: vi.fn(), complete: vi.fn(), head: vi.fn(), abort: vi.fn(), delete: vi.fn(), range: vi.fn()};
+  const service = new VideoService(pool as unknown as ConstructorParameters<typeof VideoService>[0],
+    {} as ConstructorParameters<typeof VideoService>[1], storage as unknown as ConstructorParameters<typeof VideoService>[2], vi.fn());
+  await expect(service.create(randomUUID(), randomUUID(), {declared_bytes: 10, filename: 'a.mp4', source: 'upload', account_scope: randomUUID()})).rejects.toMatchObject({status: 409});
+  expect(pool.connect).not.toHaveBeenCalled(); expect(pool.query).not.toHaveBeenCalled();
+  for (const operation of Object.values(storage)) expect(operation).not.toHaveBeenCalled();
+});
