@@ -150,11 +150,6 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
       <p id="source-file-help" className="muted">MP4, MOV, WebM, M4A, MP3 · 2–{Math.floor(maxSourceSeconds/60)} минут · до 2 ГБ.
         {saved?` Для продолжения выберите исходный файл: ${saved.originalFilename}.`: ' Без сохранённых данных продолжить прежнюю передачу нельзя.'}</p>
       {creditMode&&<p className="muted">1 кредит = 60 секунд записи.{estimatedSeconds!==null?` Предварительно: ${(estimatedSeconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов (${estimatedSeconds} секунд).`:''} Точный резерв определим по файлу на сервере до обработки. При техническом отказе без готовых клипов резерв вернётся.</p>}
-      <label className="check"><input type="checkbox" checked={music} disabled={locked} onChange={event=>setMusic(event.target.checked)}/> Добавить музыку и финальный акцент</label>
-      <small className="muted">Komiku, HoliznaCC0 — музыка CC0 · Kenney — Sci-Fi Sounds, CC0</small>
-      <label className="check"><input type="checkbox" checked={teaser} disabled={locked} onChange={event=>setTeaser(event.target.checked)}/> Заголовок в начале клипа</label>
-      <label className="check"><input type="checkbox" checked={compact} disabled={locked} onChange={event=>setCompact(event.target.checked)}/> Убрать паузы</label>
-      <CtaFields id="upload-cta" kind={ctaKind} url={ctaUrl} disabled={locked} onKind={setCtaKind} onUrl={setCtaUrl}/>
       {phase==='storageBlocked'?<button ref={retry} onClick={()=>void upload()}>Повторить сохранение</button>:
         <button ref={primary} disabled={busy||!file||!digest||phase==='mismatch'||phase==='recoveryUnavailable'||phase==='accepted'} onClick={()=>void upload()}>
           {saved?'Продолжить загрузку':'Создать клипы →'}</button>}
@@ -164,5 +159,10 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
       <p role="status" aria-live="polite" aria-atomic="true">{message}</p>
       {error&&<p id="source-file-error" role="alert">{error}</p>}
       {videoId&&<p className="video-id">video_id: <code>{videoId}</code></p>}
+      <label className="check"><input type="checkbox" checked={music} disabled={locked} onChange={event=>setMusic(event.target.checked)}/> Добавить музыку и финальный акцент</label>
+      <small className="muted">Komiku, HoliznaCC0 — музыка CC0 · Kenney — Sci-Fi Sounds, CC0</small>
+      <label className="check"><input type="checkbox" checked={teaser} disabled={locked} onChange={event=>setTeaser(event.target.checked)}/> Заголовок в начале клипа</label>
+      <label className="check"><input type="checkbox" checked={compact} disabled={locked} onChange={event=>setCompact(event.target.checked)}/> Убрать паузы</label>
+      <CtaFields id="upload-cta" kind={ctaKind} url={ctaUrl} disabled={locked} onKind={setCtaKind} onUrl={setCtaUrl}/>
     </div></section>;
 }

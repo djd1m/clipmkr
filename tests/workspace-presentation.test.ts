@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { themeCookie, themeFromCookie } from '../apps/web/src/lib/theme';
@@ -82,4 +82,13 @@ describe('document-scoped preferences', () => {
 
 it('SSR ThemeToggle preserves accessible existing contract', () => {
   expect(renderToStaticMarkup(createElement(ThemeToggle, { initial: 'light' }))).toContain('aria-pressed="true"');
+});
+
+vi.mock('next/navigation',()=>({useRouter:()=>({push(){},refresh(){}})}));
+it('upload_actions_and_status_precede_optional_settings_in_dom_order',async()=>{
+  const {VideoUploader}=await import('../apps/web/src/app/upload/Uploader');
+  const html=renderToStaticMarkup(createElement(VideoUploader,{accountScope:'11111111-1111-4111-8111-111111111111',creditMode:true}));
+  const sequence=['id="source-file"','id="source-file-help"','1 кредит = 60 секунд записи.','Создать клипы →','role="status"','type="checkbox"','id="upload-cta-kind"'];
+  const positions=sequence.map(marker=>{const position=html.indexOf(marker);expect(position,marker).toBeGreaterThanOrEqual(0);return position;});
+  for(let index=1;index<positions.length;index++)expect(positions[index],`${sequence[index-1]} before ${sequence[index]}`).toBeGreaterThan(positions[index-1]!);
 });
