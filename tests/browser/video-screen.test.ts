@@ -14,7 +14,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => {}, refresh:
 // Фича 29 progress-ribbon: НАСТОЯЩАЯ разметка экрана записи (VideoDetail + шапка кабинета) с НАСТОЯЩИМ globals.css.
 // R9 — тот же селектор, что прибор берёт для /dashboard/videos/{id}. Фикстура — готовое состояние (как seed-ui-fixture).
 const VIDEO_ID = '8f0c2a4e-1b2c-4d5e-8f90-123456789abc';
-const SCREENS = 'docs/features/progress-ribbon/screens';
+const SCREENS = process.env.N5_SCREEN_ARTIFACT_DIR ?? 'docs/features/progress-ribbon/screens';
 const CSS = readFileSync('apps/web/src/app/globals.css', 'utf8');
 const START = '/* progress-ribbon:first-screen:start', END = '/* progress-ribbon:first-screen:end */';
 // Мутация «панель первой карточки ниже сгиба»: тот же экран без компактного блока фичи 29.
@@ -29,6 +29,7 @@ const clip = (index: number, available = true): ClipScreen => ({ clip_id: `00000
   expires_at: null, available, duration_seconds: 36.2, score: 81, components: { hook: 29, completeness: 27, length: 25 },
   explanations: { hook: 'Вопрос с первых слов', completeness: 'Ответ законченный', length: 'Без лишних пауз' } });
 const STATES: Record<string, { video: VideoScreen; clips: ClipScreen[] }> = {
+  uploading: {video:video({status:'uploading',user_state:'выполняется',stage_label:'Передача файла не завершена',stage_progress:null,clips_done:0,clips_total:0}),clips:[]},
   done: { video: video(), clips: [clip(1), clip(2), clip(3)] },
   running: { video: video({ status: 'rendering', user_state: 'выполняется', stage_label: 'Режем: готово 1 из 3', stage_progress: 40, clips_done: 1 }),
     clips: [clip(1), clip(2, false), clip(3, false)] },
@@ -51,7 +52,7 @@ beforeAll(async () => {
   try { await preflight(['chromium', 'webkit']); }
   catch (error) { throw new Error(`НЕ ВЫПОЛНЕНО: ${String(error)}`); }
   server = createServer((req, res) => {
-    const match = /^\/(dark|light)-(done|running|silent|failure)(-mutant)?\.html$/.exec(req.url ?? '');
+    const match = /^\/(dark|light)-(done|running|silent|failure|uploading)(-mutant)?\.html$/.exec(req.url ?? '');
     if (!match) { res.writeHead(404).end(); return; }
     res.setHeader('content-type', 'text/html; charset=utf-8');
     res.end(page(match[1] as 'dark' | 'light', match[2]!, match[3] ? CSS_WITHOUT_BLOCK : CSS));
@@ -68,6 +69,13 @@ const errors = (found: { severity: string; rule: string; message: string; select
 for (const [name, engine] of Object.entries({ chromium, webkit })) describe(`экран записи ${name}`, () => {
   let browser: Browser;
   beforeAll(async () => { browser = await engine.launch(); });
+  it('uploading_has_recovery_instruction_without_progress', async()=>{
+    const p=await browser.newPage();try{await p.goto(`${base}/dark-uploading.html`);
+      expect(errors(await domRules(p,['R1','R2','R5']))).toEqual([]);
+      expect(await p.locator('progress').count()).toBe(0);expect(await p.getByRole('link',{name:'Выбрать исходный файл и продолжить загрузку'}).getAttribute('href')).toBe('/dashboard?upload=recovery#source-file');
+      expect(await p.locator('.status-panel').textContent()).toContain('Обработка ещё не началась');
+    }finally{await p.close();}
+  });
   afterAll(async () => { await browser?.close(); });
   async function open(file: string, viewport: { width: number; height: number }, run: (page: Page) => Promise<void>) {
     const context = await browser.newContext({ viewport, isMobile: true, hasTouch: true });
@@ -110,12 +118,12 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) describe(`э�
       } finally { await context.close(); }
     });
   }
-  for (const state of ['done', 'running', 'silent', 'failure']) {
+  for (const state of ['done', 'running', 'silent', 'failure', 'uploading']) {
     for (const theme of ['dark', 'light'] as const) {
       it(`${state} ${theme} 320: без горизонтального скролла, цели 44, axe без отказов`, () => open(`${theme}-${state}`, { width: 320, height: 640 }, async p => {
         expect(errors(await domRules(p, ['R1', 'R2', 'R5']))).toEqual([]);
         expect(errors(await axeRule(p))).toEqual([]);
-        if (state !== 'done') {
+        if (state !== 'done' && state !== 'uploading') {
           // Лента — ol с ровно одной текущей стадией; состояние — текстом.
           expect(await p.locator('ol.progress-ribbon > li').count()).toBe(4);
           expect(await p.locator('ol.progress-ribbon > li[aria-current=step]').count()).toBe(1);

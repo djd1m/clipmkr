@@ -27,6 +27,11 @@ export function StageRibbon({ steps }: { steps: RibbonStep[] }) {
       <span className="visually-hidden"> — {STEP_STATE_TEXT[step.view]}</span></li>)}</ol>;
 }
 export function ProgressPanel({ video, onRetry, busy = false }: { video: VideoScreen; onRetry?: () => void; busy?: boolean }) {
+  if(video.status==='uploading') return <section className="status-panel" role="status" data-state="uploading">
+    <h2>Передача файла не завершена. Обработка ещё не началась</h2>
+    <p>Продолжите в исходной вкладке: нужны сохранённая сессия и исходный файл.</p>
+    <Link className="button secondary" href="/dashboard?upload=recovery#source-file">Выбрать исходный файл и продолжить загрузку</Link>
+  </section>;
   const { tone, steps } = ribbonOf(video);
   const failure = tone === 'failure', success = tone === 'success', silent = tone === 'silent';
   // Готово — лента сворачивается в одну строку: первый экран телефона отдан клипам (FR-GROWTH-001).
@@ -88,7 +93,7 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
     finally { setBusy(false); router.refresh(); }
   }
   // Local clock also detects silence when polling itself loses the network.
-  const shown = video.user_state === 'выполняется' && now - Date.parse(video.updated_at) > 300000
+  const shown = video.status !== 'uploading' && video.user_state === 'выполняется' && now - Date.parse(video.updated_at) > 300000
     ? { ...video, no_response: true, stage_label: 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.' } : video;
   return <><VideoHeader video={video} /><ProgressPanel video={shown} onRetry={() => void retry()} busy={busy} />
     {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}

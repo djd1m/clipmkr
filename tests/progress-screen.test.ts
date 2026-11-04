@@ -229,3 +229,23 @@ it('actual clip duration is numeric in screen and used by ClipCard; null falls b
   expect(renderToStaticMarkup(createElement(ClipCard, { clip: screen }))).toContain('20.1');
   expect(renderToStaticMarkup(createElement(ClipCard, { clip: { ...screen, duration_seconds: null } }))).toContain('23.0');
 });
+
+it('uploading_is_never_stale_processing', () => {
+  for (const age of [0,300001,86400000]) {
+    const current=presentVideo({...video,status:'uploading',stage_progress:99,updated_at:new Date(now.getTime()-age)},now);
+    expect(current.no_response).toBe(false);expect(current.stage_progress).toBeNull();
+    expect(current.stage_label).toContain('Обработка ещё не началась');
+    const html=renderToStaticMarkup(createElement(ProgressPanel,{video:current}));
+    expect(html).not.toContain('<progress');expect(html).not.toContain('Выполняется');expect(html).toContain('/dashboard?upload=recovery#source-file');
+  }
+});
+it('uploading_row_has_no_detail_link', async () => {
+  const {VideoRow:Row}=await import('../apps/web/src/app/videos/VideoList');
+  for (const status of ['uploading','queued','done'] as const) {
+    const html=renderToStaticMarkup(createElement(Row,{video:presentVideo({...video,status},now)}));
+    expect(html.includes(`href="/dashboard/videos/${video.id}"`)).toBe(status!=='uploading');
+  }
+});
+it('other_processing_staleness_is_unchanged',()=>{
+  for(const status of ['queued','transcribing','rendering'] as const) expect(presentVideo({...video,status,updated_at:new Date(now.getTime()-300001)},now).no_response).toBe(true);
+});

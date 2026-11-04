@@ -5,6 +5,10 @@ export function VideoThumbnail({ alt }: { alt: string }) {
   return <div className="video-thumbnail" role="img" aria-label={alt}>▶</div>;
 }
 export function VideoRow({ video }: { video: VideoScreen }) {
+  if(video.status==='uploading') return <div className="video-row"><VideoThumbnail alt="Незавершённая передача"/><div className="video-summary">
+    <strong>Передача файла не завершена. Обработка ещё не началась</strong>
+    <p>Вернитесь к форме загрузки в исходной вкладке. Для продолжения нужны сохранённая сессия и повторный выбор исходного файла.</p>
+  </div></div>;
   return <Link className="video-row" href={`/dashboard/videos/${video.video_id}`}>
     <VideoThumbnail alt="Запись" /><div className="video-summary"><strong>Запись от {new Date(video.created_at).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' })}</strong>
       <p>{video.duration_seconds === null ? 'Длительность уточняется' : `${Math.round(video.duration_seconds / 60)} мин`} · Готово клипов: {video.clips_done}</p>
