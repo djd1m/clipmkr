@@ -1,7 +1,8 @@
 # Авторская проверка multipart-completion-integrity
 
 Дата: 04.11.2026. Это собственная проверка автора, не независимое cross-model ревью.
-Независимая gpt-6-astra xhigh и финальный review-convergence gate остаются координатору.
+Ниже сохранены результаты автора. Независимая проверка и её фактическое закрытие
+добавлены отдельным разделом; они не подменяют авторские результаты.
 
 ## Реальные gates до кода
 
@@ -65,3 +66,28 @@ A8 malformed schema связаны с указанными тестами. В п
 Production guard count соответствует FR-1/OpenSpec. HEAD сравнение находится после >MAX и до
 magic bytes/transaction, соответствует FR-2/FR-3/OpenSpec. Checks стоят после ранних admitted/
 queued branches, соответствует FR-4/OpenSpec. Новых enum/DB fields/API/UI/dependencies нет.
+
+## Независимая проверка и formal convergence
+
+Запрошена `gpt-6-astra xhigh`, отдельная задача
+`/root/multipart_integrity_independent_review`, `fork_turns=none`.
+Автор — requested `gpt-6.1-sol high`. Провайдерный runtime ID/UUID не аттестован.
+Проверяющий начал с требований/плана и сам нашёл код/тесты, без авторских итогов.
+
+Предварительное независимое ревью дало GO; отдельно запущены **54/54** unit-проверки
+на Node 22.23.4, без пропусков. После настоящего host.prepare тот же проверяющий
+самостоятельно сверил актуальные SHA и записал собственный native receipt.
+Production SHA-256: `74ada8486f4f1d6ba6d01c7846d173d8ceb9b4dcceb9fedc998123d479c3366b`;
+новый test: `cc791918b04ddb471b5fe17e023b867ef50fae9fb6417af33e241b0e6c9e66a6`.
+Одна LOW-рекомендация усилить unit-проверку `FOR UPDATE` не блокирует этот scope.
+
+Настоящий `dz qe-rounds --source native --action evaluate` завершился exit0:
+**closed**, 1 witnessed cycle, 0 unresolved. Revision:
+`46afc85a88ad5d135a781f4059eb0ea00004ba4192ee645e4ebb5c2be1bee536`.
+Family `owner-exception` отражает явное решение владельца о cross-model;
+это не заявление об Anthropic-проверке. Старые untracked screenshots других фич
+и project config попали в snapshot автоматически: сверены по SHA, их пользовательские
+сценарии этим ревью не переаттестованы и сами файлы в этот commit не включаются.
+
+Закрыт ограниченный серверный unit-блок. Build образов, настоящий S3/DB/Redis,
+браузерный upload и доставка остаются отдельными проверками.
