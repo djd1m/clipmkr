@@ -18,12 +18,12 @@ Health+wiring — 12/12 PASS, typecheck/lint — PASS. Новый I/O, зави�
 Установленный feature-adr, шаг 8, устанавливает предел:
 «Native QE keeps its default ceiling at three».
 Единственное обычное продолжение разрешено только для третьего цикла,
-«whose active cycle has never closed». Третий цикл A уже CLOSED; установленный
-core явно возвращает `native-continuation-predecessor-closed` для такого случая.
+«whose active cycle has never closed». Третий цикл A уже CLOSED; в коде установленного
+core этот случай отклоняется как `native-continuation-predecessor-closed`.
 Переименование feature/host/source или обнуление истории для нового B недопустимы.
 
-Источники: [feature-adr SKILL.md](../../../../../node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/SKILL.md),
-[шаг 8](../../../../../node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/modules/08-qe.md).
+Источники: [feature-adr SKILL.md](../../../../node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/SKILL.md),
+[шаг 8](../../../../node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/modules/08-qe.md).
 Это ограничения прочитанного skill/runtime; сами по себе они не являются
 дефектом кода health и не превращают пройденный A в незавершённый native review.
 
