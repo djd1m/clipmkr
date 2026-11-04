@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(): Promise<Response> {
   try {
     await getRuntime().pool.query('SELECT 1');
-    return Response.json({ status: 'ok', revision }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ status: 'ok', revision }, { headers: { 'Cache-Control': 'no-store', 'X-Clipmkr-Release': revision } });
   } catch (error) {
     console.error('Проверка здоровья: сервис недоступен', error);
-    return Response.json({ status: 'unavailable', revision }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ status: 'unavailable', revision }, { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Clipmkr-Release': revision } });
   }
 }

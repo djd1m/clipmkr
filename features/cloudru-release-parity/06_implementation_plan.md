@@ -409,3 +409,4 @@ EXPECTED_CODE_TARGETS:
 - docs/review-policy.md
 - package.json
 - package-lock.json
+- tests/health.test.ts
