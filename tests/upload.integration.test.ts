@@ -189,7 +189,7 @@ describe.skipIf(!dbUrl || process.env.N5_PREFIX_RUN_S3 !== '1')('PostgreSQL + Cl
     const id = await account();
     const [a, b] = await Promise.all([service.create(id, randomUUID(), body), service.create(id, randomUUID(), body)]);
     await pool.query("INSERT INTO quota_counter(scope,scope_key,day,used) VALUES ('user_upload_refunds',$1,$2,1)", [id, moscowDay(new Date())]);
-    const inputs = await Promise.all([put(a, Buffer.from('not media')), put(b, Buffer.from('not media'))]);
+    const inputs = await Promise.all([put(a, Buffer.alloc(body.declared_bytes)), put(b, Buffer.alloc(body.declared_bytes))]);
     const results = await Promise.allSettled(inputs.map((input) => service.complete(id, input)));
     for (const r of results) { expect(r.status).toBe('rejected'); if (r.status === 'rejected') expect(r.reason).toMatchObject({ status: 422, details: { reason: 'not_media' } }); }
     expect(await count(id)).toBe(1); expect(await count(id, 'user_upload_refunds')).toBe(2);

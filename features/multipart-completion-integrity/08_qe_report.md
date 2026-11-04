@@ -91,3 +91,38 @@ Family `owner-exception` отражает явное решение владел
 
 Закрыт ограниченный серверный unit-блок. Build образов, настоящий S3/DB/Redis,
 браузерный upload и доставка остаются отдельными проверками.
+
+## Test-only follow-up: bad-media fixture реального S3 regression
+
+Это новая авторская запись после исходного закрытого unit-блока, не его переаттестация.
+Root наблюдал реальный RED в server-upload-guest-retention.private.log:35 PASS/1 FAIL из36.
+Concurrent not_media fixture объявляла24 байта, но каждый PUT отправлял Buffer.from('not media')
+длиной9. Сервер правильно возвращал FR-2 conflict409 до media sniffing вместо ожидаемого422.
+
+Перед test edit: routing S сохраняется при3 code targets; повторный recall вернул пустой список.
+Actual K2 S require-requirements: PASS,0 failures/0 warnings/2 законных ADR skips; admission
+147edacda2cda8dff4c79f90285d299dc0ba93989aeee1d6f68714db1e4c79d9 admitted, reasons=[].
+Literal coder-context complete. Поддерживаемый npm run dz -- feature-adr-checkpoint --stage plan
+реально измерил00/01/06 и вернул ok:true,witnessed3; inputHash
+76618388c4e5d46920cae3c077c684015c2e1325762a396eaf8376a3c07d4c6a.
+Это текущий follow-up plan witness, не изготовленная историческая approval/native QE receipt.
+
+Изменение одной строки tests/upload.integration.test.ts: оба PUT получают
+Buffer.alloc(body.declared_bytes), то есть24 нулевых байта. Все not_media422/refund/concurrency/
+replay assertions сохранены дословно. Production video.ts/media predicate и другие product files
+не менялись. Нет новых module/export/API/пакетов/UX; пользовательской OpenSpec дельты нет.
+
+| Требование → риск | Сценарий/команда → наблюдение | Ограничение |
+|---|---|---|
+| FR-2 → fixture попадает в size409 вместо media422 | Private bytes-contract probe импортирует actual isAllowedMedia: old9,declared24,new24,predicate false; exit0 | Это проверка bytes/predicate, не S3/DB concurrency |
+| FR-1–6 → случайное ослабление integrity guard | npm test -- tests/upload-completion-integrity.test.ts tests/upload-fix.test.ts tests/upload.test.ts tests/upload-route.test.ts tests/upload-browser.test.ts tests/upload-guards.test.ts:59/59,6 files,0 skipped,exit0 | Unit fake storage/pool не заменяет integration |
+| NFR-1 → compile/static regression | Node22.23.4 PATH, tsc --noEmit -p tests/tsconfig.json и npm run lint:exit0 | Full suite/build здесь не повторялись |
+| NFR-2 follow-up → real integration claims без результата | GREEN real S3 subset передан root с existing private fenced profile и isolated test DB | До фактического root запуска остаётся PENDING; app DB/MinIO не использовались автором |
+
+Code/spec anti-drift: production diff пуст; FR-2 size guard остаётся перед media sniffing.
+В test diff изменена только подготовка payload, не проверки или ожидаемые ответы; новый payload
+проходит declared-size предусловие и остаётся non-media. Старые409 integrity negative units зелёные.
+Root real S3 RED сохранён; автор не объявляет последующий реальный GREEN до root evidence.
+Private commands/results: /root/.config/clipmkr/release-parity-20261103/multipart-fixture-followup/;
+исходный RED: combined-ui-regression-next/real-s3/server-upload-guest-retention.private.log.
+Новая независимая проверка этого test-only follow-up не выполнялась и не приписывается исходному QE.

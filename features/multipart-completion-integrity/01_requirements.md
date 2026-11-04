@@ -32,3 +32,12 @@ NFR-1: Сеть и HEAD/Range остаются вне транзакции; guar
 
 NFR-2: Проверки выполняются на fake storage/pool unit harness, без MinIO/реальных БД/S3/очередей/оплат.
 Реальная конкурентность PostgreSQL и live Cloud.ru этой задачей не доказываются.
+
+### Test-only regression follow-up по реальному S3 наблюдению
+
+Прежний NFR-2 описывает исходное unit доказательство и остаётся его ограничением. Root отдельно
+разрешил существующий real S3 regression на isolated test DB с текущим private S3 fencing profile.
+В concurrency not_media fixture payload должен совпадать с declared_bytes и оставаться не-медиа,
+чтобы проверялся media reject422/refund/replay после успешной проверки FR-2, а не size conflict409.
+Production guards, not_media/refund/concurrency/replay assertions не меняются. Этот test-only follow-up
+не доказывает GREEN до фактического повторного запуска root и не разрешает работу с app DB/MinIO.
