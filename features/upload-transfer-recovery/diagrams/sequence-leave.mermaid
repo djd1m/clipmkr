@@ -1,0 +1,10 @@
+sequenceDiagram
+  participant U as Пользователь
+  participant C as Uploader generation N
+  participant S as Server
+  C->>S: create / PUT / Complete уже в полёте
+  U->>C: Подтверждает уход / pause
+  C->>C: Сразу fence N и abort, сохранить recovery данные
+  S-->>C: Поздний ответ возможен
+  C->>C: Generation/mounted check отклоняет продолжение
+  Note over C,S: Нет нового Complete/PUT/redirect/clear из N

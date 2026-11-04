@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant C as Uploader
+  participant L as sessionStorage
+  participant S as Server
+  C->>L: Сохранить parts и readback
+  L-->>C: Ошибка/неэквивалентная запись
+  C->>C: storageBlocked, manifest остаётся в памяти
+  Note over C,S: Complete не вызывается
+  C->>L: Явный повтор сохранения
+  L-->>C: Подтверждённый manifest
+  C->>S: Только теперь Complete с прежним video_id

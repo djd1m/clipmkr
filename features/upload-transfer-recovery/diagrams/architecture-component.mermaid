@@ -1,0 +1,10 @@
+flowchart TD
+  Page[Dashboard: pageAccount UUID] --> Uploader[Один VideoUploader]
+  Uploader --> Identity[upload-file-identity: noble full SHA]
+  Uploader --> Resume[upload-resume: strict Zod / typed storage outcomes]
+  Uploader --> Guard[Native listeners + generation/controller]
+  Uploader --> Transport[Существующий uploadParts / rpc]
+  Transport --> Service[VideoService / S3 ListParts / admitted Complete]
+  Service --> Screen[screen.presentVideo]
+  Screen --> List[VideoList]
+  Screen --> Detail[VideoDetail]

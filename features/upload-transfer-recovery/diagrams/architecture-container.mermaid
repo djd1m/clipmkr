@@ -1,0 +1,6 @@
+flowchart LR
+  Browser[Browser React / sessionStorage v2] -->|старые RPC/create/complete| Next[Next web]
+  Browser -->|старый PUT signed URL| S3[S3]
+  Next --> DB[Существующая PostgreSQL]
+  Next --> Redis[Существующий Redis / очередь]
+  Redis --> Worker[Существующие workers]

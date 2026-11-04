@@ -1,0 +1,21 @@
+sequenceDiagram
+  participant U as Пользователь
+  participant C as Uploader
+  participant H as Full SHA helper
+  participant L as Strict sessionStorage
+  participant S as Существующий create/ListParts/S3
+  U->>C: Повторно выбирает исходный File (сеть=0)
+  C->>H: Все байты по 4MiB, yield/signal
+  H-->>C: sha256+size совпадают
+  C->>L: Проверить scope/key/options
+  C->>C: readyResume / «Файл совпадает»; сеть=0
+  U->>C: Отдельно «Продолжить загрузку»
+  C->>S: create с прежним key + expected account_scope
+  Note over S: UUID/auth scope check до transaction/claim/quota/S3
+  S-->>C: Тот же video_id и missing parts
+  C->>L: Durable server receipt
+  C->>S: uploadParts missing parts
+  C->>L: Durable complete-ready manifest
+  C->>S: Прежний Complete
+  S-->>C: Accepted acknowledgement
+  C->>C: Снять guard / one-shot redirect на актуальный screen

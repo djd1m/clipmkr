@@ -1,0 +1,5 @@
+flowchart LR
+  User[Пользователь / исходный File] --> Web[Существующий Clipmkr]
+  Web --> Store[Приватный S3 multipart]
+  Web --> Pipeline[Существующие processing workers]
+  Owner[Владелец] --> Stage[Существующий stage: ручная приёмка]
