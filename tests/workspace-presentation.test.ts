@@ -3,6 +3,9 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { themeCookie, themeFromCookie } from '../apps/web/src/lib/theme';
 import { ThemeToggle } from '../apps/web/src/app/ThemeToggle';
+import { readFileSync } from 'node:fs';
+import { chromium, webkit } from 'playwright';
+import { workspacePalette } from '../scripts/workspace-presentation-local.mjs';
 
 const loadPreferences = () => import('../apps/web/src/lib/workspace-layout');
 
@@ -83,6 +86,33 @@ describe('document-scoped preferences', () => {
 it('SSR ThemeToggle preserves accessible existing contract', () => {
   expect(renderToStaticMarkup(createElement(ThemeToggle, { initial: 'light' }))).toContain('aria-pressed="true"');
 });
+
+it.each(['chromium', 'webkit'] as const)('scoped workspace canvas is neutral and public palette restores: %s', async engine => {
+  const { UpgradeScreen } = await import('../apps/web/src/app/upgrade/UpgradeScreen');
+  const { WorkspaceSettings } = await import('../apps/web/src/app/WorkspaceSettings');
+  const css = readFileSync(new URL('../apps/web/src/app/globals.css', import.meta.url), 'utf8');
+  const browser = await { chromium, webkit }[engine].launch({ headless: true });
+  try {
+    for (const theme of ['dark', 'light'] as const) for (const layout of ['workspace', 'studio'] as const) {
+      const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      try {
+        await page.setContent(`<!doctype html><html lang="ru" data-theme="${theme}" data-workspace-layout="${layout}"><head><title>Проверка палитры</title><style>${css}</style></head><body></body></html>`);
+        const canvas = () => page.evaluate(() => [document.documentElement, document.body].map(node => ({ background: getComputedStyle(node).backgroundColor, color: getComputedStyle(node).color })));
+        const publicPalette = await canvas();
+        const markup = renderToStaticMarkup(createElement('div', { className: 'workspace-shell' },
+          createElement('nav', { className: 'navigation' }, createElement(WorkspaceSettings, { initialLayout: layout, initialTheme: theme })),
+          createElement('main', { className: 'container' }, createElement(UpgradeScreen, { creditMode: true, salesEnabled: true, purchaseWindows: undefined,
+            title: 'Pro', price: '990 ₽', days: 30, paidMinutes: 270, current: { plan: 'free', plan_source: 'default', plan_paid_until: null } }))));
+        await page.locator('body').evaluate((body, html) => { body.innerHTML = html; }, markup);
+        expect(await page.getByRole('status').filter({ hasText: 'Не удалось определить даты пакетов' }).count()).toBe(1);
+        expect(await page.locator('section[aria-label] button:disabled').count()).toBe(3);
+        await workspacePalette(page);
+        await page.locator('.workspace-shell').evaluate(node => node.remove());
+        expect(await canvas()).toEqual(publicPalette);
+      } finally { await page.close(); }
+    }
+  } finally { await browser.close(); }
+}, 30_000);
 
 vi.mock('next/navigation',()=>({useRouter:()=>({push(){},refresh(){}})}));
 it('upload_actions_and_status_precede_optional_settings_in_dom_order',async()=>{

@@ -84,3 +84,25 @@ root. Точные актуальные результаты local matrix и raw
 Финальный AM-9 local-unbound matrix: 24 PASS /64 FAIL из88 в Chromium/WebKit;32 light HTML palette,
 24 R9 explanation/return,8 desktop R8. Этот FAIL не stage proof и не был пропущен. Raw matrix и точный
 scope ограничений записаны в 03.5_quality.md. Final modules: main462, helper156 строк.
+
+
+## FR-6: исправление light root specificity на combined artifact
+
+Execution: /tmp/clipmkr-ui-integration-20261104, исходный HEAD58871ea; единственный writer
+CSS/tests/этой квитанции по поручению координатора. Targets12 и bound FR/ADR/архитектура неизменны.
+До кода actual K2 M require-requirements exit0 и code-target admission admitted с manifestDigest
+b359817e079b92f850f1fb2432c0c5d2dcce5dc876cba51d5a4a4926802a174a.
+
+Новый тест scoped workspace canvas is neutral and public palette restores запускает Chromium/WebKit
+с настоящими globals.css, WorkspaceSettings и noDates UpgradeScreen markup. На исходном CSS RED:
+оба engine cases падают на non-neutral surface: HTML. Причина — :root[data-theme=light] специфичнее
+html:has(.workspace-shell), поэтому --paper корневого html оставался публичным зеленоватым.
+
+Исправление: единственное добавление :root[data-theme=light]:has(.workspace-shell) в существующий
+alias selector. Значения токенов, геометрия, тексты, бизнес-логика и существующие контролы не менялись.
+GREEN: оба layout × обе темы × оба движка (8 component/palette cases); после удаления shell исходные
+computed background/color html/body возвращаются к публичной палитре. Focused workspace/theme/billing
+64/64 PASS, lint и tests typecheck PASS. Raw RED/GREEN/K2/typecheck: приватный workspace-fr6-selector-fix/.
+
+Это local component/CSS regression, не Next stage E2E. Проверки и известные ограничения R8/R9
+не ослаблены, полный noDates88-case и stage windows в этом узком исправлении не объявлены PASS.

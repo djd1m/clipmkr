@@ -261,7 +261,7 @@ button,.button { min-width:2.75rem; }
 .legal-document p { white-space:pre-wrap; line-height:1.7; }
 
 /* Первый инкремент рабочей оболочки: единая разметка, два CSS-представления. */
-html:has(.workspace-shell), body:has(.workspace-shell), .workspace-shell {
+html:has(.workspace-shell), :root[data-theme=light]:has(.workspace-shell), body:has(.workspace-shell), .workspace-shell {
   --paper:var(--workspace-paper); --surface:var(--workspace-surface); --surface-2:var(--workspace-surface-2);
   --ink:var(--workspace-ink); --muted:var(--workspace-muted); --line:var(--workspace-line);
   --hover:var(--workspace-hover); --upload:var(--workspace-surface); --upload-line:var(--workspace-line);
