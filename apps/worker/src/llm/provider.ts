@@ -39,7 +39,7 @@ export function createSelector(config: LlmConfig, request: typeof fetch = fetch)
         headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: config.model,
           messages: [{ role: 'system', content: cloudru ? CLOUDRU_SYSTEM_PROMPT : SYSTEM_PROMPT }, { role: 'user', content: selectionMessage(transcript, duration) }],
-          ...(cloudru ? { stream: false, response_format: { type: 'json_object' } } : {
+          ...(cloudru ? { stream: false, response_format: { type: 'json_object' }, chat_template_kwargs: { thinking: false } } : {
           response_format: { type: 'json_schema', json_schema: { name: 'fragments', strict: true, schema: FRAGMENTS_SCHEMA } },
           provider: { only: config.model === 'anthropic/claude-sonnet-5' ? ['Anthropic', 'Claude Platform on AWS'] : ['Google'],
             allow_fallbacks: false, require_parameters: true },
