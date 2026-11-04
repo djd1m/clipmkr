@@ -1,9 +1,20 @@
 <!doctype html>
-<html lang="ru" data-active-direction="studio">
+<html lang="ru" data-active-direction="workspace" data-workspace-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Clipmkr — сравнение визуальных направлений</title>
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem('clipmkr-mockup-workspace-theme');
+        document.documentElement.dataset.workspaceTheme = saved === 'dark' ? 'dark' : 'light';
+      } catch {
+        // Офлайн-файл работает и при запрете хранилища браузером.
+        document.documentElement.dataset.workspaceTheme = 'light';
+      }
+    })();
+  </script>
   <style>
     *{box-sizing:border-box}
     html{background:#e9eceb}
@@ -97,75 +108,141 @@
     .studio-plan button{white-space:normal;min-width:9rem}
     .studio-plans-note{margin-top:1rem;color:#bfc5bd;font-size:.8rem}
 
-    /* B: a compact white workspace with row navigation and one blue signal. */
-    .workspace{background:#fcfdfd;color:#192838;border:1px solid #cbd5df;min-height:39rem;padding:0 clamp(.85rem,2.5vw,2.3rem) 2rem}
-    .workspace-head{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.6rem;min-height:4rem;border-bottom:1px solid #d3dce4}
+    /* B: один рабочий кабинет, две палитры с общими ролями цветов. */
+    :root[data-workspace-theme=light]{
+      --workspace-scheme:light;
+      --workspace-canvas:#e9eef3;
+      --workspace-surface:#fcfdfd;
+      --workspace-panel:#fff;
+      --workspace-text:#192838;
+      --workspace-muted:#506478;
+      --workspace-accent:#174c88;
+      --workspace-accent-hover:#103b70;
+      --workspace-on-accent:#fff;
+      --workspace-divider:#c5d0db;
+      --workspace-control-border:#61758a;
+      --workspace-soft:#e9f0f8;
+      --workspace-selected:#eef3f8;
+      --workspace-hover:#edf3fa;
+      --workspace-focus:#0059b3;
+      --workspace-clear:transparent;
+      --workspace-poster:#dbe3e9;
+      --workspace-poster-shape:#b8c8d5;
+      --workspace-poster-ring:#cbd6df;
+      --workspace-poster-2:#e1e5ea;
+      --workspace-poster-shape-2:#bfccdc;
+      --workspace-poster-3:#d8e2e7;
+      --workspace-poster-shape-3:#b6cbd4;
+      --workspace-shadow:#17242666;
+      --workspace-backdrop:#06101dcc;
+    }
+    :root[data-workspace-theme=dark]{
+      --workspace-scheme:dark;
+      --workspace-canvas:#0c141e;
+      --workspace-surface:#14202d;
+      --workspace-panel:#1a2939;
+      --workspace-text:#edf3fa;
+      --workspace-muted:#b6c5d5;
+      --workspace-accent:#99c8ff;
+      --workspace-accent-hover:#b7d9ff;
+      --workspace-on-accent:#102238;
+      --workspace-divider:#35495e;
+      --workspace-control-border:#8399b0;
+      --workspace-soft:#23364c;
+      --workspace-selected:#253c55;
+      --workspace-hover:#20344c;
+      --workspace-focus:#c1ddff;
+      --workspace-clear:transparent;
+      --workspace-poster:#24364a;
+      --workspace-poster-shape:#30465d;
+      --workspace-poster-ring:#3b526b;
+      --workspace-poster-2:#29364b;
+      --workspace-poster-shape-2:#354861;
+      --workspace-poster-3:#223c45;
+      --workspace-poster-shape-3:#2d5059;
+      --workspace-shadow:#0008;
+      --workspace-backdrop:#06101dcc;
+    }
+    :root[data-active-direction=workspace]{background:var(--workspace-canvas);color-scheme:var(--workspace-scheme)}
+    :root[data-active-direction=workspace] body{color:var(--workspace-text)}
+    :root[data-active-direction=workspace] .board-bar{grid-template-columns:minmax(0,1fr) minmax(0,12rem) minmax(0,12rem) auto;background:var(--workspace-panel);border-color:var(--workspace-divider)}
+    :root[data-active-direction=workspace] .board-name{color:var(--workspace-text)}
+    :root[data-active-direction=workspace] .board-field label{color:var(--workspace-muted)}
+    :root[data-active-direction=workspace] .board-field select{background:var(--workspace-panel);color:var(--workspace-text);border-color:var(--workspace-control-border)}
+    :root[data-active-direction=workspace] .disclaimer{background:var(--workspace-soft);color:var(--workspace-text);border-color:var(--workspace-accent)}
+    #workspace-theme-toggle{align-self:center;min-width:0;padding:.45rem .6rem;border:1px solid var(--workspace-control-border);border-radius:.2rem;background:var(--workspace-panel);color:var(--workspace-text);font-size:.82rem;font-weight:700}
+    #workspace-theme-toggle[aria-pressed=true]{background:var(--workspace-soft);color:var(--workspace-accent)}
+    #workspace-theme-toggle:hover{background:var(--workspace-hover)}
+    :root[data-active-direction=workspace] :is(button,select):focus-visible,:root[data-active-direction=workspace] h1:focus{outline-color:var(--workspace-focus)}
+    .workspace{background:var(--workspace-surface);color:var(--workspace-text);border:1px solid var(--workspace-divider);min-height:39rem;padding:0 clamp(.85rem,2.5vw,2.3rem) 2rem}
+    .workspace-head{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.6rem;min-height:4rem;border-bottom:1px solid var(--workspace-divider)}
     .workspace-mark{font-weight:800;font-size:1.03rem;letter-spacing:-.045em;white-space:nowrap}
     .workspace-nav{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
-    .workspace-nav button{min-height:2.75rem;padding:.4rem .05rem;background:none;border:0;border-bottom:2px solid transparent;color:#485b6c;font-weight:600;font-size:.88rem}
-    .workspace-nav button[aria-current=page]{color:#174c88;border-bottom-color:#174c88}
-    .workspace-balance{margin-left:auto;color:#43566a;font-size:.81rem;white-space:nowrap}
-    .workspace-balance strong{color:#174c88}
+    .workspace-nav button{min-height:2.75rem;padding:.4rem .05rem;background:var(--workspace-clear);border:0;border-bottom:2px solid var(--workspace-clear);color:var(--workspace-muted);font-weight:600;font-size:.88rem}
+    .workspace-nav button[aria-current=page]{color:var(--workspace-accent);border-bottom-color:var(--workspace-accent)}
+    .workspace-balance{margin-left:auto;color:var(--workspace-muted);font-size:.81rem;white-space:nowrap}
+    .workspace-balance strong{color:var(--workspace-accent)}
     .workspace-title{padding:1.7rem 0 1.35rem}
     .workspace h1{font-size:clamp(1.75rem,2.6vw,2.7rem);font-weight:760;margin-bottom:.38rem}
-    .workspace-title p{color:#506073;font-size:.89rem}
+    .workspace-title p{color:var(--workspace-muted);font-size:.89rem}
     .workspace-upload{display:grid;grid-template-columns:minmax(0,1fr) minmax(11rem,.3fr);gap:2rem}
     .workspace-main{min-width:0}
-    .workspace-section-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:#536678;font-weight:800;margin:0 0 .55rem}
-    .workspace-file{display:grid;grid-template-columns:2.7rem minmax(0,1fr) auto;gap:.75rem;align-items:center;padding:.9rem 0;border-top:1px solid #c5d0db;border-bottom:1px solid #c5d0db}
-    .workspace-file-symbol{display:grid;place-items:center;width:2.7rem;height:2.7rem;background:#e9f0f8;color:#174c88;font-size:1.3rem}
-    .workspace-file small{display:block;color:#586b7b;font-size:.78rem;margin-top:.15rem}
-    .workspace .action-primary{background:#174c88;border:1px solid #174c88;color:#fff}
-    .workspace .action-primary:hover{background:#103b70}
-    .workspace .action-secondary{background:#fff;border:1px solid #174c88;color:#174c88}
-    .workspace .action-secondary:hover{background:#edf3fa}
-    .workspace .action-plain{background:transparent;border:1px solid #a6b6c5;color:#263c50}
+    .workspace-section-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--workspace-muted);font-weight:800;margin:0 0 .55rem}
+    .workspace-file{display:grid;grid-template-columns:2.7rem minmax(0,1fr) auto;gap:.75rem;align-items:center;padding:.9rem 0;border-top:1px solid var(--workspace-divider);border-bottom:1px solid var(--workspace-divider)}
+    .workspace-file-symbol{display:grid;place-items:center;width:2.7rem;height:2.7rem;background:var(--workspace-soft);color:var(--workspace-accent);font-size:1.3rem}
+    .workspace-file small{display:block;color:var(--workspace-muted);font-size:.78rem;margin-top:.15rem}
+    .workspace .action-primary{background:var(--workspace-accent);border:1px solid var(--workspace-accent);color:var(--workspace-on-accent)}
+    .workspace .action-primary:hover{background:var(--workspace-accent-hover)}
+    .workspace .action-secondary{background:var(--workspace-panel);border:1px solid var(--workspace-accent);color:var(--workspace-accent)}
+    .workspace .action-secondary:hover{background:var(--workspace-hover)}
+    .workspace .action-plain{background:var(--workspace-clear);border:1px solid var(--workspace-control-border);color:var(--workspace-text)}
     .workspace-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin:.75rem 0 2.2rem}
-    .workspace-actions p{font-size:.78rem;color:#596a7a}
-    .workspace-records{border-top:1px solid #c5d0db}
-    .workspace-record{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.7rem;align-items:center;padding:.8rem 0;border-bottom:1px solid #dce3e9;font-size:.85rem}
-    .workspace-record span:not(:first-child){color:#536678;white-space:nowrap}
-    .workspace-side{border-left:1px solid #d3dce4;padding-left:1.25rem;color:#43576c}
+    .workspace-actions p{font-size:.78rem;color:var(--workspace-muted)}
+    .workspace-records{border-top:1px solid var(--workspace-divider)}
+    .workspace-record{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.7rem;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--workspace-divider);font-size:.85rem}
+    .workspace-record span:not(:first-child){color:var(--workspace-muted);white-space:nowrap}
+    .workspace-side{border-left:1px solid var(--workspace-divider);padding-left:1.25rem;color:var(--workspace-muted)}
     .workspace-side dl{margin:0}
     .workspace-side dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem}
-    .workspace-side dd{margin:0 0 1.3rem;font-size:1.3rem;font-weight:730;color:#174c88}
+    .workspace-side dd{margin:0 0 1.3rem;font-size:1.3rem;font-weight:730;color:var(--workspace-accent)}
     .workspace-side p{font-size:.79rem}
-    .workspace-ready{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(13rem,.65fr);gap:2rem;border-top:1px solid #c5d0db;padding-top:1.1rem}
+    .workspace-ready{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(13rem,.65fr);gap:2rem;border-top:1px solid var(--workspace-divider);padding-top:1.1rem}
     .workspace-selected{min-width:0}
     .workspace-selected-layout{display:grid;grid-template-columns:minmax(9rem,16rem) minmax(0,1fr);gap:1.25rem;align-items:end}
-    .workspace-poster{width:100%;aspect-ratio:9/16;position:relative;overflow:hidden;background:#dbe3e9;color:#1f3242;padding:.8rem;display:flex;flex-direction:column;justify-content:space-between}
-    .workspace-poster::before{content:"";position:absolute;inset:18% 16% 18%;background:#92a6b8;transform:rotate(-12deg)}
-    .workspace-poster::after{content:"";position:absolute;width:55%;aspect-ratio:1;border:.8rem solid #b8c8d5;border-radius:50%;right:-13%;top:12%}
-    .workspace-poster.p2{background:#e1e5ea}
-    .workspace-poster.p2::before{background:#a0aec0;transform:rotate(14deg);inset:18% 26% 22%}
+    .workspace-poster{width:100%;aspect-ratio:9/16;position:relative;overflow:hidden;background:var(--workspace-poster);color:var(--workspace-text);padding:.8rem;display:flex;flex-direction:column;justify-content:space-between}
+    .workspace-poster::before{content:"";position:absolute;inset:18% 16% 18%;background:var(--workspace-poster-shape);transform:rotate(-12deg)}
+    .workspace-poster::after{content:"";position:absolute;width:55%;aspect-ratio:1;border:.8rem solid var(--workspace-poster-ring);border-radius:50%;right:-13%;top:12%}
+    .workspace-poster.p2{background:var(--workspace-poster-2)}
+    .workspace-poster.p2::before{background:var(--workspace-poster-shape-2);transform:rotate(14deg);inset:18% 26% 22%}
     .workspace-poster.p2::after{top:48%;right:28%;width:38%;border-width:.55rem}
-    .workspace-poster.p3{background:#d8e2e7}
-    .workspace-poster.p3::before{background:#91a9b2;transform:none;inset:28% 8% 17%}
+    .workspace-poster.p3{background:var(--workspace-poster-3)}
+    .workspace-poster.p3::before{background:var(--workspace-poster-shape-3);transform:none;inset:28% 8% 17%}
     .workspace-poster.p3::after{width:65%;right:-12%;top:17%}
     .workspace-poster>*{position:relative;z-index:1}
-    .workspace-poster .poster-top{color:#174c88}
-    .workspace-poster .poster-words{font-size:clamp(1.1rem,2vw,1.65rem);color:#192f42;text-shadow:none}
+    .workspace-poster .poster-top{color:var(--workspace-accent)}
+    .workspace-poster .poster-words{font-size:clamp(1.1rem,2vw,1.65rem);color:var(--workspace-text);text-shadow:none}
     .workspace-selected-info h2{font-size:clamp(1.1rem,1.55vw,1.5rem);margin-bottom:.4rem}
-    .workspace-selected-info p{font-size:.82rem;color:#506478;margin-bottom:1rem}
+    .workspace-selected-info p{font-size:.82rem;color:var(--workspace-muted);margin-bottom:1rem}
+    .workspace-selected-info .quiet{margin-top:.8rem}
     .workspace-selected-info .action-row{align-items:stretch}
     .workspace-selected-info button{font-size:.85rem}
-    .workspace-list{border-left:1px solid #d3dce4;padding-left:1.2rem;min-width:0}
-    .workspace-list button{width:100%;min-height:4.3rem;display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:.7rem;background:none;border:0;border-bottom:1px solid #d3dce4;color:#25394c;text-align:left;padding:.7rem .2rem;font-size:.85rem}
-    .workspace-list button[aria-current=true]{border-left:3px solid #174c88;padding-left:.55rem;background:#eef3f8}
-    .workspace-list .clip-num{font-size:.74rem;color:#174c88;font-weight:800}
-    .workspace-list .clip-duration{color:#596a79;font-size:.76rem;white-space:nowrap}
-    .workspace-test{display:inline-block;margin-bottom:.65rem;padding:.15rem .4rem;border:1px solid #174c88;color:#174c88;font-size:.7rem;font-weight:850;letter-spacing:.1em}
-    .workspace-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #c5d0db;border-bottom:1px solid #c5d0db}
+    .workspace-list{border-left:1px solid var(--workspace-divider);padding-left:1.2rem;min-width:0}
+    .workspace-list button{width:100%;min-height:4.3rem;display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:.7rem;background:var(--workspace-clear);border:0;border-bottom:1px solid var(--workspace-control-border);color:var(--workspace-text);text-align:left;padding:.7rem .2rem;font-size:.85rem}
+    .workspace-list button[aria-current=true]{border-left:3px solid var(--workspace-accent);padding-left:.55rem;background:var(--workspace-selected)}
+    .workspace-list .clip-num{font-size:.74rem;color:var(--workspace-accent);font-weight:800}
+    .workspace-list .clip-duration{color:var(--workspace-muted);font-size:.76rem;white-space:nowrap}
+    .workspace-test{display:inline-block;margin-bottom:.65rem;padding:.15rem .4rem;border:1px solid var(--workspace-accent);color:var(--workspace-accent);font-size:.7rem;font-weight:850;letter-spacing:.1em}
+    .workspace-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--workspace-divider);border-bottom:1px solid var(--workspace-divider)}
     .workspace-package{min-width:0;padding:1.3rem clamp(.85rem,2vw,1.7rem);display:flex;flex-direction:column;align-items:flex-start}
-    .workspace-package+.workspace-package{border-left:1px solid #d3dce4}
+    .workspace-package+.workspace-package{border-left:1px solid var(--workspace-divider)}
     .workspace-package h2{font-size:clamp(1.3rem,1.8vw,1.8rem);margin:0 0 1.5rem}
-    .workspace-package-price{font-size:clamp(1.65rem,2.2vw,2.25rem);font-weight:760;color:#174c88;line-height:1.1;white-space:nowrap;margin-bottom:1.35rem}
-    .workspace-package dl{width:100%;margin:0 0 1.4rem;border-top:1px solid #d3dce4}
-    .workspace-package dl div{display:flex;justify-content:space-between;gap:.75rem;padding:.5rem 0;border-bottom:1px solid #d3dce4;font-size:.84rem}
-    .workspace-package dt{color:#506478}
+    .workspace-package-price{font-size:clamp(1.65rem,2.2vw,2.25rem);font-weight:760;color:var(--workspace-accent);line-height:1.1;white-space:nowrap;margin-bottom:1.35rem}
+    .workspace-package dl{width:100%;margin:0 0 1.4rem;border-top:1px solid var(--workspace-divider)}
+    .workspace-package dl div{display:flex;justify-content:space-between;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--workspace-divider);font-size:.84rem}
+    .workspace-package dt{color:var(--workspace-muted)}
     .workspace-package dd{margin:0;font-weight:720;text-align:right}
     .workspace-package button{margin-top:auto;width:100%}
-    .workspace-plans-note{margin-top:1rem;color:#506478;font-size:.81rem}
+    .workspace-plans-note{margin-top:1rem;color:var(--workspace-muted);font-size:.81rem}
 
     dialog{width:min(29rem,calc(100% - 1.5rem));border:1px solid #acbac4;background:#fff;color:#172426;padding:1.25rem;box-shadow:0 1.5rem 4rem #17242666}
     dialog::backdrop{background:#111b1bcc}
@@ -173,8 +250,15 @@
     dialog p{color:#40535b;margin-bottom:1rem}
     dialog button{min-height:2.75rem;border:1px solid #52636b;background:#fff;color:#172426;padding:.5rem .8rem}
 
-    @media(max-width:52rem){.studio-upload{grid-template-columns:minmax(0,1fr) 11rem}.studio-ready{grid-template-columns:minmax(0,1fr)}.studio-ready-intro{border-right:0;border-bottom:1px solid #4e5352;padding:0 0 .8rem}.studio-ready-intro h1{margin-bottom:.4rem}.studio-clips{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace-upload{grid-template-columns:minmax(0,1fr)}.workspace-side{border-left:0;border-top:1px solid #d3dce4;padding:1rem 0 0}.workspace-side dl{display:flex;gap:1.5rem}.workspace-ready{gap:1rem;grid-template-columns:minmax(0,1fr)}.workspace-list{border-left:0;border-top:1px solid #d3dce4;padding:1rem 0 0}}
-    @media(max-width:52rem){.studio-plans{grid-template-columns:minmax(0,1fr);gap:1.5rem}.studio-plans-intro h1{font-size:clamp(2.1rem,6vw,3.2rem)}.workspace-plans{grid-template-columns:minmax(0,1fr)}.workspace-package{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 1.25rem;padding:1rem 0}.workspace-package+.workspace-package{border-left:0;border-top:1px solid #d3dce4}.workspace-package h2{margin-bottom:.3rem}.workspace-package-price{margin:0;align-self:start}.workspace-package dl{grid-column:1/-1;margin:.4rem 0 .8rem}.workspace-package button{grid-column:1/-1;justify-self:start;width:auto;margin-top:0}}
+    :root[data-active-direction=workspace] dialog{border-color:var(--workspace-control-border);background:var(--workspace-panel);color:var(--workspace-text);box-shadow:0 1.5rem 4rem var(--workspace-shadow)}
+    :root[data-active-direction=workspace] dialog::backdrop{background:var(--workspace-backdrop)}
+    :root[data-active-direction=workspace] dialog p{color:var(--workspace-muted)}
+    :root[data-active-direction=workspace] dialog button{border-color:var(--workspace-control-border);background:var(--workspace-panel);color:var(--workspace-text)}
+
+    @media(max-width:52rem){:root[data-active-direction=workspace] .board-bar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}:root[data-active-direction=workspace] .board-name{grid-column:1;grid-row:1}#workspace-theme-toggle{grid-column:2;grid-row:1;justify-self:end}}
+
+    @media(max-width:52rem){.studio-upload{grid-template-columns:minmax(0,1fr) 11rem}.studio-ready{grid-template-columns:minmax(0,1fr)}.studio-ready-intro{border-right:0;border-bottom:1px solid #4e5352;padding:0 0 .8rem}.studio-ready-intro h1{margin-bottom:.4rem}.studio-clips{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace-upload{grid-template-columns:minmax(0,1fr)}.workspace-side{border-left:0;border-top:1px solid var(--workspace-divider);padding:1rem 0 0}.workspace-side dl{display:flex;gap:1.5rem}.workspace-ready{gap:1rem;grid-template-columns:minmax(0,1fr)}.workspace-list{border-left:0;border-top:1px solid var(--workspace-divider);padding:1rem 0 0}}
+    @media(max-width:52rem){.studio-plans{grid-template-columns:minmax(0,1fr);gap:1.5rem}.studio-plans-intro h1{font-size:clamp(2.1rem,6vw,3.2rem)}.workspace-plans{grid-template-columns:minmax(0,1fr)}.workspace-package{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 1.25rem;padding:1rem 0}.workspace-package+.workspace-package{border-left:0;border-top:1px solid var(--workspace-divider)}.workspace-package h2{margin-bottom:.3rem}.workspace-package-price{margin:0;align-self:start}.workspace-package dl{grid-column:1/-1;margin:.4rem 0 .8rem}.workspace-package button{grid-column:1/-1;justify-self:start;width:auto;margin-top:0}}
     @media(max-width:38rem){.board{padding:.5rem .5rem 1.5rem}.board-bar{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.45rem;padding:.5rem}.board-name{grid-column:1/-1;font-size:.7rem}.board-field label{font-size:.67rem}.board-field select{padding-inline:.35rem}.disclaimer{margin:.45rem 0 .55rem;font-size:.75rem}.studio,.workspace{padding-inline:.75rem;min-height:0}.studio-head,.workspace-head{min-height:3.4rem}.studio-head-right{font-size:.64rem}.studio-upload{display:block;min-height:0}.studio-work{padding:1rem 0 1.2rem}.studio-kicker{margin-bottom:.5rem}.studio h1{font-size:clamp(2rem,8vw,2.75rem);margin-bottom:.4rem}.studio-lead{font-size:.88rem}.studio-file{margin-top:1rem;padding:.7rem 0;grid-template-columns:minmax(0,1fr);gap:.45rem}.studio-file .file-name{font-size:.97rem}.studio-file .action-primary,.studio-file .action-secondary{justify-self:start}.studio-actions{margin-top:.65rem}.studio-preview{border-left:0;border-top:1px solid #4e5352;padding:1rem 0;display:flex;flex-direction:row;gap:1rem;align-items:flex-start;justify-content:flex-start}.studio-preview .studio-poster{width:5.8rem;flex:none}.studio-preview>p:first-child{display:none}.studio-preview>.quiet{margin:0;font-size:.76rem}.studio-ready{padding-top:1rem}.studio-clips{grid-template-columns:minmax(0,1fr);gap:1.5rem}.studio-clip .studio-poster{width:min(100%,17rem)}.studio-clip .action-row{max-width:17rem}.workspace-head{gap:.25rem .8rem}.workspace-mark{font-size:.92rem}.workspace-nav{order:3;width:100%;gap:1rem}.workspace-balance{font-size:.73rem}.workspace-title{padding:1rem 0 .75rem}.workspace h1{font-size:1.85rem}.workspace-title p{font-size:.84rem}.workspace-file{grid-template-columns:2.7rem minmax(0,1fr);padding:.65rem 0}.workspace-file button{grid-column:1/-1;justify-self:start}.workspace-actions{margin:.65rem 0 1.4rem}.workspace-record{grid-template-columns:minmax(0,1fr) auto}.workspace-record span:nth-child(2){display:none}.workspace-selected-layout{grid-template-columns:minmax(0,1fr);gap:.8rem}.workspace-poster{width:min(100%,calc(55svh * 9 / 16));min-width:0}.workspace-list{padding-top:.7rem}}
     @media(max-width:38rem){.studio-plans{padding-top:1rem;gap:1rem}.studio-plan{grid-template-columns:1.6rem minmax(0,1fr);padding:1rem 0}.studio-plan-end{grid-column:2;justify-content:flex-start;margin-top:.25rem}.studio-plan button{min-width:0}.workspace-package{grid-template-columns:minmax(0,1fr)}.workspace-package-price{grid-column:1;margin:.25rem 0 0}.workspace-package dl,.workspace-package button{grid-column:1}.workspace-nav{gap:.4rem 1rem}.workspace-nav button{font-size:.82rem}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -184,13 +268,14 @@
   <div class="board">
     <div class="board-bar" role="group" aria-label="Управление сравнительным макетом">
       <span class="board-name">Clipmkr · выбор направления</span>
-      <div class="board-field"><label for="style-direction">Направление</label><select id="style-direction"><option value="studio">A · Монтажная</option><option value="workspace">B · Рабочий кабинет</option></select></div>
+      <div class="board-field"><label for="style-direction">Направление</label><select id="style-direction"><option value="studio">A · Монтажная</option><option value="workspace" selected>B · Рабочий кабинет</option></select></div>
       <div class="board-field"><label for="style-screen">Экран</label><select id="style-screen"><option value="upload">Загрузка</option><option value="ready">Готовые клипы</option><option value="plans">Пакеты</option></select></div>
+      <button type="button" id="workspace-theme-toggle" aria-pressed="true">Светлая тема</button>
     </div>
     <p class="disclaimer">TEST · Макет для согласования. Записи и клипы вымышлены; загрузка, просмотр, скачивание и оплата не выполняются.</p>
 
     <main>
-      <section class="direction studio" data-direction="studio" data-screen="upload" aria-labelledby="studio-upload-title">
+      <section class="direction studio" data-direction="studio" data-screen="upload" aria-labelledby="studio-upload-title" hidden>
         <header class="studio-head"><span class="studio-mark">clipmkr / монтажная</span><span class="studio-head-right"><span class="studio-signal" aria-hidden="true"></span>01 / запись</span></header>
         <div class="studio-upload">
           <div class="studio-work"><p class="studio-kicker">Новый выпуск</p><h1 id="studio-upload-title" tabindex="-1">Новая<br>запись</h1><p class="studio-lead">Загрузите разговор. Найдём моменты и подготовим вертикальные клипы.</p>
@@ -224,7 +309,7 @@
         </div>
       </section>
 
-      <section class="direction workspace" data-direction="workspace" data-screen="upload" aria-labelledby="workspace-upload-title" hidden>
+      <section class="direction workspace" data-direction="workspace" data-screen="upload" aria-labelledby="workspace-upload-title">
         <header class="workspace-head"><span class="workspace-mark">clipmkr</span><nav class="workspace-nav" aria-label="Разделы кабинета"><button type="button" data-set-screen="upload" aria-current="page">Новая запись</button><button type="button" data-set-screen="ready">Мои клипы</button></nav><span class="workspace-balance">Баланс <strong>184 кредита</strong></span></header>
         <div class="workspace-title"><h1 id="workspace-upload-title" tabindex="-1">Новая запись</h1><p>Выберите файл для создания коротких вертикальных клипов.</p></div>
         <div class="workspace-upload"><div class="workspace-main"><p class="workspace-section-label">Исходный файл</p><div class="workspace-file"><span class="workspace-file-symbol" aria-hidden="true">＋</span><div><span class="file-name" id="workspace-file-name">Файл не выбран</span><small>MP4, MOV, WebM, M4A, MP3 · до 2 ГБ</small></div><button type="button" class="action-primary" data-choose="workspace">Выбрать демо-файл</button></div><div class="workspace-actions"><button type="button" class="action-primary" data-create="workspace" hidden>Создать клипы →</button><p>Выбор демонстрационный: файл не читается и не отправляется.</p></div><p class="workspace-section-label">Последние записи</p><div class="workspace-records"><div class="workspace-record"><strong>Разговор о запуске проекта</strong><span>48 мин</span><span>3 клипа · готово</span></div><div class="workspace-record"><strong>Интервью с командой</strong><span>62 мин</span><span>5 клипов · готово</span></div></div></div><aside class="workspace-side"><dl><div><dt>Доступно</dt><dd>184 кредита</dd></div><div><dt>Лимит файла</dt><dd>90 минут</dd></div></dl><p>Баланс и длительность одной записи — разные ограничения.</p></aside></div>
@@ -233,7 +318,7 @@
       <section class="direction workspace" data-direction="workspace" data-screen="ready" aria-labelledby="workspace-ready-title" hidden>
         <header class="workspace-head"><span class="workspace-mark">clipmkr</span><nav class="workspace-nav" aria-label="Разделы кабинета"><button type="button" data-set-screen="upload">Новая запись</button><button type="button" data-set-screen="ready" aria-current="page">Мои клипы</button></nav><span class="workspace-balance">Баланс <strong>184 кредита</strong></span></header>
         <div class="workspace-title"><h1 id="workspace-ready-title" tabindex="-1">Готовые клипы</h1><p>Вебинар_демо.mp4 · 3 клипа. Выберите фрагмент для демо-просмотра.</p></div>
-        <div class="workspace-ready"><div class="workspace-selected"><p class="workspace-section-label">Выбранный клип</p><div class="workspace-selected-layout"><div class="workspace-poster" id="workspace-selected-poster" role="img" aria-label="Абстрактный постер выбранного клипа, 9:16"><div class="poster-top"><span>CLIPMKR / 01</span><span>9:16</span></div><span class="poster-words" id="workspace-poster-title">Идея, с которой всё началось</span></div><div class="workspace-selected-info"><h2 id="workspace-selected-title">Идея, с которой всё началось</h2><p id="workspace-selected-duration">43 с · вертикальный формат</p><div class="action-row"><button type="button" class="action-primary" id="workspace-preview">Просмотр</button><button type="button" class="action-secondary" id="workspace-download">Скачать</button></div><p class="quiet" style="color:#536678;margin-top:.8rem">Постер не является плеером. Действия откроют демо-пояснение.</p></div></div></div><div class="workspace-list"><p class="workspace-section-label">Фрагменты</p><button type="button" data-select-clip="0" aria-current="true"><span class="clip-num">01</span><span>Идея, с которой всё началось</span><span class="clip-duration">43 с</span></button><button type="button" data-select-clip="1"><span class="clip-num">02</span><span>Один вопрос изменил план</span><span class="clip-duration">51 с</span></button><button type="button" data-select-clip="2"><span class="clip-num">03</span><span>Что получилось через месяц</span><span class="clip-duration">37 с</span></button></div></div>
+        <div class="workspace-ready"><div class="workspace-selected"><p class="workspace-section-label">Выбранный клип</p><div class="workspace-selected-layout"><div class="workspace-poster" id="workspace-selected-poster" role="img" aria-label="Абстрактный постер выбранного клипа, 9:16"><div class="poster-top"><span>CLIPMKR / 01</span><span>9:16</span></div><span class="poster-words" id="workspace-poster-title">Идея, с которой всё началось</span></div><div class="workspace-selected-info"><h2 id="workspace-selected-title">Идея, с которой всё началось</h2><p id="workspace-selected-duration">43 с · вертикальный формат</p><div class="action-row"><button type="button" class="action-primary" id="workspace-preview">Просмотр</button><button type="button" class="action-secondary" id="workspace-download">Скачать</button></div><p class="quiet">Постер не является плеером. Действия откроют демо-пояснение.</p></div></div></div><div class="workspace-list"><p class="workspace-section-label">Фрагменты</p><button type="button" data-select-clip="0" aria-current="true"><span class="clip-num">01</span><span>Идея, с которой всё началось</span><span class="clip-duration">43 с</span></button><button type="button" data-select-clip="1"><span class="clip-num">02</span><span>Один вопрос изменил план</span><span class="clip-duration">51 с</span></button><button type="button" data-select-clip="2"><span class="clip-num">03</span><span>Что получилось через месяц</span><span class="clip-duration">37 с</span></button></div></div>
       </section>
 
       <section class="direction workspace" data-direction="workspace" data-screen="plans" aria-labelledby="workspace-plans-title" hidden>
@@ -254,6 +339,21 @@
       const direction = document.getElementById('style-direction');
       const screen = document.getElementById('style-screen');
       const dialog = document.getElementById('demo-dialog');
+      const themeToggle = document.getElementById('workspace-theme-toggle');
+      function setWorkspaceTheme(theme) {
+        document.documentElement.dataset.workspaceTheme = theme;
+        themeToggle.setAttribute('aria-pressed',String(theme === 'light'));
+      }
+      setWorkspaceTheme(document.documentElement.dataset.workspaceTheme);
+      themeToggle.addEventListener('click', () => {
+        const theme = document.documentElement.dataset.workspaceTheme === 'light' ? 'dark' : 'light';
+        setWorkspaceTheme(theme);
+        try {
+          localStorage.setItem('clipmkr-mockup-workspace-theme',theme);
+        } catch {
+          // Переключение остаётся доступным без сохранения выбора.
+        }
+      });
       const clips = [
         {title:'Идея, с которой всё началось',duration:'43 с',poster:''},
         {title:'Один вопрос изменил план',duration:'51 с',poster:'p2'},
@@ -263,6 +363,7 @@
       function show() {
         const current = `${direction.value}-${screen.value}`;
         document.documentElement.dataset.activeDirection = direction.value;
+        themeToggle.hidden = direction.value !== 'workspace';
         document.querySelectorAll('.direction').forEach(section => {
           section.hidden = `${section.dataset.direction}-${section.dataset.screen}` !== current;
         });
