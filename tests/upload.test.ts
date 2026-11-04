@@ -94,5 +94,10 @@ it('create_scope_mismatch_has_no_side_effects', async () => {
     {} as ConstructorParameters<typeof VideoService>[1], storage as unknown as ConstructorParameters<typeof VideoService>[2], vi.fn());
   await expect(service.create(randomUUID(), randomUUID(), {declared_bytes: 10, filename: 'a.mp4', source: 'upload', account_scope: randomUUID()})).rejects.toMatchObject({status: 409});
   expect(pool.connect).not.toHaveBeenCalled(); expect(pool.query).not.toHaveBeenCalled();
+  await expect(service.create(randomUUID(),randomUUID(),{declared_bytes:10,filename:'a.mp4',source:'upload',account_scope:'malformed'})).rejects.toMatchObject({status:422});
+  expect(pool.connect).not.toHaveBeenCalled();
+  const account=randomUUID();
+  for(const account_scope of [undefined,account]) await expect(service.create(account,randomUUID(),{declared_bytes:10,filename:'a.mp4',source:'upload',...(account_scope?{account_scope}:{})})).rejects.toThrow('transaction entered');
+  expect(pool.connect).toHaveBeenCalledTimes(2);
   for (const operation of Object.values(storage)) expect(operation).not.toHaveBeenCalled();
 });

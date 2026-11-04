@@ -8,7 +8,7 @@ const schema = z.object({
   version: z.literal(UPLOAD_RESUME_VERSION), accountScope: z.string().uuid(), key: z.string().uuid(),
   identityAlgorithm: z.literal('sha256'), contentSha256: z.string().regex(/^[0-9a-f]{64}$/),
   size: z.number().int().positive().max(MAX_UPLOAD_BYTES),
-  originalFilename: z.string().min(1).max(255).refine(s => s.trim() === s && !/[\x00-\x1f/\\]/.test(s)),
+  originalFilename: z.string().trim().min(1).max(255).refine(s => !/[\x00-\x1f/\\]/.test(s)),
   options: z.object({music:z.boolean(),teaser:z.boolean(),compact:z.boolean(),ctaKind:z.enum(CTA_KIND),ctaUrl:z.string().nullable()}).strict()
     .refine(options => {try {parseCtaTarget(options.ctaKind,options.ctaUrl); return true;} catch {return false;}}),
   videoId: z.string().uuid().optional(),

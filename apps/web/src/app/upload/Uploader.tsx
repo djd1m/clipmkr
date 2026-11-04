@@ -4,81 +4,165 @@ import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { uploadParts } from '../../lib/upload-parts';
 import { rpc } from '../../lib/rpc';
+import { hashUploadFile } from '../../lib/upload-file-identity';
+import { readUploadResume, writeUploadResume, clearUploadResume, type UploadResumeV2 } from '../../lib/upload-resume';
 import type { UploadData } from '../../server/video';
-import { readCtaKind, type CtaKind } from '@clipmaker/shared/enums';
-import { NORMAL_SOURCE_SECONDS } from '@clipmaker/shared/upload';
+import type { CtaKind } from '@clipmaker/shared/enums';
+import { MAX_UPLOAD_BYTES, NORMAL_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 import { CtaFields, ctaProblem } from '../videos/CtaFields';
-interface Resume { key: string; fingerprint: string; music: boolean; teaser: boolean; compact: boolean; ctaKind: CtaKind; ctaUrl: string | null; videoId?: string; parts?: { part_number: number; etag: string }[] }
-const storageKey = 'n5-upload-resume';
-// Adapted VideoUploader: same file selection, abort, error and resume flow; existing feature-2 transport owns multipart.
-export function VideoUploader({creditMode=false,maxSourceSeconds=NORMAL_SOURCE_SECONDS}:{creditMode?:boolean;maxSourceSeconds?:number}={}) {
-  const router = useRouter();
+
+type Phase = 'idle'|'hashing'|'readyNew'|'readyResume'|'creating'|'transferring'|'savingManifest'|'completing'|'paused'|'mismatch'|'storageBlocked'|'unknownComplete'|'recoveryUnavailable'|'error'|'accepted';
+type Attempt = {generation:number;scope:string;controller:AbortController};
+class StorageBlocked extends Error {}
+export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NORMAL_SOURCE_SECONDS,recoveryIntent=false}:
+  {accountScope:string;creditMode?:boolean;maxSourceSeconds?:number;recoveryIntent?:boolean}) {
+  const router=useRouter();
   const [estimatedSeconds,setEstimatedSeconds]=useState<number|null>(null);
-  const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [videoId, setVideoId] = useState<string | null>(null);
-  const [music, setMusic] = useState(false);
-  const [teaser, setTeaser] = useState(true);
-  const [compact, setCompact] = useState(true);
-  const [ctaKind, setCtaKind] = useState<CtaKind>('none'), [ctaUrl, setCtaUrl] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const controller = useRef<AbortController | null>(null), resume = useRef<Resume | null>(null);
-  useEffect(() => { try { const value = sessionStorage.getItem(storageKey); if (value) { const saved = JSON.parse(value); resume.current = { ...saved, music: saved.music === true, teaser: saved.teaser === true, compact: saved.compact === true, ctaKind: readCtaKind(saved.ctaKind), ctaUrl: typeof saved.ctaUrl === 'string' ? saved.ctaUrl : null }; } } catch { setMessage('Не удалось восстановить предыдущую загрузку. Выберите файл заново.'); }
-    return () => controller.current?.abort(); }, []);
-  useEffect(()=>{
-    setEstimatedSeconds(null);
-    if (!file || !creditMode) return;
-    const media=document.createElement('audio'), url=URL.createObjectURL(file);
-    media.preload='metadata'; media.onloadedmetadata=()=>{ if(Number.isFinite(media.duration))setEstimatedSeconds(Math.ceil(media.duration)); };media.src=url;
-    return ()=>{media.onloadedmetadata=null;media.removeAttribute('src');media.load();URL.revokeObjectURL(url);};
-  },[file,creditMode]);
-  function save(value: Resume) { resume.current = value; try { sessionStorage.setItem(storageKey, JSON.stringify(value)); } catch { /* in-memory retry stays available */ } }
-  async function upload() {
-    if (!file || controller.current) return;
-    if (!file.size || file.size > 2_000_000_000) { setMessage('Выберите непустой файл до 2 ГБ.'); return; }
-    const fingerprint = `${file.name}:${file.size}:${file.lastModified}`;
-    const resumed = resume.current?.fingerprint === fingerprint;
-    // Непригодный адрес — отказ до заявки ключа: сервер ответил бы 422 тем же текстом.
-    const problem = resumed ? null : ctaProblem(ctaKind, ctaUrl);
-    if (problem) { setMessage(problem); return; }
-    const current = resumed && resume.current ? resume.current : { key: crypto.randomUUID(), fingerprint, music, teaser, compact,
-      ctaKind, ctaUrl: ctaKind === 'none' ? null : ctaUrl.trim() };
-    save(current); const abort = new AbortController(); controller.current = abort; setBusy(true); setMessage('Подготавливаем загрузку…');
-    try {
-      const create = () => rpc<UploadData>('video.create', { filename: file.name, declared_bytes: file.size, source: 'upload', music: current.music, teaser: current.teaser, compact: current.compact, cta_kind: current.ctaKind, cta_url: current.ctaUrl }, true, current.key, abort.signal);
-      if (!current.parts) {
-        const upload = await create(); current.videoId = upload.video_id; save(current);
-        // Commit video_id to DOM before uploadParts can send the first byte.
-        flushSync(() => { setVideoId(upload.video_id); setMessage('Отправляем файл в хранилище…'); });
-        current.parts = await uploadParts(file, upload, abort.signal, create); save(current);
-      } else setVideoId(current.videoId ?? null);
-      setMessage('Завершаем загрузку…');
-      const response = await fetch('/api/upload/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_id: current.videoId, parts: current.parts }), signal: abort.signal });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error?.message ?? 'Не удалось завершить загрузку');
-      try { sessionStorage.removeItem(storageKey); } catch { /* cleanup cannot undo the successful upload */ }
-      resume.current = null;
-      router.push(`/dashboard/videos/${result.data.video_id}`); router.refresh();
-    } catch (cause) { setMessage(abort.signal.aborted ? 'Загрузка приостановлена. Продолжите с тем же файлом.' : cause instanceof Error ? cause.message : 'Ошибка загрузки'); }
-    finally { controller.current = null; setBusy(false); router.refresh(); }
+  const [phase,setPhase]=useState<Phase>('idle'),[message,setMessage]=useState(''),[error,setError]=useState('');
+  const [videoId,setVideoId]=useState<string|null>(null),[saved,setSaved]=useState<UploadResumeV2|null>(null);
+  const [music,setMusic]=useState(false),[teaser,setTeaser]=useState(true),[compact,setCompact]=useState(true);
+  const [ctaKind,setCtaKind]=useState<CtaKind>('none'),[ctaUrl,setCtaUrl]=useState('');
+  const [file,setFile]=useState<File|null>(null),[digest,setDigest]=useState<string|null>(null);
+  const resume=useRef<UploadResumeV2|null>(null),attempt=useRef<Attempt|null>(null),generation=useRef(0);
+  const mounted=useRef(false),scope=useRef(accountScope),unavailable=useRef(false),accepted=useRef(false);
+  const input=useRef<HTMLInputElement|null>(null),primary=useRef<HTMLButtonElement|null>(null),retry=useRef<HTMLButtonElement|null>(null),pauseButton=useRef<HTMLButtonElement|null>(null);
+  scope.current=accountScope;
+  const busy=['hashing','creating','transferring','savingManifest','completing'].includes(phase);
+  const locked=busy || !!(saved && digest===saved.contentSha256 && file?.size===saved.size);
+  const beforeUnload=useRef((event:BeforeUnloadEvent)=>{if(attempt.current){event.preventDefault();event.returnValue='';}});
+  function invalidate() {window.removeEventListener('beforeunload',beforeUnload.current);generation.current++; const previous=attempt.current; attempt.current=null; previous?.controller.abort();}
+  function begin():Attempt {invalidate(); const current={generation:generation.current,scope:accountScope,controller:new AbortController()}; attempt.current=current;window.addEventListener('beforeunload',beforeUnload.current); return current;}
+  function alive(current:Attempt) {return mounted.current && scope.current===current.scope && generation.current===current.generation && attempt.current===current && !current.controller.signal.aborted;}
+  function check(current:Attempt) {if(!alive(current)) throw new DOMException('Попытка остановлена','AbortError');}
+  function clearSelection() {setFile(null);setDigest(null); if(input.current)input.current.value='';}
+  function pause() {
+    const unknown=phase==='completing'; invalidate();clearSelection();setError('');
+    setPhase(unknown?'unknownComplete':'paused');
+    setMessage(unknown?'Результат завершения неизвестен. Сервер мог начать обработку. Результат проверим при повторе.':'Передача приостановлена. Выберите исходный файл.');
   }
-  return <section className="upload-panel"><div><p className="eyebrow">НОВЫЙ ВЫПУСК</p><h2>Один разговор.<br />Несколько сильных моментов.</h2>
+  useEffect(()=>{
+    mounted.current=true; accepted.current=false; invalidate();clearSelection();setVideoId(null);setError('');
+    const read=readUploadResume(accountScope);unavailable.current=read.kind!=='found' && (read.kind!=='absent'||recoveryIntent);
+    resume.current=read.kind==='found'?read.value:null;setSaved(resume.current);
+    setPhase('idle');setMessage(read.kind==='found'?'Выберите исходный файл, затем отдельно продолжите загрузку.':
+      unavailable.current?'Данные продолжения недоступны. Автоматически восстановить эту загрузку нельзя.':'');
+    const click=(event:MouseEvent)=>{
+      if(!attempt.current || event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+      const anchor=event.target instanceof Element?event.target.closest('a[href]'):null;
+      if(!(anchor instanceof HTMLAnchorElement)||anchor.hasAttribute('download')|| (anchor.target && anchor.target!=='_self'))return;
+      const target=new URL(anchor.href,location.href),here=new URL(location.href);
+      if(target.origin===here.origin && target.pathname===here.pathname && target.search===here.search && target.hash)return;
+      if(!window.confirm('Передача не завершена. Приостановить её и уйти со страницы?')){event.preventDefault();event.stopPropagation();return;}
+      invalidate();
+    };
+    const fileInput=input.current;
+    const cancel=()=>{if(!attempt.current){setPhase('paused');setMessage('Выберите исходный файл.');fileInput?.focus();}};
+    fileInput?.addEventListener('cancel',cancel);
+    document.addEventListener('click',click,true);
+    return ()=>{fileInput?.removeEventListener('cancel',cancel);mounted.current=false;invalidate();document.removeEventListener('click',click,true);};
+  },[accountScope,recoveryIntent]);
+  useEffect(()=>{
+    const target=['hashing','creating'].includes(phase)?pauseButton.current:phase==='readyResume'?primary.current:phase==='storageBlocked'?retry.current:
+      ['paused','mismatch','unknownComplete','recoveryUnavailable'].includes(phase)?input.current:null;
+    target?.focus();
+  },[phase]);
+  useEffect(()=>{
+    if(!recoveryIntent)return;
+    input.current?.focus();
+  },[recoveryIntent]);
+  useEffect(()=>{
+    setEstimatedSeconds(null); if(!file||!creditMode)return;
+    const media=document.createElement('audio'),url=URL.createObjectURL(file);let live=true;
+    media.preload='metadata';media.onloadedmetadata=()=>{if(live&&Number.isFinite(media.duration))setEstimatedSeconds(Math.ceil(media.duration));};media.src=url;
+    return ()=>{live=false;media.onloadedmetadata=null;media.removeAttribute('src');media.load();URL.revokeObjectURL(url);};
+  },[file,creditMode]);
+  async function select(selected:File|null) {
+    invalidate();setDigest(null);setFile(selected);setError('');
+    if(!selected){setPhase('paused');setMessage('Выберите исходный файл.');return;}
+    if(!selected.size||selected.size>MAX_UPLOAD_BYTES){setPhase('error');setError('Выберите непустой файл до 2 ГБ.');return;}
+    const current=begin();setPhase('hashing');setMessage('Проверяем выбранный файл');
+    try {
+      const hash=await hashUploadFile(selected,current.controller.signal);check(current);setDigest(hash);
+      const previous=resume.current;
+      if(previous && (previous.size!==selected.size||previous.contentSha256!==hash)){setPhase('mismatch');setMessage('');setError('Выбран другой файл. Прежняя загрузка сохранена.');}
+      else if(previous){
+        setMusic(previous.options.music);setTeaser(previous.options.teaser);setCompact(previous.options.compact);
+        setCtaKind(previous.options.ctaKind);setCtaUrl(previous.options.ctaUrl??'');setVideoId(previous.videoId??null);
+        setPhase('readyResume');setMessage('Файл совпадает. Можно продолжить загрузку');
+      } else {setPhase(unavailable.current?'recoveryUnavailable':'readyNew');setMessage('Файл проверен. Для начала передачи нажмите отдельную кнопку.');}
+    } catch(cause){if(alive(current)){setPhase('error');setMessage('');setError(cause instanceof Error?cause.message:'Не удалось проверить файл');}}
+    finally {if(alive(current)){attempt.current=null;window.removeEventListener('beforeunload',beforeUnload.current);}}
+  }
+  function persist(current:Attempt,value:UploadResumeV2) {
+    check(current);resume.current=value;setSaved(value);
+    if(!writeUploadResume(value).ok)throw new StorageBlocked('Не удалось сохранить данные восстановления. Передача остановлена до подтверждённого сохранения.');
+    check(current);
+  }
+  async function upload(newIntent=false) {
+    if(!file||!digest||attempt.current||accepted.current)return;
+    const previous=resume.current,resumed=!newIntent&&previous?.contentSha256===digest&&previous.size===file.size;
+    if(!resumed && !newIntent && (previous||unavailable.current))return;
+    const problem=resumed?null:ctaProblem(ctaKind,ctaUrl);if(problem){setMessage('');setError(problem);return;}
+    let value:UploadResumeV2=resumed&&previous?previous:{version:2,accountScope,key:crypto.randomUUID(),identityAlgorithm:'sha256',contentSha256:digest,size:file.size,
+      originalFilename:file.name.trim(),options:{music,teaser,compact,ctaKind,ctaUrl:ctaKind==='none'?null:ctaUrl.trim()}};
+    const selected=file,current=begin();let completeSent=false;
+    setError('');setPhase('creating');setMessage('Подготавливаем загрузку…');
+    try {
+      persist(current,value);
+      const create=async()=>{
+        check(current);
+        const data=await rpc<UploadData>('video.create',{filename:value.originalFilename,declared_bytes:value.size,source:'upload',account_scope:current.scope,
+          music:value.options.music,teaser:value.options.teaser,compact:value.options.compact,cta_kind:value.options.ctaKind,cta_url:value.options.ctaUrl},true,value.key,current.controller.signal);
+        check(current);
+        if(value.videoId && data.video_id!==value.videoId)throw new Error('Сервер вернул другую запись. Обновите страницу');
+        return data;
+      };
+      if(!value.parts){
+        const data=await create();check(current);value={...value,videoId:data.video_id,partSize:data.part_size};persist(current,value);
+        flushSync(()=>{setVideoId(data.video_id);setPhase('transferring');setMessage('Передаём файл');});
+        const parts=await uploadParts(selected,data,current.controller.signal,create);check(current);
+        value={...value,parts};setPhase('savingManifest');persist(current,value);
+      }
+      check(current);setVideoId(value.videoId!);setPhase('completing');setMessage('Завершаем загрузку…');
+      completeSent=true;
+      const response=await fetch('/api/upload/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({video_id:value.videoId,parts:value.parts}),signal:current.controller.signal});check(current);
+      const result=await response.json();check(current);
+      if(!response.ok)throw new Error(result.error?.message??'Не удалось завершить загрузку');
+      if(result.data?.video_id!==value.videoId)throw new Error('Сервер вернул другую запись. Обновите страницу');
+      check(current);const cleared=clearUploadResume(current.scope,value.key);check(current);
+      accepted.current=true;attempt.current=null;window.removeEventListener('beforeunload',beforeUnload.current);resume.current=null;setSaved(null);setPhase('accepted');
+      setMessage(cleared.ok?'Файл принят. Открываем запись.':'Файл принят, но локальные данные не очищены. Открываем запись.');
+      router.push(`/dashboard/videos/${value.videoId}`);router.refresh();
+    }catch(cause){
+      if(!alive(current))return;
+      setMessage('');setError(cause instanceof Error?cause.message:'Ошибка загрузки');
+      if(cause instanceof StorageBlocked)setPhase('storageBlocked');
+      else if(completeSent){clearSelection();setPhase('unknownComplete');setMessage('Результат завершения неизвестен. Сервер мог начать обработку. Результат проверим при повторе.');}
+      else setPhase('error');
+    }finally{if(alive(current)){attempt.current=null;window.removeEventListener('beforeunload',beforeUnload.current);}}
+  }
+  return <section className="upload-panel"><div><p className="eyebrow">НОВЫЙ ВЫПУСК</p><h2>Один разговор.<br/>Несколько сильных моментов.</h2>
     <p>Загрузите подкаст или вебинар. Мы найдём фрагменты и соберём вертикальные клипы с субтитрами.</p></div>
-    <div className="upload-controls"><label htmlFor="source-file">Выберите видео или аудио</label>
-      <input id="source-file" type="file" accept=".mp4,.mov,.webm,.m4a,.mp3" disabled={busy} onChange={e => { const selected = e.target.files?.[0] ?? null; setFile(selected);
-        const previous = selected && resume.current?.fingerprint === `${selected.name}:${selected.size}:${selected.lastModified}` ? resume.current : null;
-        if (previous) { setMusic(previous.music); setTeaser(previous.teaser); setCompact(previous.compact); setCtaKind(previous.ctaKind); setCtaUrl(previous.ctaUrl ?? ''); } setMessage(''); }} />
-      <p className="muted">MP4, MOV, WebM, M4A, MP3 · 2–{Math.floor(maxSourceSeconds / 60)} минут · до 2 ГБ</p>
-      {creditMode && <p className="muted">1 кредит = 60 секунд записи.{estimatedSeconds!==null ? ` Предварительно: ${(estimatedSeconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов (${estimatedSeconds} секунд).` : ''} Точный резерв определим по файлу на сервере до обработки. При техническом отказе без готовых клипов резерв вернётся.</p>}
-      <label className="check"><input type="checkbox" checked={music} disabled={busy || !!(file && resume.current?.fingerprint === `${file.name}:${file.size}:${file.lastModified}`)}
-        onChange={e => setMusic(e.target.checked)} /> Добавить музыку и финальный акцент</label>
+    <div className="upload-controls"><label htmlFor="source-file">Исходный файл</label>
+      <input ref={input} id="source-file" type="file" accept=".mp4,.mov,.webm,.m4a,.mp3" disabled={busy} aria-describedby={`source-file-help${error?' source-file-error':''}`} aria-invalid={!!error||undefined}
+        onClick={()=>{clearSelection();}}
+        onChange={event=>{const selected=event.target.files?.[0]??null;event.target.value='';void select(selected);}}/>
+      <p id="source-file-help" className="muted">MP4, MOV, WebM, M4A, MP3 · 2–{Math.floor(maxSourceSeconds/60)} минут · до 2 ГБ.
+        {saved?` Для продолжения выберите исходный файл: ${saved.originalFilename}.`: ' Без сохранённых данных продолжить прежнюю передачу нельзя.'}</p>
+      {creditMode&&<p className="muted">1 кредит = 60 секунд записи.{estimatedSeconds!==null?` Предварительно: ${(estimatedSeconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов (${estimatedSeconds} секунд).`:''} Точный резерв определим по файлу на сервере до обработки. При техническом отказе без готовых клипов резерв вернётся.</p>}
+      <label className="check"><input type="checkbox" checked={music} disabled={locked} onChange={event=>setMusic(event.target.checked)}/> Добавить музыку и финальный акцент</label>
       <small className="muted">Komiku, HoliznaCC0 — музыка CC0 · Kenney — Sci-Fi Sounds, CC0</small>
-      <label className="check"><input type="checkbox" checked={teaser} disabled={busy || !!(file && resume.current?.fingerprint === `${file.name}:${file.size}:${file.lastModified}`)}
-        onChange={e => setTeaser(e.target.checked)} /> Заголовок в начале клипа</label>
-      <label className="check"><input type="checkbox" checked={compact} disabled={busy || !!(file && resume.current?.fingerprint === `${file.name}:${file.size}:${file.lastModified}`)}
-        onChange={e => setCompact(e.target.checked)} /> Убрать паузы</label>
-      <CtaFields id="upload-cta" kind={ctaKind} url={ctaUrl} disabled={busy || !!(file && resume.current?.fingerprint === `${file.name}:${file.size}:${file.lastModified}`)}
-        onKind={setCtaKind} onUrl={setCtaUrl} />
-      <button disabled={busy || !file} onClick={() => void upload()}>{busy ? 'Загружаем…' : resume.current ? 'Начать / продолжить загрузку' : 'Создать клипы →'}</button>
-      {busy && <button className="secondary" onClick={() => controller.current?.abort()}>Приостановить</button>}
-      <p role="status">{message}</p>{videoId && <p className="video-id">video_id: <code>{videoId}</code></p>}</div></section>;
+      <label className="check"><input type="checkbox" checked={teaser} disabled={locked} onChange={event=>setTeaser(event.target.checked)}/> Заголовок в начале клипа</label>
+      <label className="check"><input type="checkbox" checked={compact} disabled={locked} onChange={event=>setCompact(event.target.checked)}/> Убрать паузы</label>
+      <CtaFields id="upload-cta" kind={ctaKind} url={ctaUrl} disabled={locked} onKind={setCtaKind} onUrl={setCtaUrl}/>
+      {phase==='storageBlocked'?<button ref={retry} onClick={()=>void upload()}>Повторить сохранение</button>:
+        <button ref={primary} disabled={busy||!file||!digest||phase==='mismatch'||phase==='recoveryUnavailable'||phase==='accepted'} onClick={()=>void upload()}>
+          {saved?'Продолжить загрузку':'Создать клипы →'}</button>}
+      {busy&&<button ref={pauseButton} className="secondary" onClick={pause}>{phase==='hashing'?'Отменить проверку':'Приостановить загрузку'}</button>}
+      {!busy&&(saved||unavailable.current)&&<><p className="muted">Новая загрузка расходует отдельный слот. Прежняя запись может остаться незавершённой.</p>
+        <button className="secondary" disabled={!file||!digest} onClick={()=>void upload(true)}>Начать новую загрузку</button></>}
+      <p role="status" aria-live="polite" aria-atomic="true">{message}</p>
+      {error&&<p id="source-file-error" role="alert">{error}</p>}
+      {videoId&&<p className="video-id">video_id: <code>{videoId}</code></p>}
+    </div></section>;
 }

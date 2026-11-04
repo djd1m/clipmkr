@@ -24,7 +24,7 @@ type Props = { children?: unknown; type?: string; disabled?: boolean; checked?: 
 let storage: Map<string, string>;
 function render() {
   host.cursor = 0;
-  const tree = VideoUploader();
+  const tree = VideoUploader({accountScope:scope});
   if (!host.initialized) { host.initialized = true; host.effects.forEach(f => f()); }
   const nodes: ReactElement<Props>[] = [];
   function visit(value: unknown) {
@@ -35,43 +35,47 @@ function render() {
   visit(tree); return nodes;
 }
 const input = (nodes: ReactElement<Props>[], type: string) => nodes.find(n => n.props.type === type)!;
-const file = { name: 'podcast.mp3', size: 24, lastModified: 123 };
+const scope='11111111-1111-4111-8111-111111111111',key='22222222-2222-4222-8222-222222222222';
+const storageKey=`n5-upload-resume:v2:${scope}`;
+const file = new File(['test bytes'], 'podcast.mp3', {lastModified:123});
 beforeEach(() => {
-  host.values = []; host.cursor = 0; host.effects = []; host.initialized = false; storage = new Map();
-  vi.stubGlobal('sessionStorage', { getItem: (key: string) => storage.get(key), setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) });
+  host.values=[];host.cursor=0;host.effects=[];host.initialized=false;storage=new Map();
+  vi.stubGlobal('sessionStorage',{getItem:(key:string)=>storage.get(key)??null,setItem:(key:string,value:string)=>storage.set(key,value),removeItem:(key:string)=>storage.delete(key)});
+  vi.stubGlobal('window',{addEventListener:vi.fn(),removeEventListener:vi.fn()});
+  vi.stubGlobal('document',{addEventListener:vi.fn(),removeEventListener:vi.fn()});
   vi.mocked(rpc).mockRejectedValue(new Error('offline'));
 });
-afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
-it('default off; selected flag is sent and locked during upload and after failure', async () => {
-  let nodes = render(); expect(input(nodes, 'checkbox').props.checked).toBe(false);
-  input(nodes, 'file').props.onChange!({ target: { files: [file] } });
-  nodes = render(); input(nodes, 'checkbox').props.onChange!({ target: { checked: true } });
-  nodes = render(); nodes.find(n => n.type === 'button')!.props.onClick!();
-  expect(input(render(), 'checkbox').props.disabled).toBe(true);
-  await vi.waitFor(() => expect(vi.mocked(rpc)).toHaveBeenCalled());
-  expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({ music: true });
-  expect(JSON.parse(storage.get('n5-upload-resume')!).music).toBe(true);
-  expect(input(render(), 'checkbox').props.disabled).toBe(true);
+afterEach(()=>{vi.unstubAllGlobals();vi.clearAllMocks();});
+async function choose(selected=file) {
+  input(render(),'file').props.onChange!({target:{files:[selected],value:'chosen'}});
+  await vi.waitFor(()=>expect(render().find(n=>n.type==='button')!.props.disabled).toBe(false));
+}
+it('default and selected music survive failed create and lock immutable options',async()=>{
+  expect(input(render(),'checkbox').props.checked).toBe(false);
+  await choose();input(render(),'checkbox').props.onChange!({target:{checked:true}});
+  render().find(n=>n.type==='button')!.props.onClick!();
+  expect(input(render(),'checkbox').props.disabled).toBe(true);
+  await vi.waitFor(()=>expect(vi.mocked(rpc)).toHaveBeenCalled());
+  expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({music:true,account_scope:scope});
+  expect(JSON.parse(storage.get(storageKey)!).options.music).toBe(true);
 });
-it.each([true, false, undefined])('resume restores locked music %s for same file, another file unlocks', async value => {
-  storage.set('n5-upload-resume', JSON.stringify({ key: 'key', fingerprint: 'podcast.mp3:24:123', music: value }));
-  input(render(), 'file').props.onChange!({ target: { files: [file] } });
-  expect(input(render(), 'checkbox').props.checked).toBe(value === true);
-  expect(input(render(), 'checkbox').props.disabled).toBe(true);
-  render().find(n => n.type === 'button')!.props.onClick!();
-  await vi.waitFor(() => expect(vi.mocked(rpc)).toHaveBeenCalled());
-  expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({ music: value === true });
-  expect(vi.mocked(rpc).mock.calls[0]![3]).toBe('key');
-  input(render(), 'file').props.onChange!({ target: { files: [{ ...file, name: 'other.mp3' }] } });
-  expect(input(render(), 'checkbox').props.disabled).toBe(false);
-  expect(input(render(), 'checkbox').props.checked).toBe(value === true);
+it.each([true,false])('strict v2 restores locked music %s after full hash and separate Continue',async value=>{
+  const {createHash}=await import('node:crypto');
+  const contentSha256=createHash('sha256').update('test bytes').digest('hex');
+  storage.set(storageKey,JSON.stringify({version:2,accountScope:scope,key,identityAlgorithm:'sha256',contentSha256,size:file.size,originalFilename:'original.mp3',
+    options:{...{music:false,teaser:true,compact:true,ctaKind:'none',ctaUrl:null}, music:value}}));
+  await choose();expect(vi.mocked(rpc)).not.toHaveBeenCalled();
+  expect(input(render(),'checkbox').props.checked).toBe(value);expect(input(render(),'checkbox').props.disabled).toBe(true);
+  render().find(n=>n.type==='button')!.props.onClick!();await vi.waitFor(()=>expect(vi.mocked(rpc)).toHaveBeenCalled());
+  expect(vi.mocked(rpc).mock.calls[0]![3]).toBe(key);expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({music:value,filename:'original.mp3'});
 });
-
-it.each([true, false])('file without Resume preserves current music %s', value => {
-  input(render(), 'checkbox').props.onChange!({ target: { checked: value } });
-  input(render(), 'file').props.onChange!({ target: { files: [file] } });
-  expect(input(render(), 'checkbox').props.checked).toBe(value);
-  expect(input(render(), 'checkbox').props.disabled).toBe(false);
-  input(render(), 'file').props.onChange!({ target: { files: [{ ...file, name: 'other.mp3' }] } });
-  expect(input(render(), 'checkbox').props.checked).toBe(value);
+it('legacy never automatically resumes or assigns new hash to old parts',async()=>{
+  storage.set('n5-upload-resume',JSON.stringify({key:'legacy',fingerprint:'podcast.mp3:10:123'}));
+  input(render(),'file').props.onChange!({target:{files:[file],value:'chosen'}});
+  await vi.waitFor(()=>expect(render().some(n=>n.props.children==='Начать новую загрузку')).toBe(true));
+  expect(vi.mocked(rpc)).not.toHaveBeenCalled();expect(storage.get(storageKey)).toBeUndefined();
+});
+it.each([true,false])('new selection preserves current music %s',async value=>{
+  input(render(),'checkbox').props.onChange!({target:{checked:value}});await choose();
+  expect(input(render(),'checkbox').props.checked).toBe(value);expect(input(render(),'checkbox').props.disabled).toBe(false);
 });

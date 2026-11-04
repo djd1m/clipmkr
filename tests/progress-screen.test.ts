@@ -249,3 +249,23 @@ it('uploading_row_has_no_detail_link', async () => {
 it('other_processing_staleness_is_unchanged',()=>{
   for(const status of ['queued','transcribing','rendering'] as const) expect(presentVideo({...video,status,updated_at:new Date(now.getTime()-300001)},now).no_response).toBe(true);
 });
+
+it('local_uploading_staleness_keeps_projection_neutral',async()=>{
+  // Inspect the actual parent-to-panel projection: the uploading panel's early return
+  // otherwise masks an incorrect no_response value in rendered HTML.
+  vi.resetModules();
+  vi.doMock('react',async()=>({...await vi.importActual<typeof import('react')>('react'),
+    useEffect:()=>{},useState:(initial:unknown)=>[typeof initial==='function'?initial():initial,vi.fn()]}));
+  vi.doMock('next/navigation',()=>({useRouter:()=>({push:vi.fn(),refresh:vi.fn()})}));
+  const clock=vi.spyOn(Date,'now');
+  try{
+    const {VideoDetail,ProgressPanel:Panel}=await import('../apps/web/src/app/videos/[videoId]/VideoDetail');
+    for(const status of ['uploading','queued','transcribing'] as const)for(const age of [0,300001,86400000]){
+      clock.mockReturnValue(now.getTime()+age);const initial=presentVideo({...video,status},now);
+      const tree=VideoDetail({videoId:id,initialVideo:initial,initialClips:[]}) as import('react').ReactElement<{children:import('react').ReactElement<{video:typeof initial}>[]}>;
+      const panel=tree.props.children.find(child=>child?.type===Panel)!;
+      expect(panel.props.video.no_response).toBe(status!=='uploading'&&age>300000);
+      if(status==='uploading')expect(panel.props.video.stage_label).toBe(initial.stage_label);
+    }
+  }finally{clock.mockRestore();vi.doUnmock('react');vi.doUnmock('next/navigation');vi.resetModules();}
+});

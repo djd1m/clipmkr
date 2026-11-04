@@ -31,3 +31,8 @@ it('storage_failures_are_explicit', () => {
   expect(clearUploadResume(scope,scope,store).ok).toBe(false); expect(readUploadResume(scope,store).kind).toBe('found');
   expect(clearUploadResume(scope,key,store).ok).toBe(true);
 });
+it('resume_filename_matches_create_filename_normalization', () => {
+  const store=storage();
+  expect(writeUploadResume({...session,originalFilename:'  podcast.mp4  '},store).ok).toBe(true);
+  expect(readUploadResume(scope,store)).toEqual({kind:'found',value:{...session,originalFilename:'podcast.mp4'}});
+});
