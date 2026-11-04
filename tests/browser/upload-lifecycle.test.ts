@@ -193,8 +193,9 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
       await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;Blob.prototype.arrayBuffer=async function(){const value=await original.call(this);
         await new Promise<void>(resolve=>{(window as Window&{releaseHash?:()=>void}).releaseHash=resolve;});return value;};});
       await page.locator('#source-file').setInputFiles(file);await poll(()=>page.getByRole('status').textContent()).toBe('Проверяем выбранный файл');
+      await page.waitForFunction(()=>typeof (window as Window&{releaseHash?:()=>void}).releaseHash==='function');
       await page.getByRole('button',{name:'Отменить проверку'}).click();expect(await page.locator('#source-file').evaluate(el=>el===document.activeElement)).toBe(true);
-      await page.evaluate(()=>(window as Window&{releaseHash?:()=>void}).releaseHash?.());await page.waitForTimeout(100);expect(c.creates()).toBe(0);
+      await page.evaluate(()=>(window as Window&{releaseHash?:()=>void}).releaseHash!());await page.waitForTimeout(100);expect(c.creates()).toBe(0);
     });
   });
   it('large_file_hash_yields_and_bounds_browser_reads',async()=>{
@@ -250,6 +251,8 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
         await page.evaluate(()=>{const original=Blob.prototype.arrayBuffer;let first=true;Blob.prototype.arrayBuffer=async function(){const value=await original.call(this);
           if(first){first=false;await new Promise<void>(resolve=>{(window as Window&{releaseHash?:()=>void}).releaseHash=resolve;});}return value;};});
         await page.locator('#source-file').setInputFiles(file);await poll(()=>page.getByRole('status').textContent()).toBe('Проверяем выбранный файл');
+        // The phase precedes the async Blob read; reload only after its real barrier exists.
+        await page.waitForFunction(()=>typeof (window as Window&{releaseHash?:()=>void}).releaseHash==='function');
       }else{
         await choose(page);await continueUpload(page);
         await poll(stage==='create'?c.creates:stage==='put'?c.puts:c.completes).toBe(stage==='put'?2:1);
@@ -259,7 +262,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
       const dialog=await dialogEvent;expect(dialog.type()).toBe('beforeunload');await dialog[decision]();await reloading;
       if(decision==='dismiss'){
         expect(await page.evaluate(()=>(window as Window&{documentMarker?:string}).documentMarker)).toBe(marker);
-        if(stage==='hash'){await page.evaluate(()=>(window as Window&{releaseHash?:()=>void}).releaseHash?.());await poll(()=>page.getByRole('status').textContent()).toContain('Файл совпадает');await continueUpload(page);}
+        if(stage==='hash'){await page.evaluate(()=>(window as Window&{releaseHash?:()=>void}).releaseHash!());await poll(()=>page.getByRole('status').textContent()).toContain('Файл совпадает');await continueUpload(page);}
         c.release();await poll(()=>page.locator('#accepted-screen .status-panel').textContent()).toContain('Клипы готовы');
         expect(c.creates()).toBe(1);expect(c.completes()).toBe(1);
       }else{
