@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clipmkr — согласуемый макет основного пути</title>
+  <style>
+    :root{color-scheme:light;--page:#f5f7f3;--surface:#fff;--surface-soft:#f0f5f1;--ink:#19302b;--muted:#526760;--line:#d5e1d9;--accent:#126a5b;--accent-hover:#0c5248;--accent-light:#d9f0e5;--focus:#a45508;--gold:#f4c77b;--shadow:0 18px 46px rgba(27,62,46,.07);--rail:#e9f0eb;--warning:#fff2db;--warning-line:#d2a345;--track:#dce8e1}
+    :root[data-theme="dark"]{color-scheme:dark;--page:#101c19;--surface:#192a25;--surface-soft:#20372f;--ink:#edf6ef;--muted:#b7c9bf;--line:#405b4d;--accent:#a2e0c7;--accent-hover:#d1f3df;--accent-light:#244a3d;--focus:#ffc979;--gold:#a86d2c;--shadow:0 18px 46px rgba(0,0,0,.18);--rail:#162620;--warning:#4b3b23;--warning-line:#e5b75f;--track:#304b3e}
+    *,*::before,*::after{box-sizing:border-box}
+    html{background:var(--page);scroll-behavior:smooth}
+    body{margin:0;background:var(--page);color:var(--ink);font:1rem/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input,select{font:inherit}
+    button,select,input{min-width:0}
+    button{cursor:pointer}
+    button:disabled{cursor:not-allowed;opacity:.52}
+    button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+    summary:focus-visible{outline-offset:-4px;border-radius:.65rem}
+    .screen h1:focus{outline:3px solid var(--focus);outline-offset:3px;border-radius:.2rem}
+    [hidden]{display:none!important}
+    h1,h2,h3,p,dl{margin-top:0}
+    h1{font-size:clamp(1.65rem,1.32rem + 1.6vw,2.65rem);line-height:1.12;letter-spacing:-.045em;margin-bottom:.65rem}
+    h2{font-size:clamp(1.2rem,1.05rem + .5vw,1.55rem);line-height:1.2;letter-spacing:-.025em;margin-bottom:.45rem}
+    h3{font-size:1.04rem;line-height:1.3;margin-bottom:.35rem}
+    p{margin-bottom:0}
+    strong{font-weight:720}
+    small,.small{font-size:.82rem}
+    .app{min-height:100svh;display:grid;grid-template-columns:3.75rem minmax(0,1fr)}
+    .rail{background:var(--rail);border-right:1px solid var(--line);padding:1rem .35rem;display:flex;flex-direction:column;gap:1.2rem;position:sticky;top:0;height:100svh;min-height:31rem;z-index:2}
+    .brand{display:flex;justify-content:center;align-items:center;min-height:3rem;font-weight:800;color:var(--ink);text-decoration:none}
+    .brand-mark{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:.85rem;color:#fff;background:#126a5b;font-size:1.35rem;line-height:1;box-shadow:0 7px 18px rgba(18,106,91,.19)}
+    .brand-word,.nav-label,.rail-caption{display:none}
+    .rail-caption{color:var(--muted);font-size:.68rem;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+    .nav{display:grid;gap:.35rem}
+    .nav button{min-height:2.9rem;width:100%;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:.8rem;display:flex;align-items:center;justify-content:center;gap:.8rem;padding:.55rem .45rem;text-align:left;font-weight:650}
+    .nav button:hover{background:var(--surface-soft);color:var(--ink)}
+    .nav button[aria-current="page"]{background:var(--surface);color:var(--accent);border-color:var(--line);box-shadow:0 3px 10px rgba(27,62,46,.04)}
+    .nav-icon{display:grid;place-items:center;width:1.45rem;flex:none;font-size:1.15rem;line-height:1}
+    .rail-foot{margin-top:auto;color:var(--muted);font-size:.72rem;text-align:center}
+    .workspace{min-width:0;padding:0 max(.75rem,env(safe-area-inset-right)) max(2rem,env(safe-area-inset-bottom)) max(.75rem,env(safe-area-inset-left))}
+    .topbar{min-height:3.75rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--line);padding:.4rem 0}
+    .topbar-title{font-weight:750;letter-spacing:-.025em;margin-right:auto;font-size:.96rem}
+    .top-controls{display:flex;flex-wrap:wrap;align-items:end;gap:.55rem 1rem;padding:.65rem .85rem .85rem}
+    .mock-tools{margin:.55rem 0 0!important;border:1px solid var(--line);border-radius:.7rem;background:var(--surface);box-shadow:none}
+    .mock-tools summary{font-size:.82rem;color:var(--muted);font-weight:650;padding:.55rem .85rem}
+    .mock-tools[open] summary{border-bottom:1px solid var(--line)}
+    .topbar-actions{display:flex;align-items:center;gap:.5rem}
+    .field{display:grid;gap:.25rem;min-width:0}
+    .field label{font-size:.72rem;font-weight:750;color:var(--muted)}
+    select,input[type="month"],input[type="text"]{min-height:2.75rem;border:1px solid var(--line);border-radius:.7rem;background:var(--surface);color:var(--ink);padding:.5rem .7rem;font-size:1rem}
+    .scenario-field{flex:1 1 13rem}
+    .role-field{flex:1 1 8rem}
+    .scenario-field select,.role-field select{width:100%}
+    .balance{min-height:2.75rem;display:flex;align-items:center;gap:.55rem;border:1px solid var(--line);background:var(--surface);padding:.4rem .7rem;border-radius:.75rem;white-space:nowrap;font-size:.84rem}
+    .balance b{font-size:1rem;color:var(--accent)}
+    .theme-button{height:2.75rem;min-width:2.75rem;padding:0 .7rem;border:1px solid var(--line);border-radius:.7rem;color:var(--ink);background:var(--surface)}
+    .notice{display:flex;align-items:flex-start;gap:.5rem;background:var(--warning);border:1px solid var(--warning-line);border-radius:.7rem;padding:.55rem .7rem;margin:.65rem 0;color:var(--ink);font-size:.8rem;font-weight:650}
+    .notice-icon{flex:none;font-size:1rem}
+    main{max-width:76rem;margin:0 auto;min-width:0}
+    .screen{padding:.2rem 0 2rem}
+    .screen-head{margin:1rem 0 1.1rem}
+    #screen-home .screen-head{margin:.8rem 0 .85rem}
+    .eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.55rem}
+    .lead{font-size:clamp(.96rem,.9rem + .3vw,1.1rem);color:var(--muted);max-width:39rem}
+    .stack{display:grid;gap:1rem}
+    .surface{background:var(--surface);border:1px solid var(--line);border-radius:1.05rem;box-shadow:var(--shadow);min-width:0}
+    .surface-pad{padding:1.1rem}
+    .soft{background:var(--surface-soft)}
+    .split{display:grid;gap:1rem}
+    .button{min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border:1px solid var(--accent);border-radius:.7rem;padding:.6rem 1rem;font-weight:720;line-height:1.2;text-align:center;text-decoration:none}
+    .button.primary{background:var(--accent);color:var(--page)}
+    .button.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover);color:var(--page)}
+    .button.secondary{background:transparent;color:var(--accent)}
+    .button.secondary:hover:not(:disabled){background:var(--accent-light)}
+    .button.quiet{background:transparent;color:var(--ink);border-color:var(--line)}
+    .button.quiet:hover:not(:disabled){background:var(--surface-soft)}
+    .button.full{width:100%}
+    .action-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+    .muted{color:var(--muted)}
+    .hero-card{padding:1rem;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--surface) 0%,var(--surface) 48%,var(--surface-soft) 100%)}
+    .hero-card::after{content:"";position:absolute;width:12rem;height:12rem;border-radius:50%;border:2.5rem solid var(--accent-light);right:-5rem;top:-5rem;pointer-events:none}
+    .hero-card > *{position:relative;z-index:1}
+    .file-choice{border:1.5px dashed var(--accent);border-radius:.9rem;padding:.8rem;background:var(--surface-soft);margin:0 0 .7rem;display:grid;gap:.45rem}
+    .file-choice .file-symbol{width:2.45rem;height:2.45rem;display:grid;place-items:center;border-radius:.7rem;background:var(--accent-light);color:var(--accent);font-size:1.3rem}
+    .file-choice p{font-size:.87rem;color:var(--muted)}
+    .file-choice button{justify-self:start}
+    .hero-actions{display:grid;gap:.55rem;max-width:24rem}
+    .mini-head{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem}
+    .metric-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}
+    .metric{padding:.8rem;background:var(--surface-soft);border-radius:.75rem;min-width:0}
+    .metric span{display:block;color:var(--muted);font-size:.78rem}
+    .metric strong{display:block;color:var(--ink);font-size:1.15rem;letter-spacing:-.03em}
+    .record-list{display:grid;gap:0}
+    .record{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.82rem 0;border-top:1px solid var(--line);min-width:0}
+    .record:first-child{border-top:0}
+    .record > div{min-width:0}
+    .record strong{display:block;overflow-wrap:anywhere}
+    .record small{color:var(--muted)}
+    .status-pill{display:inline-flex;align-items:center;min-height:1.8rem;white-space:nowrap;border-radius:99px;padding:.2rem .55rem;background:var(--accent-light);color:var(--accent);font-size:.74rem;font-weight:750}
+    .status-pill.gold{background:var(--warning);color:var(--ink)}
+    .progress-card{padding:1.2rem}
+    .file-line{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+    .file-icon{flex:none;width:2.7rem;height:2.7rem;border-radius:.7rem;background:var(--accent-light);display:grid;place-items:center;color:var(--accent);font-size:1.3rem}
+    .file-line strong{display:block;overflow-wrap:anywhere}
+    .file-line small{color:var(--muted)}
+    .progress-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.5rem;margin-bottom:.55rem}
+    .progress-top strong{font-size:1.3rem;color:var(--accent)}
+    .meter{height:.8rem;border-radius:999px;background:var(--track);overflow:hidden;margin-bottom:.7rem}
+    .meter span{display:block;width:37%;height:100%;border-radius:999px;background:var(--accent)}
+    progress{display:block;width:100%;height:.8rem;accent-color:var(--accent);margin:.7rem 0 1rem}
+    .meter[role="progressbar"]{position:relative}
+    .helper{font-size:.84rem;color:var(--muted);margin:.6rem 0 1rem}
+    .info-strip{padding:.85rem 1rem;border:1px solid var(--line);border-radius:.8rem;background:var(--surface-soft);font-size:.86rem;color:var(--muted)}
+    .pause-mark{width:3rem;height:3rem;border-radius:50%;background:var(--warning);display:grid;place-items:center;font-size:1.5rem;margin-bottom:.9rem}
+    .steps{list-style:none;margin:1.2rem 0;padding:0;display:grid;gap:.55rem}
+    .steps li{display:flex;align-items:center;gap:.7rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:.75rem;color:var(--muted)}
+    .steps li.current{border-color:var(--accent);background:var(--accent-light);color:var(--ink);font-weight:700}
+    .steps .step-icon{display:grid;place-items:center;flex:none;width:1.55rem;height:1.55rem;border:1px solid currentColor;border-radius:50%;font-size:.8rem;font-weight:800}
+    .steps li span:last-child{margin-left:auto;font-size:.75rem;text-align:right}
+    .clip-grid,.package-grid{display:grid;gap:1rem}
+    .clip-card{overflow:hidden}
+    .poster{aspect-ratio:9/16;min-height:12rem;background:#132c33;color:#f5f7f3;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:1rem}
+    .poster::before,.poster::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+    .poster::before{width:72%;aspect-ratio:1;top:16%;left:14%;background:linear-gradient(145deg,#f4bf74,#ba653b);box-shadow:0 0 0 2rem rgba(255,255,255,.08)}
+    .poster::after{width:105%;aspect-ratio:1;bottom:-50%;right:-30%;background:linear-gradient(145deg,rgba(95,195,174,.75),rgba(20,77,79,.5))}
+    .poster.two{background:#272a46}
+    .poster.two::before{background:linear-gradient(145deg,#ba9edf,#675795);transform:rotate(-25deg);border-radius:25%}
+    .poster.two::after{background:linear-gradient(145deg,rgba(225,169,117,.7),rgba(90,45,72,.4))}
+    .poster.three{background:#253d34}
+    .poster.three::before{background:linear-gradient(145deg,#c1dca9,#6da47b);border-radius:35%}
+    .poster.three::after{background:linear-gradient(145deg,rgba(231,182,94,.72),rgba(58,97,78,.3))}
+    .poster > *{position:relative;z-index:1}
+    .poster .poster-top{display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start;font-size:.73rem;font-weight:750;letter-spacing:.1em}
+    .poster-copy{font-size:clamp(1.3rem,1.12rem + .7vw,1.8rem);font-weight:750;line-height:1.1;letter-spacing:-.04em;text-shadow:0 2px 10px #11222266}
+    .poster-sub{display:inline-block;background:#091c1bbd;padding:.32rem .5rem;border-radius:.35rem;font-size:.78rem;line-height:1.3;margin-top:.5rem}
+    .clip-body{padding:1rem}
+    .clip-body > p{font-size:.83rem;color:var(--muted);margin-bottom:.8rem}
+    .clip-actions{display:flex;flex-wrap:wrap;gap:.45rem}
+    .clip-actions button{flex:1 1 6rem;padding:.5rem .6rem;font-size:.86rem}
+    details{border:1px solid var(--line);border-radius:.8rem;background:var(--surface);margin-top:1rem;overflow:hidden}
+    summary{min-height:2.75rem;display:flex;align-items:center;padding:.65rem .85rem;cursor:pointer;font-weight:700;color:var(--accent)}
+    details[open] summary{border-bottom:1px solid var(--line)}
+    .details-body{padding:1rem;display:grid;gap:.9rem}
+    .option-line{display:flex;gap:.65rem;align-items:flex-start;min-height:2.75rem;color:var(--ink)}
+    .option-line input{width:1.2rem;height:1.2rem;flex:none;margin-top:.2rem;accent-color:var(--accent)}
+    .option-line span{font-size:.9rem}
+    .package-card{padding:1rem;display:flex;flex-direction:column;gap:.8rem;cursor:pointer}
+    .package-card:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-light),var(--shadow)}
+    .package-card .radio-head{display:flex;align-items:flex-start;gap:.55rem}
+    .package-card input{width:1.2rem;height:1.2rem;margin-top:.2rem;accent-color:var(--accent);flex:none}
+    .package-card .price{font-size:1.8rem;letter-spacing:-.05em;font-weight:780;line-height:1}
+    .package-card p{font-size:.84rem;color:var(--muted)}
+    .test-tag{display:inline-flex;align-items:center;min-height:1.6rem;padding:.1rem .4rem;border-radius:.4rem;background:var(--warning);border:1px solid var(--warning-line);font-size:.68rem;font-weight:800;letter-spacing:.08em;color:var(--ink)}
+    .package-bottom{margin-top:auto}
+    .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}
+    .kpi{padding:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:.8rem}
+    .kpi dt{font-size:.79rem;color:var(--muted)}
+    .kpi dd{margin:.25rem 0 0;font-size:1.55rem;font-weight:750;letter-spacing:-.04em;color:var(--accent)}
+    .ref-box{display:grid;gap:.65rem;min-width:0}
+    .ref-box label{font-size:.83rem;font-weight:700}
+    .ref-box input{width:100%;overflow:hidden;text-overflow:ellipsis}
+    .owner-table{display:grid;gap:.7rem}
+    .owner-row{display:grid;gap:.55rem;padding:1rem;border:1px solid var(--line);border-radius:.8rem;background:var(--surface);min-width:0}
+    .owner-row.header{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+    .owner-cell{min-width:0;overflow-wrap:anywhere}
+    .owner-cell::before{content:attr(data-label);display:block;font-size:.69rem;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;font-weight:750;margin-bottom:.15rem}
+    .owner-cell.name{font-weight:750}
+    .owner-cell strong{font-weight:750}
+    .calc-note{font-size:.82rem;color:var(--muted)}
+    .inline-status{min-height:1.2rem;font-size:.84rem;color:var(--accent);font-weight:650}
+    .guest-form{display:grid;gap:.6rem}
+    .guest-form>label{font-size:.84rem;font-weight:700}
+    .guest-form input[type=text],.guest-form select{width:100%}
+    dialog{width:min(32rem,calc(100% - 1.5rem));max-height:calc(100svh - 1.5rem);overflow:auto;border:1px solid var(--line);border-radius:1.1rem;background:var(--surface);color:var(--ink);padding:1rem;box-shadow:0 26px 70px #071d1870}
+    dialog::backdrop{background:#061e1a99}
+    .dialog-top{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:.8rem}
+    .close{min-width:2.75rem;min-height:2.75rem;border:1px solid var(--line);border-radius:.65rem;background:var(--surface);color:var(--ink);font-size:1.15rem}
+    .dialog-poster{width:min(12rem,100%);margin:0 auto 1rem;border-radius:.8rem;overflow:hidden}
+    @media(max-width:41.99rem){.steps li{display:grid;grid-template-columns:1.55rem minmax(0,1fr);gap:.25rem .7rem}.steps li span:last-child{grid-column:2;margin-left:0;text-align:left}.topbar-title{font-size:.86rem}.balance{padding:.4rem .5rem}.balance::before{content:"◈";color:var(--accent)}.balance span{display:none}.top-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.55rem}.scenario-field,.role-field{width:100%;flex:none}#screen-home .lead{font-size:.92rem}#screen-home .hero-card{padding:.85rem}#screen-home .file-choice{padding:.7rem}#screen-home .file-choice .file-symbol{display:none}#screen-home .file-choice p{font-size:.78rem}}
+    @media(min-width:42rem){.app{grid-template-columns:12.5rem minmax(0,1fr)}.rail{padding:1.3rem .7rem}.brand{justify-content:flex-start;gap:.65rem;padding-left:.4rem}.brand-word,.nav-label,.rail-caption{display:inline}.brand-word{font-size:1.12rem;letter-spacing:-.04em}.nav button{justify-content:flex-start;padding:.65rem .8rem}.rail-foot{text-align:left;padding-left:.8rem}.workspace{padding-left:1.5rem;padding-right:1.5rem}.topbar-title{font-size:1.05rem}.scenario-field{width:16rem;flex:none}.role-field{width:9rem;flex:none}.surface-pad,.progress-card{padding:1.5rem}.hero-card{padding:1.25rem}}
+    @media(min-width:65rem){.clip-grid,.package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.split{grid-template-columns:minmax(0,1.4fr) minmax(15rem,.8fr)}.workspace{padding-left:2.5rem;padding-right:2.5rem}.screen-head{margin:2rem 0 1.6rem}.owner-row{grid-template-columns:1.35fr .7fr .7fr .7fr .7fr .8fr .9fr;gap:.5rem;align-items:center}.owner-row.header{position:static;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;display:grid;background:var(--surface-soft);font-size:.72rem;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.04em}.owner-cell::before{display:none}}
+    @media(max-width:23rem){.metric-row,.kpis{grid-template-columns:minmax(0,1fr)}.balance{white-space:normal}.record{align-items:flex-start;flex-direction:column;gap:.3rem}.package-card .price{font-size:1.55rem}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" aria-label="Навигация">
+    <div class="brand" aria-label="Clipmkr"><span class="brand-mark" aria-hidden="true">◩</span><span class="brand-word">clipmkr</span></div>
+    <span class="rail-caption">Рабочее место</span>
+    <nav class="nav" aria-label="Разделы кабинета">
+      <button type="button" data-go="home" aria-label="Кабинет" aria-current="page" title="Кабинет"><span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Кабинет</span></button>
+      <button type="button" data-go="ready" aria-label="Мои клипы" title="Мои клипы"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">Мои клипы</span></button>
+      <button type="button" data-go="plans" aria-label="Пакеты" title="Пакеты"><span class="nav-icon" aria-hidden="true">◇</span><span class="nav-label">Пакеты</span></button>
+      <button type="button" data-go="blogger" data-role-nav="blogger" aria-label="Мои ссылки" title="Мои ссылки" hidden><span class="nav-icon" aria-hidden="true">↗</span><span class="nav-label">Мои ссылки</span></button>
+      <button type="button" data-go="owner" data-role-nav="owner" aria-label="Блогеры" title="Блогеры" hidden><span class="nav-icon" aria-hidden="true">♙</span><span class="nav-label">Блогеры</span></button>
+    </nav>
+    <div class="rail-foot">Демо интерфейса</div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <span class="topbar-title">Кабинет</span>
+      <div class="topbar-actions"><div class="balance" aria-label="Демо-баланс: 184 кредита"><span>Баланс</span><b>184</b><span>кредита</span></div>
+        <button type="button" class="theme-button" id="theme" aria-label="Включить тёмную тему" title="Сменить тему">◐</button></div>
+    </header>
+    <details class="mock-tools"><summary>Экраны и роли макета</summary>
+      <div class="top-controls">
+        <div class="field scenario-field"><label for="scenario">Сценарий макета</label><select id="scenario">
+          <option value="home">1 · Кабинет и выбор файла</option><option value="upload">2 · Передача файла</option><option value="paused">3 · Загрузка остановлена</option><option value="processing">4 · Обработка</option><option value="ready">5 · Готовые клипы</option><option value="plans">6 · Пакеты</option><option value="blogger">7 · Кабинет блогера</option><option value="owner">8 · Владелец</option>
+        </select></div>
+        <div class="field role-field"><label for="role">Роль</label><select id="role"><option value="user">Пользователь</option><option value="blogger">Блогер</option><option value="owner">Владелец</option></select></div>
+      </div>
+    </details>
+    <div class="notice" role="note"><span class="notice-icon" aria-hidden="true">ⓘ</span><span>Демо-макет для согласования. Данные вымышлены, действия не выполняются.</span></div>
+    <main id="main">
+      <section class="screen" id="screen-home" aria-labelledby="home-title">
+        <div class="screen-head"><h1 id="home-title" tabindex="-1">Новая запись</h1><p class="lead">Выберите видео или аудио для коротких клипов.</p></div>
+        <div class="split">
+          <div class="surface hero-card">
+            <div class="file-choice"><span class="file-symbol" aria-hidden="true">＋</span><div><strong id="chosen-name">Файл ещё не выбран</strong><p>MP4, MOV, WebM, M4A, MP3 · до 2 ГБ</p></div><button type="button" class="button primary" id="choose-demo">Выбрать демо-файл</button></div>
+            <div class="hero-actions"><button type="button" class="button primary full" id="start-upload" hidden disabled>Создать клипы <span aria-hidden="true">→</span></button><p class="small muted" id="limit-note">До 90 минут на файл; в продукте длительность проверяется сервером.</p></div>
+          </div>
+          <div class="stack"><div class="surface surface-pad"><div class="mini-head"><h2>Ваш баланс</h2><span class="small muted">Демо</span></div><div class="metric-row"><div class="metric"><span>Доступно</span><strong>184 кредита</strong></div><div class="metric"><span>Одна запись</span><strong id="limit-value">до 90 мин</strong></div></div><p class="helper">1 кредит = 60 секунд записи. Лимит файла и баланс — разные ограничения.</p></div>
+            <div class="surface surface-pad"><div class="mini-head"><h2>Последние записи</h2><span class="small muted">2 записи</span></div><div class="record-list"><div class="record"><div><strong>Разговор о запуске проекта</strong><small>31 октября · 48 мин · 3 клипа</small></div><span class="status-pill">Готово</span></div><div class="record"><div><strong>Интервью с командой</strong><small>29 октября · 62 мин · 5 клипов</small></div><span class="status-pill">Готово</span></div></div></div></div>
+        </div>
+        <details><summary>Настройки клипов</summary><div class="details-body"><label class="option-line"><input type="checkbox"><span>Добавить фоновую музыку</span></label><label class="option-line"><input type="checkbox" checked><span>Показать заголовок в начале</span></label><label class="option-line"><input type="checkbox" checked><span>Убрать длинные паузы</span></label><label class="option-line"><input type="checkbox"><span>Добавить призыв в конце</span></label><p class="small muted">Эти элементы показаны для согласования структуры. Настройки ничего не сохраняют.</p></div></details>
+      </section>
+
+      <section class="screen" id="screen-upload" aria-labelledby="upload-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Передача файла · шаг 1 из 3</p><h1 id="upload-title" tabindex="-1">Загружаем запись</h1><p class="lead">Файл ещё передаётся. Обработка начнётся после завершения загрузки.</p></div>
+        <div class="split"><div class="surface progress-card"><div class="file-line"><span class="file-icon" aria-hidden="true">▣</span><div><strong>Вебинар_демо.mp4</strong><small>253 МБ · демонстрационный файл</small></div></div><div class="progress-top"><strong>37%</strong><span class="muted">94 из 253 МБ</span></div><div class="meter" role="progressbar" aria-label="Передано 94 из 253 мегабайт" aria-valuenow="37" aria-valuemin="0" aria-valuemax="100"><span></span></div><p class="helper">Сейчас идёт передача файла. Пока она не закончена, клипы не создаются.</p><div class="action-row"><button type="button" class="button primary" id="pause-upload">Приостановить загрузку</button><button type="button" class="button secondary" data-go="processing">Следующий экран макета: обработка</button></div><p class="small muted" style="margin-top:.55rem">Служебный демо-переход не завершает передачу файла.</p></div><div class="info-strip"><strong>Что дальше</strong><p>После передачи проверим запись, расшифруем речь, выберем фрагменты и соберём вертикальные клипы.</p></div></div>
+      </section>
+
+      <section class="screen" id="screen-paused" aria-labelledby="paused-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Передача файла · пауза</p><h1 id="paused-title" tabindex="-1">Загрузка остановлена</h1><p class="lead">Передача не завершена, поэтому обработка ещё не началась.</p></div>
+        <div class="split"><div class="surface progress-card"><div class="pause-mark" aria-hidden="true">Ⅱ</div><div class="file-line"><span class="file-icon" aria-hidden="true">▣</span><div><strong>Вебинар_демо.mp4</strong><small>Передано 94 из 253 МБ · 37%</small></div></div><p class="helper">В продукте нужно повторно выбрать тот же файл. Здесь выбор имитируется локально.</p><div class="action-row"><button type="button" class="button primary" id="same-file">Выбрать тот же файл</button><button type="button" class="button primary" id="resume-upload" hidden disabled>Продолжить загрузку</button></div><p class="inline-status" id="resume-status" role="status" aria-live="polite"></p></div><div class="info-strip"><strong>Прерванная передача</strong><p>37% — вымышленные данные. Макет не проверяет файл и не восстанавливает переданные части.</p></div></div>
+      </section>
+
+      <section class="screen" id="screen-processing" aria-labelledby="processing-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Обработка · шаг 2 из 3</p><h1 id="processing-title" tabindex="-1">Готовим клипы</h1><p class="lead">Передача завершена. Расшифровка готова; сейчас выбираем фрагменты.</p></div>
+        <div class="split"><div class="surface progress-card"><div class="progress-top"><strong>Выбор фрагментов</strong><span class="muted">Идёт обработка</span></div><progress aria-label="Выбор фрагментов; время окончания неизвестно"></progress><ol class="steps" aria-label="Стадии обработки"><li><span class="step-icon" aria-hidden="true">✓</span><strong>Загрузка</strong><span>Завершена</span></li><li><span class="step-icon" aria-hidden="true">✓</span><strong>Расшифровка</strong><span>Завершена</span></li><li class="current" aria-current="step"><span class="step-icon" aria-hidden="true">◷</span><strong>Выбор фрагментов</strong><span>Идёт сейчас</span></li><li><span class="step-icon" aria-hidden="true">○</span><strong>Монтаж клипов</strong><span>Впереди</span></li></ol><button type="button" class="button secondary" data-go="ready">Следующий экран макета <span aria-hidden="true">→</span></button><p class="helper">Демо-переход; обработка не запускается.</p></div><div class="info-strip"><strong>Запись: Вебинар_демо.mp4</strong><p>Точное время окончания неизвестно. Дополнительные настройки появятся у готовых клипов.</p></div></div>
+      </section>
+
+      <section class="screen" id="screen-ready" aria-labelledby="ready-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Результат · шаг 3 из 3</p><h1 id="ready-title" tabindex="-1">Три клипа готовы</h1><p class="lead">Короткие вертикальные моменты из записи «Вебинар_демо.mp4». Выберите клип, чтобы увидеть демо-панель просмотра.</p></div>
+        <div class="action-row" style="margin-bottom:1rem"><button type="button" class="button primary" data-preview="Идея, с которой всё началось">Просмотреть первый клип</button></div>
+        <div class="clip-grid">
+          <article class="surface clip-card"><div class="poster one" role="img" aria-label="Абстрактный постер первого клипа, формат 9:16"><div class="poster-top"><span>CLIPMKR · 01</span></div><div><div class="poster-copy">Идея, с которой всё началось</div><span class="poster-sub">«Мы искали простое решение»</span></div></div><div class="clip-body"><h3>Идея, с которой всё началось</h3><p>43 с · вертикальный формат 9:16</p><div class="clip-actions"><button type="button" class="button secondary" data-preview="Идея, с которой всё началось">Просмотр</button><button type="button" class="button quiet" data-download="Идея, с которой всё началось">Скачать</button></div></div></article>
+          <article class="surface clip-card"><div class="poster two" role="img" aria-label="Абстрактный постер второго клипа, формат 9:16"><div class="poster-top"><span>CLIPMKR · 02</span></div><div><div class="poster-copy">Один вопрос изменил план</div><span class="poster-sub">«А что, если начать с людей?»</span></div></div><div class="clip-body"><h3>Один вопрос изменил план</h3><p>51 с · вертикальный формат 9:16</p><div class="clip-actions"><button type="button" class="button secondary" data-preview="Один вопрос изменил план">Просмотр</button><button type="button" class="button quiet" data-download="Один вопрос изменил план">Скачать</button></div></div></article>
+          <article class="surface clip-card"><div class="poster three" role="img" aria-label="Абстрактный постер третьего клипа, формат 9:16"><div class="poster-top"><span>CLIPMKR · 03</span></div><div><div class="poster-copy">Что получилось через месяц</div><span class="poster-sub">«Первые результаты удивили нас»</span></div></div><div class="clip-body"><h3>Что получилось через месяц</h3><p>37 с · вертикальный формат 9:16</p><div class="clip-actions"><button type="button" class="button secondary" data-preview="Что получилось через месяц">Просмотр</button><button type="button" class="button quiet" data-download="Что получилось через месяц">Скачать</button></div></div></article>
+        </div>
+        <details><summary>Поделиться с гостем</summary><div class="details-body guest-form" id="guest-demo-form"><p class="small muted">Демо-форма: ничего не отправляет и не создаёт гостевую ссылку.</p><label for="guest-name">Имя гостя</label><input id="guest-name" type="text" value="Алексей (демо)" required><label for="guest-clip">Клип для гостя</label><select id="guest-clip" required><option value="1">Идея, с которой всё началось</option><option value="2">Один вопрос изменил план</option><option value="3">Что получилось через месяц</option></select><label class="option-line"><input id="guest-consent" type="checkbox" required><span>Подтверждаю согласие гостя на публикацию этого клипа.</span></label><button type="button" class="button secondary" id="guest-demo-button">Показать демо-отправку</button><p class="inline-status" id="guest-status" role="status" aria-live="polite"></p></div></details>
+        <details><summary>Настройки клипов</summary><div class="details-body"><p>У готовых клипов можно менять музыку и призыв. Заголовок и паузы выбираются при создании выпуска. В макете настройки не сохраняются и клипы не пересобираются.</p><label class="option-line"><input type="checkbox"><span>Музыка для клипов</span></label><label class="option-line"><input type="checkbox"><span>Призыв в конце</span></label></div></details>
+        <div class="action-row" style="margin-top:1rem"><button type="button" class="button secondary" data-go="home">Создать новый выпуск</button></div>
+      </section>
+
+      <section class="screen" id="screen-plans" aria-labelledby="plans-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Кредиты и оплата</p><h1 id="plans-title" tabindex="-1">Выберите пакет под свои записи</h1><p class="lead">Разовая покупка на 30 дней, без новой подписки и автоматического продления. 1 кредит = 60 секунд записи.</p></div>
+        <div class="package-grid" role="radiogroup" aria-label="Демонстрационные пакеты">
+          <label class="surface package-card"><span class="radio-head"><input type="radio" name="package" value="Старт" checked><span><strong>Старт</strong><br><span class="test-tag">TEST</span></span></span><span class="price">990 ₽</span><strong>300 кредитов</strong><p>До 5 часов записи · 30 дней. Для первых регулярных выпусков.</p><span class="small muted package-bottom">Базовый пакет</span></label>
+          <label class="surface package-card"><span class="radio-head"><input type="radio" name="package" value="Про"><span><strong>Про</strong><br><span class="test-tag">TEST</span></span></span><span class="price">3 990 ₽</span><strong>1 800 кредитов</strong><p>До 30 часов записи · 30 дней. Для плотного графика публикаций.</p><span class="small muted package-bottom">Базовый пакет</span></label>
+          <label class="surface package-card"><span class="radio-head"><input type="radio" name="package" value="Дополнительный пакет"><span><strong>Дополнительный</strong><br><span class="test-tag">TEST</span></span></span><span class="price">1 490 ₽</span><strong>600 кредитов</strong><p>Ещё 10 часов записи · 30 дней. Добавляется к текущим условиям.</p><span class="small muted package-bottom">Дополнение</span></label>
+        </div>
+        <div class="surface surface-pad" style="margin-top:1rem"><p class="small muted" style="margin-bottom:.7rem">Выбран: <strong id="selected-package">Старт</strong>. Следующий шаг показан только как демонстрация, платёжная ссылка не открывается.</p><button type="button" class="button primary" id="checkout-demo">Продолжить с пакетом</button></div>
+      </section>
+
+      <section class="screen" id="screen-blogger" aria-labelledby="blogger-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Кабинет блогера</p><h1 id="blogger-title" tabindex="-1">Ваши рекомендации</h1><p class="lead">Делитесь своей ссылкой и смотрите, как люди проходят путь от первого перехода до оплаты пакета.</p></div>
+        <div class="stack"><div class="split"><div class="surface surface-pad"><h2>Ваша демо-ссылка</h2><p class="small muted" style="margin-bottom:.8rem">Люди, пришедшие по этой ссылке, учитываются в вашей статистике.</p><div class="ref-box"><label for="ref-link">Адрес для ручного копирования</label><input id="ref-link" type="text" value="/r/blogger-demo" readonly><button type="button" class="button primary" id="copy-ref">Выделить демо-ссылку</button><p class="inline-status" id="copy-status" role="status" aria-live="polite"></p></div></div><div class="surface surface-pad soft"><h2>Ваш лимит записи</h2><p><strong>120 минут</strong> на один файл по умолчанию.</p><p class="helper">Владелец может назначить блогеру индивидуальный лимит. Баланс кредитов учитывается отдельно.</p></div></div>
+          <p class="small muted">Демо-статистика за октябрь 2026 года.</p><dl class="kpis"><div class="kpi"><dt>Переходы</dt><dd>248</dd></div><div class="kpi"><dt>Регистрации</dt><dd>41</dd></div><div class="kpi"><dt>Активные</dt><dd>18</dd></div><div class="kpi"><dt>Оплаты</dt><dd>7</dd></div></dl>
+          <div class="info-strip">Показатели вымышленные. Активные — пользователи с готовой записью и клипом за октябрь 2026 года; оплаты — подтверждённые покупки пакетов без возвратов.</div></div>
+      </section>
+
+      <section class="screen" id="screen-owner" aria-labelledby="owner-title" hidden>
+        <div class="screen-head"><p class="eyebrow">Кабинет владельца</p><h1 id="owner-title" tabindex="-1">Блогеры и рекомендации</h1><p class="lead">Сводка за месяц по каждому блогеру. Лимит записи и ставка задаются владельцем отдельно.</p></div>
+        <div class="surface surface-pad" style="margin-bottom:1rem"><div class="action-row"><div class="field"><label for="owner-month">Месяц отчёта</label><input id="owner-month" type="month" value="2026-10"></div><button type="button" class="button primary" id="show-report" style="align-self:end">Показать расчёт</button></div><p class="inline-status" id="report-status" role="status" aria-live="polite"></p></div>
+        <div class="owner-table" role="table" aria-label="Демонстрационная статистика блогеров за октябрь 2026 года">
+          <div class="owner-row header" role="row"><span role="columnheader">Блогер</span><span role="columnheader">Переходы</span><span role="columnheader">Регистрации</span><span role="columnheader">Активные</span><span role="columnheader">Оплаты</span><span role="columnheader">Лимит</span><span role="columnheader">Ставка / оценка</span></div>
+          <div class="owner-row" role="row"><div class="owner-cell name" role="rowheader" data-label="Блогер">Анна С.</div><div class="owner-cell" role="cell" data-label="Переходы">248</div><div class="owner-cell" role="cell" data-label="Регистрации">41</div><div class="owner-cell" role="cell" data-label="Активные">18</div><div class="owner-cell" role="cell" data-label="Оплаты">7</div><div class="owner-cell" role="cell" data-label="Лимит">120 мин · стандарт</div><div class="owner-cell" role="cell" data-label="Ставка / оценка"><strong>20% · 3 980 ₽</strong><br><span class="small muted">от 19 900 ₽</span></div></div>
+          <div class="owner-row" role="row"><div class="owner-cell name" role="rowheader" data-label="Блогер">Михаил К.</div><div class="owner-cell" role="cell" data-label="Переходы">106</div><div class="owner-cell" role="cell" data-label="Регистрации">23</div><div class="owner-cell" role="cell" data-label="Активные">11</div><div class="owner-cell" role="cell" data-label="Оплаты">4</div><div class="owner-cell" role="cell" data-label="Лимит">180 мин · индивидуальный</div><div class="owner-cell" role="cell" data-label="Ставка / оценка"><strong>30% · 2 994 ₽</strong><br><span class="small muted">от 9 980 ₽</span></div></div>
+          <div class="owner-row" role="row"><div class="owner-cell name" role="rowheader" data-label="Блогер">Ирина Л.</div><div class="owner-cell" role="cell" data-label="Переходы">62</div><div class="owner-cell" role="cell" data-label="Регистрации">8</div><div class="owner-cell" role="cell" data-label="Активные">3</div><div class="owner-cell" role="cell" data-label="Оплаты">1</div><div class="owner-cell" role="cell" data-label="Лимит">120 мин · стандарт</div><div class="owner-cell" role="cell" data-label="Ставка / оценка"><strong>Не назначена</strong><br><span class="small muted">сумма не рассчитана</span></div></div>
+        </div>
+        <div class="info-strip" style="margin-top:1rem">Оценка: 20% или 30% от подтверждённой выручки пакетов за выбранный месяц. Возвраты и неподтверждённые платежи исключены. Это не задолженность; автоматических выплат нет. Обычному пользователю доступна запись до 90 минут, блогеру — до 120 минут или его индивидуального лимита.</div>
+      </section>
+    </main>
+  </div>
+</div>
+<dialog id="demo-dialog" aria-labelledby="dialog-title"><div class="dialog-top"><div><p class="eyebrow">Демонстрация</p><h2 id="dialog-title"></h2></div><button type="button" class="close" id="close-dialog" aria-label="Закрыть окно">×</button></div><div id="dialog-content"></div></dialog>
+<script>
+  (() => {
+    const ids = ['home','upload','paused','processing','ready','plans','blogger','owner'];
+    const scenario = document.getElementById('scenario');
+    const role = document.getElementById('role');
+    const mockTools = document.querySelector('.mock-tools');
+    const dialog = document.getElementById('demo-dialog');
+    const title = document.getElementById('dialog-title');
+    const content = document.getElementById('dialog-content');
+    const navButtons = [...document.querySelectorAll('.nav button[data-go]')];
+    let selectedDemoFile = false;
+    let sameFile = false;
+    function updateRole() {
+      const name = role.value;
+      document.querySelectorAll('[data-role-nav]').forEach(item => item.hidden = item.dataset.roleNav !== name);
+      document.getElementById('limit-value').textContent = name === 'owner' ? 'по доступу' : `до ${name === 'blogger' ? '120' : '90'} мин`;
+      document.getElementById('limit-note').textContent = name === 'blogger'
+        ? 'До 120 минут на файл по умолчанию; индивидуальный лимит назначает владелец.'
+        : name === 'owner' ? 'Лимит владельца здесь не показан; у пользователя — 90 минут, у блогера — 120 минут по умолчанию.'
+        : 'До 90 минут на файл; в продукте длительность проверяется сервером.';
+    }
+    function showScreen(id) {
+      if (!ids.includes(id)) return;
+      if (id === 'blogger') role.value = 'blogger';
+      if (id === 'owner') role.value = 'owner';
+      if (id === 'paused') {
+        sameFile = false;
+        document.getElementById('same-file').classList.replace('secondary','primary');
+        document.getElementById('resume-upload').hidden = true;
+        document.getElementById('resume-upload').disabled = true;
+        document.getElementById('resume-status').textContent = '';
+      }
+      updateRole();
+      ids.forEach(key => document.getElementById(`screen-${key}`).hidden = key !== id);
+      scenario.value = id;
+      navButtons.forEach(button => {
+        const active = button.dataset.go === id || (['upload','paused','processing'].includes(id) && button.dataset.go === 'home');
+        if (active) button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
+      });
+      if (window.matchMedia('(max-width:41.99rem)').matches) mockTools.open = false;
+      window.scrollTo({top:0,behavior:'auto'});
+      document.getElementById(`${id}-title`).focus({preventScroll:true});
+    }
+    function openDialog(heading, node) {
+      title.textContent = heading;
+      content.replaceChildren(node);
+      dialog.showModal();
+    }
+    function paragraph(message) { const p = document.createElement('p'); p.textContent = message; return p; }
+    scenario.addEventListener('change', () => showScreen(scenario.value));
+    role.addEventListener('change', () => {
+      if (scenario.value === 'blogger' && role.value !== 'blogger' || scenario.value === 'owner' && role.value !== 'owner') showScreen('home');
+      else updateRole();
+    });
+    document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => showScreen(button.dataset.go)));
+    document.getElementById('choose-demo').addEventListener('click', () => {
+      selectedDemoFile = true;
+      document.getElementById('chosen-name').textContent = 'Вебинар_демо.mp4';
+      document.getElementById('choose-demo').classList.replace('primary','secondary');
+      document.getElementById('start-upload').hidden = false;
+      document.getElementById('start-upload').disabled = false;
+    });
+    document.getElementById('start-upload').addEventListener('click', () => { if (selectedDemoFile) showScreen('upload'); });
+    document.getElementById('pause-upload').addEventListener('click', () => showScreen('paused'));
+    document.getElementById('same-file').addEventListener('click', () => {
+      sameFile = true;
+      document.getElementById('same-file').classList.replace('primary','secondary');
+      document.getElementById('resume-upload').hidden = false;
+      document.getElementById('resume-upload').disabled = false;
+      document.getElementById('resume-status').textContent = 'Демо-выбор выполнен; можно показать продолжение передачи.';
+    });
+    document.getElementById('resume-upload').addEventListener('click', () => { if (sameFile) showScreen('upload'); });
+    document.getElementById('guest-demo-button').addEventListener('click', () => {
+      for (const id of ['guest-name','guest-clip','guest-consent']) {
+        if (!document.getElementById(id).reportValidity()) return;
+      }
+      document.getElementById('guest-status').textContent = 'Демо: выбор и согласие показаны, отправка не выполняется.';
+    });
+    document.querySelectorAll('[data-preview]').forEach(button => button.addEventListener('click', () => {
+      const box = document.createElement('div');
+      const poster = document.createElement('div'); poster.className = 'poster dialog-poster'; poster.setAttribute('role','img'); poster.setAttribute('aria-label','Абстрактный постер клипа без видеофайла');
+      const caption = document.createElement('div'); caption.className = 'poster-copy'; caption.textContent = button.dataset.preview; poster.append(caption);
+      box.append(poster, paragraph('Демо-панель просмотра. В макете нет MP4 и воспроизведения. В продукте здесь должен открываться рабочий плеер.'));
+      openDialog(`Просмотр: ${button.dataset.preview}`,box);
+    }));
+    document.querySelectorAll('[data-download]').forEach(button => button.addEventListener('click', () => openDialog(`Скачать: ${button.dataset.download}`,paragraph('Это демонстрация действия. Файл не создан и скачивание не начинается.'))));
+    document.querySelectorAll('input[name="package"]').forEach(input => input.addEventListener('change', () => {document.getElementById('selected-package').textContent = input.value;}));
+    document.getElementById('checkout-demo').addEventListener('click', () => {
+      const picked = document.querySelector('input[name="package"]:checked').value;
+      openDialog(`Пакет «${picked}»`,paragraph('TEST-демонстрация выбора. Перехода в магазин, оплаты и изменения баланса здесь нет.'));
+    });
+    document.getElementById('copy-ref').addEventListener('click', () => {
+      const field = document.getElementById('ref-link'); field.focus(); field.select();
+      document.getElementById('copy-status').textContent = 'Демо-ссылка выделена. Нажмите Ctrl+C или используйте меню копирования; разрешение буфера обмена не запрашивается.';
+    });
+    document.getElementById('show-report').addEventListener('click', () => {
+      document.getElementById('report-status').textContent = 'Показан вымышленный пример за октябрь 2026. Выбор другого месяца не пересчитывает данные макета.';
+    });
+    document.getElementById('close-dialog').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+    document.getElementById('theme').addEventListener('click', event => {
+      const dark = document.documentElement.dataset.theme !== 'dark';
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      event.currentTarget.setAttribute('aria-label',dark ? 'Включить светлую тему' : 'Включить тёмную тему');
+    });
+    mockTools.open = window.matchMedia('(min-width:42rem)').matches;
+    updateRole();
+  })();
+</script>
+</body>
+</html>

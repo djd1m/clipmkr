@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru" data-active-direction="studio">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clipmkr — сравнение визуальных направлений</title>
+  <style>
+    *{box-sizing:border-box}
+    html{background:#e9eceb}
+    body{margin:0;color:#172426;font:1rem/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,select{font:inherit}
+    button{cursor:pointer}
+    button,select{min-height:2.75rem}
+    button:focus-visible,select:focus-visible,h1:focus{outline:3px solid #bd6814;outline-offset:3px}
+    [hidden]{display:none!important}
+    h1,h2,h3,p{margin-top:0}
+    p{margin-bottom:0}
+    .board{width:min(90rem,100%);margin:auto;padding:1rem max(.75rem,env(safe-area-inset-right)) 2rem max(.75rem,env(safe-area-inset-left))}
+    .board-bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,12rem) minmax(0,12rem);align-items:end;gap:.75rem;padding:.65rem .85rem;background:#fff;border:1px solid #c9d1ce}
+    .board-name{align-self:center;font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#344b49}
+    .board-field{display:grid;gap:.2rem;min-width:0}
+    .board-field label{font-size:.7rem;font-weight:750;color:#405451}
+    .board-field select{width:100%;min-width:0;border:1px solid #8ca19d;border-radius:.2rem;background:#fff;color:#172426;padding:.45rem .6rem;font-size:1rem}
+    .disclaimer{padding:.55rem .8rem;margin:.5rem 0 .8rem;background:#fff7e8;border-left:3px solid #a96315;color:#3b321f;font-size:.82rem;font-weight:650}
+    .direction{min-width:0;overflow:hidden}
+    .direction button{border-radius:.15rem;padding:.55rem .9rem;font-weight:700;line-height:1.2;text-align:center}
+    .direction h1{line-height:1.06;letter-spacing:-.05em;overflow-wrap:anywhere}
+    .direction h2,.direction h3{line-height:1.18;letter-spacing:-.025em}
+    .direction p,.direction small,.direction button{overflow-wrap:anywhere}
+    .direction .quiet{font-size:.82rem}
+    .direction .action-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}
+    .direction .file-name{font-weight:750;overflow-wrap:anywhere}
+    .direction .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+
+    /* A: flat graphite surfaces and a single amber signal. */
+    .studio{background:#191b1c;color:#f2f1e9;border:1px solid #303434;min-height:39rem;padding:0 clamp(.85rem,2.5vw,2.3rem) 2rem}
+    .studio-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4.5rem;border-bottom:1px solid #4e5352}
+    .studio-mark{font-weight:850;font-size:1.13rem;letter-spacing:-.055em}
+    .studio-head-right{display:flex;align-items:center;gap:1rem;font-size:.72rem;color:#c2c5bf;text-transform:uppercase;letter-spacing:.13em}
+    .studio-signal{display:inline-block;width:.55rem;height:.55rem;background:#f5b944;flex:none}
+    .studio-upload{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(12rem,.65fr);min-height:34rem}
+    .studio-work{padding:clamp(1.4rem,4vw,3rem) clamp(1rem,4vw,3rem) 1.5rem 0;display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+    .studio-kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#f5b944;font-weight:800;margin-bottom:1.25rem}
+    .studio h1{font-size:clamp(2.25rem,5.6vw,5.25rem);font-weight:740;margin-bottom:.85rem}
+    .studio-lead{color:#c4c7c0;max-width:30rem;font-size:clamp(.95rem,1.25vw,1.08rem)}
+    .studio-file{width:100%;margin-top:auto;padding:1.3rem 0 1rem;border-top:1px solid #646a67;border-bottom:1px solid #646a67;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.75rem;align-items:center}
+    .studio-file-label{display:block;color:#aeb5ad;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:750;margin-bottom:.3rem}
+    .studio-file .file-name{font-size:1.1rem}
+    .studio-file small{display:block;color:#aeb5ad;font-size:.78rem;margin-top:.2rem}
+    .studio-actions{display:grid;gap:.45rem;margin-top:1.15rem;justify-items:start}
+    .studio .action-primary{background:#f5b944;border:1px solid #f5b944;color:#171918}
+    .studio .action-primary:hover{background:#ffd075;border-color:#ffd075}
+    .studio .action-secondary{background:transparent;border:1px solid #aeb5ad;color:#f2f1e9}
+    .studio .action-secondary:hover{border-color:#f5b944;color:#f5b944}
+    .studio-preview{border-left:1px solid #4e5352;padding:1.4rem 0 1rem clamp(1rem,3vw,2rem);display:flex;flex-direction:column;justify-content:center;min-width:0}
+    .studio-preview>p:first-child{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:#aeb5ad;font-weight:800;margin-bottom:1rem}
+    .studio-preview>.quiet{color:#c4c7c0;margin-top:.8rem;max-width:12rem}
+    .studio-poster{aspect-ratio:9/16;background:#333738;position:relative;overflow:hidden;color:#f7f5ed;display:flex;flex-direction:column;justify-content:space-between;padding:.75rem}
+    .studio-preview .studio-poster{width:min(100%,10.5rem)}
+    .studio-poster::before{content:"";position:absolute;inset:20% 12% 18%;background:#6d7471;transform:rotate(-14deg)}
+    .studio-poster::after{content:"";position:absolute;width:52%;aspect-ratio:1;border:1.1rem solid #989f99;border-radius:50%;right:-12%;top:10%}
+    .studio-poster.p2{background:#3d4140}
+    .studio-poster.p2::before{inset:15% 22% 24%;transform:rotate(16deg);background:#767c79}
+    .studio-poster.p2::after{right:24%;top:45%;width:42%;border-width:.65rem}
+    .studio-poster.p3{background:#303534}
+    .studio-poster.p3::before{inset:26% 8% 17%;transform:rotate(0);background:#626a66}
+    .studio-poster.p3::after{right:-8%;top:19%;width:62%;border-width:.9rem}
+    .studio-poster>*{position:relative;z-index:1}
+    .poster-top{display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start;font-size:.65rem;font-weight:800;letter-spacing:.1em}
+    .poster-score{background:#f5b944;color:#171918;padding:.12rem .3rem;font-size:.82rem;letter-spacing:0}
+    .poster-words{font-size:clamp(1rem,1.6vw,1.55rem);font-weight:780;line-height:1.07;letter-spacing:-.04em;text-shadow:0 1px 4px #222}
+    .studio-ready{display:grid;grid-template-columns:minmax(9rem,.42fr) minmax(0,2fr);gap:clamp(1rem,3vw,2rem);padding-top:2rem}
+    .studio-ready-intro{border-right:1px solid #4e5352;padding-right:1rem}
+    .studio-ready-intro h1{font-size:clamp(2rem,3.3vw,3.4rem);margin-bottom:1rem}
+    .studio-ready-intro p:last-child{color:#bdc2ba;font-size:.88rem}
+    .studio-clips{display:grid;grid-template-columns:1.18fr 1fr 1fr;gap:clamp(.7rem,1.5vw,1.35rem);align-items:start;min-width:0}
+    .studio-clip{min-width:0}
+    .studio-clip .studio-poster{width:100%}
+    .studio-clip-meta{border-top:1px solid #646a67;padding-top:.6rem;margin-top:.7rem}
+    .studio-clip-meta h2{font-size:clamp(.95rem,1.2vw,1.2rem);margin-bottom:.25rem}
+    .studio-clip-meta p{color:#b5bdb5;font-size:.78rem;margin-bottom:.65rem}
+    .studio-clip .action-row{gap:.4rem}
+    .studio-clip button{font-size:.82rem;flex:1 1 5rem;padding:.5rem .35rem}
+    .studio-plans{display:grid;grid-template-columns:minmax(12rem,.48fr) minmax(0,1.52fr);gap:clamp(1.5rem,4vw,4rem);padding-top:clamp(1.5rem,4vw,3rem)}
+    .studio-plans>div{min-width:0}
+    .studio-plans-intro h1{font-size:clamp(2.4rem,4vw,4.3rem)}
+    .studio-plans-intro .studio-lead{font-size:.91rem}
+    .studio-test{display:inline-block;margin-top:1.5rem;padding:.25rem .45rem;border:1px solid #f5b944;color:#f5b944;font-size:.7rem;font-weight:850;letter-spacing:.13em}
+    .studio-plans-list{min-width:0;border-top:1px solid #646a67}
+    .studio-plan{display:grid;grid-template-columns:2.1rem minmax(0,1fr) auto;gap:clamp(.55rem,1.4vw,1.25rem);align-items:center;padding:1.25rem 0;border-bottom:1px solid #4e5352}
+    .studio-plan-num{align-self:start;color:#f5b944;font-size:.73rem;font-weight:800;letter-spacing:.12em}
+    .studio-plan>div{min-width:0}
+    .studio-plan h2{font-size:clamp(1.2rem,1.6vw,1.65rem);margin:0 0 .3rem}
+    .studio-plan p{color:#bfc5bd;font-size:.84rem}
+    .studio-plan-end{display:flex;flex-wrap:wrap;gap:.65rem 1rem;align-items:center;justify-content:flex-end}
+    .studio-plan-price{color:#f2f1e9;font-size:clamp(1.1rem,1.6vw,1.5rem);font-weight:780;white-space:nowrap}
+    .studio-plan button{white-space:normal;min-width:9rem}
+    .studio-plans-note{margin-top:1rem;color:#bfc5bd;font-size:.8rem}
+
+    /* B: a compact white workspace with row navigation and one blue signal. */
+    .workspace{background:#fcfdfd;color:#192838;border:1px solid #cbd5df;min-height:39rem;padding:0 clamp(.85rem,2.5vw,2.3rem) 2rem}
+    .workspace-head{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.6rem;min-height:4rem;border-bottom:1px solid #d3dce4}
+    .workspace-mark{font-weight:800;font-size:1.03rem;letter-spacing:-.045em;white-space:nowrap}
+    .workspace-nav{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+    .workspace-nav button{min-height:2.75rem;padding:.4rem .05rem;background:none;border:0;border-bottom:2px solid transparent;color:#485b6c;font-weight:600;font-size:.88rem}
+    .workspace-nav button[aria-current=page]{color:#174c88;border-bottom-color:#174c88}
+    .workspace-balance{margin-left:auto;color:#43566a;font-size:.81rem;white-space:nowrap}
+    .workspace-balance strong{color:#174c88}
+    .workspace-title{padding:1.7rem 0 1.35rem}
+    .workspace h1{font-size:clamp(1.75rem,2.6vw,2.7rem);font-weight:760;margin-bottom:.38rem}
+    .workspace-title p{color:#506073;font-size:.89rem}
+    .workspace-upload{display:grid;grid-template-columns:minmax(0,1fr) minmax(11rem,.3fr);gap:2rem}
+    .workspace-main{min-width:0}
+    .workspace-section-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:#536678;font-weight:800;margin:0 0 .55rem}
+    .workspace-file{display:grid;grid-template-columns:2.7rem minmax(0,1fr) auto;gap:.75rem;align-items:center;padding:.9rem 0;border-top:1px solid #c5d0db;border-bottom:1px solid #c5d0db}
+    .workspace-file-symbol{display:grid;place-items:center;width:2.7rem;height:2.7rem;background:#e9f0f8;color:#174c88;font-size:1.3rem}
+    .workspace-file small{display:block;color:#586b7b;font-size:.78rem;margin-top:.15rem}
+    .workspace .action-primary{background:#174c88;border:1px solid #174c88;color:#fff}
+    .workspace .action-primary:hover{background:#103b70}
+    .workspace .action-secondary{background:#fff;border:1px solid #174c88;color:#174c88}
+    .workspace .action-secondary:hover{background:#edf3fa}
+    .workspace .action-plain{background:transparent;border:1px solid #a6b6c5;color:#263c50}
+    .workspace-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin:.75rem 0 2.2rem}
+    .workspace-actions p{font-size:.78rem;color:#596a7a}
+    .workspace-records{border-top:1px solid #c5d0db}
+    .workspace-record{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.7rem;align-items:center;padding:.8rem 0;border-bottom:1px solid #dce3e9;font-size:.85rem}
+    .workspace-record span:not(:first-child){color:#536678;white-space:nowrap}
+    .workspace-side{border-left:1px solid #d3dce4;padding-left:1.25rem;color:#43576c}
+    .workspace-side dl{margin:0}
+    .workspace-side dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem}
+    .workspace-side dd{margin:0 0 1.3rem;font-size:1.3rem;font-weight:730;color:#174c88}
+    .workspace-side p{font-size:.79rem}
+    .workspace-ready{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(13rem,.65fr);gap:2rem;border-top:1px solid #c5d0db;padding-top:1.1rem}
+    .workspace-selected{min-width:0}
+    .workspace-selected-layout{display:grid;grid-template-columns:minmax(9rem,16rem) minmax(0,1fr);gap:1.25rem;align-items:end}
+    .workspace-poster{width:100%;aspect-ratio:9/16;position:relative;overflow:hidden;background:#dbe3e9;color:#1f3242;padding:.8rem;display:flex;flex-direction:column;justify-content:space-between}
+    .workspace-poster::before{content:"";position:absolute;inset:18% 16% 18%;background:#92a6b8;transform:rotate(-12deg)}
+    .workspace-poster::after{content:"";position:absolute;width:55%;aspect-ratio:1;border:.8rem solid #b8c8d5;border-radius:50%;right:-13%;top:12%}
+    .workspace-poster.p2{background:#e1e5ea}
+    .workspace-poster.p2::before{background:#a0aec0;transform:rotate(14deg);inset:18% 26% 22%}
+    .workspace-poster.p2::after{top:48%;right:28%;width:38%;border-width:.55rem}
+    .workspace-poster.p3{background:#d8e2e7}
+    .workspace-poster.p3::before{background:#91a9b2;transform:none;inset:28% 8% 17%}
+    .workspace-poster.p3::after{width:65%;right:-12%;top:17%}
+    .workspace-poster>*{position:relative;z-index:1}
+    .workspace-poster .poster-top{color:#174c88}
+    .workspace-poster .poster-words{font-size:clamp(1.1rem,2vw,1.65rem);color:#192f42;text-shadow:none}
+    .workspace-selected-info h2{font-size:clamp(1.1rem,1.55vw,1.5rem);margin-bottom:.4rem}
+    .workspace-selected-info p{font-size:.82rem;color:#506478;margin-bottom:1rem}
+    .workspace-selected-info .action-row{align-items:stretch}
+    .workspace-selected-info button{font-size:.85rem}
+    .workspace-list{border-left:1px solid #d3dce4;padding-left:1.2rem;min-width:0}
+    .workspace-list button{width:100%;min-height:4.3rem;display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:.7rem;background:none;border:0;border-bottom:1px solid #d3dce4;color:#25394c;text-align:left;padding:.7rem .2rem;font-size:.85rem}
+    .workspace-list button[aria-current=true]{border-left:3px solid #174c88;padding-left:.55rem;background:#eef3f8}
+    .workspace-list .clip-num{font-size:.74rem;color:#174c88;font-weight:800}
+    .workspace-list .clip-duration{color:#596a79;font-size:.76rem;white-space:nowrap}
+    .workspace-test{display:inline-block;margin-bottom:.65rem;padding:.15rem .4rem;border:1px solid #174c88;color:#174c88;font-size:.7rem;font-weight:850;letter-spacing:.1em}
+    .workspace-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #c5d0db;border-bottom:1px solid #c5d0db}
+    .workspace-package{min-width:0;padding:1.3rem clamp(.85rem,2vw,1.7rem);display:flex;flex-direction:column;align-items:flex-start}
+    .workspace-package+.workspace-package{border-left:1px solid #d3dce4}
+    .workspace-package h2{font-size:clamp(1.3rem,1.8vw,1.8rem);margin:0 0 1.5rem}
+    .workspace-package-price{font-size:clamp(1.65rem,2.2vw,2.25rem);font-weight:760;color:#174c88;line-height:1.1;white-space:nowrap;margin-bottom:1.35rem}
+    .workspace-package dl{width:100%;margin:0 0 1.4rem;border-top:1px solid #d3dce4}
+    .workspace-package dl div{display:flex;justify-content:space-between;gap:.75rem;padding:.5rem 0;border-bottom:1px solid #d3dce4;font-size:.84rem}
+    .workspace-package dt{color:#506478}
+    .workspace-package dd{margin:0;font-weight:720;text-align:right}
+    .workspace-package button{margin-top:auto;width:100%}
+    .workspace-plans-note{margin-top:1rem;color:#506478;font-size:.81rem}
+
+    dialog{width:min(29rem,calc(100% - 1.5rem));border:1px solid #acbac4;background:#fff;color:#172426;padding:1.25rem;box-shadow:0 1.5rem 4rem #17242666}
+    dialog::backdrop{background:#111b1bcc}
+    dialog h2{font-size:1.35rem;margin-bottom:.5rem}
+    dialog p{color:#40535b;margin-bottom:1rem}
+    dialog button{min-height:2.75rem;border:1px solid #52636b;background:#fff;color:#172426;padding:.5rem .8rem}
+
+    @media(max-width:52rem){.studio-upload{grid-template-columns:minmax(0,1fr) 11rem}.studio-ready{grid-template-columns:minmax(0,1fr)}.studio-ready-intro{border-right:0;border-bottom:1px solid #4e5352;padding:0 0 .8rem}.studio-ready-intro h1{margin-bottom:.4rem}.studio-clips{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace-upload{grid-template-columns:minmax(0,1fr)}.workspace-side{border-left:0;border-top:1px solid #d3dce4;padding:1rem 0 0}.workspace-side dl{display:flex;gap:1.5rem}.workspace-ready{gap:1rem;grid-template-columns:minmax(0,1fr)}.workspace-list{border-left:0;border-top:1px solid #d3dce4;padding:1rem 0 0}}
+    @media(max-width:52rem){.studio-plans{grid-template-columns:minmax(0,1fr);gap:1.5rem}.studio-plans-intro h1{font-size:clamp(2.1rem,6vw,3.2rem)}.workspace-plans{grid-template-columns:minmax(0,1fr)}.workspace-package{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 1.25rem;padding:1rem 0}.workspace-package+.workspace-package{border-left:0;border-top:1px solid #d3dce4}.workspace-package h2{margin-bottom:.3rem}.workspace-package-price{margin:0;align-self:start}.workspace-package dl{grid-column:1/-1;margin:.4rem 0 .8rem}.workspace-package button{grid-column:1/-1;justify-self:start;width:auto;margin-top:0}}
+    @media(max-width:38rem){.board{padding:.5rem .5rem 1.5rem}.board-bar{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.45rem;padding:.5rem}.board-name{grid-column:1/-1;font-size:.7rem}.board-field label{font-size:.67rem}.board-field select{padding-inline:.35rem}.disclaimer{margin:.45rem 0 .55rem;font-size:.75rem}.studio,.workspace{padding-inline:.75rem;min-height:0}.studio-head,.workspace-head{min-height:3.4rem}.studio-head-right{font-size:.64rem}.studio-upload{display:block;min-height:0}.studio-work{padding:1rem 0 1.2rem}.studio-kicker{margin-bottom:.5rem}.studio h1{font-size:clamp(2rem,8vw,2.75rem);margin-bottom:.4rem}.studio-lead{font-size:.88rem}.studio-file{margin-top:1rem;padding:.7rem 0;grid-template-columns:minmax(0,1fr);gap:.45rem}.studio-file .file-name{font-size:.97rem}.studio-file .action-primary,.studio-file .action-secondary{justify-self:start}.studio-actions{margin-top:.65rem}.studio-preview{border-left:0;border-top:1px solid #4e5352;padding:1rem 0;display:flex;flex-direction:row;gap:1rem;align-items:flex-start;justify-content:flex-start}.studio-preview .studio-poster{width:5.8rem;flex:none}.studio-preview>p:first-child{display:none}.studio-preview>.quiet{margin:0;font-size:.76rem}.studio-ready{padding-top:1rem}.studio-clips{grid-template-columns:minmax(0,1fr);gap:1.5rem}.studio-clip .studio-poster{width:min(100%,17rem)}.studio-clip .action-row{max-width:17rem}.workspace-head{gap:.25rem .8rem}.workspace-mark{font-size:.92rem}.workspace-nav{order:3;width:100%;gap:1rem}.workspace-balance{font-size:.73rem}.workspace-title{padding:1rem 0 .75rem}.workspace h1{font-size:1.85rem}.workspace-title p{font-size:.84rem}.workspace-file{grid-template-columns:2.7rem minmax(0,1fr);padding:.65rem 0}.workspace-file button{grid-column:1/-1;justify-self:start}.workspace-actions{margin:.65rem 0 1.4rem}.workspace-record{grid-template-columns:minmax(0,1fr) auto}.workspace-record span:nth-child(2){display:none}.workspace-selected-layout{grid-template-columns:minmax(0,1fr);gap:.8rem}.workspace-poster{width:min(100%,calc(55svh * 9 / 16));min-width:0}.workspace-list{padding-top:.7rem}}
+    @media(max-width:38rem){.studio-plans{padding-top:1rem;gap:1rem}.studio-plan{grid-template-columns:1.6rem minmax(0,1fr);padding:1rem 0}.studio-plan-end{grid-column:2;justify-content:flex-start;margin-top:.25rem}.studio-plan button{min-width:0}.workspace-package{grid-template-columns:minmax(0,1fr)}.workspace-package-price{grid-column:1;margin:.25rem 0 0}.workspace-package dl,.workspace-package button{grid-column:1}.workspace-nav{gap:.4rem 1rem}.workspace-nav button{font-size:.82rem}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <div class="board">
+    <div class="board-bar" role="group" aria-label="Управление сравнительным макетом">
+      <span class="board-name">Clipmkr · выбор направления</span>
+      <div class="board-field"><label for="style-direction">Направление</label><select id="style-direction"><option value="studio">A · Монтажная</option><option value="workspace">B · Рабочий кабинет</option></select></div>
+      <div class="board-field"><label for="style-screen">Экран</label><select id="style-screen"><option value="upload">Загрузка</option><option value="ready">Готовые клипы</option><option value="plans">Пакеты</option></select></div>
+    </div>
+    <p class="disclaimer">TEST · Макет для согласования. Записи и клипы вымышлены; загрузка, просмотр, скачивание и оплата не выполняются.</p>
+
+    <main>
+      <section class="direction studio" data-direction="studio" data-screen="upload" aria-labelledby="studio-upload-title">
+        <header class="studio-head"><span class="studio-mark">clipmkr / монтажная</span><span class="studio-head-right"><span class="studio-signal" aria-hidden="true"></span>01 / запись</span></header>
+        <div class="studio-upload">
+          <div class="studio-work"><p class="studio-kicker">Новый выпуск</p><h1 id="studio-upload-title" tabindex="-1">Новая<br>запись</h1><p class="studio-lead">Загрузите разговор. Найдём моменты и подготовим вертикальные клипы.</p>
+            <div class="studio-file"><div><span class="studio-file-label">Исходный файл</span><span class="file-name" id="studio-file-name">Файл не выбран</span><small>MP4, MOV, WebM, M4A, MP3 · до 2 ГБ</small></div><button type="button" class="action-primary" data-choose="studio">Выбрать демо-файл</button></div>
+            <div class="studio-actions"><button type="button" class="action-primary" data-create="studio" hidden>Создать клипы →</button><p class="quiet" style="color:#b8beb7">Демо-выбор не читает файл. До 90 минут на запись.</p></div>
+          </div>
+          <aside class="studio-preview" aria-label="Пример вертикального результата"><p>После обработки</p><div class="studio-poster" role="img" aria-label="Абстрактный постер клипа 9:16"><span class="poster-top">КЛИП 01</span><span class="poster-words">Главная<br>мысль<br>разговора</span></div><p class="quiet">Вертикальный клип с субтитрами. Это только визуальный пример.</p></aside>
+        </div>
+      </section>
+
+      <section class="direction studio" data-direction="studio" data-screen="ready" aria-labelledby="studio-ready-title" hidden>
+        <header class="studio-head"><span class="studio-mark">clipmkr / монтажная</span><span class="studio-head-right"><span class="studio-signal" aria-hidden="true"></span>02 / результат</span></header>
+        <div class="studio-ready"><div class="studio-ready-intro"><p class="studio-kicker">Вебинар_демо.mp4</p><h1 id="studio-ready-title" tabindex="-1">Три клипа<br>готовы</h1><p>Откройте демо-панель просмотра или проверьте действие скачивания. Файлов в макете нет.</p></div>
+          <div class="studio-clips">
+            <article class="studio-clip"><div class="studio-poster" role="img" aria-label="Абстрактный постер первого клипа, 9:16"><div class="poster-top"><span>01 / 43 С</span></div><span class="poster-words">Идея, с которой всё началось</span></div><div class="studio-clip-meta"><h2>Идея, с которой всё началось</h2><p>43 с · 9:16</p><div class="action-row"><button type="button" class="action-secondary" data-preview="Идея, с которой всё началось">Просмотр</button><button type="button" class="action-secondary" data-download="Идея, с которой всё началось">Скачать</button></div></div></article>
+            <article class="studio-clip"><div class="studio-poster p2" role="img" aria-label="Абстрактный постер второго клипа, 9:16"><div class="poster-top"><span>02 / 51 С</span></div><span class="poster-words">Один вопрос изменил план</span></div><div class="studio-clip-meta"><h2>Один вопрос изменил план</h2><p>51 с · 9:16</p><div class="action-row"><button type="button" class="action-secondary" data-preview="Один вопрос изменил план">Просмотр</button><button type="button" class="action-secondary" data-download="Один вопрос изменил план">Скачать</button></div></div></article>
+            <article class="studio-clip"><div class="studio-poster p3" role="img" aria-label="Абстрактный постер третьего клипа, 9:16"><div class="poster-top"><span>03 / 37 С</span></div><span class="poster-words">Что получилось через месяц</span></div><div class="studio-clip-meta"><h2>Что получилось через месяц</h2><p>37 с · 9:16</p><div class="action-row"><button type="button" class="action-secondary" data-preview="Что получилось через месяц">Просмотр</button><button type="button" class="action-secondary" data-download="Что получилось через месяц">Скачать</button></div></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="direction studio" data-direction="studio" data-screen="plans" aria-labelledby="studio-plans-title" hidden>
+        <header class="studio-head"><span class="studio-mark">clipmkr / монтажная</span><span class="studio-head-right"><span class="studio-signal" aria-hidden="true"></span>03 / пакеты</span></header>
+        <div class="studio-plans">
+          <div class="studio-plans-intro"><p class="studio-kicker">Время для записи</p><h1 id="studio-plans-title" tabindex="-1">Пакеты<br>кредитов</h1><p class="studio-lead">1 кредит = 60 секунд исходной записи. Выберите объём для нарезки.</p><span class="studio-test">TEST · ОФЛАЙН МАКЕТ</span></div>
+          <div><div class="studio-plans-list">
+            <article class="studio-plan"><span class="studio-plan-num">01</span><div><h2>Старт</h2><p>300 кредитов · 30 дней</p></div><div class="studio-plan-end"><span class="studio-plan-price">990 ₽</span><button type="button" class="action-secondary" data-demo-payment="start_v1">Выбрать Старт</button></div></article>
+            <article class="studio-plan"><span class="studio-plan-num">02</span><div><h2>Pro</h2><p>1800 кредитов · 30 дней</p></div><div class="studio-plan-end"><span class="studio-plan-price">3990 ₽</span><button type="button" class="action-primary" data-demo-payment="pro_v1">Выбрать Pro</button></div></article>
+            <article class="studio-plan"><span class="studio-plan-num">03</span><div><h2>Дополнение</h2><p>600 кредитов · 30 дней</p></div><div class="studio-plan-end"><span class="studio-plan-price">1490 ₽</span><button type="button" class="action-secondary" data-demo-payment="addon_v1">Выбрать дополнение</button></div></article>
+          </div><p class="studio-plans-note">Нажатие покажет только пояснение. Реальная оплата не открывается.</p></div>
+        </div>
+      </section>
+
+      <section class="direction workspace" data-direction="workspace" data-screen="upload" aria-labelledby="workspace-upload-title" hidden>
+        <header class="workspace-head"><span class="workspace-mark">clipmkr</span><nav class="workspace-nav" aria-label="Разделы кабинета"><button type="button" data-set-screen="upload" aria-current="page">Новая запись</button><button type="button" data-set-screen="ready">Мои клипы</button></nav><span class="workspace-balance">Баланс <strong>184 кредита</strong></span></header>
+        <div class="workspace-title"><h1 id="workspace-upload-title" tabindex="-1">Новая запись</h1><p>Выберите файл для создания коротких вертикальных клипов.</p></div>
+        <div class="workspace-upload"><div class="workspace-main"><p class="workspace-section-label">Исходный файл</p><div class="workspace-file"><span class="workspace-file-symbol" aria-hidden="true">＋</span><div><span class="file-name" id="workspace-file-name">Файл не выбран</span><small>MP4, MOV, WebM, M4A, MP3 · до 2 ГБ</small></div><button type="button" class="action-primary" data-choose="workspace">Выбрать демо-файл</button></div><div class="workspace-actions"><button type="button" class="action-primary" data-create="workspace" hidden>Создать клипы →</button><p>Выбор демонстрационный: файл не читается и не отправляется.</p></div><p class="workspace-section-label">Последние записи</p><div class="workspace-records"><div class="workspace-record"><strong>Разговор о запуске проекта</strong><span>48 мин</span><span>3 клипа · готово</span></div><div class="workspace-record"><strong>Интервью с командой</strong><span>62 мин</span><span>5 клипов · готово</span></div></div></div><aside class="workspace-side"><dl><div><dt>Доступно</dt><dd>184 кредита</dd></div><div><dt>Лимит файла</dt><dd>90 минут</dd></div></dl><p>Баланс и длительность одной записи — разные ограничения.</p></aside></div>
+      </section>
+
+      <section class="direction workspace" data-direction="workspace" data-screen="ready" aria-labelledby="workspace-ready-title" hidden>
+        <header class="workspace-head"><span class="workspace-mark">clipmkr</span><nav class="workspace-nav" aria-label="Разделы кабинета"><button type="button" data-set-screen="upload">Новая запись</button><button type="button" data-set-screen="ready" aria-current="page">Мои клипы</button></nav><span class="workspace-balance">Баланс <strong>184 кредита</strong></span></header>
+        <div class="workspace-title"><h1 id="workspace-ready-title" tabindex="-1">Готовые клипы</h1><p>Вебинар_демо.mp4 · 3 клипа. Выберите фрагмент для демо-просмотра.</p></div>
+        <div class="workspace-ready"><div class="workspace-selected"><p class="workspace-section-label">Выбранный клип</p><div class="workspace-selected-layout"><div class="workspace-poster" id="workspace-selected-poster" role="img" aria-label="Абстрактный постер выбранного клипа, 9:16"><div class="poster-top"><span>CLIPMKR / 01</span><span>9:16</span></div><span class="poster-words" id="workspace-poster-title">Идея, с которой всё началось</span></div><div class="workspace-selected-info"><h2 id="workspace-selected-title">Идея, с которой всё началось</h2><p id="workspace-selected-duration">43 с · вертикальный формат</p><div class="action-row"><button type="button" class="action-primary" id="workspace-preview">Просмотр</button><button type="button" class="action-secondary" id="workspace-download">Скачать</button></div><p class="quiet" style="color:#536678;margin-top:.8rem">Постер не является плеером. Действия откроют демо-пояснение.</p></div></div></div><div class="workspace-list"><p class="workspace-section-label">Фрагменты</p><button type="button" data-select-clip="0" aria-current="true"><span class="clip-num">01</span><span>Идея, с которой всё началось</span><span class="clip-duration">43 с</span></button><button type="button" data-select-clip="1"><span class="clip-num">02</span><span>Один вопрос изменил план</span><span class="clip-duration">51 с</span></button><button type="button" data-select-clip="2"><span class="clip-num">03</span><span>Что получилось через месяц</span><span class="clip-duration">37 с</span></button></div></div>
+      </section>
+
+      <section class="direction workspace" data-direction="workspace" data-screen="plans" aria-labelledby="workspace-plans-title" hidden>
+        <header class="workspace-head"><span class="workspace-mark">clipmkr</span><nav class="workspace-nav" aria-label="Разделы кабинета"><button type="button" data-set-screen="upload">Новая запись</button><button type="button" data-set-screen="ready">Мои клипы</button><button type="button" data-set-screen="plans" aria-current="page">Пакеты</button></nav><span class="workspace-balance">Баланс <strong>184 кредита</strong></span></header>
+        <div class="workspace-title"><span class="workspace-test">TEST · ОФЛАЙН МАКЕТ</span><h1 id="workspace-plans-title" tabindex="-1">Пакеты</h1><p>1 кредит = 60 секунд исходной записи. Сравните объём и стоимость.</p></div>
+        <div class="workspace-plans">
+          <article class="workspace-package"><h2>Старт</h2><p class="workspace-package-price">990 ₽</p><dl><div><dt>Кредиты</dt><dd>300</dd></div><div><dt>Срок</dt><dd>30 дней</dd></div></dl><button type="button" class="action-secondary" data-demo-payment="start_v1">Выбрать Старт</button></article>
+          <article class="workspace-package"><h2>Pro</h2><p class="workspace-package-price">3990 ₽</p><dl><div><dt>Кредиты</dt><dd>1800</dd></div><div><dt>Срок</dt><dd>30 дней</dd></div></dl><button type="button" class="action-primary" data-demo-payment="pro_v1">Выбрать Pro</button></article>
+          <article class="workspace-package"><h2>Дополнение</h2><p class="workspace-package-price">1490 ₽</p><dl><div><dt>Кредиты</dt><dd>600</dd></div><div><dt>Срок</dt><dd>30 дней</dd></div></dl><button type="button" class="action-secondary" data-demo-payment="addon_v1">Выбрать дополнение</button></article>
+        </div>
+        <p class="workspace-plans-note">Нажатие покажет только пояснение. Реальная оплата не открывается.</p>
+      </section>
+    </main>
+  </div>
+  <dialog id="demo-dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><p id="dialog-message"></p><button type="button" id="dialog-close">Закрыть</button></dialog>
+  <script>
+    (() => {
+      const direction = document.getElementById('style-direction');
+      const screen = document.getElementById('style-screen');
+      const dialog = document.getElementById('demo-dialog');
+      const clips = [
+        {title:'Идея, с которой всё началось',duration:'43 с',poster:''},
+        {title:'Один вопрос изменил план',duration:'51 с',poster:'p2'},
+        {title:'Что получилось через месяц',duration:'37 с',poster:'p3'}
+      ];
+      let selected = 0;
+      function show() {
+        const current = `${direction.value}-${screen.value}`;
+        document.documentElement.dataset.activeDirection = direction.value;
+        document.querySelectorAll('.direction').forEach(section => {
+          section.hidden = `${section.dataset.direction}-${section.dataset.screen}` !== current;
+        });
+        document.querySelectorAll('[data-set-screen]').forEach(button => {
+          if (button.dataset.setScreen === screen.value) button.setAttribute('aria-current','page');
+          else button.removeAttribute('aria-current');
+        });
+        window.scrollTo({top:0,behavior:'auto'});
+        document.getElementById(`${current}-title`).focus({preventScroll:true});
+      }
+      function demo(title,message) {
+        document.getElementById('dialog-title').textContent = title;
+        document.getElementById('dialog-message').textContent = message;
+        dialog.showModal();
+      }
+      direction.addEventListener('change',show);
+      screen.addEventListener('change',show);
+      document.querySelectorAll('[data-set-screen]').forEach(button => button.addEventListener('click', () => {
+        screen.value = button.dataset.setScreen;
+        show();
+      }));
+      document.querySelectorAll('[data-choose]').forEach(button => button.addEventListener('click', () => {
+        const key = button.dataset.choose;
+        document.getElementById(`${key}-file-name`).textContent = 'Вебинар_демо.mp4';
+        button.classList.replace('action-primary','action-secondary');
+        document.querySelector(`[data-create="${key}"]`).hidden = false;
+      }));
+      document.querySelectorAll('[data-create]').forEach(button => button.addEventListener('click', () => {
+        screen.value = 'ready';
+        show();
+      }));
+      document.querySelectorAll('[data-preview]').forEach(button => button.addEventListener('click', () => {
+        demo(`Просмотр · ${button.dataset.preview}`,'Демо-панель: видеофайла и работающего плеера здесь нет.');
+      }));
+      document.querySelectorAll('[data-download]').forEach(button => button.addEventListener('click', () => {
+        demo(`Скачать · ${button.dataset.download}`,'Демонстрация действия: файл не создаётся и скачивание не начинается.');
+      }));
+      document.querySelectorAll('[data-demo-payment]').forEach(button => button.addEventListener('click', () => {
+        demo('TEST · Выбор пакета',`Вы выбрали «${button.textContent.trim().replace('Выбрать ', '')}». Это офлайн-макет: реальная оплата не открывается, платёж не создаётся и кредиты не начисляются.`);
+      }));
+      document.querySelectorAll('[data-select-clip]').forEach(button => button.addEventListener('click', () => {
+        selected = Number(button.dataset.selectClip);
+        const clip = clips[selected];
+        document.getElementById('workspace-selected-title').textContent = clip.title;
+        document.getElementById('workspace-poster-title').textContent = clip.title;
+        document.getElementById('workspace-selected-duration').textContent = `${clip.duration} · вертикальный формат`;
+        document.getElementById('workspace-selected-poster').className = `workspace-poster ${clip.poster}`;
+        document.querySelectorAll('[data-select-clip]').forEach(item => {
+          if (item === button) item.setAttribute('aria-current','true'); else item.removeAttribute('aria-current');
+        });
+      }));
+      document.getElementById('workspace-preview').addEventListener('click', () => demo(`Просмотр · ${clips[selected].title}`,'Демо-панель: видеофайла и работающего плеера здесь нет.'));
+      document.getElementById('workspace-download').addEventListener('click', () => demo(`Скачать · ${clips[selected].title}`,'Демонстрация действия: файл не создаётся и скачивание не начинается.'));
+      document.getElementById('dialog-close').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+    })();
+  </script>
+</body>
+</html>
