@@ -134,3 +134,39 @@ Targeted CLI guard validation использует только неполные
 pair проходят target guard и останавливаются exit2 на отсутствующем artifact; шесть неправильных
 pair отвергаются exit2 на target guard. Положительный runtime/mode witness/stage PASS не выдумывался.
 Private logs: workspace-fr6-selector-fix/am10-{k2-before,focused,lint}.log, am10-guard/results.json.
+
+## NFR-1 / AM-12: масштабирование workspace h1 при text200
+
+Узкое CSS исправление по поручению root, исходный HEAD44923a5. Изменены только globals.css
+и эта авторская запись; runner/06/Mtest принадлежат отдельному workspace writer. До CSS edit
+actual strict K2 M require-requirements: PASS, 0 failures/warnings/skips, 12 targets; admission
+95327a8e5b7ed244c49d0fcf53e497f139636e241ef404a0ab4f2f7a3ac6e020 admitted, reasons=[];
+literal coder-context complete. Это не новый checkpoint approval и не независимый QE.
+
+Причина R8: глобальный h1 clamp(2rem,3.75vw,3.375rem) на1024 даёт38.4→64px, на1440 54→64px
+при root font200%. Добавлен низкоспецифичный .workspace-shell :where(h1): fallback2rem и
+@supports enhancement clamp(2rem,calc(3.75vw / 16px * 1rem),3.375rem). Деление на16px нормализует
+исходную fluid шкалу к root rem. На поддерживающих typed arithmetic engines прежние100% размеры
+сохраняются, text200 масштабируется вдвое. Старый движок без поддержки получает32px h1 при
+обычном root16px и64px при root32px; прежняя desktop fluid типографика в fallback не обещана.
+Специфичность сохраняет специальные заголовки, включая mobile detail24→48px. Public вне shell
+не затронут; нет новых tokens/dependencies/DOM порядка, условий, скрытия или изменения R9.
+
+Изолированный private probe читает actual globals.css и вызывает неизменный textZoomRule:
+2 engines ×2 layouts ×2 themes ×8 widths320/360/390/414/672/768/1024/1440 =64 cases.
+До правки:16 desktop R8 findings; после:64/64 без R8 и с неизменными100% размерами.
+Ещё64/64 native @supports=false cases в памяти проверяют rem fallback: только условие enhancement
+подменено на заведомо неподдерживаемое значение, CSS файл не менялся. Это симуляция unsupported
+ветки в настоящем браузере, не проверка старых browser versions. Ещё16 detail/public typography
+checks PASS. Chromium148.0.7778.96 и WebKit26.4 реально поддерживают положительное условие.
+R7 lintCSS возвращает2 warnings на16px divisor в @supports и declaration; это нормализатор,
+не фиксированный размер шрифта. Oracle/thresholds не менялись, warnings не скрыты.
+
+Команды с PATH Node22.23.4 (включая children): private probe.mjs red/green; npm test --
+tests/workspace-presentation.test.ts tests/theme.test.ts tests/billing.unit.test.ts —64/64 PASS;
+npm run lint —exit0; npm run typecheck —exit0. Это focused состояние до новых AM-11/12 tests
+другого writer, их отдельная проверка принадлежит ему. Финальные K2/admission повторены успешно.
+Private raw CSS baseline/probe/JSON/logs: /root/.config/clipmkr/release-parity-20261103/workspace-r8-fix/.
+Изолированный CSS probe не доказывает full-app clipping/keyboard/Next stage, реальный page zoom200%,
+effective320 или OS keyboard. Последние остаются отдельной ручной проверкой NFR-1. NoDates R9
+остаётся открытым UX gap; прежние88 cases не объявлены целиком зелёными. Full suite не повторялся.

@@ -270,6 +270,11 @@ html:has(.workspace-shell), :root[data-theme=light]:has(.workspace-shell), body:
   color:var(--ink); background:var(--paper);
 }
 .workspace-shell { min-height:100svh; }
+/* rem fallback; the 16px divisor normalizes the existing fluid size to the user's root font. */
+.workspace-shell :where(h1) { font-size:2rem; }
+@supports (font-size:clamp(2rem,calc(3.75vw / 16px * 1rem),3.375rem)) {
+  .workspace-shell :where(h1) { font-size:clamp(2rem,calc(3.75vw / 16px * 1rem),3.375rem); }
+}
 .workspace-shell .container { max-inline-size:72rem; }
 .workspace-shell .navigation { padding-inline:max(var(--space-4),env(safe-area-inset-left)); }
 .workspace-settings { position:relative; flex-shrink:0; font-size:.875rem; }
