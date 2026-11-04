@@ -6,6 +6,7 @@ import { mkdir, chmod, writeFile, readFile, stat, mkdtemp, rm } from 'node:fs/pr
 import { createHash } from 'node:crypto';
 import { domRules, axeRule, textZoomRule, firstScreenRule, FIRST_SCREEN_VIEWPORTS } from './responsive/rules.mjs';
 import { tmpdir } from 'node:os';
+const uploadPartBytes = 10 * 1024 * 1024;
 async function denyPreferences(context, mode) {
   await context.addInitScript(mode => {
     const cookie = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
@@ -15,7 +16,6 @@ async function denyPreferences(context, mode) {
     } });
   }, mode);
 }
-// Локальная проверка реальных React handlers. Не заменяет Next/stage E2E.
 async function localHandlers(out) {
   const entry = '\0workspace-handler-entry';
   const cacheDir = await mkdtemp(resolve(tmpdir(), 'clipmkr-workspace-vite-'));
@@ -256,14 +256,14 @@ async function stageChecks(base, fixture, out) {
           if (state.phase === 'I' && relevant(entry)) return fail('toggle-induced RPC/RSC/navigation');
           if (options.upload && endpoint === '/api/trpc/video.create' && state.phase === 'C' && method === 'POST') {
             entry.cause = 'explicit fixture upload'; state.creates++; state.key ??= request.headers()['idempotency-key'];
-            if (!state.key || state.key !== request.headers()['idempotency-key'] || state.creates > 1) return fail('upload create/key changed');
             state.createOptions = request.postDataJSON();
-            return intercepted.fulfill({ json: rpcEnvelope({ video_id: fixture.ownedVideoId, part_size: 4,
+            if (!state.key || state.key !== request.headers()['idempotency-key'] || state.creates > 1 || state.createOptions.declared_bytes !== 2 * uploadPartBytes) return fail('upload create/key/declared bytes changed');
+            return intercepted.fulfill({ json: rpcEnvelope({ video_id: fixture.ownedVideoId, part_size: uploadPartBytes,
               parts: [1, 2].map(part_number => ({ part_number, url: base + `/__workspace-part/${part_number}`, expires_at: '2099-01-01T00:00:00Z' })) }) });
           }
           if (options.upload && /^\/__workspace-part\/[12]$/.test(endpoint) && state.phase === 'C' && method === 'PUT') {
             entry.cause = 'existing pending PUT'; const n = Number(endpoint.split('/').at(-1)); state.puts.push(n);
-            if (!request.postDataBuffer()?.equals(Buffer.from(n === 1 ? '1234' : '5678'))) return fail('PUT bytes differ from captured synthetic File');
+            if (!request.postDataBuffer()?.equals(Buffer.alloc(uploadPartBytes, n))) return fail('PUT bytes differ from captured synthetic File');
             if (n === 2) await gate;
             return intercepted.fulfill({ status: 200, headers: { etag: `"workspace-${n}"` } });
           }
@@ -389,10 +389,11 @@ async function stageChecks(base, fixture, out) {
           File.prototype.slice = function (...args) { if (this === captured.file) captured.reads++; return slice.apply(this, args); };
           return captured;
         });
-        await page.locator('#source-file').setInputFiles({ name: 'workspace-synthetic.mp4', mimeType: 'video/mp4', buffer: Buffer.from('12345678') });
-        assert.equal(await identity.evaluate(({ file }) => file instanceof File && file.size === 8), true, 'capture must precede native reset');
+        await page.locator('#source-file').setInputFiles({ name: 'workspace-synthetic.mp4', mimeType: 'video/mp4', buffer: Buffer.concat([Buffer.alloc(uploadPartBytes, 1), Buffer.alloc(uploadPartBytes, 2)]) });
+        assert.equal(await identity.evaluate(({ file }, size) => file instanceof File && file.size === size, 2 * uploadPartBytes), true, 'capture must precede native reset');
         const options = () => page.locator('.upload-controls input[type=checkbox],.upload-controls select').evaluateAll(nodes => nodes.map(node => ({ value: node.value, checked: node.checked })));
         const selectedOptions = await options();
+        assert.equal(selectedOptions.length, 4, 'three recovery checkboxes and CTA select must be observed');
         await idleToggle(page, state);
         assert.equal(await identity.evaluate(({ node }) => node.isConnected && node === document.querySelector('#source-file')), true); assert.deepEqual(await options(), selectedOptions);
         await page.waitForFunction(() => [...document.querySelectorAll('button')].some(node => /Создать клипы|Начать.*загрузку|Продолжить.*загрузку/.test(node.textContent) && !node.disabled));
