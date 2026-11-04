@@ -177,3 +177,41 @@ docker update. IDs/StartedAt/state/restart counts всех 68 контейнер
 У A он закрыт, поэтому история A сохраняется; manual-ревью B не объявляется новым
 native CLOSED. До ответа formal review/deploy B и создание тестовых платежей
 не выполняются. Checkout закрыт, production и DNS не переключались.
+
+## 4 ноября: владелец одобрил отдельный cross-model маршрут B
+
+Ответ владельца: «тестовые настройки ЮКасса уже есть, кросс модель одобряю».
+Исключение относится к описанному manual маршруту B и необходимых исправлений
+текущей feature. Native история A сохранена; новый native CLOSED не заявляется.
+
+Обе новые сессии начали с согласованных документов, без coding history,
+прежних отчётов и выводов автора. Код B написал `gpt-6-sol`.
+
+- `gpt-6-astra`, `/root/release_b_review_primary`, `fork_turns=none`: CLEAN
+  для кодовой дельты B; 5 focused PASS, два typecheck PASS. 22 теста исключены
+  фильтром. Полный отчёт — [b-primary.md](b-primary.md).
+- `gpt-6.1-sol`, `/root/release_b_review_precision`, `fork_turns=none`: CLEAN
+  для кодовой дельты B; 10 focused PASS, два Docker cases исключены фильтром.
+  Полный отчёт — [b-precision.md](b-precision.md).
+
+Точные model IDs — параметры фактических spawn_agent; отдельного runtime
+self-report у проверяющих нет. Ни одна роль не объявляет свои unit/source probes
+настоящим развёртыванием A/B или полным E2E.
+
+При интеграции подтверждены все 98088 байт literal coder context в фактическом
+prompt, его исходный SHA и завершённая авторская trace. Предкодовые K2/context/
+target guards сохранены; повторные code-targets, completeness, OpenSpec strict
+и проверка candidate manifest прошли. Изменения B интегрированы в main.
+
+Свежие согласованные snapshots обеих целей восстановлены отдельно: 26/26 таблиц,
+28 migrations, columns/counts/hashes совпали. Все прежние контейнеры при restore
+сохранены. Свежие real S3 проверки из B: 11/11, 0 skipped/failed/todo;
+31 SDK request, два настоящих signed HTTP, canary неизменён, cleanup complete.
+Текущие prefixed объекты проверены чтением и SHA-256: 24 на site и один новый
+на Cloud; site SHA совпали с ранее сохранёнными. Незавершённых multipart нет.
+Новые данные включены в baseline перед B; legacy originals заново не переносятся.
+
+Полный live A→B→A→B, native TEST оплата и Cloud CJM ещё открыты. Ключи тестового
+магазина уже есть; отдельно запрошен точный текущий HTTP notifications URL,
+поскольку наличие credentials не подтверждает фактическую доставку в Cloud.
+Production/DNS и реальные списания не разрешены и не включаются.
