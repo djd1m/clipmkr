@@ -139,6 +139,8 @@ export class VideoService {
     if (row.status === 'queued') return this.publish(row.id);
     if (row.status !== 'uploading') throw new UploadError('conflict', 'Загрузка уже завершена', 409);
     if (!row.upload_id) throw unavailable();
+    const count = Math.ceil(Number(row.declared_bytes) / row.upload_part_size);
+    if (body.parts.length !== count) throw new UploadError('invalid', 'Список частей не соответствует размеру файла', 422);
     let reason: 'too_large' | 'not_media' | undefined, bytes: bigint | undefined;
     // Ни Complete, ни HEAD, ни Range, ни очистка не держат транзакцию/соединение.
     try { await this.storage.complete(row.object_key, row.upload_id, body.parts); }
@@ -156,6 +158,7 @@ export class VideoService {
     if (!reason) {
       bytes ??= await this.storage.head(row.object_key);
       if (bytes > BigInt(MAX_UPLOAD_BYTES)) reason = 'too_large';
+      else if (bytes !== BigInt(row.declared_bytes)) throw new UploadError('conflict', 'Размер загруженного файла не совпадает с заявленным', 409);
       else if (!isAllowedMedia(await this.storage.bytes(row.object_key))) reason = 'not_media';
     }
     const outcome = await transaction(this.pool, async (tx) => {
