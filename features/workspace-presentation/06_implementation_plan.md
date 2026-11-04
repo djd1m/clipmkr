@@ -78,7 +78,7 @@ Test:A–H ниже, both engines. Success Criteria:192 geometry cases отде�
 Raw JSON/counts/screenshots private; нет cookies/body/File bytes/private media URLs/trace/HAR вGit.
 
 ## Fixture manifest и обязательный preflight (R3/T2)
-Private file mode 0600/schemaVersion1: actualHttpsOrigin, composeProject=clipmkr-stage-20261028,
+Private file mode 0600/schemaVersion1: actualHttpsOrigin=https://clipmkr.ru, composeProject=n5-clipmaker (required owner pair),
 sourceSha/imageDigest + operatorObservedAt/stackReceiptPath; roles{ordinary,owner,blogger,erasure}
 с privateStorageStateFile/account ownership receipt; ownedVideoId/ownedOtherAccountVideoId,
 ≥2clipIds/fixedPublishedVersions/expectedSyntheticTitles/readyState; private safeMediaPath/digest/
@@ -190,7 +190,7 @@ representative viewport. Decoding/media/version/auth precondition failure=2; ass
 
 ### TASK-5: Проверить/доставить ограниченный инкремент — FR-1, FR-4, NFR-1, NFR-2, NFR-3, ADR-001
 Description: unit/browser/standard checks + targeted mutations, затем независимое QE/review и
-code/spec anti-drift. Толькоexisting 77.83.87.178 clipmkr-stage-20261028; operator сверяет project/
+code/spec anti-drift. По owner-steer04.11.2026 20:15: existing194.85.249.105 n5-clipmaker, https://clipmkr.ru; operator сверяет project/
 volumes/data/config/backup/active uploads/SHA. New stack/DB/Redis запрещены, app-only apply.
 SPARC Phase:completion. Files:actual receipts/completion docs, не новые runtime targets.
 Depends:TASK-4+settled recovery integration для Uploader evidence.
@@ -208,7 +208,7 @@ refresh/checkout on toggle; сброс document preference при denied refresh
 restored source real pass; source regex/screenshot count не substitute. No universal new mutation framework.
 Success Criteria: A–H outcomes/geometry/manual gaps сSHA/digest; scope честен; reviewer own closure.
 После real HTTPS/CORS/preflight и проверок: ссылка/инструкция владельцу→ручнаяприёмка→тотжеartifact
-Cloud; production/DNS отдельно. Сейчас origin готовится, stage evidence pending, auto seed/paid calls нет.
+Cloud только после ручной приёмки именно clipmkr.ru; DNS не переключается. Origin/root runtime read подтверждены, новые app E2E/manual evidence pending; auto seed/paid calls нет.
 
 ## Dependency order / checkpoints / risks
 TASK0→1→2→3→4→5, один writer worktree,12 targets (AM-8 fixture, AM-9 test helper). Helper/shell независимы от transport L;
@@ -227,6 +227,27 @@ K1 новых names изADR/Settings/WorkspacePreferenceSync и runner выпо�
 --require-requirements по этому пакету: raw k2-check.txt после фактического запуска. Егоexit 0
 не formal convergence/approval. Дляformal pathsFor только001-workspace-preferences.md; IDADR-001.
 
+## AM-10: delivery-only supersession от владельца
+
+Новое обязательное окно ручной приёмки — существующий web n5-clipmaker-web-1/service web в project
+n5-clipmaker на194.85.249.105, origin https://clipmkr.ru. Предыдущий77 target superseded для manual
+acceptance. Exact legacy project clipmkr-stage-20261028 + origin https://77.83.87.178 остаётся optional
+internal regression; это не заменяет owner manual acceptance. Arbitrary/cross-pair origin/project,
+включая n5.clipmkr.ru/n5-referral-paytest, должны быть отвергнуты до browser/network действий.
+TASK-4 использует один closed-set guard во fixture, catalog mode witness и three-report aggregation;
+sourceSha/imageDigest/windowPair/private provenance и AM-9 mode constraints не ослабляются.
+Reports различают owner-manual/internal-regression. TASK-5 сохраняет DB/Redis/session/data/config,
+не создаёт stack/пустые хранилища, не удаляет исторические minio/testminio и не использует их как S3 proof.
+Root inventory/backup/private runtime receipts подтверждают существующий контур, не новый app E2E.
+Текущие reference counts root20:15 —26 accounts/25 videos/48 clips,16 uploading status,0updated last15m;
+перед apply operator заново проверяет active uploads/backup/schema. Секреты receipt не публикуются.
+App-only deploy и E2E выполняются на clipmkr.ru, далее эта ссылка/инструкция владельцу, его ручная
+приёмка, затем тот же artifact Cloud. DNS/Cloud до ручной приёмки не переключаются.
+12 targets сохраняются; до runner edit настоящий K2 M/admission, затем strict pair guard inputs,
+focused unit/syntax/lint, отдельный commit. Исторические ideation/native QE receipts сохраняются
+verbatim; source130102f старого review не объявляется проверкой новых bytes. Root готовит новую
+измеренную native QE revision без reset истории после этого delivery-only amendment.
+
 ## Amendments
 - AM-1 (coordinator-implementation-proposal;Q1/R1): первый shell-инкремент сохраняет ClipCard вместо нового hero/listbox. Confirmation: прежний playing video DOM сохраняется → test `playing_clip_survives_layout_switch` in `scripts/check-workspace-presentation.test.mjs` (падает при remount).
 - AM-2 (owner-steer запрет remount; transport boundary coordinator proposal): сохранять File и активную передачу. Confirmation: completed+pending parts/identity после toggle → test `layout_switch_preserves_active_upload` in `scripts/check-workspace-presentation.test.mjs` (падает при keylayout).
@@ -240,6 +261,8 @@ K1 новых names изADR/Settings/WorkspacePreferenceSync и runner выпо�
 - AM-8 (координатор согласовал 04.11.2026): существующий payment-label unit вызывает root SSR layout вне Next request; добавить только mock next/headers, сохранить assertions test/live/off. Confirmation: все прежние варианты режима и label → test `test payment environment is explicitly labelled` in `tests/billing.unit.test.ts`.
 
 - AM-9 (координатор согласовал 04.11.2026): одно состояние global config на окно; обязательные OFF+ON того же web и noDates actual component boundary сохраняют все NFR states без fake SSR fixture. Confirmation: фазовый witness/SSR predicates и объединение трёх identity-bound отчётов → test `catalog_phase_has_actual_server_witness` in `scripts/check-workspace-presentation.test.mjs`; компонентный сценарий catalog_no_dates_component_boundary в scripts/workspace-presentation-local.mjs проверяет noDates guard/actions/CSS отдельным слоем.
+
+- AM-10 (прямое owner-steer04.11.2026 20:15): обязательная owner manual acceptance на существующем clipmkr.ru/n5-clipmaker;77 только optional internal regression. Confirmation: closed-set project/origin pair guard отклоняет arbitrary/cross pairs до сети → test `delivery_target_binding_is_exact` in `scripts/check-workspace-presentation.test.mjs`; sourceSha/imageDigest/private mode witness checks сохранены.
 
 EXPECTED_CODE_TARGETS:
 - apps/web/src/lib/workspace-layout.ts

@@ -7,8 +7,8 @@ API/БД/моделей/контейнеров. Последующая публ�
 
 ## Источники требований
 
-- Feature requirements: `features/workspace-presentation/01_requirements.md`, SHA-256 `3be20981e185cd6510c15c4100acbde6b6fd14b5b91783bb29ed78f3c83b1d83`.
-- OpenSpec ledger: `openspec/changes/workspace-presentation/specs/workspace-presentation/spec.md`, SHA-256 `68674a0ec9b5e9e36e3471afdf2b0df5df7b2bd94915bc09dd38f3ccab236298`.
+- Feature requirements: `features/workspace-presentation/01_requirements.md`, SHA-256 `c2c5642b63d2f368485ab2426ae1a76bda9eace3482ae8b163c77c2dac619712`.
+- OpenSpec ledger: `openspec/changes/workspace-presentation/specs/workspace-presentation/spec.md`, SHA-256 `93441bd01c1faff2acf02cd70ffcd9af18b3ee2967a70568d019b89db2a8434e`.
 - Ideation revision: `d010f09f042d97cb97b58fe65a64c287798095b60717272ac8e99a5b1984cd82`.
 - Execution amendments: AM-7 same actual File oracle совместим с native input reset; AM-8 next/headers fixture.
 
@@ -106,3 +106,31 @@ computed background/color html/body возвращаются к публично
 
 Это local component/CSS regression, не Next stage E2E. Проверки и известные ограничения R8/R9
 не ослаблены, полный noDates88-case и stage windows в этом узком исправлении не объявлены PASS.
+
+
+## AM-10: актуальный owner delivery target
+
+Прямое owner-steer04.11.2026 20:15 UTC заменяет прежний обязательный77 target: ручная приёмка
+именно https://clipmkr.ru, existing VPS194.85.249.105/project n5-clipmaker/service web.
+Root read receipts: /root/.config/clipmkr/release-parity-20261103/clipmkr-ru-ui-target/
+target-and-backup.private.json и existing-runtime.private.json. Секретное содержимое не выводилось
+и не переносится в Git. Root сообщил исходный image20261102-52e794d-web, payments off,
+26accounts/25videos/48clips,16uploading status,0updated за15m; это read inventory, не app E2E.
+Наличие исторических minio/testminio не используется как S3 proof и не является разрешением удалить их.
+
+01 NFR-3,05 delivery/preflight,06 AM-10 и OpenSpec delta обновлены; requirements/spec SHA выше
+соответствуют новым bytes. Старые ideation/native QE receipts сохранены verbatim: их исходная
+revision не объявлена проверкой нового delivery amendment. Primary review source130102f требует
+нового measured native snapshot/verification от root без reset истории.
+
+До runner edit: actual strict K2 M PASS и code admission f3f046536119929e45a68f7295de69fb59ea5df86c143700bb816faeae456404.
+Runner теперь использует один closed set exact pairs: n5-clipmaker+https://clipmkr.ru (owner-manual),
+clipmkr-stage-20261028+https://77.83.87.178 (только optional internal-regression). Любые cross/arbitrary
+origin/project, referral site и raw IP194 alias отклоняются до browser/network; sourceSha/imageDigest,
+windowPair/private mode witness/webService проверки сохранены. Reports явно различают purpose;
+ни один internal regression не заменяет ручную приёмку clipmkr.ru. Нового deployment здесь нет.
+
+Targeted CLI guard validation использует только неполные private negative fixtures: два правильных
+pair проходят target guard и останавливаются exit2 на отсутствующем artifact; шесть неправильных
+pair отвергаются exit2 на target guard. Положительный runtime/mode witness/stage PASS не выдумывался.
+Private logs: workspace-fr6-selector-fix/am10-{k2-before,focused,lint}.log, am10-guard/results.json.

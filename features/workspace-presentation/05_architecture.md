@@ -64,9 +64,13 @@ test, а не повод убрать refresh или транспорт. Recover
 а active-upload финальная проверка ждёт settled совместного артефакта.
 
 ## Fixture/preflight без нового стека
-Подробный контракт runner в06. Private manifest обслуживает уже существующий
-clipmkr-stage-20261028 на 77.83.87.178. Реальный public HTTPS origin/DNS пока unknown: не
-подставлять предложенный домен. Чистая unit/документная работа возможна, app-level results=2
+Подробный контракт runner в06. Delivery-only уточнение:
+Owner-steer04.11.2026 20:15 UTC supersedes прежний обязательный77 target: required owner manual
+acceptance — https://clipmkr.ru, VPS194.85.249.105, существующий compose n5-clipmaker/service web
+(наблюдавшийся n5-clipmaker-web-1). Root подтвердил DNS/current runtime; новый stack не создаётся.
+Exact legacy pair clipmkr-stage-20261028 + https://77.83.87.178 остаётся optional internal regression;
+TLS/SANIP и stub200 root наблюдал20:07, но app E2E этим не доказан. Другой n5.clipmkr.ru/project
+n5-referral-paytest не является target. Arbitrary/cross-project origin пары runner отклоняет. Чистая unit/документная работа возможна, app-level results=2
 до подтверждённых URL/TLS/auth/data/media. Никакого auto seed/new containers/DB/paid pipeline.
 Существующие принадлежащие test account записи/два clips+versions и синтетические несекретные
 media указывает оператор; provenance/разрешение/декодирование preflight. Если их пока нет,
@@ -97,7 +101,13 @@ Running/success/error/silent различаются текстом и семан
 и тестовый banner вне shell проверяются на нейтральном body, public routes не меняются.
 
 ## Выпуск/откат
-Только existing stage project, backup/volumes/config/active uploads перед apply. Никаких
+Только existing n5-clipmaker на194.85.249.105, manual URL https://clipmkr.ru; backup/volumes/config/active uploads перед app-only apply. Никаких
 new stack/reset/down-v; app-only artifact rollback сохраняет данные. Нет миграций/новых API.
-После valid fixture/HTTPS: app E2E→ссылка/инструкция→ручная приёмка→тот жеSHA/digest Cloud.
-Основной production/DNS по отдельной команде. RawQC/текстовыйK2 не заменяют этот порядок.
+После valid fixture/TLS/auth/data: app E2E именно на clipmkr.ru→эта ссылка/инструкция→ручная приёмка→тот жеSHA/digest Cloud.
+DNS не переключается; Cloud до этой ручной приёмки запрещён. DB/Redis/session/data сохраняются; minio/testminio не удаляются и не служат S3 proof. RawQC/текстовыйK2 не заменяют этот порядок.
+
+
+AM-10 provenance: прямое owner-steer04.11.2026 20:15 UTC и root read receipts
+/root/.config/clipmkr/release-parity-20261103/clipmkr-ru-ui-target/target-and-backup.private.json,
+existing-runtime.private.json. Содержимое runtime receipt с секретами не копируется в Git.
+Прежние ideation/QE receipts не переписаны и не приписываются новому target.

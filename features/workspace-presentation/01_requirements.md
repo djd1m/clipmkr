@@ -101,10 +101,23 @@ Browser guard установлен до первого action/navigation, счи
 но не доказывает отсутствие серверных provider calls/jobs/DB reserves без backend evidence.
 Auth/storage/media/URL preconditions обязательны; нет auto seed/контейнеров/платных вызовов.
 
-### NFR-3: Минимальность и существующий stage
+### NFR-3: Минимальность и существующий стенд ручной приёмки
 MUST. Чистый CSS/Next/React, без новых DB/API/packages/provider. Один writer worktree, manifests
-не меняются. Только существующий VPS 77.83.87.178, project clipmkr-stage-20261028; DB/Redis volumes,
-данные/config сохраняются. Новый stack/пустые db/redis/down-v/reset/auto seed запрещены.
-Public DNS/HTTPS access готовится; URL не известен, stage checks имеют исход 2 до реальных
-preconditions. Изменение→existing stage E2E→ссылка/инструкция→ручная приёмка→тот же artifact Cloud;
-production/DNS отдельно. Unit/документы могут идти раньше, stage evidence выдумывать нельзя.
+не меняются. Уточнение владельца04.11.2026 20:15 UTC заменяет прежний обязательный77 target:
+ручная приёмка именно https://clipmkr.ru, существующий VPS194.85.249.105, compose n5-clipmaker,
+service web (наблюдавшийся контейнер n5-clipmaker-web-1). DB/Redis volumes, сессии, данные/config
+сохраняются. Новый stack/пустые DB/Redis/down-v/reset/auto seed запрещены. Origin/DNS текущего
+clipmkr.ru уже подтверждены root; никакого DNS переключения для этой поставки не требуется.
+Последовательность: backup/runtime inventory→app-only изменение этого существующего web→E2E
+на clipmkr.ru→ссылка/инструкция→ручная приёмка владельца→тот же проверенный artifact Cloud.
+До приёмки Cloud не публикуется. Существующие minio/testminio исторические контейнеры не удаляются
+и не используются как S3 proof. Stage evidence требует фактических TLS/auth/owned data/media/SHA.
+Exact legacy pair clipmkr-stage-20261028 + https://77.83.87.178 допускается только для дополнительного
+internal regression, не для замены owner manual acceptance; root подтвердил TLS/SANIP и stub200,
+это ещё не app E2E. n5.clipmkr.ru/n5-referral-paytest — другой проект и не цель этого изменения.
+Runner принимает лишь эти два точных project/origin pair; arbitrary/cross-pair input→NOT ESTABLISHED.
+Unit/документы возможны раньше; runtime/manual evidence не выдумывается. Старые receipts сохраняются
+как история прежнего target, новое уточнение не делает прежние запуски выполненными на новом адресе.
+
+OpenSpec delivery delta: `openspec/changes/workspace-presentation/specs/workspace-presentation/spec.md`,
+SHA-256 `93441bd01c1faff2acf02cd70ffcd9af18b3ee2967a70568d019b89db2a8434e` (AM-10, owner-steer04.11.2026 20:15 UTC).

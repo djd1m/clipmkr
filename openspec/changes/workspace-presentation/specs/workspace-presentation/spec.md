@@ -81,10 +81,23 @@ Fixture MUST иметь real HTTPS/auth/owned SSR records/safe decoded media/д�
 
 Auth/owner/erasure/foreign404 MUST сохраняться при любом/невалидном preference.
 Нейтральные surfaces/derived fields/body и зелёный акцент MUST оставаться scoped,
-public routes/banner/support контраст MUST проверяться. Только existing stage 77.83.87.178
-clipmkr-stage-20261028 с сохранением данных; Cloud только после ручной приёмки.
+public routes/banner/support контраст MUST проверяться. Owner-steer 04.11.2026 20:15 UTC
+заменяет прежний адрес обязательной ручной приёмки: ТОЛЬКО https://clipmkr.ru, существующий
+VPS194.85.249.105, compose project n5-clipmaker, service web. DB/Redis/session/data MUST сохраняться;
+новый stack/пустая БД/reset/down-v/DNS переключение запрещены. Cloud — после этой ручной приёмки.
+Старый exact pair clipmkr-stage-20261028 + https://77.83.87.178 допустим только как дополнительный
+internal regression и не заменяет приёмку на clipmkr.ru. Другой n5.clipmkr.ru/n5-referral-paytest не target.
+Runner MUST принимать лишь эти два точных project/origin pair, отклонять перекрёстные/произвольные
+origin/project и сохранять sourceSha/imageDigest/private mode witness проверки.
 
 #### Scenario: Доступы и уход из shell
 - **GIVEN** anonymous/ordinary/owner/blogger/erasure и разные preference cookies
 - **WHEN** открывается разрешённый/чужой маршрут и затем public page
 - **THEN** прежние redirects/404/controls/erasure-only сохраняются, workspace styles не протекают в public
+
+
+#### Scenario: Адрес ручной приёмки задан владельцем
+- **GIVEN** owner-steer04.11.2026 20:15 и фактически существующий n5-clipmaker на194.85.249.105
+- **WHEN** новый app artifact прошёл подготовку/backup/preflight и app E2E без замены данных
+- **THEN** владелец получает https://clipmkr.ru и инструкцию; DNS/Cloud не переключаются до ручной приёмки
+- **AND** successful internal regression на77 не называется выполненной ручной приёмкой на clipmkr.ru

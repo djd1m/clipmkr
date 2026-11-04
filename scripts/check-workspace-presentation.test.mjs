@@ -7,6 +7,13 @@ import { domRules, axeRule, textZoomRule, firstScreenRule, FIRST_SCREEN_VIEWPORT
 import { execFileSync } from 'node:child_process';
 import { runLocalWorkspaceChecks, runCatalogNoDates, workspacePalette as palette } from './workspace-presentation-local.mjs';
 const uploadPartBytes = 10 * 1024 * 1024;
+const deliveryTargets = [
+  { project: 'n5-clipmaker', origin: 'https://clipmkr.ru', purpose: 'owner-manual' },
+  { project: 'clipmkr-stage-20261028', origin: 'https://77.83.87.178', purpose: 'internal-regression' },
+];
+function delivery_target_binding_is_exact(fixture) {
+  return deliveryTargets.find(target => target.project === fixture.composeProject && target.origin === fixture.actualHttpsOrigin);
+}
 async function denyPreferences(context, mode) {
   await context.addInitScript(mode => {
     const cookie = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
@@ -26,7 +33,7 @@ async function privateJson(file, maxBytes = 1_000_000) {
 }
 async function catalog_phase_has_actual_server_witness(fixture, phase) {
   if (!['on', 'off'].includes(phase) || fixture.catalogPhase !== phase) throw unavailable('нужна совпадающая catalog-phase=on|off');
-  if (fixture.composeProject !== 'clipmkr-stage-20261028' || !/^[a-f0-9]{40}$/.test(fixture.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(fixture.imageDigest)) throw unavailable('catalog artifact identity отсутствует');
+  if (!delivery_target_binding_is_exact(fixture) || !/^[a-f0-9]{40}$/.test(fixture.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(fixture.imageDigest)) throw unavailable('catalog artifact identity отсутствует');
   const witness = await privateJson(fixture.catalogModeWitnessPath), config = witness.observedConfig;
   const identityKeys = ['actualHttpsOrigin', 'composeProject', 'sourceSha', 'imageDigest', 'windowPairId'];
   if (witness.schema !== 'workspace-catalog-window-1' || witness.phase !== phase || !uuid(witness.windowId)
@@ -39,7 +46,7 @@ async function catalog_phase_has_actual_server_witness(fixture, phase) {
 }
 async function loadStageFixture(base, path, phase) {
   const fixture = await privateJson(path);
-  if (fixture.schemaVersion !== 1 || fixture.composeProject !== 'clipmkr-stage-20261028') throw unavailable('неверная schema/project fixture');
+  if (fixture.schemaVersion !== 1 || !delivery_target_binding_is_exact(fixture)) throw unavailable('неверная schema/project/origin fixture');
   if (!base || new URL(base).protocol !== 'https:' || new URL(base).origin !== base || fixture.actualHttpsOrigin !== base) throw unavailable('нужен подтверждённый HTTPS origin');
   if (!/^[a-f0-9]{40}$/.test(fixture.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(fixture.imageDigest)) throw unavailable('нужен artifact SHA/digest');
   await catalog_phase_has_actual_server_witness(fixture, phase);
@@ -145,6 +152,7 @@ async function nativeRefreshes(page, state) {
 }
 async function stageChecks(base, fixture, out) {
   const report = { schema: 'workspace-catalog-evidence-1', layer: 'actual-next', catalogPhase: fixture.catalogPhase, identity: fixture.identity,
+    deliveryTarget: delivery_target_binding_is_exact(fixture).purpose, ownerManualAcceptanceRequiredAt: 'https://clipmkr.ru',
     modeWitnessDigest: fixture.modeWitnessDigest, outcome: 'incomplete', deferred: fixture.catalogPhase === 'off' ? ['checkout:required-in-on-window', 'noDates:required-component-boundary'] : ['noDates:required-component-boundary'],
     scope: 'actual Next / browser-isolated mutations; not provider/DB verification', artifactSha: fixture.sourceSha,
     imageDigest: fixture.imageDigest, fixtureDigest: fixture.manifestDigest, results: [], manual: ['actual page zoom 200%', 'mobile OS keyboard'], requests: [] };
@@ -420,7 +428,7 @@ async function verifyCatalogReports(paths, out) {
   if (!off || !on || !component || reports.some(report => report.schema !== 'workspace-catalog-evidence-1' || !report.results?.length || report.results.some(row => row.outcome !== 'passed'))) throw unavailable('нет трёх complete catalog layers');
   if (off.outcome !== 'phase-passed' || on.outcome !== 'phase-passed' || component.outcome !== 'component-passed' || component.case !== 'noDates') throw unavailable('catalog layer не завершён');
   if (!uuid(off.identity?.windowPairId) || !/^[a-f0-9]{40}$/.test(off.identity.sourceSha) || !/^sha256:[a-f0-9]{64}$/.test(off.identity.imageDigest)
-    || off.identity.composeProject !== 'clipmkr-stage-20261028' || !/^https:\/\//.test(off.identity.actualHttpsOrigin)) throw unavailable('catalog report identity неполная');
+    || !delivery_target_binding_is_exact(off.identity)) throw unavailable('catalog report identity неполная');
   for (const report of reports) assert.deepEqual(report.identity, off.identity, 'catalog artifact/project/origin/windowPairId mismatch');
   for (const report of reports) if (!/^[a-f0-9]{64}$/.test(report.modeWitnessDigest)) throw unavailable('нет mode witness digest');
   for (const report of [off, on]) {
@@ -431,7 +439,7 @@ async function verifyCatalogReports(paths, out) {
   const viewports = [...[320,360,390,414,672,768,1024,1440].map(width => ({ width, height:844, firstScreen:false })), ...FIRST_SCREEN_VIEWPORTS.map(({w,h}) => ({ width:w, height:h, firstScreen:true }))], expected = [];
   for (const engine of ['chromium', 'webkit']) for (const layout of ['workspace', 'studio']) for (const theme of ['dark', 'light']) for (const viewport of viewports) expected.push(JSON.stringify([engine, layout, theme, viewport.width, viewport.height, viewport.firstScreen]));
   assert.deepEqual([...componentKeys].sort(), expected.sort()); assert.equal(component.results.length, 88);
-  await writeFile(resolve(out, 'catalog-evidence.json'), JSON.stringify({ outcome: 'catalog-evidence-complete', identity: off.identity, layers: ['actual-next:off', 'actual-next:on', 'component-boundary:noDates'], limitation: 'not backend/provider E2E or feature acceptance' }, null, 2), { mode: 0o600 });
+  await writeFile(resolve(out, 'catalog-evidence.json'), JSON.stringify({ outcome: 'catalog-evidence-complete', identity: off.identity, deliveryTarget: delivery_target_binding_is_exact(off.identity).purpose, ownerManualAcceptanceRequiredAt: 'https://clipmkr.ru', layers: ['actual-next:off', 'actual-next:on', 'component-boundary:noDates'], limitation: 'not backend/provider E2E or feature acceptance' }, null, 2), { mode: 0o600 });
 }
 const args = process.argv.slice(2);
 const value = flag => {
