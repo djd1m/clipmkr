@@ -1,0 +1,44 @@
+{
+  "schema": "fa-review-convergence-1",
+  "phase": "ideation",
+  "reviewers": [
+    {
+      "id": "qcsd-quality",
+      "family": "owner-exception"
+    },
+    {
+      "id": "qcsd-risk",
+      "family": "owner-exception"
+    },
+    {
+      "id": "qcsd-testability",
+      "family": "owner-exception"
+    }
+  ],
+  "snapshot": {
+    "nonce": "fa0b3bfc-65c3-43fd-9627-5b25ee1b9a54",
+    "revision": "d010f09f042d97cb97b58fe65a64c287798095b60717272ac8e99a5b1984cd82",
+    "manifest": [
+      {
+        "path": "features/workspace-presentation/00_complexity_assessment.md",
+        "digest": "ed0c3390899dbebd731b476bad060de819dd3afc7beb993e5c50ec4e7f4899eb"
+      },
+      {
+        "path": "features/workspace-presentation/01_requirements.md",
+        "digest": "3be20981e185cd6510c15c4100acbde6b6fd14b5b91783bb29ed78f3c83b1d83"
+      },
+      {
+        "path": "features/workspace-presentation/03_adr/001-workspace-preferences.md",
+        "digest": "f0bbe64d34a235f09512f2de0ee1e691f0d9a216c0dbad74b04e293db9d577cf"
+      },
+      {
+        "path": "features/workspace-presentation/05_architecture.md",
+        "digest": "c8ab3a84bb93b912eb95dfbe1330155133ece8d25f647498453e8b9996daa9a4"
+      }
+    ]
+  },
+  "conditions": [],
+  "reviewSeen": true,
+  "rework": false,
+  "changedPaths": []
+}
