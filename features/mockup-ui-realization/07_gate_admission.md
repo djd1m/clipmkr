@@ -1,6 +1,6 @@
 # Допуск к исполнению плана: наблюдённые результаты
 
-Текущий статус05.11: PROJECT-INSTALLED GATES PASS; настоящий supported plan checkpoint exit0 записан с inputHash302e08dfc8c14fda2f199bb505f4bd50b4f081e61313f2427f46dc0478acf26b и status admitted-project-installed-gates. Ideation CLOSED, независимый challenge содержания06 GO. Исторический запрос исключения оказался ненужным: координатор пропустил уже существующий штатный process:install. Прежние отказы и выводы сохранены ниже как история, не переименованы в PASS. Это протокол допуска к будущему коду, не implementation/QE PASS.
+Текущий статус05.11: PROJECT-INSTALLED GATES PASS; актуальное уточнение AM-6 ниже; настоящий supported plan checkpoint exit0 записан с inputHash302e08dfc8c14fda2f199bb505f4bd50b4f081e61313f2427f46dc0478acf26b и status admitted-project-installed-gates. Ideation CLOSED, независимый challenge содержания06 GO. Исторический запрос исключения оказался ненужным: координатор пропустил уже существующий штатный process:install. Прежние отказы и выводы сохранены ниже как история, не переименованы в PASS. Это протокол допуска к будущему коду, не implementation/QE PASS.
 
 ## Исправление установки05.11 — существующий проектный путь
 
@@ -48,3 +48,12 @@ Actual `npm run openspec -- validate mockup-ui-realization --strict --json`: exi
 ## Фактический переход к Step7
 Plan command вернул {ok:true,stage:plan,witnessed:[06_implementation_plan.md,07_gate_admission.md]}. Baseline впервые инициализирован153a9cd7d14d89776ab38bd83b04594bcb421d50; существующая ideation lineage сохранена. Три отдельные coding sessions A/B/C через Codex CLI0.166.0 requested gpt-6.1-sol high получают полный literal promptBlock62504bytes в stdin; SHA935ba660da2c8cbcef4aae1ad5594db1abf1f5cd8872068bf8b392b9102c1e18 проверен launcher перед запуском. Задания и JSONL логи с thread IDs сохраняются приватно, права0700/0600, данные аккаунтов туда не добавлялись. Это настоящий запуск реализации, не её завершение.
 Повторный supplementary inventory текущих171trackedtestfiles:0matches, SHA256cb27808421cb16f3353b5b06c35831a785ec4e434ae371a9bf13a1dfcf1254d3. Исходники установленного инструмента и hashes существующих patches сохранены installed-tool-hashes.private.json. Teach нового фактического урока об установке: teach:b9ca1b2cc77e0c4e, actual recall после teach вернул этот ID. Историческое ожидание owner exception снято восстановлением предписанной установки, а не разрешением проигнорировать ненулевой exit.
+
+
+## AM-6: поддержка существующего регрессионного теста
+
+До изменения tests/credit-packages-ui.test.ts план измеренно дополнен этим существующим файлом. Это обслуживание прежней проверки навигации/disabled после переноса навигации в WorkspaceHeader, без нового продуктового поведения. Текущий06 SHA256: c91c95724c83a0a1127df647995fd2bf0abf4cfd706b48824e4a8db297b953fc; 29 буквальных targets. Ранее приведённые28targets и302e08… относятся к исходному допуску, сохранённому в истории.
+
+Фактический project-installed K2 после уточнения: exit0,29targets,14requirementIDs,4ADR,0failures/0warnings/1объявленный skip. Новых имён для K1 нет: изменяется уже существующий тест. Свежий admission e25216226d55fd18aeea6db272f9e634ead35f539bdb550ff87f02cde91b0f04 — admitted, reasons пуст. Полный context: d016e8992af3f154917128b99788ed8573247666d00df269420dacca5c81e74c,63733bytes literal promptBlock; SHA25612a6d1dcbcd568aeff6592e0799d6923181a4152ee4dda621f07dc11c30190ac. Terra независимо дала scoped GO этому уточнению.
+
+Настоящий npm run dz -- feature-adr-checkpoint --stage plan выполнен до правки теста с указанным inputHash; status admitted-test-only-amendment, exit0, witnessed06/07. Приватные аргументы, stdout/stderr и код возврата сохранены в am6-plan-checkpoint.private.json в ранее указанном закрытом каталоге. Предыдущие receipts/base-ref/ideation lineage сохранены. После этого отдельный автор выполнил maintenance: исходный RED,7/7 и46/46focused GREEN; удаление ссылки и включение checkout в обеих запрещённых ветках дают реальный именованный RED в изолированных копиях. Это доказательства AM-6, не полный QE.

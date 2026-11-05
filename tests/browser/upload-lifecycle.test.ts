@@ -39,7 +39,7 @@ beforeAll(async()=>{
       },configureServer(vite){vite.middlewares.use(async(req,res,next)=>{
         if(req.url?.startsWith('/away.html')){res.setHeader('Content-Type','text/html');res.end('<!doctype html><a href="/fixture.html">Вернуться</a><p>Ушли</p>');return;}
         if(!req.url?.startsWith('/fixture.html')){next();return;}
-        res.setHeader('Content-Type','text/html; charset=utf-8');res.end(await vite.transformIndexHtml('/fixture.html',`<!doctype html><html lang="ru" data-theme="dark"><head><title>Загрузка — КлипМейкер</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/apps/web/src/app/globals.css"></head><body><nav class="navigation"><a id="away" href="/away.html">Другая страница</a><a id="hash" href="#source-file">К файлу</a><a id="blank" target="_blank" href="/away.html">Новая вкладка</a></nav><main class="container"><div id="upload-root">${markup}</div></main><script type="module" src="/@id/__x00__upload-lifecycle-entry"></script></body></html>`));
+        res.setHeader('Content-Type','text/html; charset=utf-8');res.end(await vite.transformIndexHtml('/fixture.html',`<!doctype html><html lang="ru" data-theme="dark"><head><title>Загрузка — КлипМейкер</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/apps/web/src/app/globals.css"></head><body><nav class="navigation"><a id="away" href="/away.html">Другая страница</a><a id="hash" href="#source-file">К файлу</a><a id="blank" target="_blank" href="/away.html">Новая вкладка</a></nav><main class="container"><div id="upload-root" class="workspace-shell">${markup}</div></main><script type="module" src="/@id/__x00__upload-lifecycle-entry"></script></body></html>`));
       });}}]});await server.listen();const address=server.httpServer?.address();if(!address||typeof address==='string')throw new Error('Нет loopback порта');origin=`http://127.0.0.1:${address.port}`;
 });
 afterAll(async()=>{await server?.close();rmSync(cacheDirectory,{recursive:true,force:true});});
@@ -87,12 +87,67 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
     await setup(browser,async(page,c)=>{
       await choose(page);expect(c.creates()).toBe(0);await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.puts).toBe(2);
       const before=await saved(page);await page.getByRole('button',{name:'Приостановить загрузку'}).click();
-      expect(await page.locator('#source-file').inputValue()).toBe('');expect(await page.locator('#source-file').evaluate(el=>el===document.activeElement)).toBe(true);
+      expect(await page.locator('#source-file').inputValue()).toBe('');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
       await choose(page);expect(c.creates()).toBe(1);expect(c.completes()).toBe(0);expect(await saved(page)).toEqual(before);
-      const chooserEvent=page.waitForEvent('filechooser');await page.locator('#source-file').click();await (await chooserEvent).setFiles([]);
+      const chooserEvent=page.waitForEvent('filechooser');await page.locator('#source-file-picker').click();await (await chooserEvent).setFiles([]);
       expect(await saved(page)).toEqual(before);expect(c.creates()).toBe(1);expect(await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).isDisabled()).toBe(true);
       await choose(page);await continueUpload(page);await poll(c.creates).toBe(2);expect(c.keys()[0]).toBe(c.keys()[1]);c.release();await poll(()=>page.url()).toContain(`/dashboard/videos/${videoId}`);
     });
+  });
+  it('native_picker_and_options_survive_layout',async()=>{
+    await setup(browser,async(page,c)=>{
+      await page.locator('.workspace-upload-options > summary').click();
+      await page.getByLabel('Добавить музыку и финальный акцент').check();
+      await page.evaluate(()=>{
+        const w=window as Window&{chosen?:File;slices?:Blob[];stableInput?:HTMLInputElement};
+        w.stableInput=document.querySelector<HTMLInputElement>('#source-file')!;w.slices=[];
+        w.stableInput.addEventListener('change',()=>{w.chosen=w.stableInput!.files![0];},true);
+        const original=File.prototype.slice;File.prototype.slice=function(...args){w.slices!.push(this);return original.apply(this,args);};
+      });
+      const dialog=page.waitForEvent('filechooser');await page.locator('#source-file-picker').click();await (await dialog).setFiles(file);
+      await poll(()=>page.getByRole('status').textContent()).toContain('Файл проверен');
+      expect(c.creates()).toBe(0);
+      await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.puts).toBe(2);
+      const before=await saved(page);
+      await page.evaluate(()=>{document.documentElement.dataset.workspaceLayout='studio';document.documentElement.dataset.theme='light';});
+      expect(await page.evaluate(()=>{
+        const w=window as Window&{chosen?:File;slices?:Blob[];stableInput?:HTMLInputElement};
+        return !!w.chosen&&w.chosen instanceof File&&w.chosen.size===10485768&&w.stableInput===document.querySelector('#source-file')&&w.stableInput.isConnected&&w.slices!.length>0&&w.slices!.every(item=>item===w.chosen);
+      })).toBe(true);
+      expect(await page.getByLabel('Добавить музыку и финальный акцент').isChecked()).toBe(true);
+      expect(await saved(page)).toEqual(before);expect(c.creates()).toBe(1);expect(c.completes()).toBe(0);
+      await page.getByRole('button',{name:'Приостановить загрузку'}).click();
+      expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
+    });
+  });
+  it('paused_progress_never_becomes_full_manifest',async()=>{
+    await setup(browser,async(page,c)=>{
+      expect(await page.locator('.workspace-transfer').textContent()).toContain('уточним после продолжения');
+      expect(await page.locator('.workspace-transfer progress').getAttribute('value')).toBeNull();
+      await choose(page);expect(c.creates()).toBe(0);await continueUpload(page);await poll(c.puts).toBe(1);
+      expect(await page.locator('.workspace-transfer progress').getAttribute('value')).toBe(String(partSize));
+      const before=await saved(page);expect(before.parts).toBeUndefined();
+      await page.getByRole('button',{name:'Приостановить загрузку'}).click();
+      expect(await page.locator('.workspace-transfer').textContent()).toContain('Подтверждено в последней попытке');
+      c.release();await page.waitForTimeout(100);
+      expect(await page.locator('.workspace-transfer progress').getAttribute('value')).toBe(String(partSize));
+      expect(await saved(page)).toEqual(before);expect(c.completes()).toBe(0);
+      await page.reload();await page.waitForSelector('#source-file-picker');
+      expect(await page.locator('.workspace-transfer progress').getAttribute('value')).toBeNull();
+      expect(await page.locator('.workspace-transfer').textContent()).toContain('уточним после продолжения');
+      expect(c.creates()).toBe(1);
+    },{session:manifest,acceptedPart:true});
+  });
+  it('full_manifest_reload_reports_transfer_only_and_requires_continue',async()=>{
+    const full={...manifest,videoId,partSize,parts:[{part_number:1,etag:'first'},{part_number:2,etag:'tail'}]};
+    await setup(browser,async(page,c)=>{
+      expect(await page.locator('.workspace-transfer progress').getAttribute('value')).toBe(String(bytes.length));
+      expect(await page.locator('.workspace-transfer').textContent()).toContain('100%');
+      expect(await page.locator('.workspace-transfer').textContent()).toContain('ещё не означает начало обработки');
+      await choose(page);expect(c.creates()).toBe(0);expect(c.completes()).toBe(0);await continueUpload(page);
+      await poll(c.completes).toBe(1);expect(c.puts()).toBe(0);expect(c.creates()).toBe(0);
+      c.release();await poll(()=>page.url()).toContain(`/dashboard/videos/${videoId}`);
+    },{session:full,hold:'complete'});
   });
   it('resume_uses_same_key_and_missing_parts',async()=>{
     await setup(browser,async(page,c)=>{
@@ -103,7 +158,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   });
   it('hash_mismatch_never_mixes_parts',async()=>{
     await setup(browser,async(page,c)=>{const changed=Buffer.from(bytes);changed[partSize/2]=66;await choose(page,{...file,buffer:changed});
-      expect(await page.getByRole('alert').textContent()).toContain('Выбран другой файл');expect(await page.locator('#source-file').evaluate(el=>el===document.activeElement)).toBe(true);expect(c.creates()).toBe(0);expect(await saved(page)).toEqual(manifest);
+      expect(await page.getByRole('alert').textContent()).toContain('Выбран другой файл');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);expect(c.creates()).toBe(0);expect(await saved(page)).toEqual(manifest);
       await page.locator('#source-file').dispatchEvent('cancel');expect(c.puts()).toBe(0);expect(await saved(page)).toEqual(manifest);
     },{session:manifest});
   });
@@ -138,7 +193,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   it('confirmed_leave_aborts_without_hidden_complete',async()=>{
     await setup(browser,async(page,c)=>{await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.creates).toBe(1);
       page.once('dialog',dialog=>void dialog.accept());await page.getByRole('link',{name:'Другая страница'}).click();await page.waitForURL('**/away.html');c.release();await page.waitForTimeout(100);expect(c.completes()).toBe(0);
-      await page.goBack();await page.waitForSelector('#source-file');expect(await page.locator('.upload-controls').textContent()).toContain('fixture.mp4');expect(c.creates()).toBe(1);
+      await page.goBack();await page.waitForSelector('#source-file-picker');expect(await page.locator('.upload-controls').textContent()).toContain('fixture.mp4');expect(c.creates()).toBe(1);
     },{hold:'create'});
   });
   it.each(['done','failed','transcribing'] as const)('admitted_repeat_keeps_actual_stage %s',async actualStage=>{
@@ -174,7 +229,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
           (window as Window&{jsonWaiting?:boolean}).jsonWaiting=true;await new Promise<void>(resolve=>{(window as Window&{releaseJson?:()=>void}).releaseJson=resolve;});return value;};}return response;};});
       await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();c.release();await page.waitForFunction(()=>(window as Window&{jsonWaiting?:boolean}).jsonWaiting);
       await page.getByRole('button',{name:'Приостановить загрузку'}).click();const before=await saved(page);
-      expect(await page.getByRole('status').textContent()).toContain('Сервер мог начать обработку');expect(await page.locator('#source-file').evaluate(el=>el===document.activeElement)).toBe(true);
+      expect(await page.getByRole('status').textContent()).toContain('Сервер мог начать обработку');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
       const replacement={...before,key:'44444444-4444-4444-8444-444444444444'};
       await page.evaluate(({storageKey,replacement})=>{(window as Window&{uploadRoot?:{unmount:()=>void}}).uploadRoot?.unmount();sessionStorage.setItem(storageKey,JSON.stringify(replacement));
         (window as Window&{releaseJson?:()=>void}).releaseJson?.();},{storageKey,replacement});await page.waitForTimeout(100);
@@ -184,7 +239,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   it('history_remount_uses_saved_session',async()=>{
     await setup(browser,async(page,c)=>{await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.puts).toBe(2);
       await page.getByRole('button',{name:'Приостановить загрузку'}).click();const before=await saved(page);
-      await page.locator('#away').click();await page.goBack();await page.waitForSelector('#source-file');await choose(page);
+      await page.locator('#away').click();await page.goBack();await page.waitForSelector('#source-file-picker');await choose(page);
       expect(c.creates()).toBe(1);expect(await saved(page)).toEqual(before);await continueUpload(page);await poll(c.creates).toBe(2);expect(c.keys()[0]).toBe(c.keys()[1]);
     });
   });
@@ -194,7 +249,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
         await new Promise<void>(resolve=>{(window as Window&{releaseHash?:()=>void}).releaseHash=resolve;});return value;};});
       await page.locator('#source-file').setInputFiles(file);await poll(()=>page.getByRole('status').textContent()).toBe('Проверяем выбранный файл');
       await page.waitForFunction(()=>typeof (window as Window&{releaseHash?:()=>void}).releaseHash==='function');
-      await page.getByRole('button',{name:'Отменить проверку'}).click();expect(await page.locator('#source-file').evaluate(el=>el===document.activeElement)).toBe(true);
+      await page.getByRole('button',{name:'Отменить проверку'}).click();expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
       await page.evaluate(()=>(window as Window&{releaseHash?:()=>void}).releaseHash!());await page.waitForTimeout(100);expect(c.creates()).toBe(0);
     });
   });
@@ -225,7 +280,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   it('keyboard_recovery_focus_and_live_status',async()=>{
     await setup(browser,async(page,c)=>{await choose(page);expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite');
       await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).focus();await page.keyboard.press('Enter');await poll(c.puts).toBe(2);
-      await page.getByRole('button',{name:'Приостановить загрузку'}).focus();await page.keyboard.press('Space');expect(await page.locator('#source-file').evaluate(el=>el===document.activeElement)).toBe(true);
+      await page.getByRole('button',{name:'Приостановить загрузку'}).focus();await page.keyboard.press('Space');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
       await choose(page);expect(await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).evaluate(el=>el===document.activeElement)).toBe(true);
       expect(await page.locator('#source-file').getAttribute('aria-describedby')).toContain('source-file-help');
       for(const theme of ['dark','light'])for(const width of [320,375,390,768,1440]){await page.setViewportSize({width,height:900});await page.locator('html').evaluate((el,theme)=>{el.dataset.theme=theme;},theme);

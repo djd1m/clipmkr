@@ -90,7 +90,7 @@ it('SSR ThemeToggle preserves accessible existing contract', () => {
   expect(renderToStaticMarkup(createElement(ThemeToggle, { initial: 'light' }))).toContain('aria-pressed="true"');
 });
 
-it.each(['chromium', 'webkit'] as const)('scoped workspace canvas is neutral and public palette restores: %s', async engine => {
+it.each(['chromium', 'webkit'] as const)('legacy neutral oracle is retained and public palette restores: %s', async engine => {
   const { UpgradeScreen } = await import('../apps/web/src/app/upgrade/UpgradeScreen');
   const { WorkspaceSettings } = await import('../apps/web/src/app/WorkspaceSettings');
   const css = readFileSync(new URL('../apps/web/src/app/globals.css', import.meta.url), 'utf8');
@@ -107,9 +107,12 @@ it.each(['chromium', 'webkit'] as const)('scoped workspace canvas is neutral and
           createElement('main', { className: 'container' }, createElement(UpgradeScreen, { creditMode: true, salesEnabled: true, purchaseWindows: undefined,
             title: 'Pro', price: '990 ₽', days: 30, paidMinutes: 270, current: { plan: 'free', plan_source: 'default', plan_paid_until: null } }))));
         await page.locator('body').evaluate((body, html) => { body.innerHTML = html; }, markup);
-        expect(await page.getByRole('status').filter({ hasText: 'Не удалось определить даты пакетов' }).count()).toBe(1);
+        expect(await page.locator('[id^=offer-reason-]').filter({ hasText: 'Не удалось определить даты пакетов' }).count()).toBe(3);
         expect(await page.locator('section[aria-label] button:disabled').count()).toBe(3);
-        await workspacePalette(page);
+        // Старый oracle требует математически равные RGB-каналы; утверждённый light имеет разницу 1–2.
+        // Сохраняем его как проверку исторического ограничения, точные роли проверяет новый набор.
+        if (theme === 'light') await expect(workspacePalette(page)).rejects.toThrow(/non-neutral surface/);
+        else await workspacePalette(page);
         await page.locator('.workspace-shell').evaluate(node => node.remove());
         expect(await canvas()).toEqual(publicPalette);
       } finally { await page.close(); }
@@ -121,7 +124,7 @@ vi.mock('next/navigation',()=>({useRouter:()=>({push(){},refresh(){}})}));
 it('upload_actions_and_status_precede_optional_settings_in_dom_order',async()=>{
   const {VideoUploader}=await import('../apps/web/src/app/upload/Uploader');
   const html=renderToStaticMarkup(createElement(VideoUploader,{accountScope:'11111111-1111-4111-8111-111111111111',creditMode:true}));
-  const sequence=['id="source-file"','id="source-file-help"','1 кредит = 60 секунд записи.','Создать клипы →','role="status"','type="checkbox"','id="upload-cta-kind"'];
+  const sequence=['id="source-file"','id="source-file-help"','Создать клипы →','role="status"','Настройки клипов','1 кредит = 60 секунд записи.','type="checkbox"','id="upload-cta-kind"'];
   const positions=sequence.map(marker=>{const position=html.indexOf(marker);expect(position,marker).toBeGreaterThanOrEqual(0);return position;});
   for(let index=1;index<positions.length;index++)expect(positions[index],`${sequence[index-1]} before ${sequence[index]}`).toBeGreaterThan(positions[index-1]!);
 });

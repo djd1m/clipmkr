@@ -7,9 +7,20 @@ export interface BrowserUpload {
 // refresh повторяет video.create с исходным Idempotency-Key и тем же файлом.
 // Сервер возвращает только отсутствующие части и ETag уже сохранённых.
 export async function uploadParts(file: Blob, upload: BrowserUpload, signal?: AbortSignal,
-  refresh?: () => Promise<BrowserUpload>): Promise<CompletedPart[]> {
+  refresh?: () => Promise<BrowserUpload>, confirmedBytes?: (bytes: number) => void): Promise<CompletedPart[]> {
   const completed = new Map((upload.completed_parts ?? []).map((part) => [part.part_number, part]));
   const partSize = upload.part_size;
+  const notify = () => {
+    signal?.throwIfAborted();
+    let bytes = 0;
+    for (const [number, part] of completed) {
+      if (part.etag && Number.isInteger(number) && number >= 1 && number <= Math.ceil(file.size / partSize)) {
+        bytes += Math.min(partSize, file.size - (number - 1) * partSize);
+      }
+    }
+    confirmedBytes?.(bytes);
+  };
+  notify();
   const attempts = new Map<number, number>();
   let pending = upload.parts.filter((p) => !completed.has(p.part_number));
   while (pending.length) {
@@ -29,7 +40,9 @@ export async function uploadParts(file: Blob, upload: BrowserUpload, signal?: Ab
       if (!response.ok) throw new Error('Хранилище не приняло часть файла. Возобновите загрузку');
       const etag = response.headers.get('etag');
       if (!etag) throw new Error('Хранилище не подтвердило загрузку. Обратитесь в поддержку');
+      signal?.throwIfAborted();
       completed.set(part.part_number, { part_number: part.part_number, etag });
+      notify();
       return true;
     }));
     // Дожидаемся соседних PUT, прежде чем выдавать ошибку/переподписывать.
@@ -43,8 +56,10 @@ export async function uploadParts(file: Blob, upload: BrowserUpload, signal?: Ab
       }
       signal?.throwIfAborted();
       upload = await refresh();
+      signal?.throwIfAborted();
       if (upload.part_size !== partSize) throw new Error('Изменился размер частей. Выберите исходный файл');
       for (const part of upload.completed_parts ?? []) completed.set(part.part_number, part);
+      notify();
       pending = upload.parts.filter((part) => !completed.has(part.part_number));
     } else pending = pending.filter((part) => !completed.has(part.part_number));
   }

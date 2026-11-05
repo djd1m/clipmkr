@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 import {UpgradeScreen} from '../apps/web/src/app/upgrade/UpgradeScreen';
+import {WorkspaceHeader} from '../apps/web/src/app/WorkspaceHeader';
 import {LimitsPanel} from '../apps/web/src/app/dashboard/LimitsPanel';
 import {ReturnView} from '../apps/web/src/app/upgrade/return/ReturnScreen';
 import {decideReturnState} from '../apps/web/src/lib/payment-return';
@@ -14,7 +15,7 @@ import {loadWorkerConfig} from '../packages/shared/src/config';
 import {readEnvironment} from '../apps/web/src/server/environment';
 import {environment} from './fixtures/environment';
 import {checkWiring} from '../scripts/check-env-wiring.mjs';
-vi.mock('next/navigation',()=>({useRouter:()=>({refresh:vi.fn()})}));
+vi.mock('next/navigation',()=>({useRouter:()=>({refresh:vi.fn()}),usePathname:()=>'/dashboard'}));
 it('credit catalog and balance show hours, reserved credits and expiry without daily credit promises',()=>{
   const html=renderToStaticMarkup(createElement(UpgradeScreen,{creditMode:true,salesEnabled:true,title:'Pro',price:'990 ₽',days:30,paidMinutes:270,current:{plan:'free',plan_source:'none',plan_paid_until:null}}));
   for(const text of ['300 кредитов','5 ч записи','1800 кредитов','30 ч записи','600 кредитов','10 ч записи','3990','1490','Немедленный переход'])expect(html.replaceAll(' ','')).toContain(text);
@@ -57,13 +58,15 @@ it('synthetic compose and actual web/worker projections preserve explicit billin
 it('legacy catalogue shows all canonical packages with disabled checkout and preserves conditions',()=>{
   const html=renderToStaticMarkup(createElement(UpgradeScreen,{creditMode:true,catalogOnly:true,salesEnabled:false,title:'Pro',price:'990 ₽',days:30,paidMinutes:270,current:{plan:'free',plan_source:'none',plan_paid_until:null}}));
   for(const text of ['Старт','Про','300 кредитов','1800 кредитов','600 кредитов','Ваши текущие условия сохраняются','один раз','Ежемесячного пополнения нет'])expect(html).toContain(text);
-  expect((html.match(/<button disabled=""/g)??[])).toHaveLength(3);
+  expect((html.match(/<button\b[^>]*\sdisabled=""(?=\s|>)[^>]*>/g)??[])).toHaveLength(3);
   expect(html).not.toContain('Не удалось определить даты');
   expect(html).not.toContain('Тариф Pro');
 });
 it('cabinet exposes pricing and authenticated upgrade keeps catalogue open without a payment provider',()=>{
   const layout=readFileSync('apps/web/src/app/dashboard/layout.tsx','utf8');
-  expect(layout).toMatch(/<Link href="\/upgrade\?from=partner_dashboard">Тарифы<\/Link>/);
+  expect(layout).toContain('<WorkspaceHeader');
+  const header=renderToStaticMarkup(createElement(WorkspaceHeader,{owner:false,balanceLabel:null,initialTheme:'dark',initialLayout:'workspace'}));
+  expect(header).toMatch(/<a\b[^>]*\shref="\/upgrade\?from=partner_dashboard"[^>]*>Тарифы<\/a>/);
   expect(readFileSync('apps/web/src/app/dashboard/page.tsx','utf8')).toContain('<ProInterest creditMode={true}');
   const source=readFileSync('apps/web/src/app/upgrade/page.tsx','utf8');
   expect(source).not.toContain('notFound');
@@ -71,9 +74,16 @@ it('cabinet exposes pricing and authenticated upgrade keeps catalogue open witho
   expect(source).toContain('creditMode={true}');
   expect(source).toContain("catalogOnly={billing.billing_policy!=='credits_v1'}");
   expect(source).toContain("salesEnabled={!!payments && config.billingMode==='credits_v1' && billing.billing_policy==='credits_v1'}");
+  for(const protection of [{catalogOnly:true,salesEnabled:true},{catalogOnly:false,salesEnabled:false}]){
+    const html=renderToStaticMarkup(createElement(UpgradeScreen,{...protection,creditMode:true,
+      purchaseWindows:{asOf:'2030-01-01T00:00:00Z',baseStart:'2030-01-01T00:00:00Z',baseEnd:'2030-01-31T00:00:00Z',addonStart:'2030-01-01T00:00:00Z',addonEnd:'2030-01-31T00:00:00Z',scheduled:false},
+      title:'Pro',price:'990 ₽',days:30,paidMinutes:270,current:{plan:'free',plan_source:'none',plan_paid_until:null}}));
+    expect((html.match(/<button\b[^>]*>/g)??[])).toHaveLength(3);
+    expect((html.match(/<button\b[^>]*\sdisabled=""(?=\s|>)[^>]*>/g)??[]),JSON.stringify(protection)).toHaveLength(3);
+  }
 });
 it('payment outage keeps credit catalogue visible with every purchase disabled',()=>{
   const html=renderToStaticMarkup(createElement(UpgradeScreen,{creditMode:true,salesEnabled:false,purchaseWindows:{asOf:'2030-01-01T00:00:00Z',baseStart:'2030-01-01T00:00:00Z',baseEnd:'2030-01-31T00:00:00Z',addonStart:'2030-01-01T00:00:00Z',addonEnd:'2030-01-31T00:00:00Z',scheduled:false},title:'Pro',price:'990 ₽',days:30,paidMinutes:270,current:{plan:'free',plan_source:'none',plan_paid_until:null}}));
-  expect((html.match(/<button disabled=""/g)??[])).toHaveLength(3);
+  expect((html.match(/<button\b[^>]*\sdisabled=""(?=\s|>)[^>]*>/g)??[])).toHaveLength(3);
   expect(html).toContain('Продажа новых пакетов временно выключена');
 });

@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: 
 vi.mock('../apps/web/src/lib/rpc', () => ({ rpc: vi.fn() }));
 import { rpc } from '../apps/web/src/lib/rpc';
 import { VideoUploader } from '../apps/web/src/app/upload/Uploader';
-type Props = { children?: unknown; type?: string; disabled?: boolean; checked?: boolean; onChange?: (e: unknown) => void; onClick?: () => void };
+type Props = { children?: unknown; type?: string; disabled?: boolean; checked?: boolean; onChange?: (e: unknown) => void; className?: string; onClick?: () => void };
 let storage: Map<string, string>;
 function render() {
   host.cursor = 0;
@@ -48,12 +48,12 @@ beforeEach(() => {
 afterEach(()=>{vi.unstubAllGlobals();vi.clearAllMocks();});
 async function choose(selected=file) {
   input(render(),'file').props.onChange!({target:{files:[selected],value:'chosen'}});
-  await vi.waitFor(()=>expect(render().find(n=>n.type==='button')!.props.disabled).toBe(false));
+  await vi.waitFor(()=>expect(render().find(n=>n.type==='button'&&n.props.className?.includes('upload-start'))!.props.disabled).toBe(false));
 }
 it('default and selected compact survive failed create and lock immutable options',async()=>{
   expect(input(render(),'checkbox').props.checked).toBe(true);
   await choose();input(render(),'checkbox').props.onChange!({target:{checked:true}});
-  render().find(n=>n.type==='button')!.props.onClick!();
+  render().find(n=>n.type==='button'&&n.props.className?.includes('upload-start'))!.props.onClick!();
   expect(input(render(),'checkbox').props.disabled).toBe(true);
   await vi.waitFor(()=>expect(vi.mocked(rpc)).toHaveBeenCalled());
   expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({compact:true,account_scope:scope});
@@ -66,7 +66,7 @@ it.each([true,false])('strict v2 restores locked compact %s after full hash and 
     options:{...{music:false,teaser:true,compact:true,ctaKind:'none',ctaUrl:null}, compact:value}}));
   await choose();expect(vi.mocked(rpc)).not.toHaveBeenCalled();
   expect(input(render(),'checkbox').props.checked).toBe(value);expect(input(render(),'checkbox').props.disabled).toBe(true);
-  render().find(n=>n.type==='button')!.props.onClick!();await vi.waitFor(()=>expect(vi.mocked(rpc)).toHaveBeenCalled());
+  render().find(n=>n.type==='button'&&n.props.className?.includes('upload-start'))!.props.onClick!();await vi.waitFor(()=>expect(vi.mocked(rpc)).toHaveBeenCalled());
   expect(vi.mocked(rpc).mock.calls[0]![3]).toBe(key);expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({compact:value,filename:'original.mp3'});
 });
 it('legacy never automatically resumes or assigns new hash to old parts',async()=>{

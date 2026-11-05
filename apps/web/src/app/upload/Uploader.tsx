@@ -12,6 +12,7 @@ import { MAX_UPLOAD_BYTES, NORMAL_SOURCE_SECONDS } from '@clipmaker/shared/uploa
 import { CtaFields, ctaProblem } from '../videos/CtaFields';
 
 type Phase = 'idle'|'hashing'|'readyNew'|'readyResume'|'creating'|'transferring'|'savingManifest'|'completing'|'paused'|'mismatch'|'storageBlocked'|'unknownComplete'|'recoveryUnavailable'|'error'|'accepted';
+type TransferProgress = { kind: 'current'|'lastObserved'; bytes: number; total: number };
 type Attempt = {generation:number;scope:string;controller:AbortController};
 class StorageBlocked extends Error {}
 export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NORMAL_SOURCE_SECONDS,recoveryIntent=false}:
@@ -23,6 +24,9 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
   const [music,setMusic]=useState(false),[teaser,setTeaser]=useState(true),[compact,setCompact]=useState(true);
   const [ctaKind,setCtaKind]=useState<CtaKind>('none'),[ctaUrl,setCtaUrl]=useState('');
   const [file,setFile]=useState<File|null>(null),[digest,setDigest]=useState<string|null>(null);
+  const [progress,setProgress]=useState<TransferProgress|null>(null);
+  const observed=useRef<TransferProgress|null>(null);
+  const picker=useRef<HTMLButtonElement|null>(null);
   const resume=useRef<UploadResumeV2|null>(null),attempt=useRef<Attempt|null>(null),generation=useRef(0);
   const mounted=useRef(false),scope=useRef(accountScope),unavailable=useRef(false),accepted=useRef(false);
   const input=useRef<HTMLInputElement|null>(null),primary=useRef<HTMLButtonElement|null>(null),retry=useRef<HTMLButtonElement|null>(null),pauseButton=useRef<HTMLButtonElement|null>(null);
@@ -37,6 +41,7 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
   function clearSelection() {setFile(null);setDigest(null); if(input.current)input.current.value='';}
   function pause() {
     const unknown=phase==='completing'; invalidate();clearSelection();setError('');
+    if(observed.current){observed.current={...observed.current,kind:'lastObserved'};setProgress(observed.current);}
     setPhase(unknown?'unknownComplete':'paused');
     setMessage(unknown?'Результат завершения неизвестен. Сервер мог начать обработку. Результат проверим при повторе.':'Передача приостановлена. Выберите исходный файл.');
   }
@@ -44,6 +49,7 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
     mounted.current=true; accepted.current=false; invalidate();clearSelection();setVideoId(null);setError('');
     const read=readUploadResume(accountScope);unavailable.current=read.kind!=='found' && (read.kind!=='absent'||recoveryIntent);
     resume.current=read.kind==='found'?read.value:null;setSaved(resume.current);
+    observed.current=resume.current?.parts?{kind:'lastObserved',bytes:resume.current.size,total:resume.current.size}:null;setProgress(observed.current);
     setPhase('idle');setMessage(read.kind==='found'?'Выберите исходный файл, затем отдельно продолжите загрузку.':
       unavailable.current?'Данные продолжения недоступны. Автоматически восстановить эту загрузку нельзя.':'');
     const click=(event:MouseEvent)=>{
@@ -56,19 +62,19 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
       invalidate();
     };
     const fileInput=input.current;
-    const cancel=()=>{if(!attempt.current){setPhase('paused');setMessage('Выберите исходный файл.');fileInput?.focus();}};
+    const cancel=()=>{if(!attempt.current){setPhase('paused');setMessage('Выберите исходный файл.');picker.current?.focus();}};
     fileInput?.addEventListener('cancel',cancel);
     document.addEventListener('click',click,true);
     return ()=>{fileInput?.removeEventListener('cancel',cancel);mounted.current=false;invalidate();document.removeEventListener('click',click,true);};
   },[accountScope,recoveryIntent]);
   useEffect(()=>{
     const target=['hashing','creating'].includes(phase)?pauseButton.current:phase==='readyResume'?primary.current:phase==='storageBlocked'?retry.current:
-      ['paused','mismatch','unknownComplete','recoveryUnavailable'].includes(phase)?input.current:null;
+      ['paused','mismatch','unknownComplete','recoveryUnavailable'].includes(phase)?picker.current:null;
     target?.focus();
   },[phase]);
   useEffect(()=>{
     if(!recoveryIntent)return;
-    input.current?.focus();
+    picker.current?.focus();
   },[recoveryIntent]);
   useEffect(()=>{
     setEstimatedSeconds(null); if(!file||!creditMode)return;
@@ -106,6 +112,7 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
     let value:UploadResumeV2=resumed&&previous?previous:{version:2,accountScope,key:crypto.randomUUID(),identityAlgorithm:'sha256',contentSha256:digest,size:file.size,
       originalFilename:file.name.trim(),options:{music,teaser,compact,ctaKind,ctaUrl:ctaKind==='none'?null:ctaUrl.trim()}};
     const selected=file,current=begin();let completeSent=false;
+    if(!resumed){observed.current=null;setProgress(null);}
     setError('');setPhase('creating');setMessage('Подготавливаем загрузку…');
     try {
       persist(current,value);
@@ -120,10 +127,13 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
       if(!value.parts){
         const data=await create();check(current);value={...value,videoId:data.video_id,partSize:data.part_size};persist(current,value);
         flushSync(()=>{setVideoId(data.video_id);setPhase('transferring');setMessage('Передаём файл');});
-        const parts=await uploadParts(selected,data,current.controller.signal,create);check(current);
+        const parts=await uploadParts(selected,data,current.controller.signal,create,bytes=>{
+          if(!alive(current))return;
+          observed.current={kind:'current',bytes,total:selected.size};setProgress(observed.current);
+        });check(current);
         value={...value,parts};setPhase('savingManifest');persist(current,value);
       }
-      check(current);setVideoId(value.videoId!);setPhase('completing');setMessage('Завершаем загрузку…');
+      check(current);observed.current={kind:'current',bytes:selected.size,total:selected.size};setProgress(observed.current);setVideoId(value.videoId!);setPhase('completing');setMessage('Завершаем загрузку…');
       completeSent=true;
       const response=await fetch('/api/upload/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({video_id:value.videoId,parts:value.parts}),signal:current.controller.signal});check(current);
       const result=await response.json();check(current);
@@ -141,28 +151,49 @@ export function VideoUploader({accountScope,creditMode=false,maxSourceSeconds=NO
       else setPhase('error');
     }finally{if(alive(current)){attempt.current=null;window.removeEventListener('beforeunload',beforeUnload.current);}}
   }
-  return <section className="upload-panel"><div><p className="eyebrow">НОВЫЙ ВЫПУСК</p><h2>Один разговор.<br/>Несколько сильных моментов.</h2>
-    <p>Загрузите подкаст или вебинар. Мы найдём фрагменты и соберём вертикальные клипы с субтитрами.</p></div>
-    <div className="upload-controls"><label htmlFor="source-file">Исходный файл</label>
-      <input ref={input} id="source-file" type="file" accept=".mp4,.mov,.webm,.m4a,.mp3" disabled={busy} aria-describedby={`source-file-help${error?' source-file-error':''}`} aria-invalid={!!error||undefined}
-        onClick={()=>{clearSelection();}}
-        onChange={event=>{const selected=event.target.files?.[0]??null;event.target.value='';void select(selected);}}/>
-      <p id="source-file-help" className="muted">MP4, MOV, WebM, M4A, MP3 · 2–{Math.floor(maxSourceSeconds/60)} минут · до 2 ГБ.
+  const filename=file?.name??saved?.originalFilename??'Файл не выбран';
+  const total=file?.size??saved?.size;
+  const percent=progress?Math.floor(progress.bytes/progress.total*100):null;
+  return <section className="upload-panel studio-upload" aria-label="Новая запись"><div className="studio-work">
+    <header className="workspace-title"><p className="eyebrow studio-kicker">НОВАЯ ЗАПИСЬ</p><h1><span className="cabinet-upload-title">Новая запись</span><span className="studio-upload-title">Один разговор.<br/>Несколько клипов.</span></h1>
+      <p className="studio-lead">Выберите файл для создания коротких вертикальных клипов с субтитрами.</p></header>
+    <div className="upload-controls"><p className="workspace-section-label">Исходный файл</p>
+      <div className="workspace-file studio-file"><span className="workspace-file-symbol" aria-hidden="true">+</span><div><strong className="file-name">{filename}</strong>
+        <small>MP4, MOV, WebM, M4A, MP3 · до 2 ГБ</small></div>
+        <button ref={picker} id="source-file-picker" type="button" disabled={busy} className="source-file-picker action-primary" onClick={()=>input.current?.click()}
+          aria-describedby="source-file-help">{saved?'Выбрать исходный файл':file?'Выбрать другой файл':'Выбрать файл'}</button>
+        <input ref={input} id="source-file" className="native-file-input" hidden tabIndex={-1} aria-label="Исходный файл" type="file" accept=".mp4,.mov,.webm,.m4a,.mp3" disabled={busy} aria-describedby={`source-file-help${error?' source-file-error':''}`} aria-invalid={!!error||undefined}
+          onClick={()=>{clearSelection();}}
+          onChange={event=>{const selected=event.target.files?.[0]??null;event.target.value='';void select(selected);}}/>
+      </div>
+      <p id="source-file-help" className="muted">2–{Math.floor(maxSourceSeconds/60)} минут · до 2 ГБ.
         {saved?` Для продолжения выберите исходный файл: ${saved.originalFilename}.`: ' Без сохранённых данных продолжить прежнюю передачу нельзя.'}</p>
-      {creditMode&&<p className="muted">1 кредит = 60 секунд записи.{estimatedSeconds!==null?` Предварительно: ${(estimatedSeconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов (${estimatedSeconds} секунд).`:''} Точный резерв определим по файлу на сервере до обработки. При техническом отказе без готовых клипов резерв вернётся.</p>}
+      <div className="workspace-actions">
       {phase==='storageBlocked'?<button ref={retry} onClick={()=>void upload()}>Повторить сохранение</button>:
-        <button ref={primary} disabled={busy||!file||!digest||phase==='mismatch'||phase==='recoveryUnavailable'||phase==='accepted'} onClick={()=>void upload()}>
+        <button ref={primary} className="upload-start action-primary" disabled={busy||!file||!digest||phase==='mismatch'||phase==='recoveryUnavailable'||phase==='accepted'} onClick={()=>void upload()}>
           {saved?'Продолжить загрузку':'Создать клипы →'}</button>}
       {busy&&<button ref={pauseButton} className="secondary" onClick={pause}>{phase==='hashing'?'Отменить проверку':'Приостановить загрузку'}</button>}
       {!busy&&(saved||unavailable.current)&&<><p className="muted">Новая загрузка расходует отдельный слот. Прежняя запись может остаться незавершённой.</p>
         <button className="secondary" disabled={!file||!digest} onClick={()=>void upload(true)}>Начать новую загрузку</button></>}
+      </div>
+      {(saved||progress)&&<div className="workspace-transfer" aria-label="Подтверждённая передача">
+        <p>{progress?`${progress.kind==='lastObserved'?'Подтверждено в последней попытке':'Подтверждено хранилищем'}: ${progress.bytes.toLocaleString('ru-RU')} из ${progress.total.toLocaleString('ru-RU')} байт (${percent}%)`:'Объём подтверждённой передачи уточним после продолжения'}</p>
+        <progress aria-label="Подтверждённая передача файла" max={progress?.total??total??1} value={progress?.bytes} />
+        <small>100% передачи ещё не означает начало обработки.</small>
+      </div>}
       <p role="status" aria-live="polite" aria-atomic="true">{message}</p>
       {error&&<p id="source-file-error" role="alert">{error}</p>}
-      {videoId&&<p className="video-id">video_id: <code>{videoId}</code></p>}
+      <details className="workspace-upload-options"><summary>Настройки клипов</summary>
+      {creditMode&&<p className="muted">1 кредит = 60 секунд записи.{estimatedSeconds!==null?` Предварительно: ${(estimatedSeconds/60).toLocaleString('ru-RU',{maximumFractionDigits:2})} кредитов (${estimatedSeconds} секунд).`:''} Точный резерв определим по файлу на сервере до обработки. При техническом отказе без готовых клипов резерв вернётся.</p>}
       <label className="check"><input type="checkbox" checked={music} disabled={locked} onChange={event=>setMusic(event.target.checked)}/> Добавить музыку и финальный акцент</label>
       <small className="muted">Komiku, HoliznaCC0 — музыка CC0 · Kenney — Sci-Fi Sounds, CC0</small>
       <label className="check"><input type="checkbox" checked={teaser} disabled={locked} onChange={event=>setTeaser(event.target.checked)}/> Заголовок в начале клипа</label>
       <label className="check"><input type="checkbox" checked={compact} disabled={locked} onChange={event=>setCompact(event.target.checked)}/> Убрать паузы</label>
       <CtaFields id="upload-cta" kind={ctaKind} url={ctaUrl} disabled={locked} onKind={setCtaKind} onUrl={setCtaUrl}/>
-    </div></section>;
+      </details>
+    </div></div><aside className="studio-preview" aria-label="Текущий исходный файл"><p>Исходная запись</p>
+      <div className="studio-source-preview"><span aria-hidden="true">{file?'↥':'+'}</span><strong>{filename}</strong>
+        <p>{total?`${total.toLocaleString('ru-RU')} байт`:'Выберите видео или аудио'}</p></div>
+      <p className="quiet">{file?'Файл выбран. Передача начинается только по вашей команде.':saved?'Передача не завершена. Выберите исходный файл для проверки.':'Здесь появится информация о выбранном файле. Готовые клипы доступны после обработки.'}</p>
+    </aside></section>;
 }
