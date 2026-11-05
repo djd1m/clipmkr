@@ -142,3 +142,31 @@ upload проверяет переход pending→activated; его резул�
 
 Урок об ошибочно названных коротких ссылках записан как `teach:63957ce1d00ecd99`;
 actual writer `/home/clipmkr/.dz`, no-mirror, повторный recall вернул запись.
+
+## Браузерные проверки управления блогером на изолированной БД
+
+Запущен существующий `tests/browser/blogger-cabinet.test.ts` с точечным private Vitest
+config, включающим этот browser suite. **6/6 PASS, failed0, pending0**, Chromium и WebKit:
+поиск/назначение/сохранение индивидуального лимита после reload, сохранение настройки
+при отказе обновления отчёта, запрет гостю/обычному/блогеру и чужому Origin.
+Использованы существующие изолированные PostgreSQL `n5_test` и Redis DB15, настоящий
+React → HTTP handler → PostgreSQL. Временная схема удалена. Новых контейнеров нет.
+
+Это локальная HTTP fixture с синтетическими ролями и адаптацией Secure cookie для
+локального HTTP; не подтверждение входа настоящего владельца на опубликованном сайте.
+Исходники suite/UI/handler совпадают с8859. Private evidence:
+`blogger-browser-existing.private.json/.log`. Роли в опубликованной БД не менялись.
+
+## Промежуточный результат upload реферального клиента
+
+Новый video `328e7fbd-1593-4378-b9c5-528509773ef4`: три настоящих S3 PUT200/ETag,
+автоматический переход на страницу записи, STT/selection и первый ready clip. Первый
+playback harness завершился FAIL по ожиданию45с: использована неверная точка клика
+bottom22px, тогда как ранее проверенный native Play находится bottom48px. Кроме того,
+ранний oracle пропускал состояние rendering с одним из двух клипов. Этот FAIL сохранён
+в `referral-upload-result.private.json`; он не доказывает отказ продукта и не объявляется PASS.
+
+Повторная проверка переиспользует проверенный native Play/download harness без новой
+загрузки или обработки. До Play она требует terminal done и clips_done=clips_total>0
+из действительного authenticated API. Ожидается её итог; атрибуция activated и полная
+нарезка для этого клиента пока не объявлены успешными.
