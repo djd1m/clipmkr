@@ -1,15 +1,9 @@
 # Автоматическая личная ссылка блогера
 
-Утверждённый HTML: `docs/design/2026-11-05-blogger-auto-link.html`, исходный commit `18e4fa9`.
-Реальное согласование: `owner-approval.md`. Реализация начинается с `24b4b4a`.
+Реализована и опубликована на **https://clipmkr.ru/dashboard**. Назначенный блогер видит готовую личную ссылку и кнопку копирования. История и блокировка прежней ссылки сохраняются.
 
-Подготовлены требования с точной OpenSpec hash-привязкой, reuse, M ADR, light architecture и
-план 9 файлов. HTML не изменялся; старый `03_mockup_checks.md` — исторические проверки макета,
-не текущая проверка новой OpenSpec-ревизии и не доказательство продуктового runtime.
+[Фактическая поставка и инструкция ручной проверки](09_runtime_acceptance.md), [source QE и ограничения](08_qe_report.md), [согласование макета](owner-approval.md), [требования](01_requirements.md).
 
-K1 выполнен двумя pinned dz командами с Node22 (FREE, exit 0). Initial QCSD выполнен; после structural rework Q-BA-01/R-BAL-01/T-BAL-01
-нужны новый host snapshot и focused verification исходными reviewer-ролями. Convergence
-unresolved до этого подтверждения; K2, implementation и QE пока NOT RUN.
+Source `f55ae4004b88f59558496217e522f26e3288b009`: независимый cross-model review closed после исправления трёх условий, supported checkpoints приняты. Native HTTPS browser проверил8комбинаций и разграничение блогера/обычного пользователя. Ручная приёмка владельца пока не заявлена. Cloud.ru не обновлялся.
 
-Авторские материалы не являются независимым review. Runtime, deploy, commit и push этим
-планированием не выполнялись. Полный UX в коммите `9365e990` не входит в scope.
+Предшествующие отчёты макета, author handoff и initial review сохранены как история; текущий итог поставки указан выше. Полное UX-упрощение9365e990 и полный продуктовый CJM не закрываются этой фичей.
