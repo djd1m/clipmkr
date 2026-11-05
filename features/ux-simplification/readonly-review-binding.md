@@ -1,0 +1,13 @@
+# Связь native QE с неизменными прямыми зависимостями
+
+05.11.2026. Plan-only BR-1 refinement: plannedWriteScope23 сохранён;12 readonlyReviewInputs добавлены в literal measurement block, nativeManifestTargets35. Это не35planned edits и не доказанное23actual changedfiles. Exact предыдущий23-input plan сохранён history/scope-binding/06_implementation_plan.md SHA19169d484a428e0df61d2ee67919adb69fd40ed6cde8bc680afb62edca521d68. Прежние22/23 checkpoints не переписаны.
+
+Просмотрены реальные imports новых SSRaccount/partner pages и dashboard/uploader, а также bodies выбранных readers. Прямое связывание: pageAccount→runtime; summary→remainingLimits; supportPageState→runtime projection; screenRuntime→pool/config; runtime→loadWebConfig; readAccountBilling реализован вpayments.ts; getBloggerPolicy вblogger-policy.ts; CtaFields владеет CTA; upload-resume хранит account-scopedresume; dashboardlayout сохраняет session/erasure guards. Baseline hashes12owners реально сравнены с7411746/currentHEAD/currentbytes и совпали. Полный dependency closure не заявлен.
+
+Обоснование cap25: architecture§74 явно отделяет read/reuse без edits от минимального implementation target list;§46 иtaskscope исключают новые backend changes. Read-only measurement inputs поэтому не увеличивают planned change budget и не дают право редактировать серверные/package модули. Conservative router L14/23≤25 сохраняется; actualdiffcount отдельно при completion.
+
+Перед formalQE native helper должен реально измерить все12 path/digest на том же current snapshot; наличие prose/07buildmarker не доказательство. Новый K2/target/context и поддерживаемый plan checkpoint фиксируются отдельно; context generated ≠ consumed, parent/coder фактическое чтение ещё должен подтвердить. Границы noapp/testedit/noQEprepare/nocommit/unchangedideation остаются.
+
+## Реальный результат уточнения
+
+Pinned K2 exit0/PASS,0fail/0warn/0skip на35declared inputs; target helper exit0/admitted; literalcontext helper exit0/complete/diagnostics[]. Supported native dz plan checkpoint appendexit0 со split plannedWriteScope23/readonlyReviewInputs12/nativeManifestTargets35. Plan SHA `54537fca57c0862d7c3c4d0d7e7346b886354b39c6cc748eba73b97f3ae66b7e`; context digest `41428015c412679eba86989fa300fc971942baf83dd0549d84243086855185fc`. Экспортированный настоящий measureManifest(...,qe) прочитан безprepare: все12 readonlypaths реально содержатся с ожидаемыми baselinehashes;53measured paths всего включают design и discovered changes, это не35sourceinputs и неactualchangedcount. Семь ideationhashes неизменны. Generation ≠ consumed: currentcontext автором в рамках этого прохода ещё не прочитан, parent отвечает за доставку и подтверждениечтения. Код/тесты/commit/QEprepare не менялись.

@@ -8,7 +8,7 @@ Inputs read: 03_adr, 05_architecture.md, 04_domain_model.md, pinned feature-adr/
 
 Цель: FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7 реализованы для всех 21 семейств из root05, без изменения серверных контрактов/прав/цен/лимитов. Ближайшие три результата: upload → processing/partial → ready/share. Они не заменяют остальные 18 семейства. Текущая база `a4488b4caf602f093a0cc3393b4903e210cb3989`; auto-link и personal TEST checkout уже существуют и сохраняются. Coverage % не измерялся, runtime работоспособность не утверждается.
 
-Implementation **L14**: 14 UI/CSS + 2 SSR pages + 7 test/harness = **23** точных targets в конце. Target23 `tests/progress-screen.test.ts` добавлен только новым prospective scope amendment; прежний22-target checkpoint остаётся историческим. См. `scope-amendment-23.md`. Добавлены два bounded presentation wrappers account/page.tsx и partner/page.tsx; share остаётся существующим contextual компонентом. Дополнительные изменения максимум до25 только после явного обоснования/re-router и обновления gates. Server/API/DB/pkg/env/worker/provider/DNS не targets. Этот planner не запускает code/runtime; ограничение его сессии не отменяет разрешения пользователя координатору на шаги1–4. Новых агентов здесь нет.
+Implementation **L14**: planned WRITE scope = 14 UI/CSS + 2 SSR pages + 9 test/harness = **25** разрешённых для правки paths; literal native measurement block в конце содержит **37** paths (эти25 +12READ-ONLY dependencies), см.BR-1. Фактическое количество изменённых файлов не утверждается. Target23 `tests/progress-screen.test.ts` добавлен только новым prospective scope amendment; прежний22-target checkpoint остаётся историческим. См. `scope-amendment-23.md`. Existing test-only targets24/25 добавлены prospective amendment `scope-amendment-25.md`; предыдущий WRITE23/measurement35 план сохранён `history/scope25/06_implementation_plan.md`. Добавлены два bounded presentation wrappers account/page.tsx и partner/page.tsx; share остаётся существующим contextual компонентом. Лимит25 полностью выбран: новая правка вне этих25 требует отдельного пересмотра router/плана/gates до кода. Server/API/DB/pkg/env/worker/provider/DNS не targets. Этот planner не запускает code/runtime; ограничение его сессии не отменяет разрешения пользователя координатору на шаги1–4. Новых агентов здесь нет.
 
 ## Предусловия и checkpoints
 
@@ -16,7 +16,7 @@ Implementation **L14**: 14 UI/CSS + 2 SSR pages + 7 test/harness = **23** точ
 |---|---|
 | TASK-P0 | Specification: exact HTML согласован владельцем, evidence owner-approval.md/call_f0a94c16c93f49b38617215d46b23b7a. Исправленный ADR-001 сохраняет отдельные account/stats состояния; повторное approval не требуется. Это не успешный native checkpoint |
 | TASK-P1 | Architecture/QCSD: шесть originating Terra reviews R3 clean; native host/review revision `8089a54c3cb9281c79972e951c318814e62a3eff7829abcecdf1fd40ab680659`, nonce `8eff00a1-1ae5-4320-97e9-1615f6d0ba20`. Actual evaluate: verdict closed, unresolved=[], reasons=[]; все7 native manifest digests сверены. Десять исходных условий закрыты на уровне проекта, будущие Confirmation NOT RUN |
-| TASK-P2 | Plan: literal ADR/FR task coverage, A1…A10 и AM-1…AM-11,23 targets; actual K2 tier L/requirements/acid, затем exact-final-plan build-coder-context. Остальные native checkpoint/K1/source-admission выполняет координатор по настоящим receipts; здесь их успех не заявляется |
+| TASK-P2 | Plan: literal ADR/FR task coverage, A1…A10 и AM-1…AM-13,plannedWriteScope25/nativeManifestTargets37 (12READ-ONLY); actual K2 tier L/requirements/acid, затем exact-final-plan build-coder-context. Остальные native checkpoint/K1/source-admission выполняет координатор по настоящим receipts; здесь их успех не заявляется |
 
 P0/P1 выполнены как prerequisites согласования/design closure. P2 зависит от обоих; Task1 начинается после фактических оставшихся gates координатора, без повторного owner approval. Proof evaluate: `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-qcsd/r3-final-evaluate.private.json`, SHA-256 `92f115f9c71efad8fdb02353d38bff05c15920dd96cdb8168dcc7dc1c92d3e18`; current `.fa-state/review-convergence-ideation-host.json` и `review-convergence-ideation-review.json`. Verifications принадлежат исходным reviewers; author не меняет их entries. На настоящих переходах coordinator читает релевантный pinned recall.
 
@@ -31,13 +31,21 @@ P0/P1 выполнены как prerequisites согласования/design cl
 | TASK-3 / TASK-2 / refinement | ADR-001, ADR-002; FR-3, FR-5: `ClipCard`, `ClipMusicChoice`, `GuestPacks`, `VideoDetail`: «Ещё»/share/edit, music draft+apply, одна video CTA/guest owner | A4/A5/A6: player DOM/src/time и CTA input/draft сохранены при poll/toggles; независимые clip drafts; preview/select без mutation, apply один запрос; consent reset при изменённом payload; список create/send/revoke и возврат focus сохранены |
 | TASK-4 / TASK-3 / refinement | ADR-001, ADR-003; FR-1, FR-4, FR-5: `PartnerPanel`, `BloggerAdmin`, новый `dashboard/partner/page.tsx`; отдельный stats screen/back, summary/statistics presentations, codes details и owner nullable policy/report | A2/A7: direct URL non-blogger→404 страницы; статистика all-time; auto-link всегда обнаружима, ensurePersonalLink не дублируется; blocked/copy fallback сохранены. Лимит integer2–1440/null→120, rate null/20/30; reason открыт; invalid limit раскрыт/сфокусирован, POST отсутствует; owner report monthMSK/no payouts |
 | TASK-5 / TASK-4 / refinement | ADR-001, ADR-003; FR-4, FR-5, FR-6: `WorkspaceHeader`, `WorkspaceSettings`, `dashboard/page.tsx`, `UpgradeScreen`, новый `dashboard/account/page.tsx`; отдельный account screen/back + пакеты | A8/A9/A10: один AccountDeletion и SignOut, irreversible72h/unchecked confirmation вместе с действием; workspace default и сохранённые preferences; price/windows/TEST/disabled reason видимы при закрытой help; server eligibility и account-key guards прежние |
-| TASK-6 / TASK-1…5 / completion | ADR-001, ADR-002, ADR-003; FR-1, FR-7: все6 test/harness targets, полная 21-family regression matrix root05, same-state screenshots, independent code QE и anti-drift | Именованные сценарии исполняют реальные React controls/DOM/media; нет source-substring-only доказательства. Все21 строки имеют evidence либо явный gap. Реальный provider/media CJM и owner manual не подменены локальными fixtures |
+| TASK-6 / TASK-1…5 / completion | ADR-001, ADR-002, ADR-003; FR-1, FR-7: все9 test/harness targets, полная 21-family regression matrix root05, same-state screenshots, independent code QE и anti-drift | Именованные сценарии исполняют реальные React controls/DOM/media; нет source-substring-only доказательства. Все21 строки имеют evidence либо явный gap. Реальный provider/media CJM и owner manual не подменены локальными fixtures |
 
 Проверки пишутся/исполняются вместе со своей задачей; TASK-6 собирает окончательную матрицу, не откладывает проверку lifecycle до конца. Параллельные авторы не назначены: shared CSS, VideoDetail и harness пересекаются, выполнение последовательное. Автор кода gpt-6.1-sol high; planner gpt-6-astra xhigh; design review выполнен originating Terra xhigh, code QE — отдельная Astra без coding context. В этой сессии другие агенты не запускались.
 
 ### TASK-7 — миграция существующего regression harness (prospective target23)
 
 FR-1, FR-3, FR-5, FR-6, FR-7; ADR-002/ADR-003; зависит от стабильных TASK-2/3/5 и нового scope23 admission. Только `tests/progress-screen.test.ts`: сохранить настоящие projection/browser assertions; дополнить локальный React mock законным useRef(initial)→{current:initial}; отличить полностью готовый4/4 от частичного3/4 без fake retry; проверить native video controls/selection вместо снятого текста; пройти существующие lifecycle сценарии через согласованные «Ещё»→«Поделиться»/edit. Никаких skip/ослабления проверок/larger timeout вместо диагностики. Таймауты при параллельном source edit остаются неопределёнными до rerun на стабильных bytes; сначала отличить продуктовый регресс от устаревшего oracle. Готовность: полный этот suite + прежний mustRun набор проходит на стабильном source, оба Chromium/WebKit сценария реально исполняются; прямой projection test продолжает обнаруживать неверный no_response у uploading. Ни одного application/API/schema изменения эта задача не разрешает.
+
+### TASK-8 — Vite adapter существующего auto-link harness (prospective target24)
+
+FR-1, FR-4, FR-5, FR-6, FR-7; ADR-001/ADR-003; зависит от стабильного TASK-4/5, scope25 gates и фактического чтения полного актуального coder context автором. Только `tests/browser/blogger-auto-link.test.ts`: добавить точный Vite adapter `next/link` → native anchor с теми же href/handlers, по существующему adapter `next/navigation`; prebundle лишь необходимые уже установленные React dependencies. Не подменять application imports/config, API, SQL, session или payment capability. Сохранить настоящий React→HTTP→PostgreSQL тракт, все account/isolation/blocked/manual-copy/200%/preferences assertions и timeouts; не skip и не замена runtime-проверки source-contains. Проверить отсутствие hydration/pageerror и достижение прежних assertions на стабильном source в Chromium/WebKit. Это isolated harness: native Next Link/navigation/AM-5 доказывается отдельным настоящим Next suite, не adapter. Done: полный auto-link suite без skipped resource cases, прежние негативные случаи реально исполнены; новый продуктовый fault расследовать отдельно.
+
+### TASK-9 — mounted capability oracle в существующем billing harness (prospective target25)
+
+FR-1, FR-3, FR-5, FR-7; ADR-001/ADR-002/ADR-003; зависит от стабильного TASK-3/5, scope25 gates и прочитанного полного текущего coder context. Только `tests/browser/billing.test.ts`: сохранить существующий SSR composition/responsive/axe/return-state/price oracle; для существующего card-on/card-off capability scenario добавить минимальную гидратируемую или mounted React fixture настоящего ClipCard в этом же файле, используя уже установленные Vite/React patterns. Реально пройти «Ещё»→«Изменить оформление»→music/Pro; не принудительно открывать DOM через evaluate и не возвращать открытый Pro UI в приложение ради старого теста. Оставить точный `/upgrade?from=clip_card`, видимую Pro ссылку при paymentsOn, отсутствие legacy interest при enabled, наличие прежней interest button и отсутствие upgrade link при off. Сохранить обе browser engines и прежние guards; toggle сам не отправляет payment/music mutation. Assertions не переносить в другой suite, не удалять/ослаблять и не маскировать timeout. Done: полный billing suite и исходный regression набор на стабильных bytes; исправленный capability scenario реально различает on/off после пользовательского раскрытия.
 
 ## Проверяемые Confirmation / acid scenarios — план, NOT RUN
 
@@ -123,9 +131,70 @@ R3 / только UXR-02: TASK-3 реализует узкий onApplyStart/toke
 
 AM-11 (source: root mustRun terminal05.11.2026,5failed/124passed; existing regression target23): мигрировать только существующий progress-screen harness к уже согласованной композиции, сохранив раннюю projection-проверку и реальные browser/lifecycle/partial assertions. Confirmation: uploading no_response остаётся neutral при0/300001/86400000, queued/transcribing stale выявляются; неверная parent projection обязана ломать assertion → test `local_uploading_staleness_keeps_projection_neutral` in `tests/progress-screen.test.ts` (fails if reverted). Дополнительно TASK-7 сохраняет ready-vs-partial, native media, selection, два poll, preferences/drafts/consent/focus/explicit mutation и unavailable/removal в Chromium/WebKit; source-contains-only замена и blind skip запрещены. Новый scope не приписывается прежнему22-target receipt.
 
+AM-12 (source: scope-request-24-25.md, target24; coordinator scope25): TASK-8 меняет только изолированный Next Link/React adapter, сохраняя настоящий account-scoped HTTP/PG auto-link oracle. Confirmation: две HTTP сессии не присваивают чужой personal code; остальные blocked/copy/reload/zoom/preferences cases сохраняются → test `two blogger HTTP sessions keep personal link ownership isolated` in `tests/browser/blogger-auto-link.test.ts` (fails if reverted). Harness adapter не доказывает native Next navigation; AM-5 остаётся обязательным.
+
+AM-13 (source: scope-request-24-25.md, target25; coordinator scope25): TASK-9 сохраняет capability assertion в исходном billing suite и исполняет настоящее пользовательское раскрытие mounted ClipCard. Confirmation: paymentsOn показывает правильный Pro href и исключает interest, off сохраняет interest и исключает upgrade link → test `карточка: при включённой оплате — видимая ссылка «Оформить Pro» на /upgrade, при выключенной — прежняя кнопка интереса` in `tests/browser/billing.test.ts` (fails if reverted). SSR composition/price/return-state/axe assertions сохраняются, test migration не заменяет server/payment guards.
+
 ## Final plan evidence
 
 Exact reviewed R3 plan сохранён до правок: `history/qcsd-r3/06_implementation_plan.md`, SHA-256 `d65b383c13c86020bfcde0cc028a59ce5a6793afd54e617e51e78566e3cb492d`. Frozen R3 manifest остаётся историческим: несовпадение его live-plan entry после финализации ожидаемо; requirements/ADR/04/05 native snapshot не меняется. Новый final plan hash и actual K2/context results — отдельный private `ui-qcsd/step6-final-record.private.json`, без перезаписи frozen manifests. K2 stdout — `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-qcsd/k2-final.private.txt`. Команда: pinned Node22 `check-plan-completeness.mjs features/ux-simplification --tier=L --require-requirements --acid=A1,A2,A3,A4,A5,A6,A7,A8,A9,A10`; actual exit0,0 failures/0 warnings/0 skips. Финальные K2 и build-coder-context повторяются после этих bytes; их результат/точный hash в отдельном record, preflight40215chars не считается final context. Это evidence, не успешный checkpoint.
+
+## BR-1 — READ-ONLY review inputs и отдельный WRITE scope
+
+Техническое уточнение измерения до formal QE. **plannedWriteScope25** — разрешённые application/test/harness paths (прежние23 +2 existing regression targets по scope25), не утверждение фактического количества изменённых файлов. Conservative complexity budget25≤25, L14; actual changed count измеряется отдельным final Git diff. Дополнительно12 существующих critical dependency owners ниже включены в literal native measurement block только для хеширования: **nativeManifestTargets37 = plannedWriteScope25 + readonlyReviewInputs12** (первоначальный BR-1:23+12=35, его receipt неизменен). Их редактировать нельзя: любое изменение требует отдельного обоснования/admission до правки. Generation context не является фактом его чтения; parent отдельно обеспечивает actual read полного текущего37-input context автором.
+
+Основание границы:05_architecture.md§74 явно описывает read/reuse без edits вне minimal implementation target list;§46 исключает worker/server/DB topology changes. Complexity Files dimension иcap25 относятся к плановым edit/change путям, не к числу неизменных источников проверки. Для nativeQE skill08 требует relevant unchanged dependencies в declared measurement inputs; финальные153apphashes в07_code_changes не заменяют измерение native helper. Никаких новых библиотек/API/schema/architecture/requirements/поведения или разрешений здесь нет; прежний23-target receipt сохраняет исходный смысл.
+
+| READ-ONLY path | Critical seam | Baseline SHA-256 (7411746=HEAD=current при admission) |
+|---|---|---|
+| `apps/web/src/server/page-account.ts` | SSR session-bound identity | `f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713` |
+| `apps/web/src/server/dashboard-summary.ts` | SSR account-scoped summary entry | `e0bd9e06e8171b6a22e3c3877bd4c2bd9f95aa809ba18ba2b0070762a8d60085` |
+| `apps/web/src/server/support/page-state.ts` | SSR profile identity/verified/mail projection | `b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145` |
+| `apps/web/src/server/screen-runtime.ts` | SSR runtime pool/config binding | `1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb` |
+| `apps/web/src/server/runtime.ts` | Runtime config/auth assembly | `7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb` |
+| `packages/shared/src/config.ts` | Actual web-config parser and TEST/payment flags | `d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f` |
+| `packages/db/src/payments.ts` | Actual readAccountBilling owner | `c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b` |
+| `apps/web/src/server/limits.ts` | Quota/credits/source-limit reader behind summary | `ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20` |
+| `packages/db/src/blogger-policy.ts` | Existing blogger SSR route guard owner | `2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e` |
+| `apps/web/src/app/videos/CtaFields.tsx` | Existing per-video CTA state/mutation owner | `d90cb1cae74de04389cd6c8d13ad7bdc1c5c1862d468ac5144b46e15103a7870` |
+| `apps/web/src/lib/upload-resume.ts` | Account-scoped upload resume storage/validation | `5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864` |
+| `apps/web/src/app/dashboard/layout.tsx` | Authenticated/erasure-aware dashboard SSR shell | `4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65` |
+
+Точный разрешённый WRITE scope (25; additional12 толькоREAD):
+
+- `apps/web/src/app/globals.css`
+- `apps/web/src/app/WorkspaceHeader.tsx`
+- `apps/web/src/app/WorkspaceSettings.tsx`
+- `apps/web/src/app/dashboard/page.tsx`
+- `apps/web/src/app/dashboard/LimitsPanel.tsx`
+- `apps/web/src/app/dashboard/PartnerPanel.tsx`
+- `apps/web/src/app/upload/Uploader.tsx`
+- `apps/web/src/app/videos/VideoList.tsx`
+- `apps/web/src/app/videos/[videoId]/VideoDetail.tsx`
+- `apps/web/src/app/clips/ClipCard.tsx`
+- `apps/web/src/app/clips/ClipMusicChoice.tsx`
+- `apps/web/src/app/clips/GuestPacks.tsx`
+- `apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx`
+- `apps/web/src/app/upgrade/UpgradeScreen.tsx`
+- `apps/web/src/app/dashboard/account/page.tsx`
+- `apps/web/src/app/dashboard/partner/page.tsx`
+- `tests/workspace-presentation.test.ts`
+- `tests/clip-card.test.ts`
+- `tests/browser/blogger-cabinet.test.ts`
+- `tests/browser/ux-simplification.test.ts`
+- `scripts/check-workspace-presentation.test.mjs`
+- `scripts/workspace-presentation-local.mjs`
+- `tests/progress-screen.test.ts`
+- `tests/browser/blogger-auto-link.test.ts`
+- `tests/browser/billing.test.ts`
+
+Перед formal QE проверить сохранность12 baseline hashes; native snapshot должен реально включить каждый path/digest, а не только prose/listing. После любого изменения любого из37 measurementinputs текущие review bindings устаревают по правилам native checker. Полный transitive graph не заявляется: выбран bounded minimum прямых важных source owners/entry wiring по реальным imports. K1 для уже существующих readonly modules не требует объявления имён свободными; новых exports/commands/modules этот refinement не вводит. Ideation/ADR/requirements/architecture и их receipts не меняются, nativeQEprepare здесь не выполняется.
+
+## Scope25 — prospective admission и повторный router
+
+Добавлены только два существующих regression harness paths; WRITE25 + READ-ONLY12 =37 measurement inputs. Router пересчитан в этом amendment без переписывания immutable root00: Files3 (25≤25), Domains3, Integrations1, Breaking2, Models1, Cross-cutting4 = L14. Новых domains/contracts/backend integrations/models нет; architecture/ADR/OpenSpec/requirements и approved HTML не меняются. K1 для этого delta: новых command/module/export names нет; существующие локальные fixture handlers не создают публичного API, прежний genuine K1 сохраняется. Предыдущий WRITE23 план SHA `54537fca57c0862d7c3c4d0d7e7346b886354b39c6cc748eba73b97f3ae66b7e` сохранён побайтно в history/scope25; старым receipts не приписывается37 inputs.
+
+Новый pinned K2/target admission/build-coder-context выполняется на этих окончательных bytes; поддерживаемый dz plan checkpoint только после PASS. Actual outputs хранятся приватно как ui-qcsd/scope25*.json. Generated complete context ещё не означает consumed: автор обязан реально прочитать весь promptBlock37 до будущих edits24/25; parent обеспечивает передачу и проверку фактического чтения без усечения. Native QE prepare здесь не запускается, post-fix tests не объявлены пройденными. Recall перед amendment реально вернул3 lessons; применены project-pinned gates, строгий reflow oracle и полный actual context read (teach:b9ca1b2cc77e0c4e, teach:3326a09ebf1b6466, teach:2d8870b993b572e2).
 
 EXPECTED_CODE_TARGETS:
 - apps/web/src/app/globals.css
@@ -151,3 +220,17 @@ EXPECTED_CODE_TARGETS:
 - scripts/check-workspace-presentation.test.mjs
 - scripts/workspace-presentation-local.mjs
 - tests/progress-screen.test.ts
+- tests/browser/blogger-auto-link.test.ts
+- tests/browser/billing.test.ts
+- apps/web/src/server/page-account.ts
+- apps/web/src/server/dashboard-summary.ts
+- apps/web/src/server/support/page-state.ts
+- apps/web/src/server/screen-runtime.ts
+- apps/web/src/server/runtime.ts
+- packages/shared/src/config.ts
+- packages/db/src/payments.ts
+- apps/web/src/server/limits.ts
+- packages/db/src/blogger-policy.ts
+- apps/web/src/app/videos/CtaFields.tsx
+- apps/web/src/lib/upload-resume.ts
+- apps/web/src/app/dashboard/layout.tsx
