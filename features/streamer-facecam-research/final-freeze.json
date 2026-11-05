@@ -1,0 +1,34 @@
+{
+  "frozenAtUtc": "2026-11-05T19:02:07.904349+00:00",
+  "branch": "docs/streamer-facecam-research-20261105",
+  "baseCommit": "9375c10238a147fcf43219ab8d9533b75a3ae6c7",
+  "historicalFreeze": "features/streamer-facecam-research/draft-freeze.json",
+  "historicalFreezeSha256": "082bc12d7ed43c7033eaf85dc8c84e8b3dd93edb3b080aa318eb55eb50463882",
+  "historicalAggregateSha256": "5aa41728c8a882265649b58e82e4308b0212238707d0174818353e4a3d52709e",
+  "measuredScope": [
+    "docs/research/streamer-facecam/README.md",
+    "docs/research/streamer-facecam/analogs.md",
+    "docs/research/streamer-facecam/architecture-options.md",
+    "docs/research/streamer-facecam/evidence-map.md",
+    "docs/research/streamer-facecam/oss-candidates.md",
+    "docs/research/streamer-facecam/sources.md",
+    "docs/research/streamer-facecam/streamer-cjm-and-pilot.md"
+  ],
+  "sha256": {
+    "docs/research/streamer-facecam/README.md": "ad5c6f98d28df064f6668ada21ace56f23d7fa9f3271ab78245396e6d913e637",
+    "docs/research/streamer-facecam/analogs.md": "4a85854f3bc5cfaa3917d0d5537b77301e75aed6482c236bc0fc2acca4163630",
+    "docs/research/streamer-facecam/architecture-options.md": "061edb43951124c3071b0244427f0ae107216c1a6234d41614738185a9c8293f",
+    "docs/research/streamer-facecam/evidence-map.md": "34db6a7b06758c02d54643a8a2fc840537e94b74e78e6e9c6dfa0c811cc70609",
+    "docs/research/streamer-facecam/oss-candidates.md": "c5e5907269436ade8cff4ea0adb7a682373268b2ca4f33b86f9282771fd26352",
+    "docs/research/streamer-facecam/sources.md": "e8b4127c198425514b3b5ae0a3e4abd34a6f89e5cc3796d0e60532b4cd90d9ac",
+    "docs/research/streamer-facecam/streamer-cjm-and-pilot.md": "189f37264862a4430175f9e5241c05ee1085333e607dc1b1d82ab1093f3e258e"
+  },
+  "aggregateMethod": "sha256 of UTF-8 concatenation sorted path order: <sha256><two spaces><relative path><LF>",
+  "aggregateSha256": "802cfbd94a746fcb9ee6af82f5bbad74811273dfc775ee7eb8754d35637cce94",
+  "changedScope": [
+    "docs/research/streamer-facecam/oss-candidates.md"
+  ],
+  "classification": "wording",
+  "delta": "Только «лимит 60 с» уточнён как «timeout процесса детекции 60 с».",
+  "implementationApproved": false
+}

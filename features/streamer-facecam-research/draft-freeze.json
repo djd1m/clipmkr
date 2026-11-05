@@ -1,0 +1,35 @@
+{
+  "frozenAtUtc": "2026-11-05T18:46:21.722763+00:00",
+  "branch": "docs/streamer-facecam-research-20261105",
+  "baseCommit": "9375c10238a147fcf43219ab8d9533b75a3ae6c7",
+  "measuredScope": [
+    "docs/research/streamer-facecam/README.md",
+    "docs/research/streamer-facecam/analogs.md",
+    "docs/research/streamer-facecam/architecture-options.md",
+    "docs/research/streamer-facecam/evidence-map.md",
+    "docs/research/streamer-facecam/oss-candidates.md",
+    "docs/research/streamer-facecam/sources.md",
+    "docs/research/streamer-facecam/streamer-cjm-and-pilot.md"
+  ],
+  "sha256": {
+    "docs/research/streamer-facecam/README.md": "ad5c6f98d28df064f6668ada21ace56f23d7fa9f3271ab78245396e6d913e637",
+    "docs/research/streamer-facecam/analogs.md": "4a85854f3bc5cfaa3917d0d5537b77301e75aed6482c236bc0fc2acca4163630",
+    "docs/research/streamer-facecam/architecture-options.md": "061edb43951124c3071b0244427f0ae107216c1a6234d41614738185a9c8293f",
+    "docs/research/streamer-facecam/evidence-map.md": "34db6a7b06758c02d54643a8a2fc840537e94b74e78e6e9c6dfa0c811cc70609",
+    "docs/research/streamer-facecam/oss-candidates.md": "be5c2e3db59ac4beaed9ed9fb8acc6516afe431bbe8ed6d5db434a60d81511b0",
+    "docs/research/streamer-facecam/sources.md": "e8b4127c198425514b3b5ae0a3e4abd34a6f89e5cc3796d0e60532b4cd90d9ac",
+    "docs/research/streamer-facecam/streamer-cjm-and-pilot.md": "189f37264862a4430175f9e5241c05ee1085333e607dc1b1d82ab1093f3e258e"
+  },
+  "aggregateMethod": "sha256 of UTF-8 concatenation sorted path order: <sha256><two spaces><relative path><LF>",
+  "aggregateSha256": "5aa41728c8a882265649b58e82e4308b0212238707d0174818353e4a3d52709e",
+  "featureInputsSha256": {
+    "00_complexity_assessment.md": "40f808a7d5725cb26111472a933cf2eeb10f770b6edd201ec3197c03ec03560d",
+    "01_requirements.md": "9b8d4cdafe37bd6d39e59c7af9e6265ab3c7a6f293f4ea09e98c86c2d568f8f7",
+    "02_reuse_inventory.md": "3e4e3cebd63e592b79eed2f1a3f09a0d4c63465b7a1eafd58a903fff78010d4c",
+    "06_implementation_plan.md": "e5842975aea9ed84fd41f2bd7425de9793e39cd5ad3a7325340880dddbeae378",
+    "08_qe_report.md": "a56087b46b9bf83b45e593c2510c720f09668555d9aafa50054fa532d0d9d505",
+    "source-retrieval-receipts.json": "bbb79815adf053d331b1e283137337c0a2bf6b8b3f296e9e6b7d6c51737f30fb"
+  },
+  "implementationApproved": false,
+  "independentReview": "root will prepare frozen snapshot; review outputs outside measured scope"
+}
