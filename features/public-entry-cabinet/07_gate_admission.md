@@ -53,5 +53,38 @@ actualoktrue, witnessed00. Этот документ не создаёт и не
 Claude недоступен, используется cross-model. Запрошенные модели фиксируются;
 независимая аттестация фактической backend-модели недоступна.
 
-На этом снимке план/checkpoints design/plan, K1/K2, реализация и QE ещё не завершены.
-Ни наличие документов, ни hooks, ни согласование макета не объявляются их PASS.
+## Фактический переход к реализации
+
+Свежая Terra-сессия выполнила независимый содержательный review и собственные K1/K2:
+GO для оформления design/plan checkpoints, блокирующих находок0. Отчёт03.6 SHA256
+`bcdd2f05c4f87818400b70d4b81d8eedc1920bd98a2a5ebf982d864a261bc3f5`.
+Это и есть дополнительная cross-model проверка документов автора Astra; три QCSD
+роли ей не переименовывались.
+
+Окончательный06 SHA256`d209d4f429a1646b8710076f1663235f9344e0fed5c888786c2bdf33dab4cacc`.
+Координатор отдельно наблюдал exit0 K1:277sourcefiles, имяpublic-entry-cabinet.test FREE.
+Tests не объявляются полной nativeK1coverage: дополнительный tracked filename inventory
+не выявил совпадения нового basename. Re-export aliases остаются обязанностью build.
+InstalledK2:exit0,11targets/10existing/0twins, все12requirementIDs покрыты,
+0failures/0warnings; C4 явноSKIP, отдельный acid corpus не объявлен.
+
+Свежий source admission:admitted, reasons=[], digest
+`afa094b2fa19a856916b32201a4934e9fecd18fbad40320db59a261f576ebd30`.
+Полный actual coder context:complete, digest
+`0a478ab64f891628d86b18cdcb79f559013ce5552f8ac09a9b560bdd2f5c5ea4`,
+literal promptBlock40106UTF-8bytes. Перед делегированием он измеряется заново и
+буквально включается в настоящий prompt автора, а не подменяется списком ссылок.
+
+После реальных проверок поддерживаемые dz-команды записали design и plan:
+oktrue, exit0, witnesseddesign=01/ADR/03.5/05/03.6, witnessedplan=06/03.6.
+Plan inputHash совпал с указанным coder context digest. Аргументы, stdout/stderr и
+коды возврата сохранены приватно. Этот текст сам не создаёт успешной квитанции.
+
+Для browser-проверок используется установленный совместимый hostPlaywright/Vitest
+по тем же исходным файлам и vitest.browser.config; дополнительный app/test stack
+для этой UI-дельты не создаётся. Исходный Docker transport старых scripts не
+объявляется проверенным, если выполнен только прямой host-эквивалент.
+
+Реализация и QE этим допуском ещё не подтверждены. Перед кодом baseline сохраняется
+однократно; существующая ideation lineage не заменяется. Новая проверка после кода
+будет отличать actualNext, mounted/mocked transport, provider/mail и ручную приёмку.
