@@ -1,0 +1,31 @@
+# Локальный inventory и границы доказательств
+
+База `80cab4e` в отдельной ветке `plan/cloud-data-consolidation-20261105`. Сам архитектор live не читал; ниже и в live-observations.md разобраны root read-only receipts19:30–19:39. Заданный source web `9ec8231`; main содержит более новые docs. Ниже добавлен свежий root-probe; перед изменениями его повторяют.
+
+| Ресурс | Наблюдение кода/истории | Переиспользование и пробел |
+|---|---|---|
+| `packages/db/migrations/001_init.sql` | UUID PK/FK; unique email/telegram; session token hashes; media/link/referral/attribution/quota/jobs | Основа полного graph mapping, включая строки с SET NULL и dedup indexes; same email не proof identity |
+| `apps/web/src/server/auth-handler.ts`, `auth.ts`, `auth-store.ts` | email trim/lowercase на входе; bcrypt, host cookie, создание/отзыв session | Сохранить password compatibility. Миграция023 и support-email.ts добавляют email_verified_at; сохранить verified provenance, не считать один timestamp доказательством same-person между datasets |
+| `021_payments.sql`, `packages/db/src/payments.ts` | unique `(provider, provider_payment_id)` и `(provider, provider_event_id)`; intent UUID в metadata/order; immutable offer | Нужна shop/mode provenance вне имеющихся колонок; конфликт нельзя решать `ON CONFLICT DO NOTHING` |
+| `022_credit_packages.sql`, `packages/db/src/credits.ts` | unique source_key/trial once; charge cycles; reserved/remaining; triggers immutable offer и video billing policy | Перенос через обычный INSERT тоже имеет side effects: trigger может заменить historical billing_policy; необходима проверенная стратегия исторического импорта |
+| `026_blogger_policy.sql`, `027_payment_referral_snapshot.sql` | 90/120/custom, commission20/30, snapshot referral; backfill только known preceding attribution | Миграцию не повторять поверх импортированного журнала; история не пересчитывается по текущему коду |
+| `packages/db/src/blogger-report.ts` | Europe/Moscow [lo,hi), paid identity/amount match, fulfilled intent, исключения, integer20/30/null | Сверить каждый код/блогера и distinct users; sum двух отчётов не всегда корректен после доказанного identity merge |
+| `packages/s3/src/client.ts`, `presign.ts`, `erasure.ts` | Один keyPrefix оборачивает logical keys; scoped client запрещает неподдержанные команды, в том числе CopyObject; erasure отвергает любой versioning.Status | Не добавлять physical prefix в DB; миграционный copy не выдавать за готовый SDK call. Проверить все object references и regenerate private URLs |
+| `scripts/release-candidate.mjs` | Profiles/manifests, target binding, stale-evidence guards, disk checks, apply/reconcile и receipts | Это release-controller, не merger. Legacy cloud path требует empty whitelist; поддержанная schema transition ограничена 26→28. Новый scope не проходит под видом старого admission |
+| `features/cloudru-release-parity/` | Ранее отдельные datasets, namespace preservation, backups, незакрытые/пересматриваемые QCSD и controller условия | Сохранить историю/условия; новый документ не закрывает прежние finding IDs |
+| `docs/plans/2026-11-03-cloudru-production.md` | Исторический план основного DNS, freeze/restore/referral/retention/доступ | Новый адрес c отличается; решения о смене DNS и переносе активных сессий не наследуются автоматически |
+| `docs/runbooks/cloudru-reverse-ssh.md` | История основных/резервных каналов, pinned host keys и ограничения | Переиспользовать после свежей авторизации/проверки; наличие файла не означает живой tunnel |
+
+## Приватное локальное evidence
+Прочитаны только безопасные поля локальных receipts из `/root/.config/clipmkr/cloudru-working-release-20261105`: `owner-stop-final.private.json` показывает ownerCancelled=true, runtimeUpdateApplied=false, effectiveConfigUnchanged=true на 16:59:46 UTC; `execution-intent.private.json` — planned/firstTargetWriterNotStarted=true на 16:36:45 UTC. Это история отмены, не live evidence. Секреты/PII/URLs не извлекались в документы. Каталог `/root/.config/clipmkr/release-parity-20261103` подтверждает наличие прежних backup/preservation/rollback receipts; полный аудит их содержимого в bounded этапе не выполнен.
+
+## Проверки, пригодные к расширению
+`tests/release-candidate.test.ts`, `release-candidate-acid.test.ts`, `auth.test.ts`, `payments-guards.test.ts`, `credit-packages.integration.test.ts`, `blogger-report.integration.test.ts`, `retention.integration.test.ts`, `s3.test.ts`, `s3-public-endpoint.test.ts`. Наличие тестов не означает, что они покрывают консолидацию; сейчас они не запускались.
+
+## Нового стека не требуется
+Нужны узкие importer/reconciler/mapping contracts рядом с существующими инструментами, а не второй оркестратор или новый DB/S3 сервис. Точные имена и места executable файлов определяются после inventory/QCSD и K1. Не добавлять большой merger в уже крупный `release-candidate.mjs`. Данные проектов1–8 не переносить; native billing/referral уже содержит заимствованные поддерживаемые реализации.
+
+## Дополнение fresh root evidence, 19:30 UTC
+Root выполнил read-only SSH; архитектор только прочитал локальные receipts `cloud-readonly-20261105T193041Z.private.json` и `site-readonly-20261105T193042Z.private.json` из `/root/.config/clipmkr/ui-recovery-cloud-20261105`. Cloud: семь services, web/workers revision `877ec806d83f50f7ea5d9dbc565f298d881acbb7`; primary и backup maintenance active/enabled. Site: web `9ec8231df5cf2c3f1cad6bfe9f5deb526041fdae`, workers `ebb590260b2df9151b9df62098488e2aaac3ee21`; одиннадцать clip containers, включая legacy MinIO. Наличие MinIO не доказывает его использование; тесты консолидации только на разрешённом real S3. DB names/binding, dataset contents и S3 refs именно этим probe19:30 не установлены; последующие root B1/B2–B5 описаны в live-observations.md. Active/enabled не заменяет отдельную проверку failover/reboot.
+
+Миграция023 также добавляет support_email_token, support_mail_admission, support_operator, support_audit. Они входят в full inventory: expired/used token history и operators сохраняются с provenance, source verify/reset tokens не оживают на c, support_audit.target без FK требует mapping. Внешняя Libredesk history не переносится автоматически вместе с app DB; её identity continuity отдельно проверяется.
