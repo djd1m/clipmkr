@@ -1,0 +1,59 @@
+
+> n5-clipmaker@0.1.0 test
+> node scripts/test.mjs tests/blogger-trial-credits.integration.test.ts tests/blogger-policy.integration.test.ts tests/credit-packages.integration.test.ts tests/blogger-policy.test.ts tests/billing.unit.test.ts tests/blogger-report.integration.test.ts
+
+
+ RUN  v3.2.7 /tmp/clipmkr-blogger-trial-20261105
+
+stdout | tests/billing.unit.test.ts > надпись призыва у клипа без метки (находка 1 ревью фич 25–29) > пара «paid + призыв» в рендере: текст без ссылки, open_link не рисуется и пишет причину
+{"event":"cta_skipped","kind":"open_link","reason":"paid_no_link"}
+
+ ✓ tests/billing.unit.test.ts (27 tests) 362ms
+ ✓ tests/blogger-report.integration.test.ts (11 tests) 4653ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > matches monthly per-link totals rates exclusions and immutable attribution  469ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > excludes refunds, unverified identities, reviews, old assignments and legacy purchases  400ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > uses Moscow inclusive month start and exclusive month end  351ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > only completed video with a completed clip after assignment activates a person  327ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > historical payment stays with its original blogger after source replacement  303ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > one payer across two codes of the same blogger counts once  312ms
+   ✓ ежемесячный отчёт блогеров PostgreSQL > requires an active owner and validates month without leaking report data  316ms
+ ✓ tests/blogger-trial-credits.integration.test.ts (16 tests) 6688ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > raises existing signup trial and preserves consumed seconds  353ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > raises existing migration_trial trial and preserves consumed seconds  334ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > never refills repeat revoke or lower limit and raises only the lifetime delta  366ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 1  456ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 2  429ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 3  442ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 4  413ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 5  396ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > changes only trial beside paid and recovery grants and preserves held charge history  309ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > preserves legacy policy without implicit credits and refuses missing or noncanonical trial  309ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes trial increase with native reservation and finalize refund through account barriers  319ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > authority erasure and audit failure leave no partial funding or policy  311ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > expected policy refuses stale or malformed maintenance without writes  345ms
+stdout | tests/credit-packages.integration.test.ts > credit packages on isolated PostgreSQL > trusted probe seconds reserve once across provider retries and explicit new fences; provider budgets still count
+{"event":"stale_attempt_result","id":"57e2e278-8468-44c6-9893-8198c12db1ea","created_at":"2026-11-05T12:17:38.092Z","video_id":"76bd0cd1-7d04-4d66-ba33-d51483ce8563","stage":"stt","clip_id":null,"series_no":1,"attempt_no":1,"fence":1,"status":"running","wait_reason":null,"unit":"minutes","unit_count":0,"provider":null,"model":null,"failure_reason":null,"started_at":"2026-11-05T12:17:38.094Z","finished_at":null,"stt_calls":{},"llm_dispatched":false,"rerender":false}
+
+stdout | tests/credit-packages.integration.test.ts > credit packages on isolated PostgreSQL > first usable partial output settles once; watchdog failure and stale output cannot refund success
+{"event":"stale_attempt_result","id":"a8566000-5616-41db-af6e-8a698a5bed59","created_at":"2026-11-05T12:17:38.367Z","video_id":"54775ee0-f743-4c93-b15e-25e5cd60221e","stage":"render","clip_id":"10b87921-d5fd-4216-8302-62c302374b17","series_no":1,"attempt_no":1,"fence":2,"status":"running","wait_reason":null,"unit":"none","unit_count":0,"provider":null,"model":null,"failure_reason":null,"started_at":"2026-11-05T12:17:38.367Z","finished_at":null,"stt_calls":{},"llm_dispatched":false,"rerender":false}
+
+stdout | tests/credit-packages.integration.test.ts > credit packages on isolated PostgreSQL > zero-result watchdog wins barrier before late render publication and returns expired units only once
+{"event":"stale_attempt_result","id":"298b33f0-ddf9-4f02-a5c9-a76cb2b4714d","created_at":"2026-11-05T12:17:38.493Z","video_id":"4bf42d64-b28a-4000-b0c8-854175e912ee","stage":"render","clip_id":"70761fa0-534b-4aec-9ae8-2b9d8a60bdce","series_no":1,"attempt_no":1,"fence":1,"status":"running","wait_reason":null,"unit":"none","unit_count":0,"provider":null,"model":null,"failure_reason":null,"started_at":"2026-11-05T12:17:38.493Z","finished_at":null,"stt_calls":{},"llm_dispatched":false,"rerender":false}
+
+ ✓ tests/credit-packages.integration.test.ts (20 tests) 4112ms
+   ✓ credit packages on isolated PostgreSQL > exact SKU grants, duplicate event IDs and alternative provider payments cannot double fulfill  315ms
+   ✓ credit packages on isolated PostgreSQL > first usable partial output settles once; watchdog failure and stale output cannot refund success  354ms
+   ✓ credit packages on isolated PostgreSQL > additive migration rehearsal preserves scrubbed legacy paid, operator, pending invoice and in-flight cohorts without gifts  1143ms
+ ✓ tests/blogger-policy.integration.test.ts (7 tests) 3295ms
+   ✓ Политика блогера: настоящий PostgreSQL > migration preserves legacy source limits  373ms
+   ✓ Политика блогера: настоящий PostgreSQL > owner policy changes require active owner and audit  320ms
+   ✓ Политика блогера: настоящий PostgreSQL > idempotent create preserves source limit  338ms
+   ✓ Политика блогера: настоящий PostgreSQL > probe enforces snapshot boundary 7200 before credit or quota expense  300ms
+   ✓ Политика блогера: настоящий PostgreSQL > probe enforces snapshot boundary 9000 before credit or quota expense  334ms
+ ✓ tests/blogger-policy.test.ts (16 tests) 30ms
+
+ Test Files  6 passed (6)
+      Tests  97 passed (97)
+   Start at  12:17:21
+   Duration  23.38s (transform 1.32s, setup 0ms, collect 2.49s, tests 19.14s, environment 1ms, prepare 557ms)
+

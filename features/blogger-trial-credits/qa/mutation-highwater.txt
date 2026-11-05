@@ -1,0 +1,200 @@
+
+> n5-clipmaker@0.1.0 test
+> node scripts/test.mjs tests/blogger-trial-credits.integration.test.ts
+
+
+ RUN  v3.2.7 /tmp/clipmkr-blogger-trial-20261105
+
+ ❯ tests/blogger-trial-credits.integration.test.ts (16 tests | 10 failed) 5898ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > raises existing signup trial and preserves consumed seconds 298ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > raises existing migration_trial trial and preserves consumed seconds 274ms
+   × Пробный бюджет блогера: настоящий PostgreSQL > never refills repeat revoke or lower limit and raises only the lifetime delta 258ms
+     → expected { …(16) } to match object { total_seconds: 7200, …(1) }
+(14 matching properties omitted from actual)
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > trial helper rejects invalid second bounds without ledger changes 230ms
+   × Пробный бюджет блогера: настоящий PostgreSQL > accepts uppercase UUIDs without losing canonical account or trial identity 242ms
+     → expected { kind: 'raised', …(3) } to deeply equal { kind: 'raised', …(3) }
+   × Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 1 455ms
+     → expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+   × Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 2 408ms
+     → expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+   × Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 3 354ms
+     → expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+   × Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 4 371ms
+     → expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+   × Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 5 397ms
+     → expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > changes only trial beside paid and recovery grants and preserves held charge history 289ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > preserves legacy policy without implicit credits and refuses missing or noncanonical trial 297ms
+   × Пробный бюджет блогера: настоящий PostgreSQL > serializes trial increase with native reservation and finalize refund through account barriers 282ms
+     → expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > authority erasure and audit failure leave no partial funding or policy 287ms
+   × Пробный бюджет блогера: настоящий PostgreSQL > expected policy refuses stale or malformed maintenance without writes 258ms
+     → expected { …(16) } to match object { total_seconds: 7200, …(1) }
+(14 matching properties omitted from actual)
+   × Пробный бюджет блогера: настоящий PostgreSQL > audit records positive and zero delta and legacy revoke states within native reason bound 251ms
+     → expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > never refills repeat revoke or lower limit and raises only the lifetime delta
+AssertionError: expected { …(16) } to match object { total_seconds: 7200, …(1) }
+(14 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "remaining_seconds": 7020,
+-   "total_seconds": 7200,
++   "remaining_seconds": 12420,
++   "total_seconds": 12600,
+  }
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:75:31
+     73|     for (const extra of [{}, { isBlogger: false }, {}, { sourceLimitSe…
+     74|       expect(await change(owner, id, extra)).toMatchObject({ kind: 'up…
+     75|       expect(await trial(id)).toMatchObject({ total_seconds: 7200, rem…
+       |                               ^
+     76|     }
+     77|     await change(owner, id, { sourceLimitSeconds: 9000 });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > accepts uppercase UUIDs without losing canonical account or trial identity
+AssertionError: expected { kind: 'raised', …(3) } to deeply equal { kind: 'raised', …(3) }
+
+- Expected
++ Received
+
+  {
+-   "afterTotal": 9000,
+-   "beforeTotal": 7200,
+-   "delta": 1800,
++   "afterTotal": 19800,
++   "beforeTotal": 12600,
++   "delta": 7200,
+    "kind": "raised",
+  }
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:101:69
+     99|     await transaction(pool, async tx => {
+    100|       await tx.query('SELECT id FROM account WHERE id=$1 FOR NO KEY UP…
+    101|       expect(await raiseTrialCreditsTx(tx, id.toUpperCase(), 9000)).to…
+       |                                                                     ^
+    102|     });
+    103|     expect(await trial(id)).toEqual({ ...before, total_seconds: 9000, …
+ ❯ transaction packages/db/src/quota.ts:11:49
+ ❯ tests/blogger-trial-credits.integration.test.ts:99:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 1
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 2
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 3
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 4
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 5
+AssertionError: expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "remaining_seconds": 8820,
++   "remaining_seconds": 122220,
+    "reserved_seconds": 0,
+-   "total_seconds": 9000,
++   "total_seconds": 122400,
+  }
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:112:29
+    110|       change(owners[i % 2]!, id, { sourceLimitSeconds: i % 3 === 0 ? 9…
+    111|     expect(results.every(result => result.kind === 'updated')).toBe(tr…
+    112|     expect(await trial(id)).toMatchObject({ total_seconds: 9000, remai…
+       |                             ^
+    113|     const actions = await audit(id);
+    114|     expect(actions).toHaveLength(20);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > serializes trial increase with native reservation and finalize refund through account barriers
+AssertionError: expected { …(16) } to match object { total_seconds: 9000, …(2) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "remaining_seconds": 9000,
++   "remaining_seconds": 14400,
+    "reserved_seconds": 0,
+-   "total_seconds": 9000,
++   "total_seconds": 14400,
+  }
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:172:31
+    170|       try { await waitForBlocked(pid); } finally { await tx.query('COM…
+    171|       expect(await raising).toMatchObject({ kind: 'updated' });
+    172|       expect(await trial(id)).toMatchObject({ total_seconds: 9000, rem…
+       |                               ^
+    173|       expect((await pool.query('SELECT state,billable_seconds FROM vid…
+    174|         .toEqual([{ state: 'released', billable_seconds: 300 }]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > expected policy refuses stale or malformed maintenance without writes
+AssertionError: expected { …(16) } to match object { total_seconds: 7200, …(1) }
+(14 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "remaining_seconds": 7200,
+-   "total_seconds": 7200,
++   "remaining_seconds": 12600,
++   "total_seconds": 12600,
+  }
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:224:29
+    222|     const current = { is_blogger: true, blogger_source_limit_seconds: …
+    223|     await change(owner, id, { expectedPolicy: current });
+    224|     expect(await trial(id)).toMatchObject({ total_seconds: 7200, remai…
+       |                             ^
+    225|   });
+    226| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > audit records positive and zero delta and legacy revoke states within native reason bound
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:237:111
+    235|     expect(rows.every(row => row.reason.length <= 500 && row.reason.in…
+    236|     expect(rows.some(row => row.reason.includes('trial_total:1800->864…
+    237|     expect(rows.some(row => row.reason.includes('trial_total:86400->86…
+       |                                                                                                               ^
+    238|     await change(owner, id, { isBlogger: false });
+    239|     expect((await audit(id)).some(row => row.reason.includes('trial:re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 6 passed (16)
+   Start at  12:16:58
+   Duration  6.67s (transform 369ms, setup 0ms, collect 473ms, tests 5.90s, environment 0ms, prepare 87ms)
+

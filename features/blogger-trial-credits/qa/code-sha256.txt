@@ -1,0 +1,3 @@
+e807af6d1e8264af81e51509301f3c1b5969014dd4649d01b89a18ee457eb161  packages/db/src/credits.ts
+2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e  packages/db/src/blogger-policy.ts
+34e74c0ef9d632766e6a293ab27bc417b70f88edd030e2af0f5f9504349cf9a5  tests/blogger-trial-credits.integration.test.ts
