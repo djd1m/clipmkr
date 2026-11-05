@@ -1,17 +1,38 @@
-# Переиспользование для лаконичного UX
+# Текущая инвентаризация переиспользования — implementation L, 22 targets
 
-| Задача | Существующий блок | Направление дизайна |
+База `a4488b4caf602f093a0cc3393b4903e210cb3989`. Source inspection, не runtime PASS
+и архитектурный выбор зафиксирован в ADR-001/002/003. Новый framework/OSS/UI library не нужен.
+
+| Блок | Существующая реализация | Что сохраняем / что требуется от размещения |
 |---|---|---|
-| Основное создание клипов | apps/web/src/app/upload/Uploader.tsx | Сохранить передачу/возобновление и значения параметров; уже закрытые controls не выдавать за открытые |
-| Общая навигация | WorkspaceHeader.tsx, WorkspaceSettings.tsx | Сохранить роли, темы/компоновки; убрать дубли входов, а не плодить новые панели |
-| Остаток и тарифы | LimitsPanel.tsx, ProInterest.tsx, upgrade/UpgradeScreen.tsx | Краткий остаток в рабочем контексте, полная детализация в своём разделе; без переименования пакета в подписку |
-| Готовый клип | clips/ClipCard.tsx, videos/[videoId]/VideoDetail.tsx | Player и скачивание доступны сразу, вторичные действия сгруппированы, existing closed details учтены |
-| Ссылка блогера | PartnerPanel.tsx, native ensurePartnerCode, согласованный auto-link mockup | Автоматическая ссылка + копирование по умолчанию у блогера; статистика отдельно; без новой схемы генератора |
-| Управление блогерами | dashboard/bloggers/BloggerAdmin.tsx | Поиск/назначение и обзор — основной сценарий; индивидуальные параметры/расширенные фильтры контекстно |
-| Восстановление частичного результата | Уже согласованный partial-render-recovery mockup, существующий video.retry | Не прятать повтор незавершённого результата и готовые клипы |
-| Формы/доступность | HTML details/dialog/label/button и действующие CSS tokens | Без новой UI-библиотеки и переписывания компонентов ради обёрток |
+| Header/preferences | WorkspaceHeader/WorkspaceSettings; lib/workspace-layout.ts | document preferences, SSR cookies, theme/layout fallback и notice сохранения; лишь консолидировать входы |
+| Dashboard | dashboard/page.tsx и layout.tsx | Server auth, owner_unlimited, bloggerPolicy, readDashboardSummary и существующий pagination |
+| Upload | upload/Uploader.tsx + lib/upload* | hash/identity/account scope/resume, navigation guard, pause/abort, storageBlocked/mismatch/unknownComplete; редакторские defaults false/true/true/none |
+| Credits | dashboard/LimitsPanel.tsx + lib/limits-contract.ts | баланс/резерв/expiry/refresh30s, отдельный file limit; перед стартом показать cost estimate из уже имеющихся данных |
+| Auto-link | dashboard/PartnerPanel.tsx personal + server/partner.ts | Уже внедрены ensurePersonalLink/loading/error/blocked/copy fallback; менять только размещение/контекст статистики, не новый генератор |
+| Клипы | VideoDetail/ClipCard/useClipDownload | Existing selectedClipId, video element/fileVersion, poll5s, download errors/expiry; убрать конкурирующие вторичные действия |
+| CTA и музыка | videos/CtaFields.tsx, clips/ClipMusicChoice.tsx | Existing validation/rpc/CC0 catalogue/audio preview, сохранённое и draft; не потерять values при контекстном раскрытии |
+| Гость | clips/GuestPacks.tsx + lib/guest-contract.ts | Один существующий pack owner, multi-ready selection, consent/version/hash, create/send/revoke/list и focus/reduced-motion |
+| Owner | dashboard/bloggers/BloggerAdmin.tsx | Existing lookup/save/month report, nullable limit/rate/reason, API auth; secondary fields/details, без нового monthly blogger reward API |
+| Тарифы | upgrade/UpgradeScreen.tsx + upgrade/page.tsx | Server-derived salesEnabled/catalogOnly/owner/testMode, purchaseWindows, prices/dates; disabled reason и явное подтверждение |
+| Account | dashboard/AccountDeletion.tsx | Existing irreversible confirmation/72h/unchecked consent; перенос контейнера не отменяет последствий |
+| Public/support | AuthForm/RecoveryForm/ReturnScreen/SupportPanel/legal | Готовые функции и error states; покрыть общей regression, не переписывать ради единообразной обёртки |
 
-В новом дизайне не нужны новый framework, icon pack, state runtime или новая
-OSS-подсистема. Переиспользование текущего стека сокращает код и риск расхождения
-дизайна с приложением. Перед реализацией требуется точная инвентаризация targets;
-дизайн не разрешает удалить существующие серверные возможности.
+Новый API/таблицы/env/provider/RPC не нужны для этой UI-реорганизации. Если реальный
+partial-retry ещё отсутствует, использовать только фактический next_action и согласовать
+интерфейс с отдельным recovery-потоком. Реферальная attribution и TEST checkout guards
+остаются источниками истины. Никаких переносов приватных медиа/паролей в fixtures.
+
+## Чего не следует переносить буквально из prototype
+
+Synthetic links/таймер обработки/имитация clipboard/disabled payment label не являются
+контрактами приложения. Native player/storage/auth/payments остаются существующими.
+Reels Boss — референс распределения действий, не донор бренда/тарифов/новых функций.
+
+## Самостоятельные approved screens — выбранное переиспользование
+
+Два новых тонких SSR wrappers: `dashboard/account/page.tsx::DashboardAccountPage` и `dashboard/partner/page.tsx::DashboardPartnerPage`. Layout `dashboard/layout.tsx::DashboardLayout`, auth `server/page-account.ts::pageAccount`, роль `getBloggerPolicy`, `requestTheme`/`workspaceLayoutFromCookie` существующие. Конфликтов путей/символов по source search не найдено; K1 NOT RUN.
+
+Account: один WorkspaceSettings с узким page presentation, AccountDeletion/SignOut/verify/support, native secondary disclosures и back. Header — Link, без копии controls. Partner: один PartnerPanel с legacy/summary/statistics presentation, прежние PartnerSummary/filter/copy; summary сохраняет auto-link, statistics не запускает ensurePersonalLink. Никаких новых data hooks/service/modal manager; источник периода all-time.
+
+Историческая research-редакция: Git `a4488b4caf602f093a0cc3393b4903e210cb3989:features/ux-simplification/` (одноимённый файл), [исторический manifest](design-review-inputs.sha256), [исследование](03_reference_research.md), [аудиты](audits/regular.md). Старые receipts неизменны; их hashes относятся к той ревизии, не к текущему implementation пакету. Nested `implementation-inputs/` сохраняется как подготовительный источник, canonical root00/01/02 — текущие execution inputs.

@@ -1,31 +1,28 @@
-# Лаконичный интерфейс: маршрутизация исследования
+# Упрощение UI — текущая маршрутизация реализации
 
-Task kind: research
+Task kind: refactor
 
-Текущий результат — аудит всех пользовательских экранов для трёх ролей,
-распределение функций по основному/дополнительному уровню и новые макеты для
-согласования. Код приложения и действующие стенды в этом этапе не меняются.
+05.11.2026. Implementation **L, 14 баллов**, а не research/S gate. Exact HTML APPROVED; архитектура исправлена автором, независимый QCSD запускает координатор. Никаких успешных checkpoints эта оценка не создаёт.
 
-Предварительный тир будущей реализации — **L, 14 баллов**: files3 (11–30 UI/test
-targets после инвентаризации), domains3 (общий кабинет, партнёрство, управление),
-integrations1 (нет новых), breaking2 (меняется расположение действий), models1
-(без новых), crosscutting4 (роли, доступность, согласованность тем/компоновок).
-Проверка override: XL-измерение даёт минимумL. Тир и точный состав целей пересчитать
-после аудита; не выдавать предварительную оценку за разрешение реализации.
+| Измерение | Баллы | Основание |
+|---|---|---|
+| Files | 3 | 14 existing UI/CSS +2 тонких SSR pages +6 test/harness =22 targets, точный список root06 |
+| Domains | 3 | Кабинет/медиа, партнёрство, owner/деньги |
+| Integrations | 1 | Новых API/backend/provider integrations нет |
+| Breaking | 2 | Перемещение UI действий, два presentation routes, без замены существующих URL |
+| Models | 1 | Нет новых persistent models |
+| Cross-cutting | 4 | Три роли, focus/consent/media lifecycle, темы/layouts |
 
-Для будущегоL нужны0/1/2/3/3.5/4/5/6/7/8/9 и настоящие gates. Сейчас выполняются
-исследование и дизайн, без заявления о пройденных QCSD/K1/K2/исполнении/приёмке.
-Используются feature-adr и проектный dz0.8.58, OpenSpec1.15.0, frontend-design,
-reference studio-extended-qe; AQE runtime не установлен.
+Сумма14, override XL dimension даёт минимумL. Верхняя граница25 targets; при расширении пересчитать router и план до кода. Два SSR wrappers не новые backend services. Активны0/1/2/3/3.5/4/5/6/7/8/9; ADR MADR+Confirmation, DDD, QCSD, настоящие K1/K2 и independent QE обязательны. Временной ориентир прежнего L-router120мин не обещание runtime-поставки.
 
-Модели: три аудита по ролям — отдельные сессии gpt-6.1-sol high; независимая
-проверка сводного проекта — gpt-6-astra xhigh с fork_turns=none. Назначение модели
-отличать от недоступной независимой runtime-аттестации. Точные роли/границы — в01.
+## Статус и происхождение
 
-Actual recall перед аудитом: `options controls dashboard mockup`, пять результатов
-из /home/clipmkr/.dz. Применимые уроки: не заменять утверждённый макет технической
-оболочкой; не прятать ключевую ссылку блогера в случайном разделе; проверять начальный
-фокус и первый экран мобильного диалога, а не только общий scroll/overflow.
+Историческая research-редакция: Git `a4488b4caf602f093a0cc3393b4903e210cb3989:features/ux-simplification/` (одноимённый файл), [исторический manifest](design-review-inputs.sha256), [исследование](03_reference_research.md), [аудиты](audits/regular.md). Старые receipts неизменны; их hashes относятся к той ревизии, не к текущему implementation пакету. Nested `implementation-inputs/` сохраняется как подготовительный источник, canonical root00/01/02 — текущие execution inputs.
 
-Владелец отдельно остановил перенос БД. Копирование, запрет регистрации, DNS,
-публикация на Cloud.ru и отложенные платёжные/длинные E2E не выполняются.
+Exact approval и OpenSpec hashes — root01; решения/state/CSS — ADR/04/05, задачи/acid corpus A1…A10 — root06. Auto-link и personal TEST checkout уже существуют. Backend recovery отдельный dependency, UI не выдумывает retry API. Согласованный макет не заменяет gates/code/QE/manual acceptance.
+
+## Применённый recall и коррекция
+
+Реальный recall предыдущего авторского прохода из pinned public-entry worktree вернул5 записей, включая teach:820581d93a5cf7df (полный результат прочитан); координатор сообщил повторный pinned Node22 recall того же урока перед этой коррекцией. Применение: отдельные approved account/stats screens, матрица макет→компонент→проверка, same state/theme/layout/width. Ошибка первого draft — замена композиции inline details — принята и исправлена; это повтор подтверждённого урока, не новая продуктовая гипотеза. Новый teach/recall здесь не исполнялся: store /home/clipmkr/.dz вне доступной записи, успех сохранения не заявлен. Координатору принадлежит запись подтверждённой коррекции в общий store.
+
+Pinned harness0.8.58/feature-adr1.5.25; текущая сессия только author correction документов. Native gates/network/код/tests/commit/push не исполняются.
