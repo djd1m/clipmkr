@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="description" content="Учебный отчёт Clipmkr: изменения, доказательства, ограничения и следующие шаги за 30 октября — 5 ноября 2026.">
+<title>Clipmkr — неделя решений и доказательств</title>
+<style>
+:root{--paper:#f4f2e9;--ink:#242a26;--muted:#59615a;--green:#235c3d;--line:#c8cdbf;--wash:#e7ecdf;--white:#fffef8;--amber:#75531a;--red:#8b352b}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:28px}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 'Trebuchet MS','Verdana',sans-serif}button,input,select{font:inherit}a{color:var(--green);text-underline-offset:4px}a:hover{text-decoration-thickness:2px}button,a,input,select,summary{touch-action:manipulation}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #b05a19;outline-offset:4px}button:disabled{opacity:.45;cursor:default}h1,h2,h3,p{margin-top:0}h1,h2,.slide-title{font-family:Georgia,'Times New Roman',serif;font-weight:normal;letter-spacing:-.045em;line-height:1.07}h1{font-size:clamp(52px,7.2vw,106px);max-width:1080px;margin-bottom:30px}h2{font-size:clamp(34px,4.1vw,58px);margin-bottom:26px}h3{font-size:21px;line-height:1.3;letter-spacing:-.015em}p{margin-bottom:18px}.wrap{width:min(1280px,calc(100% - 96px));margin:auto}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:25px 0;border-bottom:1px solid var(--line)}.brand{font-weight:bold;letter-spacing:-1px;font-size:25px;display:flex;align-items:center;gap:10px}.brand svg{width:27px;height:27px}.edition{color:var(--muted);font-size:13px;letter-spacing:.12em;text-transform:uppercase}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:1px solid var(--ink);border-radius:3px;padding:10px 17px;background:transparent;color:var(--ink);font-weight:bold;font-size:14px;text-decoration:none}.btn.primary{background:var(--ink);color:var(--white)}.btn:hover{background:var(--wash)}.btn.primary:hover{background:var(--green)}.hero{padding:64px 0 50px;position:relative}.eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:.15em;font-weight:bold;color:var(--green);margin-bottom:24px}.hero-bottom{display:grid;grid-template-columns:1.2fr 1fr;gap:60px;align-items:start}.lede{font-size:23px;line-height:1.5;max-width:680px}.note{border-left:3px solid var(--green);padding-left:22px;color:var(--muted);font-size:15px}.chapter-nav{display:flex;gap:26px;flex-wrap:wrap;border-top:1px solid var(--line);padding:20px 0 26px;font-size:14px;font-weight:bold}.chapter-nav a{color:var(--ink)}section{padding:55px 0;border-top:1px solid var(--line)}.section-heading{display:grid;grid-template-columns:75px 1fr;gap:20px}.section-no{font-size:14px;color:var(--green);font-weight:bold;letter-spacing:.1em;padding-top:9px}.section-subtitle{color:var(--muted);max-width:830px;margin-bottom:28px}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.summary-card{border-top:3px solid var(--green);padding:22px 19px 15px;background:var(--wash)}.summary-card h3{margin:15px 0 12px;font-size:22px}.summary-card p{font-size:16px;margin:0}.badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;line-height:1.3;font-weight:bold;letter-spacing:.03em;text-transform:uppercase;color:var(--green)}.badge:before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}.badge.in_progress{color:#74521e}.badge.planned{color:#485d7b}.badge.blocked{color:var(--red)}.badge.paused{color:#66586b}.count-strip{display:flex;flex-wrap:wrap;gap:10px 25px;font-size:14px;color:var(--muted);margin-top:22px}.count-strip strong{color:var(--ink)}.boundary{background:var(--ink);color:var(--paper);padding:30px 35px;margin-top:28px;display:grid;grid-template-columns:1fr 1.25fr;gap:35px}.boundary h3{font-family:Georgia,serif;font-size:30px;font-weight:normal;letter-spacing:-.025em;margin:0}.boundary p{margin:0;color:#e1e5d8;font-size:17px}.filters{background:var(--wash);padding:24px;display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:16px;align-items:end}.field label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}.field input,.field select{width:100%;min-width:0;padding:11px 12px;border:1px solid #8b9686;border-radius:2px;background:var(--white);color:var(--ink);font-size:15px}.results-line{display:flex;justify-content:space-between;gap:20px;padding:20px 0;font-size:14px;color:var(--muted)}.timeline{position:relative}.day{display:grid;grid-template-columns:150px 1fr;gap:30px;margin:0 0 34px}.day-label{font-size:15px;font-weight:bold;border-top:1px solid var(--line);padding-top:21px}.day-label span{display:block;font-size:12px;color:var(--muted);font-weight:normal;text-transform:uppercase;letter-spacing:.08em;margin-top:3px}.day-events{display:grid;gap:15px}.event{border:1px solid var(--line);background:var(--white);padding:25px 28px;min-width:0;scroll-margin-top:25px}.event-meta{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;margin-bottom:12px}.topic{overflow-wrap:anywhere;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.event h3{margin-bottom:14px;font-size:24px}.event-intro{margin-bottom:15px}.why{font-size:15px;color:var(--muted);margin-bottom:15px}.why strong{color:var(--ink)}.limitation{padding:13px 16px;background:#f0eee5;border-left:2px solid #947b4d;font-size:14px;margin:18px 0 12px}.limitation strong{color:#69501d}summary{cursor:pointer;font-size:14px;font-weight:bold;color:var(--green);padding:8px 0;width:fit-content}details[open] summary{margin-bottom:10px}ul{padding-left:21px}li+li{margin-top:7px}.checks{font-size:15px}.sources{display:grid;gap:12px;margin-top:20px}.source{font-size:13px;line-height:1.5;border-top:1px solid var(--line);padding-top:11px;overflow-wrap:anywhere}.source span{display:block;color:var(--muted);font-family:monospace;font-size:11px;margin-top:4px}.source .local{font-family:inherit;color:var(--amber);font-size:13px}.empty{text-align:center;padding:60px 20px;border:1px dashed var(--line)}.empty h3{font-family:Georgia,serif;font-size:32px;font-weight:normal}.plan-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.plan-grid .event{padding:25px}.plan-grid .event h3{font-size:21px}.lessons-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 36px}.lesson{padding:24px 0;border-top:1px solid var(--line)}.lesson-num{font-family:Georgia,serif;font-size:35px;line-height:1;color:var(--green);margin-bottom:13px}.lesson h3{margin-bottom:13px}.lesson p{font-size:16px}.footer{padding:38px 0 45px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}.footer-row{display:flex;justify-content:space-between;gap:30px}.footer p{max-width:850px}.guardrails{font-size:14px}.skip{position:absolute;left:20px;top:-90px;z-index:20;background:var(--white);padding:12px}.skip:focus{top:12px}.noscript{padding:25px;background:#fff2c8;border:1px solid #947b4d}dialog{border:0;border-radius:0;background:var(--paper);color:var(--ink);width:min(1360px,calc(100% - 40px));max-width:none;height:min(900px,calc(100% - 40px));max-height:calc(100% - 40px);padding:0;overflow:auto}dialog::backdrop{background:rgba(20,27,21,.9)}.presentation-shell{height:100%;display:flex;flex-direction:column;padding:30px 48px}.slide-title:focus{outline:none}dialog{overflow:hidden}.slide-top,.slide-footer{flex-shrink:0}.slide-top{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--line);padding-bottom:20px}.slide-top p{margin:0;font-size:14px;color:var(--muted)}.slide-content{flex:1;min-height:0;overflow:auto;padding:35px 5px 25px 0;scrollbar-gutter:stable}.slide-title{font-size:clamp(40px,5vw,76px);margin:0 0 20px}.slide-description{font-size:24px;line-height:1.45;margin-bottom:30px;max-width:1000px}.slide-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.slide-item{padding:20px 23px;background:var(--wash);border-top:2px solid var(--green);min-width:0}.slide-item h3{font-size:23px;line-height:1.3;margin:10px 0}.slide-item p{font-size:19px;line-height:1.45;margin:10px 0}.slide-item .slide-limit{font-size:16px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}.slide-footer{border-top:1px solid var(--line);padding-top:20px;display:flex;justify-content:space-between;align-items:center;gap:18px}.slide-footer .hint{font-size:13px;color:var(--muted)}.slide-footer .btn{font-size:16px}code{overflow-wrap:anywhere}.only-print{display:none}[hidden]{display:none!important}
+@media(min-width:1600px){body{font-size:18px}}@media(max-width:1000px){.wrap{width:calc(100% - 48px)}.summary-grid{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr 1fr}.hero-bottom{gap:30px}.day{grid-template-columns:110px 1fr;gap:20px}.presentation-shell{padding:25px}.slide-item p{font-size:17px}}@media(max-width:600px){.wrap{width:calc(100% - 36px)}.topbar{align-items:flex-start}.edition{display:none}.actions{gap:8px}.btn{padding:9px 10px;font-size:12px}.brand{font-size:22px}.brand svg{width:21px}.hero{padding:42px 0 30px}h1{font-size:53px;letter-spacing:-.05em;margin-bottom:25px}.eyebrow{font-size:11px;letter-spacing:.09em}.hero-bottom,.summary-grid,.boundary,.plan-grid,.lessons-grid{grid-template-columns:1fr}.hero-bottom{gap:10px}.lede{font-size:20px}.note{font-size:14px}.chapter-nav{gap:15px;font-size:13px}section{padding:37px 0}.section-heading{grid-template-columns:32px 1fr;gap:8px}.section-no{font-size:11px;padding-top:6px}h2{font-size:36px}.summary-card{padding:19px}.boundary{padding:24px;gap:15px}.boundary h3{font-size:28px}.filters{grid-template-columns:1fr;padding:18px;gap:12px}.filters .btn{font-size:14px}.results-line{flex-direction:column;gap:2px}.day{grid-template-columns:1fr;gap:12px}.day-label{padding-top:12px}.day-label span{display:inline;margin-left:8px}.event{padding:21px 19px}.event h3{font-size:22px}.event-meta{gap:10px}.count-strip{gap:10px 19px}.footer-row{display:block}.presentation-shell{padding:18px}.slide-grid{grid-template-columns:1fr}.slide-title{font-size:39px}.slide-description{font-size:19px}.slide-item h3{font-size:21px}.slide-item p{font-size:17px}.slide-item .slide-limit{font-size:14px}.slide-top p{font-size:12px}.slide-footer{align-items:flex-start;flex-direction:column}.slide-footer .btn{font-size:14px}.slide-footer .hint{font-size:12px}dialog{width:calc(100% - 16px);height:calc(100% - 16px);max-height:calc(100% - 16px)}.slide-content{padding-top:25px}.slide-top .btn{font-size:13px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+@media print{body{background:white;font:11pt/1.45 Georgia,serif;color:#111}.wrap{width:100%}.topbar .actions,.chapter-nav,.filters,.results-line,.skip,.no-print,dialog{display:none!important}.hero{padding:25px 0}h1{font-size:44pt}h2{font-size:26pt}h3,.event h3{font-size:16pt}section{padding:25px 0}.summary-grid{grid-template-columns:repeat(2,1fr)}.hero-bottom,.boundary,.plan-grid,.lessons-grid{display:block}.boundary{background:#eee;color:#111;padding:20px}.boundary p{color:#111;margin-top:12px}.day{grid-template-columns:85px 1fr;gap:15px}.event,.lesson,.summary-card{break-inside:avoid}.source{font-size:9pt}.source span{font-size:8pt}.limitation{background:#eee}.only-print{display:block}a{color:#111}details>summary{display:none}.footer{padding:20px 0}.event[hidden],.day[hidden]{display:block!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">К содержанию отчёта</a>
+<div class="wrap">
+<header class="topbar"><div class="brand"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M3 6h10l12 8-12 8H3V6Z" stroke="currentColor" stroke-width="2"/><path d="m11 10 6 4-6 4v-8Z" fill="currentColor"/></svg>clipmkr<span class="edition"> / журнал работы</span></div><div class="actions"><button class="btn primary" id="present">Режим показа ↗</button><button class="btn" id="print">Печать</button></div></header>
+<main id="main">
+<div class="hero"><p class="eyebrow">Отчёт для занятия · 30 октября — 5 ноября 2026</p><h1>От работающего клипа<br>к доказанному результату<span style="color:var(--green)">.</span></h1><div class="hero-bottom"><p class="lede">Что изменилось в Clipmkr за неделю, зачем это было нужно и какие обещания ещё предстоит подтвердить.</p><div class="note"><p><strong>Только Clipmkr. Срез на <span id="cutoff"></span>.</strong><br>У каждого результата своя граница проверки. Зелёный тест, согласованный макет и пройденный пользовательский путь учитываются отдельно.</p><p style="margin-bottom:0" id="coverage"></p></div></div></div>
+<nav class="chapter-nav" aria-label="Разделы отчёта"><a href="#progress">01 / Карта прогресса</a><a href="#history">02 / Хронология</a><a href="#next">03 / План</a><a href="#lessons">04 / Уроки</a></nav>
+<noscript><p class="noscript">Для поиска и отображения встроенных данных включите JavaScript в браузере. Файл работает локально без сети. Краткое содержание: подтверждён короткий путь до воспроизведения и скачивания; текущая полная приёмка и настоящая оплата не завершены; частичный повтор и автоматическая ссылка — одобренные макеты; перенос базы остановлен.</p></noscript>
+<section id="progress"><div class="section-heading"><span class="section-no">01</span><div><h2>Прогресс без общего процента</h2><p class="section-subtitle">Внедрённые исправления, решения по интерфейсу и будущая приёмка находятся на разных уровнях. Ниже — карта результатов, а не оценка готовности всего продукта.</p></div></div><div class="summary-grid" id="summary"></div><div class="count-strip" id="event-counts" aria-label="Количество событий по статусу"></div><div class="boundary"><h3>Полная приёмка<br>ещё открыта</h3><div><p>На Cloud-стенде 4 ноября пройдены 90/120 минут и TEST-покупки с возвратом. Это исторические результаты конкретной версии и среды.</p><p style="margin-top:14px">Повторная полная приёмка изменённой версии 5 ноября ещё открыта. Локальный платёжный candidate не доказывает новую реальную оплату. Частичный повтор и личная ссылка — одобренные макеты.</p></div></div></section>
+<section id="history"><div class="section-heading"><span class="section-no">02</span><div><h2>Изменение → польза → доказательство</h2><p class="section-subtitle">Хронология содержательных событий. Раскройте карточку, чтобы увидеть проверки и точный источник. Поиск и фильтры применяются только к этим событиям.</p></div></div><form class="filters" id="filters" role="search"><div class="field"><label for="search">Найти в событиях</label><input id="search" type="search" placeholder="Например: клипы, почта, оплата" autocomplete="off"></div><div class="field"><label for="status">Статус</label><select id="status"><option value="">Все статусы</option></select></div><div class="field"><label for="topic">Тема</label><select id="topic"><option value="">Все темы</option></select></div><button class="btn" type="reset">Сбросить</button></form><div class="results-line"><span id="results" role="status" aria-live="polite" aria-atomic="true"></span><span>Источник открывается только по нажатию · новая вкладка</span></div><div class="timeline" id="timeline"></div><div class="empty" id="empty" hidden><h3>Ничего не найдено</h3><p>Измените запрос или сбросьте фильтры.</p><button class="btn" id="empty-reset">Сбросить фильтры</button></div></section>
+<section id="next"><div class="section-heading"><span class="section-no">03</span><div><h2>Следующие сценарии</h2><p class="section-subtitle">Отдельный план: где идёт работа, что ждёт реализации, что заблокировано и что остановлено владельцем. Критерии ниже описывают будущую проверку.</p></div></div><div class="count-strip" id="next-counts" style="margin:0 0 25px" aria-label="Количество следующих действий по статусу"></div><div class="plan-grid" id="plan"></div></section>
+<section id="lessons"><div class="section-heading"><span class="section-no">04</span><div><h2>Уроки, которые меняют работу</h2><p class="section-subtitle">Ошибки и ограничения полезны, когда превращаются в конкретный способ действовать и проверять результат.</p></div></div><div class="lessons-grid" id="lesson-list"></div></section>
+<section><div class="section-heading"><span class="section-no">↳</span><div><h2>Как читать этот отчёт</h2><p class="section-subtitle">«Сделано» относится только к прямо названному результату. Исторические проверки сохраняют свою дату, версию и среду. Проверки HTML относятся к документу и не являются новым QE приложения.</p><ul class="guardrails" id="guardrails"></ul></div></div></section>
+</main><footer class="footer"><div class="footer-row"><p>Clipmkr / учебный срез · 30 октября — 5 ноября 2026<br>Откройте этот HTML в Chrome. Для работы не нужны сеть, сервер или установка программ. Печать включает полный отчёт со всеми источниками. Кнопка «Режим показа» запускает историю; ← → переключают слайды, Escape закрывает показ.</p><p>Данные встроены в файл.<br>Источники — документы и точные ревизии Git.<br><a href="#main">Вернуться к началу ↑</a></p></div></footer>
+</div>
+<dialog id="presentation" aria-labelledby="slide-title"><div class="presentation-shell"><div class="slide-top"><p>CLIPMKR / 30.10—05.11.2026 / <span id="slide-counter"></span></p><button class="btn" id="close-presentation" aria-label="Закрыть режим показа">Закрыть ×</button></div><div class="slide-content" id="slide-content"></div><div class="slide-footer"><span class="hint">← → слайды · Escape закрыть · содержание можно прокрутить</span><div class="actions"><button class="btn" id="previous" aria-label="Предыдущий слайд">← Назад</button><button class="btn primary" id="next-slide" aria-label="Следующий слайд">Далее →</button></div></div></div></dialog>
+<script type="application/json" id="report-data">{
+  "schemaVersion": 1,
+  "title": "Clipmkr: доказательства работы за 30 октября — 5 ноября 2026",
+  "period": {
+    "from": "2026-10-30",
+    "to": "2026-11-05"
+  },
+  "generatedOn": "2026-11-05",
+  "scope": "Только Clipmkr — область отчёта прямо подтверждена владельцем",
+  "state": "done",
+  "readingTimeMinutes": 12,
+  "statusDefinitions": {
+    "done": "Завершён только прямо названный результат и подтверждённый уровень проверки; это не означает готовность всего продукта.",
+    "in_progress": "Работа ведётся, итоговая приёмка не завершена.",
+    "planned": "Есть план или одобренный макет, реализация ещё не подтверждена.",
+    "blocked": "Есть явный незакрытый блокер.",
+    "paused": "Работа остановлена владельцем."
+  },
+  "summary": [
+    {
+      "id": "s1",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Доказан полезный короткий путь",
+      "text": "Новый реферальный клиент получил два клипа, воспроизвёл и скачал оба; партнёр увидел активацию.",
+      "eventIds": [
+        "e12"
+      ]
+    },
+    {
+      "id": "s2",
+      "date": "2026-11-05",
+      "status": "in_progress",
+      "title": "Полная приёмка открыта",
+      "text": "Текущие длинные записи, реальная тестовая платёжная интеграция и полный путь владельца/блогера ещё требуют подтверждения.",
+      "eventIds": [
+        "e11",
+        "e16"
+      ]
+    },
+    {
+      "id": "s3",
+      "date": "2026-11-05",
+      "status": "planned",
+      "title": "Два UX-решения одобрены, код впереди",
+      "text": "Частичный повтор и автоматическая ссылка согласованы; общий аудит интерфейса продолжается.",
+      "eventIds": [
+        "e17",
+        "e19",
+        "e20"
+      ]
+    },
+    {
+      "id": "s4",
+      "date": "2026-11-05",
+      "status": "paused",
+      "title": "Данные и инфраструктура на паузе",
+      "text": "Есть read-only инвентаризация; переноса базы и переключения production не было.",
+      "eventIds": [
+        "e21"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e01",
+      "date": "2026-11-02",
+      "topic": "Пользовательский путь",
+      "title": "Проверен ранний сквозной путь блогера, клиента и владельца",
+      "status": "done",
+      "evidenceLevel": "published_test_e2e",
+      "what": "На отдельном HTTPS-стенде пройдены назначение блогера, реферальная регистрация, нарезка и тестовые покупки.",
+      "why": "Проверить связку продукта в разных ролях, включая применённые оплаченные права.",
+      "checks": [
+        "Реальные S3, Yandex STT и Cloud.ru; три браузерных контекста.",
+        "Запись блогера 7199 секунд дала четыре воспроизводимых клипа; тестовая покупка и повторный вход подтверждены."
+      ],
+      "limitations": "Историческая приёмка конкретной версии и среды. Она не заменяет повторную приёмку изменённого интерфейса 5 ноября; длинный источник получен повторением разрешённого материала.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-02-blogger-live-cjm.md",
+          "commit": "41c5d66ed28d5401154d6e58ce568177d78656bb",
+          "url": "https://github.com/djd1m/clipmkr/blob/41c5d66ed28d5401154d6e58ce568177d78656bb/docs/measurements/2026-11-02-blogger-live-cjm.md",
+          "label": "Живой CJM 2 ноября",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e02",
+      "date": "2026-11-02",
+      "topic": "Воспроизведение",
+      "title": "Исправлен воспроизводимый отказ запуска клипа по превью",
+      "status": "done",
+      "evidenceLevel": "deployed_and_browser_verified",
+      "what": "Штатному плееру включена загрузка метаданных; фикс опубликован на основном и тестовом сайтах.",
+      "why": "Клик по центру должен запускать видео и декодировать кадры.",
+      "checks": [
+        "41 браузерная и 57 связанных Node-проверок; независимое cross-model ревью.",
+        "На опубликованной странице кликом запущены все четыре клипа; обратная мутация сохраняла paused=true."
+      ],
+      "limitations": "Причина прежнего временного 00:00 не установлена. Windows Chrome отдельно не проверен.",
+      "sources": [
+        {
+          "path": "docs/features/clip-preview-playback/05_completion.md",
+          "commit": "c0bc2c3547ec26a5b2373ba474db256385540d03",
+          "url": "https://github.com/djd1m/clipmkr/blob/c0bc2c3547ec26a5b2373ba474db256385540d03/docs/features/clip-preview-playback/05_completion.md",
+          "label": "Проверка и поставка плеера",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e03",
+      "date": "2026-11-03",
+      "topic": "Качество",
+      "title": "Штатный полный прогон завершился: 1444/1444",
+      "status": "done",
+      "evidenceLevel": "full_regression_at_revision",
+      "what": "Починен и выполнен штатный Docker/Compose test target с настоящим Cloud S3.",
+      "why": "Получать результат в воспроизводимом проектном раннере.",
+      "checks": [
+        "144 test files; 0 failed/skipped/todo; typecheck и lint прошли.",
+        "Реальные S3-журналы завершены; canary сохранён; проверена очистка multipart."
+      ],
+      "limitations": "Результат относится к commit bbcff67. На этой стадии доставка A/B, Cloud CJM и тестовая оплата ещё не были доказаны; тесты не означают готовность продукта.",
+      "sources": [
+        {
+          "path": "features/cloudru-release-parity/07_progress.md",
+          "commit": "31a32871bce76746362a61575b28b087f6923f37",
+          "url": "https://github.com/djd1m/clipmkr/blob/31a32871bce76746362a61575b28b087f6923f37/features/cloudru-release-parity/07_progress.md",
+          "label": "1444 теста и границы результата",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e04",
+      "date": "2026-11-04",
+      "topic": "Доставка",
+      "title": "Проверены доставка, откат и повторное обновление A→B→A→B",
+      "status": "done",
+      "evidenceLevel": "two_target_delivery_and_rollback",
+      "what": "Один набор приложения доставлен на две тестовые цели, затем выполнены совместимый откат и повторное обновление.",
+      "why": "Уметь безопасно выпускать и возвращать проверенную версию.",
+      "checks": [
+        "HTTPS и revision/image identities сверены после каждой фазы.",
+        "На обеих целях сохранены проекции 26 таблиц, журнал миграций и проверяемые медиа."
+      ],
+      "limitations": "Это проверка тестовой доставки. Production/DNS не переключались; длинные записи и платежи этой последовательностью не доказаны. Первоначальные отказы допуска сохранены в протоколе.",
+      "sources": [
+        {
+          "path": "features/cloudru-release-parity/.fa-state/qe-reports/qe-lead.md",
+          "commit": "ba2aa148e80525212991f6e0f1fe829fd59a9071",
+          "url": "https://github.com/djd1m/clipmkr/blob/ba2aa148e80525212991f6e0f1fe829fd59a9071/features/cloudru-release-parity/.fa-state/qe-reports/qe-lead.md",
+          "label": "Доставка и откат A→B→A→B",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e05",
+      "date": "2026-11-04",
+      "topic": "Эксплуатация",
+      "title": "Работает ограниченный маршрут сопровождения существующей Cloud ВМ",
+      "status": "done",
+      "evidenceLevel": "operational_access_verified",
+      "what": "Установлен и проверен обратный SSH через стандартный OpenSSH с отдельными ключами и ограничениями.",
+      "why": "Сопровождать существующую ВМ при тайм-ауте прямого SSH.",
+      "checks": [
+        "Вход прежним ключом подтверждён; проверены ограничения и закрепление ключей хостов.",
+        "Runbook фиксирует постоянный маршрут и резервный порядок восстановления."
+      ],
+      "limitations": "Точная причина потери прямого TCP не установлена. Доступ к ВМ не означает перенос базы или переключение продукта.",
+      "sources": [
+        {
+          "path": "docs/runbooks/cloudru-reverse-ssh.md",
+          "commit": "872ccf12375c8eb3e684e91bf4964a61c016ce93",
+          "url": "https://github.com/djd1m/clipmkr/blob/872ccf12375c8eb3e684e91bf4964a61c016ce93/docs/runbooks/cloudru-reverse-ssh.md",
+          "label": "Проверенный доступ к существующей ВМ",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e06",
+      "date": "2026-11-04",
+      "topic": "История изменений",
+      "title": "Подтверждена первая синхронизация трёх Git-зеркал",
+      "status": "done",
+      "evidenceLevel": "git_mirror_readback",
+      "what": "GitHub, GitLab и GitVerse включены в порядок поставки одинаковых SHA.",
+      "why": "Сохранять проверяемую историю на трёх площадках.",
+      "checks": [
+        "Настроены штатные remotes и проверка readback веток.",
+        "Независимая исходная история GitLab сохранена слиянием."
+      ],
+      "limitations": "Успех одной отправки не гарантирует остальные или будущие push; каждый выпуск требует собственной сверки.",
+      "sources": [
+        {
+          "path": "docs/operations/git-mirrors.md",
+          "commit": "a23e99468d97aa7c9b47e4eb6e90824695bac0eb",
+          "url": "https://github.com/djd1m/clipmkr/blob/a23e99468d97aa7c9b47e4eb6e90824695bac0eb/docs/operations/git-mirrors.md",
+          "label": "Три Git-зеркала",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e07",
+      "date": "2026-11-04",
+      "topic": "Обучение",
+      "title": "Принят цикл обучения на замечаниях владельца",
+      "status": "done",
+      "evidenceLevel": "documented_rule_and_observed_recall",
+      "what": "Закреплён порядок recall→наблюдение и доказательства→teach→повторный recall→применение.",
+      "why": "Превращать принятые замечания в проверяемые повторно используемые правила.",
+      "checks": [
+        "Требование включено в AGENTS.md.",
+        "Протокол provider-фикса содержит реально сохранённый и повторно извлечённый урок."
+      ],
+      "limitations": "Правило и запись урока не заменяют согласование макета, этап процесса или независимый QE.",
+      "sources": [
+        {
+          "path": "AGENTS.md",
+          "commit": "ca21cced28e0dd8c716ecfb823d33907cef029f2",
+          "url": "https://github.com/djd1m/clipmkr/blob/ca21cced28e0dd8c716ecfb823d33907cef029f2/AGENTS.md",
+          "label": "Обязательный цикл recall→teach→recall",
+          "workingTree": false
+        },
+        {
+          "path": "features/cloudru-selection-thinking/10_delivery_status.md",
+          "commit": "a008d85217d085b3836267d21a63e7cd2f677a8e",
+          "url": "https://github.com/djd1m/clipmkr/blob/a008d85217d085b3836267d21a63e7cd2f677a8e/features/cloudru-selection-thinking/10_delivery_status.md",
+          "label": "Фикс выбора фрагментов: поставка и ограничения",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e08",
+      "date": "2026-11-04",
+      "topic": "Генерация",
+      "title": "Ограниченный фикс восстановил выбор фрагментов через Cloud.ru",
+      "status": "done",
+      "evidenceLevel": "deployed_source_and_partial_runtime",
+      "what": "В Cloud.ru-only ветви отключены рассуждения; опубликован исходный commit ebb5902.",
+      "why": "Получать валидные фрагменты через действующий selector без смены модели и ослабления validator.",
+      "checks": [
+        "Автор: 59 focused checks; независимо: 24 проверки и шесть отдельных мутаций.",
+        "Независимый настоящий UI retry дошёл до двух готовых клипов; оба воспроизведены в Chromium/WebKit."
+      ],
+      "limitations": "Общий runtime PARTIAL: скачивание WebKit не принято. Upload/STT этой записи уже были завершены; диагностический запрос и UI job учитываются отдельно.",
+      "sources": [
+        {
+          "path": "features/cloudru-selection-thinking/10_delivery_status.md",
+          "commit": "a008d85217d085b3836267d21a63e7cd2f677a8e",
+          "url": "https://github.com/djd1m/clipmkr/blob/a008d85217d085b3836267d21a63e7cd2f677a8e/features/cloudru-selection-thinking/10_delivery_status.md",
+          "label": "Фикс выбора фрагментов: поставка и ограничения",
+          "workingTree": false
+        },
+        {
+          "path": "features/cloudru-selection-thinking/09_runtime_acceptance.md",
+          "commit": "153a9cd7d14d89776ab38bd83b04594bcb421d50",
+          "url": "https://github.com/djd1m/clipmkr/blob/153a9cd7d14d89776ab38bd83b04594bcb421d50/features/cloudru-selection-thinking/09_runtime_acceptance.md",
+          "label": "Независимый runtime: клипы и отказ сверх лимита",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e22",
+      "date": "2026-11-04",
+      "topic": "Длинные исходники",
+      "title": "На Cloud-стенде пройдены ровно 90 и 120 минут",
+      "status": "done",
+      "evidenceLevel": "historical_published_cloud_e2e",
+      "what": "Блогерская запись ровно 120 минут дала три клипа; запись привлечённого обычного клиента ровно 90 минут — пять.",
+      "why": "Проверить весь тракт длительности, а не только SQL-границу или короткий ролик.",
+      "checks": [
+        "Настоящие опубликованный UI, Cloud S3 и поставщики; пауза/продолжение без подмены transport.",
+        "Каждый полученный клип воспроизведён с декодированными кадрами, первый файл каждого прогона скачан."
+      ],
+      "limitations": "Это два исторических прогона на c.clipmkr.ru 4 ноября. Они не подтверждают p95 и не заменяют приёмку изменённого текущего origin 5 ноября. После них обнаружен отдельный пользовательский отказ передачи.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-04-cloud-cjm.md",
+          "commit": "c9527a73ecce4774c2441012c953f89478970e8e",
+          "url": "https://github.com/djd1m/clipmkr/blob/c9527a73ecce4774c2441012c953f89478970e8e/docs/measurements/2026-11-04-cloud-cjm.md",
+          "label": "Исторический Cloud CJM 4 ноября",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e23",
+      "date": "2026-11-04",
+      "topic": "Тестовая оплата",
+      "title": "Исторически проверены TEST-покупки, повтор уведомления и возврат",
+      "status": "done",
+      "evidenceLevel": "historical_real_test_provider",
+      "what": "На Cloud-стенде подтверждены настоящие TEST-покупки трёх SKU и повтор provider-уведомления без двойного начисления; штатный refund исключён из реферальной выручки.",
+      "why": "Проверить финансовую идемпотентность и правдивую статистику блогера/владельца.",
+      "checks": [
+        "На положительный платёж — одно событие, один платёж и одно начисление.",
+        "Ограниченная прокси вернула 503 после первого применения; настоящий повтор ЮKassa распознан как duplicate.",
+        "Оценки без ставки/20%/30% и исключение refunded/needs_review проверены."
+      ],
+      "limitations": "Реальных списаний не было. Terminal canceled этого Cloud-прогона не доказан. Это историческая среда 4 ноября; wrong receiver и старые intents текущей среды 5 ноября остаются открытыми, candidate local их не закрывает.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-04-cloud-cjm.md",
+          "commit": "c9527a73ecce4774c2441012c953f89478970e8e",
+          "url": "https://github.com/djd1m/clipmkr/blob/c9527a73ecce4774c2441012c953f89478970e8e/docs/measurements/2026-11-04-cloud-cjm.md",
+          "label": "Исторический Cloud CJM 4 ноября",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e09",
+      "date": "2026-11-05",
+      "topic": "Публичный вход",
+      "title": "Согласованный макет главной реализован на тестовом сайте",
+      "status": "done",
+      "evidenceLevel": "deployed_test_ui",
+      "what": "Опубликован web source 8859f76 с регистрацией, входом, темами и примером видео.",
+      "why": "Дать пользователю понятный вход в основной путь и сохранить безопасный next.",
+      "checks": [
+        "Шесть реальных auth-сценариев и 14 клеток Chromium/WebKit responsive-матрицы прошли.",
+        "Независимый анонимный smoke 4/4; перед/после web-only apply сохранность бизнес-строк проверена по SHA."
+      ],
+      "limitations": "Это тестовая поставка; ручная приёмка владельца ещё ожидалась. Историческое ограничение почты в этом документе позже изменено отдельной активацией Resend.",
+      "sources": [
+        {
+          "path": "features/public-entry-cabinet/delivery-test-release.md",
+          "commit": "e381a2a8034d1424800e85f61625990b4e1bb0e8",
+          "url": "https://github.com/djd1m/clipmkr/blob/e381a2a8034d1424800e85f61625990b4e1bb0e8/features/public-entry-cabinet/delivery-test-release.md",
+          "label": "Публичный вход: реальная тестовая поставка",
+          "workingTree": false
+        },
+        {
+          "path": "features/resend-activation/07_activation_record.md",
+          "commit": "f1cb0bb672d52bc32cb36a722a17ca7376ee054b",
+          "url": "https://github.com/djd1m/clipmkr/blob/f1cb0bb672d52bc32cb36a722a17ca7376ee054b/features/resend-activation/07_activation_record.md",
+          "label": "Resend: активация и проверка",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e10",
+      "date": "2026-11-05",
+      "topic": "Почта",
+      "title": "Resend активирован, проверочное письмо получено",
+      "status": "done",
+      "evidenceLevel": "live_mail_activation_partial_recovery",
+      "what": "Включён существующий почтовый адаптер без перекодирования приложения; форма восстановления отправила запрос.",
+      "why": "Вернуть доступную отправку инструкции восстановления.",
+      "checks": [
+        "Provider HTTP200; владелец подтвердил получение нейтрального письма.",
+        "/forgot: один POST202, delivery_state=accepted; сохранность 26 бизнес-таблиц проверена при apply."
+      ],
+      "limitations": "Полный переход по reset-ссылке, новый пароль и вход не подтверждены. Получение нейтрального письма и accepted для recovery — разные доказательства.",
+      "sources": [
+        {
+          "path": "features/resend-activation/07_activation_record.md",
+          "commit": "f1cb0bb672d52bc32cb36a722a17ca7376ee054b",
+          "url": "https://github.com/djd1m/clipmkr/blob/f1cb0bb672d52bc32cb36a722a17ca7376ee054b/features/resend-activation/07_activation_record.md",
+          "label": "Resend: активация и проверка",
+          "workingTree": false
+        },
+        {
+          "path": "docs/operations/resend.md",
+          "commit": "0e1a79ff2dbb8873c1c3cdd1af9d15b7c9cbfd64",
+          "url": "https://github.com/djd1m/clipmkr/blob/0e1a79ff2dbb8873c1c3cdd1af9d15b7c9cbfd64/docs/operations/resend.md",
+          "label": "Сохранение почты при обновлении web",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e11",
+      "date": "2026-11-05",
+      "topic": "Лимиты и права",
+      "title": "Подтверждены отказ сверх 90 минут и запрет повышения роли",
+      "status": "done",
+      "evidenceLevel": "published_negative_checks",
+      "what": "На текущем опубликованном origin обычная запись 5401 секунду отклонена; обычному пользователю отказано в owner API.",
+      "why": "Проверить серверную границу, а не доверять параметрам клиента.",
+      "checks": [
+        "Причина too_long, применённый лимит 5400; серверный отказ связан с загруженным синтетическим файлом.",
+        "Role API403; последующая обработка и списание для negative-записи отсутствуют."
+      ],
+      "limitations": "Это отрицательные проверки. Успешные записи ровно 90/120 минут и индивидуальный лимит в полном текущем E2E остаются открытыми.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "c35b8686bf258c79b9de30e5cddbba2d78838b8d",
+          "url": "https://github.com/djd1m/clipmkr/blob/c35b8686bf258c79b9de30e5cddbba2d78838b8d/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Отказ сверх 90 минут и защита роли",
+          "workingTree": false
+        },
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Текущая повторная приёмка основных сценариев",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e12",
+      "date": "2026-11-05",
+      "topic": "Реферальный путь",
+      "title": "Новый клиент прошёл от ссылки до двух готовых клипов",
+      "status": "done",
+      "evidenceLevel": "published_referral_to_clips_e2e",
+      "what": "На опубликованном UI выполнены реферальный переход, регистрация, загрузка 155-секундной записи, нарезка, просмотр и скачивание обоих клипов.",
+      "why": "Доказать полезный результат нового пользователя, а не только запись в базе.",
+      "checks": [
+        "Terminal done, clips_done=2/2; оба native Play увеличивают currentTime.",
+        "Оба скачанных MP4 проверены; партнёр после reload видит первый выпуск готовым."
+      ],
+      "limitations": "Проверен обычный QA-партнёр, не полный владелец→назначенный блогер→оплата. Ранний частичный результат другого видео и платежная приёмка остаются открытыми.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "26eb6b196e726ab32a6bbddc1e33ea8e4f6a5877",
+          "url": "https://github.com/djd1m/clipmkr/blob/26eb6b196e726ab32a6bbddc1e33ea8e4f6a5877/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Реферальный путь до двух готовых клипов",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e13",
+      "date": "2026-11-05",
+      "topic": "Кабинет",
+      "title": "Темы и обе компоновки проверены на готовой записи",
+      "status": "done",
+      "evidenceLevel": "published_ui_matrix",
+      "what": "Проверены светлая/тёмная темы и «Кабинет»/«Монтажная» на телефоне и desktop.",
+      "why": "Сохранить настройку и доступ к клипам при смене представления.",
+      "checks": [
+        "8/8 комбинаций 390/1440; настройки сохраняются после reload.",
+        "Наблюдаемый состав экрана соответствует компоновке; page errors0, горизонтального overflow нет."
+      ],
+      "limitations": "Это восемь конкретных сценариев Chromium, не полная дизайнерская приёмка всех экранов или сертификат WCAG.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "16115ed01453278859b0fa5c1192f3179ef9754e",
+          "url": "https://github.com/djd1m/clipmkr/blob/16115ed01453278859b0fa5c1192f3179ef9754e/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Восемь проверок тем и компоновок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e14",
+      "date": "2026-11-05",
+      "topic": "Кредиты блогера",
+      "title": "Пробный бюджет соответствует назначенному лимиту без повторного пополнения",
+      "status": "done",
+      "evidenceLevel": "independently_reviewed_and_deployed",
+      "what": "Исправлен канонический trial ledger; опубликован web source 4d053b0. Для согласованного существующего аккаунта сохранён расход и добавлена только положительная разница.",
+      "why": "Блогер должен иметь бюджет для назначенного длинного исходника, без сброса истории расходов.",
+      "checks": [
+        "Автор 97/97 отдельно от независимых 76/76; проверяющий также выполнил probes и мутации на настоящем PostgreSQL.",
+        "Реальный контролируемый browser/relogin показывает баланс и лимит; повтор назначения не пополняет.",
+        "Итог доступного остатка реального аккаунта: 117 минут после уже потраченных трёх, а не новый refill 120."
+      ],
+      "limitations": "Независимое scoped QE и адресная поставка не закрывают full-suite, видео/S3 или финансовую приёмку продукта. В реальный аккаунт блогера исполнитель не входил.",
+      "sources": [
+        {
+          "path": "features/blogger-trial-credits/08_qe_report.md",
+          "commit": "24b4b4a4be4364659142b1428511fb634378ddbc",
+          "url": "https://github.com/djd1m/clipmkr/blob/24b4b4a4be4364659142b1428511fb634378ddbc/features/blogger-trial-credits/08_qe_report.md",
+          "label": "Пробный бюджет: независимая проверка и поставка",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e15",
+      "date": "2026-11-05",
+      "topic": "Диагностика",
+      "title": "Зависание загрузки исследовано без выдуманной причины",
+      "status": "in_progress",
+      "evidenceLevel": "observed_incident_investigation",
+      "what": "Зафиксированы пустые multipart parts ранней попытки; вторая передача позже завершилась, началась обработка.",
+      "why": "Отделить сетевую передачу от серверной обработки и не объявить гипотезу причиной.",
+      "checks": [
+        "Контрольный файл на том же UI получил первую часть S3 PUT200.",
+        "Вторая пользовательская передача завершилась примерно за 96 секунд без изменения сервера.",
+        "У fetch PUT найдено отсутствие собственного timeout."
+      ],
+      "limitations": "Причинная связь timeout с конкретным зависанием не доказана; первая попытка не объяснена. Начало обработки не равно готовым клипам.",
+      "sources": [
+        {
+          "path": "docs/incidents/2026-11-05-blogger-upload-stall.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/incidents/2026-11-05-blogger-upload-stall.md",
+          "label": "Зависание передачи: наблюдения и обновление",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e16",
+      "date": "2026-11-05",
+      "topic": "Платежи",
+      "title": "Платёжный candidate независимо проверен только локально",
+      "status": "in_progress",
+      "evidenceLevel": "independent_local_candidate_only",
+      "what": "Candidate-3 исправлен после последовательных независимых замечаний; локальный recheck закрыл CAND-01…06.",
+      "why": "Подготовить безопасное ограниченное тестовое окно с приоритетным закрытием checkout.",
+      "checks": [
+        "Независимо 39/39 PASS с временными файлами и подменёнными внешними командами.",
+        "Проверены lock/deadline/CAS/close и bounded provider-wait в локальной модели."
+      ],
+      "limitations": "Install/apply/opening не допущены; настоящие provider/SSH/DB/systemd вызовы этим recheck не выполнялись. Старый source-baseline 8859 аннулирован новой trial-выкладкой; требуется fresh assessment. Документ локальный, не коммит.",
+      "sources": [
+        {
+          "path": "features/test-payment-window/reviews/candidate-3-independent-review.md",
+          "commit": null,
+          "baseCommit": "ef22214841ecb7ba85480b7589e31da893250fdc",
+          "url": null,
+          "localPath": "/tmp/clipmkr-test-payment-window-20261105/features/test-payment-window/reviews/candidate-3-independent-review.md",
+          "sha256": "15ece2b5fb5852b5496e31a6db01c46201e0a6f109cb4554d9d5f9a91978ea5c",
+          "label": "Платёжный candidate-3: независимый локальный recheck",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "e17",
+      "date": "2026-11-05",
+      "topic": "Частичный результат",
+      "title": "Макет повтора только неготового клипа согласован",
+      "status": "planned",
+      "evidenceLevel": "approved_mockup_no_implementation",
+      "what": "Владелец согласовал сохранение готового клипа и повтор незавершённого монтажа без повторного списания за запись.",
+      "why": "Не заставлять пользователя загружать и оплачивать исходник заново из-за одного сбоя.",
+      "checks": [
+        "Зафиксированы exact HTML/PNG hashes и явный ответ владельца.",
+        "В требованиях отделены guards, сохранность готового результата и финансовая идемпотентность."
+      ],
+      "limitations": "Приложение не изменено. ADR/QCSD/K1/K2/реализация/QE не подтверждены этим согласованием.",
+      "sources": [
+        {
+          "path": "features/partial-render-recovery/owner-approval.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/owner-approval.md",
+          "label": "Согласование частичного повтора и исторической активности",
+          "workingTree": false
+        },
+        {
+          "path": "features/partial-render-recovery/01_requirements.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/01_requirements.md",
+          "label": "Частичный повтор: требования, реализация впереди",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e18",
+      "date": "2026-11-05",
+      "topic": "Статистика",
+      "title": "Принято правило активности по хотя бы одному готовому клипу",
+      "status": "planned",
+      "evidenceLevel": "owner_decision_not_implemented",
+      "what": "Владелец выбрал учитывать старые частичные результаты; retry сам по себе не переносит прежнюю активность в новый месяц.",
+      "why": "Показывать фактически полученную пользу и не занижать активность из-за общего failed-статуса.",
+      "checks": [
+        "Прямое решение «Да» записано отдельно от первоначального макета.",
+        "Дельта не меняет кредиты, платёжный учёт и проценты вознаграждения."
+      ],
+      "limitations": "Изменение отчёта ещё не реализовано; новые байты требований требуют перепривязки и повторного независимого review.",
+      "sources": [
+        {
+          "path": "features/partial-render-recovery/owner-approval.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/owner-approval.md",
+          "label": "Согласование частичного повтора и исторической активности",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e19",
+      "date": "2026-11-05",
+      "topic": "Ссылка блогера",
+      "title": "Одобрен макет автоматической личной ссылки",
+      "status": "planned",
+      "evidenceLevel": "approved_mockup_no_implementation",
+      "what": "Вместо придумывания кода блогер должен получать готовую ссылку и действие «Копировать».",
+      "why": "Убрать лишний шаг до распространения продукта среди подписчиков.",
+      "checks": [
+        "Макет привязан к commit 18e4fa9; в более позднем локальном журнале зафиксировано «оба макета согласованы».",
+        "Переиспользуется существующий серверный генератор с сохранением прежних кодов и блокировок."
+      ],
+      "limitations": "Исходный commit макета ещё говорит «согласование не получено»; позднее решение хранится в локальном документе с SHA. Runtime-код и выдача ссылок ещё не реализованы.",
+      "sources": [
+        {
+          "path": "features/blogger-auto-link/01_requirements.md",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/features/blogger-auto-link/01_requirements.md",
+          "label": "Автоматическая ссылка: исходный макет и требования",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/owner-approval.md",
+          "sha256": "c4ebedbda01ea6c78d1a5a8ff55e87f411efad77f396f0d2060239222bba7bcf",
+          "label": "Локальная запись: оба макета одобрены",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "e20",
+      "date": "2026-11-05",
+      "topic": "Упрощение интерфейса",
+      "title": "Начат аудит экранов трёх ролей и advanced-настроек",
+      "status": "in_progress",
+      "evidenceLevel": "design_audit_in_progress",
+      "what": "Для обычного пользователя, блогера и владельца готовятся аудит и новые макеты с главным действием и менее заметными дополнительными опциями.",
+      "why": "Уменьшить перегрузку и ускорить первый полезный результат.",
+      "checks": [
+        "Есть локальные требования, reuse inventory и отдельные аудиты трёх ролей.",
+        "Новый запрос отделён от одобрения двух прежних точечных макетов."
+      ],
+      "limitations": "Это исследование и проектирование. Новые макеты остальных экранов ещё не согласованы; приложение не переделано. Локальные документы не коммит.",
+      "sources": [
+        {
+          "path": "features/ux-simplification/01_requirements.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/01_requirements.md",
+          "sha256": "8161527d35324d60b0956bc2814950b68bf0575b50f71764bca5fbb25400f8d1",
+          "label": "Текущий UX-аудит и требования",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        },
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/owner-approval.md",
+          "sha256": "c4ebedbda01ea6c78d1a5a8ff55e87f411efad77f396f0d2060239222bba7bcf",
+          "label": "Локальная запись: оба макета одобрены",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "e21",
+      "date": "2026-11-05",
+      "topic": "Тестовая среда",
+      "title": "Перенос базы и инфраструктурные работы приостановлены",
+      "status": "paused",
+      "evidenceLevel": "read_only_inventory_and_owner_pause",
+      "what": "Владелец выбрал существующий рабочий VPS для будущей приёмки и остановил перенос данных; подготовительные операции не выдаются за выполненные.",
+      "why": "Сначала согласовать границы тестовой среды и сохранить существующую историю.",
+      "checks": [
+        "Read-only инвентаризация: на действующем сайте 34 аккаунта, 40 записей и 64 клипа; в локальной БД иное состояние.",
+        "Документы прямо различают backup, отдельный снимок и реально подключённую приложению БД."
+      ],
+      "limitations": "Числа — наблюдаемое состояние 5 ноября, не прирост за неделю. Копирование, registration freeze, production/DNS cutover не выполнялись и не разрешены этим отчётом.",
+      "sources": [
+        {
+          "path": "docs/operations/test-environment-policy-20261105.md",
+          "commit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": "https://github.com/djd1m/clipmkr/blob/49e8ba878bf06b18729390ad904b0e334da4a69b/docs/operations/test-environment-policy-20261105.md",
+          "label": "Read-only инвентаризация тестовых сред",
+          "workingTree": false
+        },
+        {
+          "path": "features/partial-render-recovery/owner-approval.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/owner-approval.md",
+          "label": "Согласование частичного повтора и исторической активности",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "l1",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Уровень доказательства должен совпадать с обещанием",
+      "what": "Локальные тесты candidate, опубликованный UI и реальная платёжная интеграция — отдельные результаты.",
+      "why": "Показывать среду, revision, наблюдаемое поведение и незакрытую границу рядом с каждым PASS.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e03",
+        "e12",
+        "e16"
+      ],
+      "sources": [
+        {
+          "path": "features/cloudru-release-parity/07_progress.md",
+          "commit": "31a32871bce76746362a61575b28b087f6923f37",
+          "url": "https://github.com/djd1m/clipmkr/blob/31a32871bce76746362a61575b28b087f6923f37/features/cloudru-release-parity/07_progress.md",
+          "label": "1444 теста и границы результата",
+          "workingTree": false
+        },
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Текущая повторная приёмка основных сценариев",
+          "workingTree": false
+        },
+        {
+          "path": "features/test-payment-window/reviews/candidate-3-independent-review.md",
+          "commit": null,
+          "baseCommit": "ef22214841ecb7ba85480b7589e31da893250fdc",
+          "url": null,
+          "localPath": "/tmp/clipmkr-test-payment-window-20261105/features/test-payment-window/reviews/candidate-3-independent-review.md",
+          "sha256": "15ece2b5fb5852b5496e31a6db01c46201e0a6f109cb4554d9d5f9a91978ea5c",
+          "label": "Платёжный candidate-3: независимый локальный recheck",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "l2",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Рабочий клип важнее зелёного статуса",
+      "what": "Приёмка требует terminal результата, настоящего Play и скачанного валидного файла.",
+      "why": "Проверять все выбранные клипы; partial 1/2 не называть полным успехом.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e08",
+        "e12",
+        "e17"
+      ],
+      "sources": [
+        {
+          "path": "features/cloudru-selection-thinking/09_runtime_acceptance.md",
+          "commit": "153a9cd7d14d89776ab38bd83b04594bcb421d50",
+          "url": "https://github.com/djd1m/clipmkr/blob/153a9cd7d14d89776ab38bd83b04594bcb421d50/features/cloudru-selection-thinking/09_runtime_acceptance.md",
+          "label": "Независимый runtime: клипы и отказ сверх лимита",
+          "workingTree": false
+        },
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "26eb6b196e726ab32a6bbddc1e33ea8e4f6a5877",
+          "url": "https://github.com/djd1m/clipmkr/blob/26eb6b196e726ab32a6bbddc1e33ea8e4f6a5877/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Реферальный путь до двух готовых клипов",
+          "workingTree": false
+        },
+        {
+          "path": "features/partial-render-recovery/01_requirements.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/01_requirements.md",
+          "label": "Частичный повтор: требования, реализация впереди",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l3",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Ошибка harness не всегда дефект продукта",
+      "what": "Ранние private проверки промахивались по native Play и неверно ждали rendering; исходные FAIL сохранены.",
+      "why": "Сначала сверить предусловия и locator, затем повторить проверку без новой обработки и без переписывания истории.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e12",
+        "e13"
+      ],
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Текущая повторная приёмка основных сценариев",
+          "workingTree": false
+        },
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "16115ed01453278859b0fa5c1192f3179ef9754e",
+          "url": "https://github.com/djd1m/clipmkr/blob/16115ed01453278859b0fa5c1192f3179ef9754e/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Восемь проверок тем и компоновок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l4",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Нельзя терять настройки при замене образа",
+      "what": "Resend живёт в runtime-конфигурации; новый image не переносит её автоматически.",
+      "why": "Перед recreate сравнивать весь действующий Compose/env и сохранять остальные сервисы.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e09",
+        "e10",
+        "e14"
+      ],
+      "sources": [
+        {
+          "path": "docs/operations/resend.md",
+          "commit": "0e1a79ff2dbb8873c1c3cdd1af9d15b7c9cbfd64",
+          "url": "https://github.com/djd1m/clipmkr/blob/0e1a79ff2dbb8873c1c3cdd1af9d15b7c9cbfd64/docs/operations/resend.md",
+          "label": "Сохранение почты при обновлении web",
+          "workingTree": false
+        },
+        {
+          "path": "features/blogger-trial-credits/08_qe_report.md",
+          "commit": "24b4b4a4be4364659142b1428511fb634378ddbc",
+          "url": "https://github.com/djd1m/clipmkr/blob/24b4b4a4be4364659142b1428511fb634378ddbc/features/blogger-trial-credits/08_qe_report.md",
+          "label": "Пробный бюджет: независимая проверка и поставка",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l5",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Роль, предел файла и бюджет минут — разные сущности",
+      "what": "Блогерский лимит 120 минут не означает доступный trial 120 после уже потраченных минут.",
+      "why": "Сохранять расход; выдавать только положительную разницу lifetime-бюджета; повтор назначения делать идемпотентным.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e14"
+      ],
+      "sources": [
+        {
+          "path": "features/blogger-trial-credits/08_qe_report.md",
+          "commit": "24b4b4a4be4364659142b1428511fb634378ddbc",
+          "url": "https://github.com/djd1m/clipmkr/blob/24b4b4a4be4364659142b1428511fb634378ddbc/features/blogger-trial-credits/08_qe_report.md",
+          "label": "Пробный бюджет: независимая проверка и поставка",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "commit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": "https://github.com/djd1m/clipmkr/blob/49e8ba878bf06b18729390ad904b0e334da4a69b/docs/acceptance/core-cjm.md",
+          "label": "Обязательные сценарии приёмки",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l6",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Согласование относится к конкретным байтам макета",
+      "what": "Одобрение частичного повтора и личной ссылки не разрешает переделывать остальные экраны.",
+      "why": "Привязывать approval к HTML/PNG; новые композиции снова показывать владельцу.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e17",
+        "e19",
+        "e20"
+      ],
+      "sources": [
+        {
+          "path": "features/partial-render-recovery/owner-approval.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/owner-approval.md",
+          "label": "Согласование частичного повтора и исторической активности",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/owner-approval.md",
+          "sha256": "c4ebedbda01ea6c78d1a5a8ff55e87f411efad77f396f0d2060239222bba7bcf",
+          "label": "Локальная запись: оба макета одобрены",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "l7",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Наблюдение не является установленной причиной",
+      "what": "Зависшая передача, пустые части S3 и отсутствие timeout — подтверждённые наблюдения; причинная цепочка пока открыта.",
+      "why": "Разделять симптомы, гипотезы и воспроизведённые дефекты, обновляя временную линию.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e15"
+      ],
+      "sources": [
+        {
+          "path": "docs/incidents/2026-11-05-blogger-upload-stall.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/incidents/2026-11-05-blogger-upload-stall.md",
+          "label": "Зависание передачи: наблюдения и обновление",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l8",
+      "date": "2026-11-05",
+      "status": "done",
+      "title": "Доставка кода и перенос продукта — разные операции",
+      "what": "Проверенный доступ к ВМ и A/B rollback не доказывают перенос текущей пользовательской базы или production cutover.",
+      "why": "Использовать read-only inventory; не выдавать backup и подготовительный план за подключённый рабочий снимок.",
+      "checks": [
+        "Вывод связан с конкретными подтверждёнными событиями."
+      ],
+      "limitations": "Урок не является разрешением на выполнение будущих операций.",
+      "eventIds": [
+        "e04",
+        "e05",
+        "e21"
+      ],
+      "sources": [
+        {
+          "path": "features/cloudru-release-parity/.fa-state/qe-reports/qe-lead.md",
+          "commit": "ba2aa148e80525212991f6e0f1fe829fd59a9071",
+          "url": "https://github.com/djd1m/clipmkr/blob/ba2aa148e80525212991f6e0f1fe829fd59a9071/features/cloudru-release-parity/.fa-state/qe-reports/qe-lead.md",
+          "label": "Доставка и откат A→B→A→B",
+          "workingTree": false
+        },
+        {
+          "path": "docs/runbooks/cloudru-reverse-ssh.md",
+          "commit": "872ccf12375c8eb3e684e91bf4964a61c016ce93",
+          "url": "https://github.com/djd1m/clipmkr/blob/872ccf12375c8eb3e684e91bf4964a61c016ce93/docs/runbooks/cloudru-reverse-ssh.md",
+          "label": "Проверенный доступ к существующей ВМ",
+          "workingTree": false
+        },
+        {
+          "path": "docs/operations/test-environment-policy-20261105.md",
+          "commit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": "https://github.com/djd1m/clipmkr/blob/49e8ba878bf06b18729390ad904b0e334da4a69b/docs/operations/test-environment-policy-20261105.md",
+          "label": "Read-only инвентаризация тестовых сред",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "nextSteps": [
+    {
+      "id": "n1",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Полная приёмка текущей версии",
+      "status": "in_progress",
+      "what": "Закрыть текущие положительные 90/120-минутные проходы, индивидуальный предел и реальные роли.",
+      "why": "Нужен настоящий опубликованный UI, реальные поставщики и Play/download результата.",
+      "checks": [
+        "Будущий критерий: Нужен настоящий опубликованный UI, реальные поставщики и Play/download результата."
+      ],
+      "limitations": "Исторические длинные проходы другой среды не переносить автоматически.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Текущая повторная приёмка основных сценариев",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "commit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": "https://github.com/djd1m/clipmkr/blob/49e8ba878bf06b18729390ad904b0e334da4a69b/docs/acceptance/core-cjm.md",
+          "label": "Обязательные сценарии приёмки",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n2",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Настоящая тестовая оплата",
+      "status": "blocked",
+      "what": "Подготовить новый baseline после trial-выкладки, затем отдельный согласованный live admission и проверку receiver/provider.",
+      "why": "Проверить success/cancel/duplicate/relogin и реальное применение кредитов.",
+      "checks": [
+        "Будущий критерий: Проверить success/cancel/duplicate/relogin и реальное применение кредитов."
+      ],
+      "limitations": "Candidate 39/39 local не разрешает opening; текущий отчёт не разрешает оплату или apply.",
+      "sources": [
+        {
+          "path": "features/test-payment-window/reviews/candidate-3-independent-review.md",
+          "commit": null,
+          "baseCommit": "ef22214841ecb7ba85480b7589e31da893250fdc",
+          "url": null,
+          "localPath": "/tmp/clipmkr-test-payment-window-20261105/features/test-payment-window/reviews/candidate-3-independent-review.md",
+          "sha256": "15ece2b5fb5852b5496e31a6db01c46201e0a6f109cb4554d9d5f9a91978ea5c",
+          "label": "Платёжный candidate-3: независимый локальный recheck",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        },
+        {
+          "path": "docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "commit": "98414cff129c4a0c8216092586d7dbf49fc901ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/98414cff129c4a0c8216092586d7dbf49fc901ea/docs/measurements/2026-11-05-core-cjm-acceptance.md",
+          "label": "Текущая повторная приёмка основных сценариев",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n3",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Частичный повтор и историческая активность",
+      "status": "planned",
+      "what": "Завершить технический дизайн, перепривязку требований, необходимые gates; затем реализовать и независимо проверить.",
+      "why": "Сохранить готовый клип, историю расхода и правильный месяц активности.",
+      "checks": [
+        "Будущий критерий: Сохранить готовый клип, историю расхода и правильный месяц активности."
+      ],
+      "limitations": "Только утверждённый UX; product-кода пока нет.",
+      "sources": [
+        {
+          "path": "features/partial-render-recovery/owner-approval.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/owner-approval.md",
+          "label": "Согласование частичного повтора и исторической активности",
+          "workingTree": false
+        },
+        {
+          "path": "features/partial-render-recovery/01_requirements.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/01_requirements.md",
+          "label": "Частичный повтор: требования, реализация впереди",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n4",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Готовая личная ссылка блогера",
+      "status": "planned",
+      "what": "Пройти отдельный feature-adr и реализовать существующий идемпотентный генератор с ролью и антифродом.",
+      "why": "Блогер копирует личную ссылку, прежние адреса и статистика сохраняются.",
+      "checks": [
+        "Будущий критерий: Блогер копирует личную ссылку, прежние адреса и статистика сохраняются."
+      ],
+      "limitations": "Одобренный макет не доказывает runtime выдачу ссылки.",
+      "sources": [
+        {
+          "path": "features/blogger-auto-link/01_requirements.md",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/features/blogger-auto-link/01_requirements.md",
+          "label": "Автоматическая ссылка: исходный макет и требования",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/owner-approval.md",
+          "sha256": "c4ebedbda01ea6c78d1a5a8ff55e87f411efad77f396f0d2060239222bba7bcf",
+          "label": "Локальная запись: оба макета одобрены",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "n5",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Упростить экраны трёх ролей",
+      "status": "in_progress",
+      "what": "Закончить аудит, предложить конкретные новые макеты и получить их согласование.",
+      "why": "Основное действие видно сразу; дополнительные настройки раскрываются по потребности.",
+      "checks": [
+        "Будущий критерий: Основное действие видно сразу; дополнительные настройки раскрываются по потребности."
+      ],
+      "limitations": "До согласования новых экранов — только исследование и макеты.",
+      "sources": [
+        {
+          "path": "features/ux-simplification/01_requirements.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/01_requirements.md",
+          "sha256": "8161527d35324d60b0956bc2814950b68bf0575b50f71764bca5fbb25400f8d1",
+          "label": "Текущий UX-аудит и требования",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        },
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": null,
+          "baseCommit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": null,
+          "localPath": "/tmp/clipmkr-ux-simplification-20261105/features/ux-simplification/owner-approval.md",
+          "sha256": "c4ebedbda01ea6c78d1a5a8ff55e87f411efad77f396f0d2060239222bba7bcf",
+          "label": "Локальная запись: оба макета одобрены",
+          "workingTree": true,
+          "limitation": "Локальный незакоммиченный документ: GitHub-ссылка на эти байты отсутствует."
+        }
+      ]
+    },
+    {
+      "id": "n6",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Завершить проверку восстановления доступа",
+      "status": "planned",
+      "what": "Подтвердить переход из recovery-письма, одноразовую смену пароля и вход на согласованном QA-профиле или вручную владельцем.",
+      "why": "Отдельно доказать полный путь после принятия письма провайдером.",
+      "checks": [
+        "Будущий критерий: Отдельно доказать полный путь после принятия письма провайдером."
+      ],
+      "limitations": "Автоматическая смена пароля реального пользователя не разрешена.",
+      "sources": [
+        {
+          "path": "features/resend-activation/07_activation_record.md",
+          "commit": "f1cb0bb672d52bc32cb36a722a17ca7376ee054b",
+          "url": "https://github.com/djd1m/clipmkr/blob/f1cb0bb672d52bc32cb36a722a17ca7376ee054b/features/resend-activation/07_activation_record.md",
+          "label": "Resend: активация и проверка",
+          "workingTree": false
+        },
+        {
+          "path": "docs/operations/resend.md",
+          "commit": "0e1a79ff2dbb8873c1c3cdd1af9d15b7c9cbfd64",
+          "url": "https://github.com/djd1m/clipmkr/blob/0e1a79ff2dbb8873c1c3cdd1af9d15b7c9cbfd64/docs/operations/resend.md",
+          "label": "Сохранение почты при обновлении web",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n7",
+      "date": "2026-11-05",
+      "topic": "Следующие шаги",
+      "title": "Перенос данных и смена инфраструктуры",
+      "status": "paused",
+      "what": "Сохранить остановку; возвращаться только к отдельно согласованному плану и явному возобновлению владельцем.",
+      "why": "Не потерять существующие данные и не смешать разные тестовые базы.",
+      "checks": [
+        "Будущий критерий: Не потерять существующие данные и не смешать разные тестовые базы."
+      ],
+      "limitations": "Копирование, новые роли, freeze регистраций и production/DNS не входят в отчёт.",
+      "sources": [
+        {
+          "path": "docs/operations/test-environment-policy-20261105.md",
+          "commit": "49e8ba878bf06b18729390ad904b0e334da4a69b",
+          "url": "https://github.com/djd1m/clipmkr/blob/49e8ba878bf06b18729390ad904b0e334da4a69b/docs/operations/test-environment-policy-20261105.md",
+          "label": "Read-only инвентаризация тестовых сред",
+          "workingTree": false
+        },
+        {
+          "path": "features/partial-render-recovery/owner-approval.md",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/features/partial-render-recovery/owner-approval.md",
+          "label": "Согласование частичного повтора и исторической активности",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "guardrails": [
+    "Отчёт не разрешает развёртывание, платежи или выдачу новых ролей.",
+    "Перенос базы данных и инфраструктурные работы остановлены владельцем.",
+    "Макеты, проверки кода, реальная выкладка и проверка провайдера учитываются отдельно.",
+    "Не публиковать email, пользовательские идентификаторы, инфраструктурные IP, приватное медиа или подписанные URL.",
+    "Локальные незакоммиченные документы маркированы отдельно, закреплены SHA-256 и не имеют фиктивных GitHub-ссылок.",
+    "34 аккаунта, 40 записей и 64 клипа — read-only состояние, а не число созданных за отчётный период."
+  ],
+  "stateMeaning": "Сборка отчётных данных завершена; состояния продукта указаны отдельно у каждого события.",
+  "evidenceCutoff": "2026-11-05T15:07:55+00:00",
+  "coverageNote": "Проверены Git и документы в периоде 30 октября — 5 ноября. В выбранной истории содержательные подтверждённые события приходятся на 2–5 ноября; отсутствие карточек за 30 октября — 1 ноября не означает отсутствие работы.",
+  "story": [
+    {
+      "title": "Проблема",
+      "minutes": 2,
+      "eventIds": [
+        "e01",
+        "e02",
+        "e15"
+      ]
+    },
+    {
+      "title": "Что изменилось",
+      "minutes": 4,
+      "eventIds": [
+        "e22",
+        "e23",
+        "e08",
+        "e09",
+        "e12",
+        "e14"
+      ]
+    },
+    {
+      "title": "Как это доказали",
+      "minutes": 3,
+      "eventIds": [
+        "e03",
+        "e04",
+        "e11",
+        "e13",
+        "e16"
+      ]
+    },
+    {
+      "title": "Чему научились",
+      "minutes": 2,
+      "lessonIds": [
+        "l1",
+        "l2",
+        "l4",
+        "l6"
+      ]
+    },
+    {
+      "title": "Что дальше",
+      "minutes": 2,
+      "eventIds": [
+        "e17",
+        "e18",
+        "e19",
+        "e20",
+        "e21"
+      ]
+    }
+  ]
+}
+</script>
+<script>
+'use strict';
+const data=JSON.parse(document.getElementById('report-data').textContent);
+const $=id=>document.getElementById(id);
+const names={done:'Сделано',in_progress:'В работе',planned:'Запланировано',paused:'Остановлено',blocked:'Заблокировано'};
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const badge=status=>`<span class="badge ${esc(status)}">${esc(names[status]||status)}</span>`;
+const dateLabel=date=>new Date(date+'T12:00:00Z').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'UTC'});
+const sourceMarkup=source=>{const valid=typeof source.url==='string'&&/^https:\/\/github\.com\/djd1m\/clipmkr\/blob\/[a-f0-9]{40}\//.test(source.url);return `<div class="source">${valid?`<a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.label||source.path)} ↗</a>`:`<strong>${esc(source.label||source.path)}</strong><span class="local">Локальный документ · точной Git-ссылки пока нет</span>`}<span>${esc(source.path)}${source.commit?' · commit '+esc(source.commit):source.sha256?' · SHA-256 '+esc(source.sha256):''}</span>${source.limitation?`<span class="local">${esc(source.limitation)}</span>`:''}</div>`};
+const sourcesMarkup=sources=>`<div class="sources">${(sources||[]).map(sourceMarkup).join('')}</div>`;
+function detailMarkup(item){return `<details><summary>Проверки и источники</summary><ul class="checks">${(item.checks||[]).map(check=>`<li>${esc(check)}</li>`).join('')}</ul>${item.evidenceLevel?`<p class="topic">Уровень доказательства: ${esc(item.evidenceLevel)}</p>`:''}${sourcesMarkup(item.sources)}</details>`}
+function eventMarkup(item){return `<article class="event" id="${esc(item.id)}" data-status="${esc(item.status)}"><div class="event-meta">${badge(item.status)}${item.topic?`<span class="topic">${esc(item.topic)}</span>`:''}</div><h3>${esc(item.title)}</h3><p class="event-intro">${esc(item.what)}</p><p class="why"><strong>Зачем.</strong> ${esc(item.why)}</p><p class="limitation"><strong>Граница результата.</strong> ${esc(item.limitations)}</p>${detailMarkup(item)}</article>`}
+function counts(items,prefix){return `<span>${esc(prefix)}: <strong>${items.length}</strong></span>`+Object.keys(names).map(status=>`<span>${esc(names[status])}: <strong>${items.filter(item=>item.status===status).length}</strong></span>`).join('')}
+$('cutoff').textContent=new Date(data.evidenceCutoff).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
+$('coverage').textContent=data.coverageNote;
+$('summary').innerHTML=data.summary.map(item=>`<article class="summary-card">${badge(item.status)}<h3>${esc(item.title)}</h3><p>${esc(item.text)}</p></article>`).join('');
+$('event-counts').innerHTML=counts(data.events,'События в отчёте');
+$('next-counts').innerHTML=counts(data.nextSteps,'Действия плана');
+Object.keys(names).forEach(status=>$('status').add(new Option(names[status],status)));
+[...new Set(data.events.map(item=>item.topic))].sort((a,b)=>a.localeCompare(b,'ru')).forEach(topic=>$('topic').add(new Option(topic,topic)));
+const searchable=new Map(data.events.map(item=>[item.id,[item.title,item.what,item.why,item.limitations,item.topic,names[item.status],...(item.checks||[]),...(item.sources||[]).map(source=>source.label+' '+source.path)].join(' ').toLocaleLowerCase('ru')]));
+function renderEvents(){const query=$('search').value.trim().toLocaleLowerCase('ru');const events=data.events.filter(item=>(!$('status').value||item.status===$('status').value)&&(!$('topic').value||item.topic===$('topic').value)&&(!query||searchable.get(item.id).includes(query)));const dates=[...new Set(events.map(item=>item.date))].sort();$('timeline').innerHTML=dates.map(date=>`<div class="day"><div class="day-label">${esc(dateLabel(date))}<span>2026 / ${events.filter(item=>item.date===date).length} событий</span></div><div class="day-events">${events.filter(item=>item.date===date).map(eventMarkup).join('')}</div></div>`).join('');$('results').textContent=`Показано событий: ${events.length} из ${data.events.length}`;$('empty').hidden=events.length!==0;}
+$('search').addEventListener('input',renderEvents);$('status').addEventListener('change',renderEvents);$('topic').addEventListener('change',renderEvents);$('filters').addEventListener('submit',event=>event.preventDefault());$('filters').addEventListener('reset',()=>setTimeout(renderEvents,0));$('empty-reset').addEventListener('click',()=>{$('filters').reset();$('search').focus()});renderEvents();
+$('plan').innerHTML=data.nextSteps.map(eventMarkup).join('');
+$('lesson-list').innerHTML=data.lessons.map((item,index)=>`<article class="lesson" id="${esc(item.id)}"><div class="lesson-num">${String(index+1).padStart(2,'0')}</div><h3>${esc(item.title)}</h3><p>${esc(item.what)}</p><p class="why"><strong>Как применять.</strong> ${esc(item.why)}</p><p class="limitation"><strong>Граница.</strong> ${esc(item.limitations)}</p>${detailMarkup(item)}</article>`).join('');
+$('guardrails').innerHTML=data.guardrails.map(line=>`<li>${esc(line)}</li>`).join('');
+const byId=new Map([...data.events,...data.lessons,...data.nextSteps].map(item=>[item.id,item]));
+const slides=[
+ {title:'Один клип — ещё не весь продукт',description:'Учебная история Clipmkr за 30 октября — 5 ноября: какой результат появился, чем он доказан и где заканчивается доказательство.',summary:true},
+ ...data.story.map((story,index)=>({title:story.title,description:['Сквозной путь должен завершаться воспроизводимым и скачиваемым результатом.','Каждое изменение решает конкретную проблему пользователя или поставки.','Исторический прогон, локальный тест и реальный браузерный путь имеют разные границы.','Замечание становится полезным, когда меняет следующее действие и способ проверки.','Согласованные решения и открытые вопросы остаются отдельными от внедрённого результата.'][index]||'',ids:story.eventIds||story.lessonIds||[]})),
+ {title:'Следующая цель — закрыть сценарий',description:'Завершить текущую полную приёмку, отдельно подтвердить оплату и реализовать согласованные UX-решения. Перенос данных остаётся остановленным.',ids:data.nextSteps.map(item=>item.id)}
+];
+let slideIndex=0,returnFocus=null;
+function renderSlide(){const slide=slides[slideIndex];$('slide-counter').textContent=`${slideIndex+1} / ${slides.length}`;const items=slide.summary?data.summary:(slide.ids||[]).map(id=>byId.get(id)).filter(Boolean);$('slide-content').innerHTML=`<h2 class="slide-title" id="slide-title" tabindex="-1">${esc(slide.title)}</h2><p class="slide-description">${esc(slide.description)}</p><div class="slide-grid">${items.map(item=>`<article class="slide-item">${badge(item.status)}<h3>${esc(item.title)}</h3><p>${esc(item.text||item.what)}</p>${item.limitations?`<p class="slide-limit"><strong>Граница.</strong> ${esc(item.limitations)}</p>`:''}${!slide.summary?`<a href="#${esc(item.id)}" class="slide-source" data-event-id="${esc(item.id)}" style="font-size:14px">К карточке и источникам ↓</a>`:''}</article>`).join('')}</div>`;$('previous').disabled=slideIndex===0;$('next-slide').disabled=slideIndex===slides.length-1;$('slide-content').scrollTop=0;}
+function moveSlide(delta){const next=Math.max(0,Math.min(slides.length-1,slideIndex+delta));if(next!==slideIndex){slideIndex=next;renderSlide();$('slide-title').focus({preventScroll:true})}}
+$('present').addEventListener('click',()=>{returnFocus=document.activeElement;slideIndex=0;renderSlide();$('presentation').showModal();$('close-presentation').focus()});$('close-presentation').addEventListener('click',()=>$('presentation').close());$('presentation').addEventListener('close',()=>{if(returnFocus?.isConnected)returnFocus.focus({preventScroll:true})});$('previous').addEventListener('click',()=>moveSlide(-1));$('next-slide').addEventListener('click',()=>moveSlide(1));$('presentation').addEventListener('keydown',event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();moveSlide(event.key==='ArrowRight'?1:-1)}});$('presentation').addEventListener('click',event=>{const link=event.target.closest('[data-event-id]');if(link){event.preventDefault();const id=link.dataset.eventId;returnFocus=null;$('presentation').close();if(data.events.some(item=>item.id===id)){$('search').value='';$('status').value='';$('topic').value='';renderEvents()}const target=$(id);if(target){target.querySelector('details').open=true;target.setAttribute('tabindex','-1');target.focus();target.scrollIntoView({block:'start'})}}});
+let printState=null;window.addEventListener('beforeprint',()=>{if(printState)return;printState={filters:[$('search').value,$('status').value,$('topic').value],open:[...document.querySelectorAll('article:has(details[open])')].map(item=>item.id)};$('search').value='';$('status').value='';$('topic').value='';renderEvents();document.querySelectorAll('details').forEach(item=>item.open=true)});window.addEventListener('afterprint',()=>{if(!printState)return;[$('search').value,$('status').value,$('topic').value]=printState.filters;renderEvents();document.querySelectorAll('details').forEach(item=>item.open=printState.open.includes(item.closest('article')?.id));printState=null});$('print').addEventListener('click',()=>window.print());
+</script>
+</body></html>

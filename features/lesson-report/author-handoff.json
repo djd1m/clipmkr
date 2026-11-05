@@ -1,0 +1,18 @@
+{
+  "addressed": [
+    "LR-01",
+    "LR-02"
+  ],
+  "changedScope": [
+    "docs/reports/2026-11-05-lesson-data.json",
+    "docs/reports/2026-11-05-lesson-report.html"
+  ],
+  "classification": "structural",
+  "delta": "LR-01: координатор root исправил поле scope канонического JSON на «Только Clipmkr — область отчёта прямо подтверждена владельцем»; автор HTML не редактировал канонический JSON, а повторно встроил обновлённые данные в HTML. LR-02: автор HTML добавил .topic{overflow-wrap:anywhere}, чтобы длинный evidenceLevel переносился в печатном режиме на ширине 390 пикселей. Это структурное изменение CSS; состав данных и продуктовый runtime этим исправлением не менялись.",
+  "evidence": "HTML SHA-256 b5b3ff35fb3a65d685010957da37334e6ec79c7216df64371d9318aa30da8d28; canonical JSON SHA-256 d16552cd6611e6f0ac5b650025892550658d90cbb4a04b23dc5425737996d083. Реальные авторские проверки выполнены Node v22.23.4 (/tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin/node) с Playwright 1.60.0 из /tmp/clipmkr-public-entry-20261105/node_modules/playwright. Private evidence: /root/.config/clipmkr/release-parity-20261103/lesson-report-20261105/author/checks.json и extra-checks.json — offline/file://, JSON equality, поиск/фильтры/пустой результат, раскрытие, слайды/стрелки/Escape/focus, печать; externalRequests=[], jsErrors=[], overflow=false на 1440/390. После LR-02 фактически выполнена author/lr02.cjs; результат author/lr02-recheck.json: print+beforeprint, все details раскрыты, viewport390 scrollWidth390/clientWidth390, viewport1440 scrollWidth1440/clientWidth1440, canonicalEquality=true, jsErrors=[]. Автор не выдаёт эти проверки документа за QE приложения или независимую приёмку.",
+  "newRisks": {
+    "assessment": "В проверенной области новых выявленных рисков нет. CSS допускает перенос длинных технических обозначений; это меняет их расположение при печати. Вывод ограничен документом, проверенными ширинами и текущими байтами HTML/JSON; продуктовая приёмка этим не подтверждается.",
+    "evidence": "author/lr02-recheck.json фиксирует фактические печатные размеры и отсутствие ошибок JS после CSS-исправления. checks.json и extra-checks.json содержат предшествующие функциональные проверки документа. При новом изменении канонического JSON требуется повторное встраивание и проверка соответствия; текущая передача не создаёт успешный receipt и не заменяет host review.",
+    "conditions": []
+  }
+}
