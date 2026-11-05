@@ -1,0 +1,15 @@
+{
+  "artifact": "docs/course/dz-feature-adr-openspec.md",
+  "sha256": "6f029f1dd40c760789d6964ff0bb6615083599b6e864a646c8207bc5ce3ae057",
+  "author_model_requested": "gpt-6.1-sol",
+  "reasoning_effort_requested": "high",
+  "checks": "features/course-toolchain-guide/author-checks.md",
+  "independent_review": "pending: fresh gpt-6-astra xhigh session after freeze",
+  "limitations": [
+    "OpenSpec show exits 1: Change must have a Why section",
+    "OpenSpec status isComplete=false; design/tasks missing",
+    "No base specs in this checkout",
+    "No runtime/QE/acceptance claimed; no commit/push"
+  ],
+  "requirements_plan_changed": false
+}

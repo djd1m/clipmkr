@@ -1,0 +1,3 @@
+# Переиспользование и риски
+
+Используем существующие AGENTS.md, docs/review-policy.md, docs/model-matrix.md, docs/acceptance/core-cjm.md, package.json/package-lock.json и установленный pinned feature-adr. Проверяем npm run dz -- --version и npm run openspec -- --version. Настоящие проектные требования могут жить в ветках задач; не делать битые относительные ссылки на отсутствующие файлы main. Не добавлять генератор сайта/пакеты ради Markdown. Риск устаревших команд закрывает сверка help/документации установленной версии; риск ложного статуса — разделение примеров требований и наблюдаемых результатов. Recall «инструменты процесс» реально выполнен из pinned install: No matching patterns, совпадения не выдумываются.
