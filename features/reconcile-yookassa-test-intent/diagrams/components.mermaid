@@ -1,0 +1,14 @@
+flowchart LR
+  O[Авторизованный оператор controller] --> C[Закрытая CLI: manifest и target]
+  C --> Y[Существующий YooKassa adapter: GET payment и refunds]
+  Y --> P[Официальный TEST API]
+  C --> F[Apply admission: off и drained до S activation]
+  F --> A[Durable proof перед apply]
+  C --> T[Canonical applyVerifiedPayment с expected guards]
+  T --> D[(Фактическая public PostgreSQL через штатный SSH tunnel)]
+  T --> G[Существующий fulfillCreditIntentTx]
+  G --> D
+  C --> K[Canonical markIntentCanceled с expected guards]
+  K --> D
+  W[Native callback вне drained M окна] --> D
+  C --> R[Outcome после commit и readback]

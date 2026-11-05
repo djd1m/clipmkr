@@ -1,0 +1,171 @@
+{
+  "sourceRevision": "cea275bcbd1c8b3fd3dbb6da7e4729a70f43256c55650416eeb574c168ce1b1e",
+  "sourceNonce": "0f16a5c7-5a94-4118-a778-99f48949d05c",
+  "conditions": [
+    {
+      "id": "Q1",
+      "owner": "qcsd-quality",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Разрешить противоречие между обязательным hash API-proof и native-first duplicate: зафиксировать отдельный исход с native event/hash и внешним API-proof, проверять связанный readback и не переписывать journal; покрыть обе очередности и crash.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "FR-5 допускает native-first; FR-6 и ADR требуют API-proof hash в payment_event. packages/db/src/payments.ts:76–79,91–95: native claim записывает собственный hash, duplicate его не заменяет."
+    },
+    {
+      "id": "Q2",
+      "owner": "qcsd-quality",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Установить и проверить безопасную границу guarded cancellation при конкурирующем или запоздавшем native success на неизменном web, включая конфликтующие provider snapshots, in-flight claim, второй payment ID и будущий callback; при недоказанности отказывать.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "payments.ts:91–95: native event claim до advisory lock невидим конкурирующей транзакции; строки 115–136 не проверяют intent.status; credits.ts:105–114 ставит succeeded. Контрпример требует конфликтующих или устаревших provider фактов; реальная возможность такого состояния у провайдера не установлена."
+    },
+    {
+      "id": "Q3",
+      "owner": "qcsd-quality",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Определить и испытать единый bounded deadline для сети и DB locks на том же write connection и честный indeterminate/readback при неопределённом COMMIT, без повторного grant.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01 NFR-3: 10 страниц и 60 секунд; yookassa.ts:28–29,103–115: таймаут по запросу 5 секунд. Две проверки платежа и 10 страниц превосходят бюджет; время ожидания PG не ограничено в архитектуре."
+    },
+    {
+      "id": "Q4",
+      "owner": "qcsd-quality",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Согласовать и тестировать права при позднем восстановлении: уже истёкший addon и более поздний base, точный результат, критерий readback и эскалацию без изменения captured_at или второго финансового writer.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "credits.ts:105–122: addon начинается от captured_at, base от максимального существующего конца; прежний платёж может стать немедленно истёкшим или лечь после последующего. Core CJM требует действительного использования оплаченной функциональности."
+    },
+    {
+      "id": "RISK-01",
+      "owner": "qcsd-risk",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Определить проверяемый live-admission freeze/drain конкретного TEST shop и всех управляемых refund writers: кто подтверждает, scope, время, срок, отзыв, проверка действия и удержание до разрешения commit; отсутствие доказательства запрещает apply. Проверить отзыв/истечение до commit, не обещая невозможной защиты после commit.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01 FR-7 и 05 пункты 4–5 не задают доказуемый срок/механизм поддержания freeze; внешний refund между GET и commit не сериализуется PG."
+    },
+    {
+      "id": "RISK-02",
+      "owner": "qcsd-risk",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Уточнить точку гарантии cancellation и предусмотреть гонку/поздний native callback другого provider payment ID того же intent, с сохранением штатного учёта review и честным отказом/indeterminate при обнаруженном конфликте. Подтвердить оба порядка, delayed arrival и erasure на реальном PostgreSQL без требования невозможной вечной гарантии.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "05 canceled отсутствие фактов под payment-ID lock: native packages/db/src/payments.ts:76–95,110–131 сначала claim, затем advisory lock по payment ID и при другом ID пишет review; невидимая конкурентная запись может пройти после проверки."
+    },
+    {
+      "id": "RISK-03",
+      "owner": "qcsd-risk",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Развести native/прочий уже существующий event и операторский apply при duplicate: operator source только при совпадении event hash с исходным операторским proof; при native winner сохранить отдельный proof и правдивый source или неопределённость, не переписывать event. Проверить оба порядка и crash-replay с исходным proof.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01 FR-5/6 и 05 duplicate/hash: apps/web/src/server/billing-handler.ts:222–227 пишет hash сырых notification bytes; packages/db/src/payments.ts:76–79,94 не переписывает победивший claim."
+    },
+    {
+      "id": "RISK-04",
+      "owner": "qcsd-risk",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Привязать canary предложение и актуальные S-зависимости к измеряемым точным hash/ревизиям в 05 либо host manifest; при изменении остановить handoff и повторить prepare/review. S отдельно принимает поправку до canary. Проверить stale dependency отказом.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "05:79–89 ссылается на proposal, отсутствующий в host manifest; изменение предложения не меняет текущий snapshot revision."
+    },
+    {
+      "id": "T1",
+      "owner": "qcsd-testability",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Определить и проверить dry-run и ранний отказ без persistent DB/provider/proof/outcome изменений с разрешёнными read-only GET и диагностикой.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01:19–22 запрещает лишь четыре группы строк; 05:18–36 не устанавливает выход до записи proof."
+    },
+    {
+      "id": "T2",
+      "owner": "qcsd-testability",
+      "severity": "CRITICAL",
+      "classification": "structural",
+      "requirement": "Обеспечить или явно запретить live cancellation до доказательства сериализации с существующим native success в обоих порядках, включая незакоммиченный claim, с реальным PG тестом и учётом frozen web.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "05:49–57 проверяет отсутствие event под payment lock; native payments.ts:94–95 вставляет claim перед lock, а 115–140 не проверяет status created; незакоммиченный claim невидим cancel."
+    },
+    {
+      "id": "T3",
+      "owner": "qcsd-testability",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Различить собственный claim с exact API proof hash и native-first duplicate с исходным native hash и честным readback/provenance; определить crash-before/after-commit и indeterminate без переписывания event.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01:42–50 требует duplicate readback и hash API proof; native payments.ts:76–79 при duplicate не заменяет hash существующего события."
+    },
+    {
+      "id": "T4",
+      "owner": "qcsd-testability",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Определить проверяемое private refund-freeze admission: authority, target/shop, writers и drain, срок, отзыв и финальный pre-commit отказ при недоказанном или устаревшем состоянии.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/03_adr/001-reconcile-test-payment-through-canonical-transaction.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01:54–56 и 05:29–33 требуют свежий freeze без наблюдаемых полей и механизма подтверждения; lock PG не останавливает provider refund."
+    },
+    {
+      "id": "T5",
+      "owner": "qcsd-testability",
+      "severity": "HIGH",
+      "classification": "structural",
+      "requirement": "Определить S/M handoff и измеримый canary oracle: полный набор creations от baseline до подтверждённого freeze, отказ при потере наблюдения или лишнем intent, drain и отдельное native admission.",
+      "scope": [
+        "features/reconcile-yookassa-test-intent/01_requirements.md",
+        "features/reconcile-yookassa-test-intent/05_architecture.md"
+      ],
+      "evidence": "01:59–65 и 05:79–89 требуют one creation и immediate freeze, но не определяют наблюдаемую границу и proof полноты при одновременных creations."
+    }
+  ]
+}
