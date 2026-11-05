@@ -22,3 +22,8 @@ Skill modules прочитаны по абсолютным путям дейст
 
 Предварительный anti-drift: текущий комплект меняет только features/, openspec/changes/ и docs/design/;
 apps/ и packages/ остались на базовой ревизии. Это проверка границы подготовки, не post-code anti-drift.
+
+Структурная проверка дельты выполнена05.11: Node22.23.4, проектный `npm run openspec -- validate partial-render-recovery --strict`
+→ exit0, `Change 'partial-render-recovery' is valid`. Это валидность формата, не approval и не проверка реализации.
+TASK-5 уточнён по фактическим labels тестового194: controller77 не подменяет publictarget;
+при будущем deploy сохраняются шесть текущих compose слоёв Resend и новый payment override по фактическому состоянию.
