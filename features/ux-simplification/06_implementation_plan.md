@@ -8,7 +8,7 @@ Inputs read: 03_adr, 05_architecture.md, 04_domain_model.md, pinned feature-adr/
 
 Цель: FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7 реализованы для всех 21 семейств из root05, без изменения серверных контрактов/прав/цен/лимитов. Ближайшие три результата: upload → processing/partial → ready/share. Они не заменяют остальные 18 семейства. Текущая база `a4488b4caf602f093a0cc3393b4903e210cb3989`; auto-link и personal TEST checkout уже существуют и сохраняются. Coverage % не измерялся, runtime работоспособность не утверждается.
 
-Implementation **L14**: 14 UI/CSS + 2 SSR pages + 6 test/harness = **22** точных targets в конце. Добавлены два bounded presentation wrappers account/page.tsx и partner/page.tsx; share остаётся существующим contextual компонентом. Дополнительные изменения максимум до25 только после явного обоснования/re-router и обновления gates. Server/API/DB/pkg/env/worker/provider/DNS не targets. Этот planner не запускает code/runtime; ограничение его сессии не отменяет разрешения пользователя координатору на шаги1–4. Новых агентов здесь нет.
+Implementation **L14**: 14 UI/CSS + 2 SSR pages + 7 test/harness = **23** точных targets в конце. Target23 `tests/progress-screen.test.ts` добавлен только новым prospective scope amendment; прежний22-target checkpoint остаётся историческим. См. `scope-amendment-23.md`. Добавлены два bounded presentation wrappers account/page.tsx и partner/page.tsx; share остаётся существующим contextual компонентом. Дополнительные изменения максимум до25 только после явного обоснования/re-router и обновления gates. Server/API/DB/pkg/env/worker/provider/DNS не targets. Этот planner не запускает code/runtime; ограничение его сессии не отменяет разрешения пользователя координатору на шаги1–4. Новых агентов здесь нет.
 
 ## Предусловия и checkpoints
 
@@ -16,7 +16,7 @@ Implementation **L14**: 14 UI/CSS + 2 SSR pages + 6 test/harness = **22** точ
 |---|---|
 | TASK-P0 | Specification: exact HTML согласован владельцем, evidence owner-approval.md/call_f0a94c16c93f49b38617215d46b23b7a. Исправленный ADR-001 сохраняет отдельные account/stats состояния; повторное approval не требуется. Это не успешный native checkpoint |
 | TASK-P1 | Architecture/QCSD: шесть originating Terra reviews R3 clean; native host/review revision `8089a54c3cb9281c79972e951c318814e62a3eff7829abcecdf1fd40ab680659`, nonce `8eff00a1-1ae5-4320-97e9-1615f6d0ba20`. Actual evaluate: verdict closed, unresolved=[], reasons=[]; все7 native manifest digests сверены. Десять исходных условий закрыты на уровне проекта, будущие Confirmation NOT RUN |
-| TASK-P2 | Plan: literal ADR/FR task coverage, A1…A10 и AM-1…AM-10,22 targets; actual K2 tier L/requirements/acid, затем exact-final-plan build-coder-context. Остальные native checkpoint/K1/source-admission выполняет координатор по настоящим receipts; здесь их успех не заявляется |
+| TASK-P2 | Plan: literal ADR/FR task coverage, A1…A10 и AM-1…AM-11,23 targets; actual K2 tier L/requirements/acid, затем exact-final-plan build-coder-context. Остальные native checkpoint/K1/source-admission выполняет координатор по настоящим receipts; здесь их успех не заявляется |
 
 P0/P1 выполнены как prerequisites согласования/design closure. P2 зависит от обоих; Task1 начинается после фактических оставшихся gates координатора, без повторного owner approval. Proof evaluate: `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-qcsd/r3-final-evaluate.private.json`, SHA-256 `92f115f9c71efad8fdb02353d38bff05c15920dd96cdb8168dcc7dc1c92d3e18`; current `.fa-state/review-convergence-ideation-host.json` и `review-convergence-ideation-review.json`. Verifications принадлежат исходным reviewers; author не меняет их entries. На настоящих переходах coordinator читает релевантный pinned recall.
 
@@ -34,6 +34,10 @@ P0/P1 выполнены как prerequisites согласования/design cl
 | TASK-6 / TASK-1…5 / completion | ADR-001, ADR-002, ADR-003; FR-1, FR-7: все6 test/harness targets, полная 21-family regression matrix root05, same-state screenshots, independent code QE и anti-drift | Именованные сценарии исполняют реальные React controls/DOM/media; нет source-substring-only доказательства. Все21 строки имеют evidence либо явный gap. Реальный provider/media CJM и owner manual не подменены локальными fixtures |
 
 Проверки пишутся/исполняются вместе со своей задачей; TASK-6 собирает окончательную матрицу, не откладывает проверку lifecycle до конца. Параллельные авторы не назначены: shared CSS, VideoDetail и harness пересекаются, выполнение последовательное. Автор кода gpt-6.1-sol high; planner gpt-6-astra xhigh; design review выполнен originating Terra xhigh, code QE — отдельная Astra без coding context. В этой сессии другие агенты не запускались.
+
+### TASK-7 — миграция существующего regression harness (prospective target23)
+
+FR-1, FR-3, FR-5, FR-6, FR-7; ADR-002/ADR-003; зависит от стабильных TASK-2/3/5 и нового scope23 admission. Только `tests/progress-screen.test.ts`: сохранить настоящие projection/browser assertions; дополнить локальный React mock законным useRef(initial)→{current:initial}; отличить полностью готовый4/4 от частичного3/4 без fake retry; проверить native video controls/selection вместо снятого текста; пройти существующие lifecycle сценарии через согласованные «Ещё»→«Поделиться»/edit. Никаких skip/ослабления проверок/larger timeout вместо диагностики. Таймауты при параллельном source edit остаются неопределёнными до rerun на стабильных bytes; сначала отличить продуктовый регресс от устаревшего oracle. Готовность: полный этот suite + прежний mustRun набор проходит на стабильном source, оба Chromium/WebKit сценария реально исполняются; прямой projection test продолжает обнаруживать неверный no_response у uploading. Ни одного application/API/schema изменения эта задача не разрешает.
 
 ## Проверяемые Confirmation / acid scenarios — план, NOT RUN
 
@@ -117,6 +121,8 @@ AM-10 (qcsd/qcsd-ux, UXU-003): TASK-3: ClipMusicChoice, ClipCard, VideoDetail. C
 R3 / только UXR-02: TASK-3 реализует узкий onApplyStart/token по ClipMusicChoice→ClipCard→VideoDetail, immutable baseline до mutation и прежний onQueued/read flow; unknown требует read/new explicit Apply. AM-2 расширяется в том же tests/browser/ux-simplification.test.ts. Дополнительных targets/API/store нет; все результаты NOT RUN. Originating R3 risk recheck CLEAN и общий native evaluate closed; будущий тест NOT RUN. Step6 финализирован без изменения этого design решения.
 
 
+AM-11 (source: root mustRun terminal05.11.2026,5failed/124passed; existing regression target23): мигрировать только существующий progress-screen harness к уже согласованной композиции, сохранив раннюю projection-проверку и реальные browser/lifecycle/partial assertions. Confirmation: uploading no_response остаётся neutral при0/300001/86400000, queued/transcribing stale выявляются; неверная parent projection обязана ломать assertion → test `local_uploading_staleness_keeps_projection_neutral` in `tests/progress-screen.test.ts` (fails if reverted). Дополнительно TASK-7 сохраняет ready-vs-partial, native media, selection, два poll, preferences/drafts/consent/focus/explicit mutation и unavailable/removal в Chromium/WebKit; source-contains-only замена и blind skip запрещены. Новый scope не приписывается прежнему22-target receipt.
+
 ## Final plan evidence
 
 Exact reviewed R3 plan сохранён до правок: `history/qcsd-r3/06_implementation_plan.md`, SHA-256 `d65b383c13c86020bfcde0cc028a59ce5a6793afd54e617e51e78566e3cb492d`. Frozen R3 manifest остаётся историческим: несовпадение его live-plan entry после финализации ожидаемо; requirements/ADR/04/05 native snapshot не меняется. Новый final plan hash и actual K2/context results — отдельный private `ui-qcsd/step6-final-record.private.json`, без перезаписи frozen manifests. K2 stdout — `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-qcsd/k2-final.private.txt`. Команда: pinned Node22 `check-plan-completeness.mjs features/ux-simplification --tier=L --require-requirements --acid=A1,A2,A3,A4,A5,A6,A7,A8,A9,A10`; actual exit0,0 failures/0 warnings/0 skips. Финальные K2 и build-coder-context повторяются после этих bytes; их результат/точный hash в отдельном record, preflight40215chars не считается final context. Это evidence, не успешный checkpoint.
@@ -144,3 +150,4 @@ EXPECTED_CODE_TARGETS:
 - tests/browser/ux-simplification.test.ts
 - scripts/check-workspace-presentation.test.mjs
 - scripts/workspace-presentation-local.mjs
+- tests/progress-screen.test.ts
