@@ -95,3 +95,11 @@ Code/spec anti-drift текущего блока: runtimeкод, schema, source8
 ## Принятое UX замечание о ссылках
 
 Владелец не нашёл создание ссылок блогера и уточнял CJM. Проверены текущий закрытый details «Партнёрская программа», поле «Код блогера» и кнопка «Создать ссылку». Урок `teach:10f72b425d645fad` записан pinned dz в `/home/clipmkr/.dz` с no-mirror и извлечён повторным recall. Новое приглашение блогера не заявляется реализованным; улучшение обнаружимости требует отдельного согласованного макета.
+
+## Новые отрицательные проверки на текущем опубликованном стенде
+
+05.11, штатный Chromium→UIchooser→start→S3PUT200→complete→workerprobe: синтетический файл5401с/851687байт отклонён. UI объясняет превышение допустимой длительности; БД statusfailed/reason too_long, source_limit_seconds5400, minutes_chargedNULL, video_credit_charge0, select/render attempts0. Это PASS отказа сверх90минут, не PASS положительной5400/7200нарезки. Private `over90-result.private.json` и `over90-db.private.json`.
+
+Actual auth negative r2: обычный QA account GET owner403, POST с корректным Origin/валидным телом изменения роли403 с сообщением «Настройки доступны только владельцу», ownerpage redirectdashboard. Partnerpanel остаётся доступен. Никаких ролей не изменено; private `role-guards-r2.private.json`.
+
+На согласование владельцу опубликован отдельный статический partial-recovery макет в branch `fix/partial-render-recovery-20261105`, commitd51af75. HTMLSHA `f79ca35360590946456c9fb101fe282724ce0fe5f9642250d2cc2646129bf139`. Это ещё не UI implementation, approval пока не получено. Обязательное основание ожидания — AGENTS.md: перед реализацией изменений интерфейса конкретный макет согласуется с владельцем.
