@@ -1,0 +1,8 @@
+{
+  "schema": "clipmkr-requirements-revision-1",
+  "implementationBase": "24b4b4a4be4364659142b1428511fb634378ddbc",
+  "deltaPath": "openspec/changes/per-account-test-checkout/specs/checkout-access/spec.md",
+  "deltaSha256": "1c8457610d97f282cea1d55f1f641f983c0798ee813a1cd7483f78926a3c5b6e",
+  "source": "owner instruction 2026-11-05; structural QCSD corrections QL-01/QL-02/QT-001",
+  "status": "design-review-input-no-gate-pass"
+}

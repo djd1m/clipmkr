@@ -215,7 +215,7 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     const {createFakePaymentProvider}=await import('../apps/web/src/server/payments/fake');
     const id=await account(),provider=createFakePaymentProvider();let providerCalls=0;
     const create=provider.createPayment.bind(provider);provider.createPayment=async input=>{providerCalls++;return create(input);};
-    const deps=createBillingDependencies({pool,billingMode:'credits_v1',publicOrigin:'https://test.invalid',trustedProxyHops:2,provider,
+    const deps=createBillingDependencies({pool,checkoutAllowed:()=>true,billingMode:'credits_v1',publicOrigin:'https://test.invalid',trustedProxyHops:2,provider,
       allowMutation:async()=>true,allowRead:async()=>true,authenticate:async()=>({account_id:id})});
     const req=(body:unknown)=>new Request('https://test.invalid/api/checkout',{method:'POST',headers:{origin:'https://test.invalid','x-forwarded-for':'198.51.100.7, 10.0.0.2, 10.0.0.3',cookie:'__Host-n5_session=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx','content-type':'application/json'},body:JSON.stringify(body)});
     const checkout=createCheckoutHandler(deps);

@@ -1,4 +1,6 @@
 // Authenticated catalogue remains visible while checkout is unavailable.
+import { createHmac } from 'node:crypto';
+import { checkoutAllowedForAccount } from '@clipmaker/shared/config';
 import { cookies, headers } from 'next/headers';
 import { workspaceLayoutFromCookie } from '../../lib/workspace-layout';
 import { redirect } from 'next/navigation';
@@ -24,6 +26,6 @@ export default async function UpgradePage({ searchParams }: { searchParams: Prom
   const balanceLabel = billing.owner_unlimited ? 'Без лимитов' : balance ? `${(balance.available_seconds / 60).toLocaleString('ru-RU', { maximumFractionDigits: 2 })} кредитов` : null;
   const plan = billing.effective_plan ?? effectivePlan(billing.plan, billing.plan_source, billing.plan_paid_until, new Date());
   return <div className="workspace-shell"><WorkspaceHeader owner={billing.owner_unlimited === true} balanceLabel={balanceLabel} initialTheme={await requestTheme()} initialLayout={workspaceLayoutFromCookie((await headers()).get('cookie') ?? undefined)} />
-    <main className="container"><UpgradeScreen key={session.account_id} testMode={config.payments.mode === 'live' && config.payments.testMode} ownerUnlimited={billing.owner_unlimited === true} purchaseWindows={purchaseWindows ?? undefined} creditMode={true} catalogOnly={billing.billing_policy!=='credits_v1'} salesEnabled={!!payments && config.billingMode==='credits_v1' && billing.billing_policy==='credits_v1'} title={PAID_PLAN_TITLE} price={formatRubles(PAID_PRICE_MINOR)} days={PAID_PLAN_DAYS}
+    <main className="container"><UpgradeScreen key={createHmac('sha256', config.sessionSecret).update(`checkout-owner-v1:${session.account_id}`).digest('hex')} testMode={config.payments.mode === 'live' && config.payments.testMode} ownerUnlimited={billing.owner_unlimited === true} purchaseWindows={purchaseWindows ?? undefined} creditMode={true} catalogOnly={billing.billing_policy!=='credits_v1'} salesEnabled={checkoutAllowedForAccount(config, session.account_id, billing.billing_policy, !!payments) && config.billingMode==='credits_v1' && billing.billing_policy==='credits_v1'} title={PAID_PLAN_TITLE} price={formatRubles(PAID_PRICE_MINOR)} days={PAID_PLAN_DAYS}
       paidMinutes={config.limits.N5_LIMIT_PAID_USER_MINUTES} current={{ plan, plan_source: billing.plan_source, plan_paid_until: billing.plan_paid_until }} /></main></div>;
 }

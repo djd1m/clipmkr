@@ -123,7 +123,7 @@ it('pauses checkout creation while webhook and status remain live', async () => 
   const { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhookHandler } = await import('../apps/web/src/server/billing-handler');
   const createIntent = vi.fn(), createPayment = vi.fn();
   const provider = { name: 'fake', createPayment, getPayment: vi.fn(), verifyNotification: vi.fn().mockResolvedValue({ kind: 'ignored' }) };
-  const deps = { checkoutEnabled: false, publicOrigin: 'https://clipmkr.test', trustedProxyHops: 1,
+  const deps = { checkoutAllowed: () => false, publicOrigin: 'https://clipmkr.test', trustedProxyHops: 1,
     provider, authenticate: vi.fn().mockResolvedValue({ account_id: 'account' }), allowMutation: vi.fn().mockResolvedValue(true),
     allowRead: vi.fn().mockResolvedValue(true), createIntent, setIntentPayment: vi.fn(), markCanceled: vi.fn(),
     readIntent: vi.fn().mockResolvedValue({ id: '00000000-0000-4000-8000-000000000000', status: 'succeeded', account_plan: 'free', plan_source: 'none', plan_paid_until: null }),
@@ -141,4 +141,59 @@ it('pauses checkout creation while webhook and status remain live', async () => 
   const hook = new Request('https://clipmkr.test/api/webhooks/yookassa', { method: 'POST', headers: { 'x-forwarded-for': '185.71.76.10, 127.0.0.1' }, body: '{}' });
   expect((await createPaymentWebhookHandler(deps)(hook)).status).toBe(200);
   expect(provider.verifyNotification).toHaveBeenCalledOnce();
+});
+
+it('test checkout environment reaches validated web policy without exposing values', async () => {
+  const { environment } = await import('./fixtures/environment');
+  const { readEnvironment } = await import('../apps/web/src/server/environment');
+  const { loadWebConfig, checkoutAllowedForAccount } = await import('../packages/shared/src/config');
+  const accountId = '00000000-0000-4000-8000-000000000001';
+  const env = { ...environment(), N5_BILLING_MODE: 'credits_v1', N5_CHECKOUT_ENABLED: 'false',
+    N5_TEST_CHECKOUT_ACCOUNT_ID: accountId, N5_PAYMENTS_MODE: 'live',
+    YOOKASSA_SHOP_ID: '123456', YOOKASSA_SECRET_KEY: 'test_secret_key', YOOKASSA_TEST_MODE: 'true' };
+  try {
+    for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
+    const config = loadWebConfig(readEnvironment());
+    expect(config.testCheckoutAccountId).toBe(accountId);
+    expect(checkoutAllowedForAccount(config, accountId, 'credits_v1', true)).toBe(true);
+    vi.stubEnv('N5_TEST_CHECKOUT_ACCOUNT_ID', ' private-invalid-identity ');
+    expect(() => loadWebConfig(readEnvironment())).toThrow('N5_TEST_CHECKOUT_ACCOUNT_ID');
+    try { loadWebConfig(readEnvironment()); } catch (error) {
+      expect((error as Error).message).not.toContain('private-invalid-identity');
+      expect((error as Error).message).not.toContain(env.YOOKASSA_SECRET_KEY);
+    }
+  } finally { vi.unstubAllEnvs(); }
+});
+
+it('runtime forwards required checkout policy without permissive fallback', async () => {
+  vi.resetModules();
+  const { environment } = await import('./fixtures/environment');
+  const { loadWebConfig } = await import('../packages/shared/src/config');
+  const { selectPaymentProvider } = await import('../apps/web/src/server/payments/config');
+  const account = '00000000-0000-4000-8000-000000000001';
+  const config = loadWebConfig({ ...environment(), N5_BILLING_MODE: 'credits_v1', N5_CHECKOUT_ENABLED: 'false',
+    N5_TEST_CHECKOUT_ACCOUNT_ID: account, N5_PAYMENTS_MODE: 'live', YOOKASSA_SHOP_ID: '123456',
+    YOOKASSA_SECRET_KEY: 'test_secret_key', YOOKASSA_TEST_MODE: 'true' });
+  const global = globalThis as typeof globalThis & { n5Billing?: unknown };
+  delete global.n5Billing;
+  vi.doMock('../apps/web/src/server/runtime', () => ({ getRuntime: () => ({ config, pool: {}, redis: {},
+    auth: { authenticate: async () => null }, payments: selectPaymentProvider(config.payments) }) }));
+  try {
+    const { getBillingDependencies } = await import('../apps/web/src/server/billing-runtime');
+    const deps = getBillingDependencies();
+    expect(deps.checkoutAllowed(account, 'credits_v1')).toBe(true);
+    expect(deps.checkoutAllowed('00000000-0000-4000-8000-000000000002', 'credits_v1')).toBe(false);
+    expect(deps.checkoutAllowed(account, 'legacy_daily_v1')).toBe(false);
+  } finally { delete global.n5Billing; vi.doUnmock('../apps/web/src/server/runtime'); vi.resetModules(); }
+});
+
+
+it('optional checkout exception remains covered by wiring validation', async () => {
+  const { environment } = await import('./fixtures/environment');
+  const { checkWiring } = await import('../scripts/check-env-wiring.mjs');
+  const config = { services: Object.fromEntries(['web', 'worker-stt', 'worker-llm', 'worker-video'].map(name => [name, { environment: environment() }])) };
+  expect(config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID).toBe('');
+  expect(checkWiring(config)).toEqual([]);
+  delete config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID;
+  expect(checkWiring(config)).toEqual(['web: N5_TEST_CHECKOUT_ACCOUNT_ID']);
 });

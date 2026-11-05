@@ -36,10 +36,14 @@ it('shared paid-right mirror accepts independent windows only during their whole
   expect(effectivePlan('free','none',null,at,[{...window,source:'recovery'}])).toBe('free');
 });
 it('synthetic compose and actual web/worker projections preserve explicit billing mode; absence controls fail wiring',()=>{
-  const env={...environment(),PATH:process.env.PATH,N5_BILLING_MODE:'credits_v1',N5_DB_APP_PASSWORD:'synthetic-db',REDIS_PASSWORD:'synthetic-redis',MINIO_ROOT_USER:'synthetic-minio',MINIO_ROOT_PASSWORD:'synthetic-minio-secret'};
+  const env={...environment(),PATH:process.env.PATH,N5_BILLING_MODE:'credits_v1',N5_TEST_CHECKOUT_ACCOUNT_ID:'00000000-0000-4000-8000-000000000001',N5_DB_APP_PASSWORD:'synthetic-db',REDIS_PASSWORD:'synthetic-redis',MINIO_ROOT_USER:'synthetic-minio',MINIO_ROOT_PASSWORD:'synthetic-minio-secret'};
   const result=spawnSync('docker',['compose','--env-file','/dev/null','--project-directory','.','--profile','test','config','--format','json'],{env,encoding:'utf8',timeout:10000});
   expect(result.status).toBe(0);const config=JSON.parse(result.stdout) as {services:Record<string,{environment:NodeJS.ProcessEnv}>};
   expect(checkWiring(config)).toEqual([]);
+  expect(config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID).toBe(env.N5_TEST_CHECKOUT_ACCOUNT_ID);
+  for(const role of ['worker-stt','worker-llm','worker-video']) expect(config.services[role]!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID).toBeUndefined();
+  delete config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID; expect(checkWiring(config)).toContain('web: N5_TEST_CHECKOUT_ACCOUNT_ID');
+  config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID=env.N5_TEST_CHECKOUT_ACCOUNT_ID;
   vi.stubEnv('N5_BILLING_MODE','credits_v1');expect(readEnvironment().N5_BILLING_MODE).toBe('credits_v1');vi.unstubAllEnvs();
   for(const [name,role] of [['stt','worker-stt'],['select','worker-llm'],['render','worker-video']] as const){
     let projected:NodeJS.ProcessEnv|undefined;
@@ -73,7 +77,6 @@ it('cabinet exposes pricing and authenticated upgrade keeps catalogue open witho
   expect(source).toContain('if (!session) redirect(login)');
   expect(source).toContain('creditMode={true}');
   expect(source).toContain("catalogOnly={billing.billing_policy!=='credits_v1'}");
-  expect(source).toContain("salesEnabled={!!payments && config.billingMode==='credits_v1' && billing.billing_policy==='credits_v1'}");
   for(const protection of [{catalogOnly:true,salesEnabled:true},{catalogOnly:false,salesEnabled:false}]){
     const html=renderToStaticMarkup(createElement(UpgradeScreen,{...protection,creditMode:true,
       purchaseWindows:{asOf:'2030-01-01T00:00:00Z',baseStart:'2030-01-01T00:00:00Z',baseEnd:'2030-01-31T00:00:00Z',addonStart:'2030-01-01T00:00:00Z',addonEnd:'2030-01-31T00:00:00Z',scheduled:false},

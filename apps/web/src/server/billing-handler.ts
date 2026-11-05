@@ -29,7 +29,7 @@ export const PAYMENT_DESCRIPTION = `КлипМейкер: тариф ${PAID_PLAN
 
 export interface BillingDependencies {
   billingMode?: BillingMode;
-  checkoutEnabled?: boolean;
+  checkoutAllowed: (accountId: string, policy: string | null) => boolean;
   billingPolicy?: (accountId:string)=>Promise<string|null>;
   publicOrigin: string;
   trustedProxyHops: number;
@@ -99,12 +99,13 @@ export function createCheckoutHandler(deps: BillingDependencies) {
     if (!provider) return notFound();
     const entry = await guardMutation(request, deps);
     if (entry instanceof Response) return entry;
-    if (deps.checkoutEnabled === false) return fail(503, 'checkout_paused', 'Оформление оплаты временно приостановлено. Попробуйте позже');
+    const policy = await deps.billingPolicy?.(entry.accountId) ?? null;
+    if (!deps.checkoutAllowed(entry.accountId, policy)) return fail(503, 'checkout_paused', 'Оформление оплаты временно приостановлено. Попробуйте позже');
     if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail(422, 'invalid_body', 'Ожидается JSON');
     const raw = await readRawBody(request, MAX_CHECKOUT_BYTES);
     let body: unknown;
     try { body = raw ? JSON.parse(Buffer.from(raw).toString('utf8')) : null; } catch { body = null; }
-    const credit = await deps.billingPolicy?.(entry.accountId) === 'credits_v1';
+    const credit = policy === 'credits_v1';
     if (body && typeof body==='object' && ('operation' in body || 'upgrade' in body)) return fail(422,'upgrade_unavailable','Немедленный переход недоступен. Выберите Про на следующий период или дополнительный пакет сейчас.');
     // Закрытое тело: ровно один ключ. Цена и план НЕ читаются из запроса — только из кода (fail-closed-defaults п.3).
     if (!body || typeof body !== 'object' || Array.isArray(body) || (credit ? Object.keys(body).sort().join() !== 'idempotency_key,sku' : Object.keys(body).join() !== 'idempotency_key')) {
