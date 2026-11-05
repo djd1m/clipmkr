@@ -1,0 +1,978 @@
+{
+  "scope": "Bounded public corpus; ordinary HTTP receipts only, no cryptographic issuer verification",
+  "requests": [
+    {
+      "collection": "web-retrieval.json",
+      "id": "twitch-native",
+      "url": "https://help.twitch.tv/s/article/how-to-use-clips",
+      "retrievedAt": "2026-11-05T18:29:33.033395+00:00",
+      "status": 200,
+      "finalURL": "https://help.twitch.tv/s/article/how-to-use-clips?language=en_US",
+      "bytes": 65591,
+      "sha256": "feb301673018370a4d4ca511f1e958f1985ed83bc402751e43460a70a3729125"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "twitch-launch",
+      "url": "https://blog.twitch.tv/en/2024/08/28/creating-and-sharing-clips-for-mobile-just-got-easier/",
+      "retrievedAt": "2026-11-05T18:29:33.034184+00:00",
+      "status": 200,
+      "finalURL": "https://blog.twitch.tv/en/2024/08/28/creating-and-sharing-clips-for-mobile-just-got-easier/",
+      "bytes": 9379,
+      "sha256": "891878723f64a46e9698ab62b8386c4a65e71c8684dffcf49da954e464657eeb"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "eklipse-templates",
+      "url": "https://eklipse.gg/help/how-to-use-and-customize-templates/",
+      "retrievedAt": "2026-11-05T18:29:33.035428+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "eklipse-signals",
+      "url": "https://eklipse.gg/help/how-does-eklipse-ai-choose-highlights/",
+      "retrievedAt": "2026-11-05T18:29:33.036108+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "eklipse-adoption",
+      "url": "https://eklipse.gg/help/what-do-streamers-use-to-edit-videos-for-youtube-and-tiktok/",
+      "retrievedAt": "2026-11-05T18:29:33.038086+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "streamladder-layouts",
+      "url": "https://www.streamladder.com/clip-editor/custom-layouts",
+      "retrievedAt": "2026-11-05T18:29:33.038791+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "streamladder-facecam",
+      "url": "https://www.streamladder.com/clipgpt/facecam-detection",
+      "retrievedAt": "2026-11-05T18:29:33.039590+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "streamladder-mobile",
+      "url": "https://www.streamladder.com/blog/twitch-clips-to-tiktok-mobile",
+      "retrievedAt": "2026-11-05T18:29:33.040844+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "crossclip-layouts",
+      "url": "https://streamlabs.com/content-hub/post/how-to-save-layouts-with-cross-clip",
+      "retrievedAt": "2026-11-05T18:29:33.245194+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "crossclip-issue",
+      "url": "https://support.streamlabs.com/hc/en-us/articles/48665093228955-Twitch-Clips-No-Longer-Compile-in-Crossclip",
+      "retrievedAt": "2026-11-05T18:29:33.250539+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "crossclip-plans",
+      "url": "https://streamlabs.com/cross-clip/plans",
+      "retrievedAt": "2026-11-05T18:29:33.254742+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "opus-layouts",
+      "url": "https://help.opus.pro/docs/article/apply-the-layouts",
+      "retrievedAt": "2026-11-05T18:29:33.257317+00:00",
+      "status": 200,
+      "finalURL": "https://help.opus.pro/docs/article/apply-the-layouts",
+      "bytes": 178792,
+      "sha256": "42016a1f7b44ab902cd993ad3c9f9889983408c3fea6c83c472af0851c7e7d60"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "opus-gameplay",
+      "url": "https://www.opus.pro/tools/gaming-video-editor",
+      "retrievedAt": "2026-11-05T18:29:33.262796+00:00",
+      "status": 200,
+      "finalURL": "https://www.opus.pro/tools/gaming-video-editor",
+      "bytes": 286801,
+      "sha256": "452a034f4376e43bf5b32da5a10e87e2fd69145806ffdd3e956058b8c7aafe19"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "opus-funding",
+      "url": "https://www.opus.pro/blog/opusclip-raises-a-new-round-of-funding-from-softbank-and-launches-opussearch",
+      "retrievedAt": "2026-11-05T18:29:33.274940+00:00",
+      "status": 200,
+      "finalURL": "https://www.opus.pro/blog/opusclip-raises-a-new-round-of-funding-from-softbank-and-launches-opussearch",
+      "bytes": 347849,
+      "sha256": "2555f4c04cd8aaa98a3de318be57b8b24b2670dfeae27c08f40a3753a079398d"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "vizard-gameplay",
+      "url": "https://agent.vizard.ai/how-to/cut-gaming-highlights-that-keep-your-facecam-in-shot.html",
+      "retrievedAt": "2026-11-05T18:29:33.293228+00:00",
+      "status": 200,
+      "finalURL": "https://agent.vizard.ai/how-to/cut-gaming-highlights-that-keep-your-facecam-in-shot.html",
+      "bytes": 9223,
+      "sha256": "2e33e5c72c01f5a271945d678719974a8c7f43cd0b5aafa1cb3a2feea01f42be"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "vizard-preferences",
+      "url": "https://help.vizard.ai/en/articles/9188600-what-are-clip-preferences",
+      "retrievedAt": "2026-11-05T18:29:33.297598+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "framedrop",
+      "url": "https://www.framedrop.ai/",
+      "retrievedAt": "2026-11-05T18:29:33.329561+00:00",
+      "error": "<urlopen error [Errno -2] Name or service not known>"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "ffmpeg-filter",
+      "url": "https://ffmpeg.org/ffmpeg-filters.html",
+      "retrievedAt": "2026-11-05T18:29:33.339473+00:00",
+      "status": 200,
+      "finalURL": "https://ffmpeg.org/ffmpeg-filters.html",
+      "bytes": 1750115,
+      "sha256": "5ebb3fc64534891213a8043ca90d39391a11bb7cbb86caf01f3a2329e5653369"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "ffmpeg-legal",
+      "url": "https://ffmpeg.org/legal.html",
+      "retrievedAt": "2026-11-05T18:29:33.353028+00:00",
+      "status": 200,
+      "finalURL": "https://ffmpeg.org/legal.html",
+      "bytes": 10746,
+      "sha256": "0c0f84b347baa5edb55ad594cb9b8dc3a6ae47b652131ff4533a16b3773e89df"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "mediapipe-detector",
+      "url": "https://developers.google.com/edge/mediapipe/solutions/vision/face_detector",
+      "retrievedAt": "2026-11-05T18:29:33.354339+00:00",
+      "status": 200,
+      "finalURL": "https://developers.google.com/edge/mediapipe/solutions/vision/face_detector",
+      "bytes": 340068,
+      "sha256": "555eea9f663145777bf0c6f1d760541aea03ab1dc908ecf53a03203725d7bb78"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "mediapipe-segmenter",
+      "url": "https://developers.google.com/edge/mediapipe/solutions/vision/image_segmenter",
+      "retrievedAt": "2026-11-05T18:29:33.387743+00:00",
+      "status": 200,
+      "finalURL": "https://developers.google.com/edge/mediapipe/solutions/vision/image_segmenter",
+      "bytes": 347067,
+      "sha256": "544d00b35eecaee2a0a39b86eccfb2ec6d8068e74a4ee24400be39a5ce46bf99"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "autoflip-blog",
+      "url": "https://research.google/blog/autoflip-an-open-source-framework-for-intelligent-video-reframing/",
+      "retrievedAt": "2026-11-05T18:29:33.410749+00:00",
+      "status": 200,
+      "finalURL": "https://research.google/blog/autoflip-an-open-source-framework-for-intelligent-video-reframing/",
+      "bytes": 176129,
+      "sha256": "851bc87596e069d69444b852f3424e0c667e81100c7e264ba73d0e3cc6e12ca5"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "ultralytics-license",
+      "url": "https://www.ultralytics.com/license",
+      "retrievedAt": "2026-11-05T18:29:33.697328+00:00",
+      "status": 200,
+      "finalURL": "https://www.ultralytics.com/license",
+      "bytes": 401161,
+      "sha256": "2cbce6055e037d82589a6d13f707fae29ad7469fb3da8e907a83ed9ba3414830"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "obs-source-record",
+      "url": "https://obsproject.com/forum/resources/source-record.1285/",
+      "retrievedAt": "2026-11-05T18:29:33.724713+00:00",
+      "status": 200,
+      "finalURL": "https://obsproject.com/forum/resources/source-record.1285/",
+      "bytes": 93153,
+      "sha256": "c9d699d150be1429314b42cb89018c38c4fa1a67d0ef4b8f8c3b2ed3f4617d3a"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "twitch-api",
+      "url": "https://dev.twitch.tv/docs/api/reference/",
+      "retrievedAt": "2026-11-05T18:29:33.787446+00:00",
+      "status": 200,
+      "finalURL": "https://dev.twitch.tv/docs/api/reference/",
+      "bytes": 1413409,
+      "sha256": "8776c6338f6d2bf99f356d5e319dc7a28059cabf6f8517ca63a4361302f7ee07"
+    },
+    {
+      "collection": "web-retrieval.json",
+      "id": "twitch-terms",
+      "url": "https://legal.twitch.com/en/legal/terms-of-service/",
+      "retrievedAt": "2026-11-05T18:29:33.795721+00:00",
+      "status": 200,
+      "finalURL": "https://legal.twitch.com/en/legal/terms-of-service/",
+      "bytes": 30525,
+      "sha256": "c60c60058f7cd70c13ee21b924dcdeb8b1c288aada29bb945be34b85027d4917"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/f8a03cd98daa81d16948308b5b1612aaaa831500/LICENSE.md",
+      "status": 200,
+      "sha256": "e6dc72d5665a1ebd6dcc841de59278dad4ca77ecc47b03f1064a55c3e9ea8bb8",
+      "bytes": 4352,
+      "retrievedAt": "2026-11-05T18:25:58.026661+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/f8a03cd98daa81d16948308b5b1612aaaa831500/README.md",
+      "status": 200,
+      "sha256": "86474c8f0806772f831a9c7a4982fd2398507372c577d229b76f60bbb3e7dead",
+      "bytes": 2026,
+      "retrievedAt": "2026-11-05T18:25:58.030835+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/opencv/opencv/07666386e2eb5bafa88c88574433e4df32910fdc/LICENSE",
+      "status": 200,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "retrievedAt": "2026-11-05T18:25:58.071870+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/google-ai-edge/mediapipe/a86135da4c85cbb3694714ccdefdc2c96c32cc95/LICENSE",
+      "status": 200,
+      "sha256": "8707eef0533987efc5b155d64761eeb6e20793f50b9bd1a68dad1cf4719d0ed8",
+      "bytes": 12331,
+      "retrievedAt": "2026-11-05T18:25:58.084715+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/google-ai-edge/mediapipe/a86135da4c85cbb3694714ccdefdc2c96c32cc95/docs/solutions/autoflip.md",
+      "status": 200,
+      "sha256": "093ec868b51fb38ebea23acd0d4a6129ae86e1fd90e1b74945310e6ac282c820",
+      "bytes": 12653,
+      "retrievedAt": "2026-11-05T18:25:58.095385+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/google-ai-edge/mediapipe/a86135da4c85cbb3694714ccdefdc2c96c32cc95/mediapipe/examples/desktop/autoflip/README.md",
+      "status": 200,
+      "sha256": "bfbd3f0b2d99aeccb367c2318de293de5dde467f1af143d3710bc95f11d5db1b",
+      "bytes": 1003,
+      "retrievedAt": "2026-11-05T18:25:58.081799+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/google-ai-edge/mediapipe/a86135da4c85cbb3694714ccdefdc2c96c32cc95/mediapipe/examples/desktop/autoflip/autoflip_graph.pbtxt",
+      "status": 200,
+      "sha256": "4e8f329b0d31d16652cf51627bbb272a9faaa93b6013da1bf558305671a14588",
+      "bytes": 5734,
+      "retrievedAt": "2026-11-05T18:25:58.147404+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/FoundationVision/ByteTrack/d1bf0191adff59bc8fcfeaa0b33d3d1642552a99/LICENSE",
+      "status": 200,
+      "sha256": "e9d83751678cbaba6dfba902ea39215c423d93425e58f8450d6001f7261696f9",
+      "bytes": 1067,
+      "retrievedAt": "2026-11-05T18:25:58.040224+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/FoundationVision/ByteTrack/d1bf0191adff59bc8fcfeaa0b33d3d1642552a99/README.md",
+      "status": 200,
+      "sha256": "126d307a421e4421aa9d3917e7849d1cf63c95f7b36864e1ca92a9d1a451c247",
+      "bytes": 15448,
+      "retrievedAt": "2026-11-05T18:25:58.323773+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/FoundationVision/ByteTrack/d1bf0191adff59bc8fcfeaa0b33d3d1642552a99/yolox/tracker/byte_tracker.py",
+      "status": 200,
+      "sha256": "7cecdcdd7998103969a4ba1772f4c9fb5560fd5eef05ca03e0d2df28346ca50b",
+      "bytes": 11940,
+      "retrievedAt": "2026-11-05T18:25:58.221809+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ultralytics/ultralytics/87ea3adb378621a2a260acd3296f4f84dd555197/LICENSE",
+      "status": 200,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "retrievedAt": "2026-11-05T18:25:58.404822+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ultralytics/ultralytics/87ea3adb378621a2a260acd3296f4f84dd555197/README.md",
+      "status": 200,
+      "sha256": "4bbb146d3f82dddac401ba15f5f0dda09dc33dc96a7b59baed8009ff87e2b91e",
+      "bytes": 39219,
+      "retrievedAt": "2026-11-05T18:25:58.349036+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/LICENSE",
+      "status": 200,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "retrievedAt": "2026-11-05T18:25:58.307242+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/README.md",
+      "status": 200,
+      "sha256": "187f1bf735013c3a3db4a50d562be3cd4e5f3c836929b472ccda5ad4990f1af7",
+      "bytes": 51719,
+      "retrievedAt": "2026-11-05T18:25:58.304618+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/gaming/layout.py",
+      "status": 200,
+      "sha256": "3cc8c4ca14fd8c844d7d6f202f4f07aff860ae35070e1c0a9c885a9102c168fa",
+      "bytes": 20952,
+      "retrievedAt": "2026-11-05T18:25:58.327229+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/gaming/layouts.json",
+      "status": 200,
+      "sha256": "c05620470e66a6868db864b16b66fa4048f256236b90f738ae51b653aae80773",
+      "bytes": 2301,
+      "retrievedAt": "2026-11-05T18:25:58.361048+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/video/tracker.py",
+      "status": 200,
+      "sha256": "4bd55311fbcbca1d4878eeab9515b91732cedc9b7fb96bee7a478184aae9ddb7",
+      "bytes": 91042,
+      "retrievedAt": "2026-11-05T18:25:58.434715+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/video/cropper.py",
+      "status": 200,
+      "sha256": "6e58b3db640a74b50c7aa5e491a3173b63f5f63109a5d901b72a35fe0667c62f",
+      "bytes": 26563,
+      "retrievedAt": "2026-11-05T18:25:58.521994+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/requirements.txt",
+      "status": 200,
+      "sha256": "da1aad60a1d484047f27a712b632f854f9b8da1fa222b177e6f9cac4b69d84c6",
+      "bytes": 4365,
+      "retrievedAt": "2026-11-05T18:25:58.551956+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/pyproject.toml",
+      "status": 200,
+      "sha256": "d5d0bbee85dbe011498b4cd5e32ffa0c8c5c45f6cfaa2e35a078a4e725ca04f6",
+      "bytes": 2623,
+      "retrievedAt": "2026-11-05T18:25:58.588138+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/ui/src/renderer/src/components/GamingLayoutEditor.tsx",
+      "status": 200,
+      "sha256": "7507f5727766a9af077f3c286215d4876957a0aeb46ba10737f5b7b5db60cca2",
+      "bytes": 57136,
+      "retrievedAt": "2026-11-05T18:25:58.546795+00:00"
+    },
+    {
+      "collection": "oss-files-retrieval.json",
+      "url": "https://raw.githubusercontent.com/obsproject/obs-studio/7a25c3fd8b5eb87c2d2e0606cae36e32014bc6fa/COPYING",
+      "status": 200,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "bytes": 18092,
+      "retrievedAt": "2026-11-05T18:25:58.603383+00:00"
+    },
+    {
+      "collection": "oss-extra-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/docs/GAMING.md",
+      "status": 200,
+      "bytes": 31834,
+      "sha256": "54c8b5f6d043e93de9f675aadfaa551a8c9a5df5594970a6046133ea16e6735b",
+      "at": "2026-11-05T18:26:26.965996+00:00"
+    },
+    {
+      "collection": "oss-extra-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/gaming/detect.py",
+      "status": 200,
+      "bytes": 31222,
+      "sha256": "a2f7578afe58ae831a71a3853795b477e7bcc9d87d862f845dab4b0afdb325f9",
+      "at": "2026-11-05T18:26:27.208155+00:00"
+    },
+    {
+      "collection": "oss-extra-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/gaming/framing.py",
+      "status": 200,
+      "bytes": 4836,
+      "sha256": "e05c72dd1e6e0eb2605726a3b943728279e4dab4aa1e0405361ac1c7e9c0247e",
+      "at": "2026-11-05T18:26:27.445337+00:00"
+    },
+    {
+      "collection": "oss-extra-retrieval.json",
+      "url": "https://raw.githubusercontent.com/ColinGPT9/clips-studio/2ea80d3124e850e0a550a997edd1e6ef630b50d8/gaming/render.py",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "collection": "oss-extra-retrieval.json",
+      "url": "https://raw.githubusercontent.com/google-ai-edge/mediapipe/a86135da4c85cbb3694714ccdefdc2c96c32cc95/docs/solutions/autoflip.md",
+      "status": 200,
+      "bytes": 12653,
+      "sha256": "093ec868b51fb38ebea23acd0d4a6129ae86e1fd90e1b74945310e6ac282c820",
+      "at": "2026-11-05T18:26:27.717513+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/README.md",
+      "status": 200,
+      "sha256": "4ed657bea8d05c0693cc25d3e932d7726894411ec97dc9def779b4af2daaea93",
+      "bytes": 4099,
+      "retrievedAt": "2026-11-05T18:25:08.405430+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/MIRROR-MANIFEST.json",
+      "status": 200,
+      "sha256": "172c5dafb09f783f492baa4f2dd65bb910cd72b87834aab503f2ec5fc091ca34",
+      "bytes": 10110,
+      "retrievedAt": "2026-11-05T18:25:08.618538+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/package.json",
+      "status": 200,
+      "sha256": "ce265ea97eaaaafead261cfc87a66018c3f08ecf2535ef56321850c188c6e7e8",
+      "bytes": 1785,
+      "retrievedAt": "2026-11-05T18:25:08.837011+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/design-thinking/package.json",
+      "status": 200,
+      "sha256": "0909652bbee00cf3d687cc0f022ffe13c677bc09938da0f095ceabe43e6493f9",
+      "bytes": 1568,
+      "retrievedAt": "2026-11-05T18:25:09.050228+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/problem-solver-enhanced/SKILL.md",
+      "status": 200,
+      "sha256": "031378aa2e10c98928e35de07d454135e73550cd0c49f0cd886d53e4208d6b9f",
+      "bytes": 26628,
+      "retrievedAt": "2026-11-05T18:25:09.283319+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/goap-research-ed25519/SKILL.md",
+      "status": 200,
+      "sha256": "404cb696d537d29585ec35f97a86173a582cd6fcf8d5f172a4f5bbd75ec971a8",
+      "bytes": 31241,
+      "retrievedAt": "2026-11-05T18:25:09.631933+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/structured-reasoning/SKILL.md",
+      "status": 200,
+      "sha256": "9e6b52c3d8575f8b87af1b4174bb9380c18df98266ce6d5c336fe055368a950e",
+      "bytes": 4979,
+      "retrievedAt": "2026-11-05T18:25:09.857750+00:00"
+    },
+    {
+      "collection": "dz-retrieval.json",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-pm/market-sizing/SKILL.md",
+      "status": 200,
+      "sha256": "d3cf9d18dad06aa1a950a0d34df80a7636088e54c0629f7ff493e8adde6014d4",
+      "bytes": 4547,
+      "retrievedAt": "2026-11-05T18:25:10.100030+00:00"
+    },
+    {
+      "collection": "additional-public-file",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/README.md",
+      "observedFileAt": "2026-11-05T18:28:49.982309+00:00",
+      "bytes": 28352,
+      "sha256": "9b7a9d4e14205bcd74815596b89f13a8ab32340b0ed3a0e05cd886d6f8fcdfdc",
+      "method": "public urllib GET completed; raw file saved locally; no special evidence class"
+    },
+    {
+      "collection": "additional-public-file",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/goap-research-ed25519/scripts/evidence_fetch.py",
+      "observedFileAt": "2026-11-05T18:35:01.215704+00:00",
+      "bytes": 11881,
+      "sha256": "5f4d7cb5d6fb3106d64130b6606582eb55a4f633ef969cf7890b1de1c179345b",
+      "method": "public urllib GET completed; raw file saved locally; no special evidence class"
+    },
+    {
+      "collection": "additional-public-file",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-meta/goap-research-ed25519/scripts/check_report_evidence.py",
+      "observedFileAt": "2026-11-05T18:35:00.996706+00:00",
+      "bytes": 36150,
+      "sha256": "5053e677f11d00b4dd8365a81eafa1d2c961eebd25c33f72b02455573a934a32",
+      "method": "public urllib GET completed; raw file saved locally; no special evidence class"
+    },
+    {
+      "collection": "additional-public-file",
+      "url": "https://raw.githubusercontent.com/djd1m/dz-harness/a9da87456e8f9bd0f204a00c143b016b1a7c9e61/packages/skills-pm/package.json",
+      "status": 200,
+      "retrievedAt": "2026-11-05T18:39:47.801350+00:00",
+      "bytes": 1714,
+      "sha256": "030b78a847d0c8a67a16dffc1d7e3421e23a0335ff20938ae7f048ff0d0e14cf"
+    },
+    {
+      "collection": "advanced-segmentation-public-file",
+      "collectionAt": "2026-11-05T18:40:13.881973+00:00",
+      "url": "https://raw.githubusercontent.com/PeterL1n/RobustVideoMatting/53d74c6826735f01f4406b5ca9075eee27bec094/LICENSE",
+      "status": 200,
+      "sha256": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
+      "bytes": 35148
+    },
+    {
+      "collection": "advanced-segmentation-public-file",
+      "collectionAt": "2026-11-05T18:40:13.881973+00:00",
+      "url": "https://raw.githubusercontent.com/PeterL1n/RobustVideoMatting/53d74c6826735f01f4406b5ca9075eee27bec094/README.md",
+      "status": 200,
+      "sha256": "239354ea615b768de0be7f17a703d784dd1eccd9f773b6be76cacbdde3a4aa06",
+      "bytes": 12297
+    },
+    {
+      "collection": "advanced-segmentation-public-file",
+      "collectionAt": "2026-11-05T18:40:13.954036+00:00",
+      "url": "https://raw.githubusercontent.com/facebookresearch/sam3/f1647e8d0c1d280991f4d1b7d974c2704537fe66/LICENSE",
+      "status": 200,
+      "sha256": "4dea99bfaa016e21bc860d73f344236bd1e5c4977d1a9a8fd32f822b500ae1be",
+      "bytes": 7353
+    },
+    {
+      "collection": "advanced-segmentation-public-file",
+      "collectionAt": "2026-11-05T18:40:13.954036+00:00",
+      "url": "https://raw.githubusercontent.com/facebookresearch/sam3/f1647e8d0c1d280991f4d1b7d974c2704537fe66/README.md",
+      "status": 200,
+      "sha256": "da3dd047d18ef9a4b33557bf6f8187cf166218dc8aef40f2e18a67cc5249a502",
+      "bytes": 21417
+    },
+    {
+      "collection": "advanced-segmentation-public-file",
+      "collectionAt": "2026-11-05T18:40:14.029370+00:00",
+      "url": "https://raw.githubusercontent.com/royshil/obs-backgroundremoval/b2786e87dc1d08ed2f2ce335000a8fb1992dc944/LICENSE",
+      "status": 200,
+      "sha256": "9eb48eee6c68098c471903ac4ef6462fdbaada93899ab6d2d9cb5419aa48a7bc",
+      "bytes": 35141
+    },
+    {
+      "collection": "advanced-segmentation-public-file",
+      "collectionAt": "2026-11-05T18:40:14.029370+00:00",
+      "url": "https://raw.githubusercontent.com/royshil/obs-backgroundremoval/b2786e87dc1d08ed2f2ce335000a8fb1992dc944/README.md",
+      "status": 200,
+      "sha256": "26fd5e80846019d55d6383fe0bbb544dfea26ea0f0faf9985b177d4c8829a070",
+      "bytes": 6409
+    }
+  ],
+  "gitHubRepoSnapshots": [
+    {
+      "repo": "ColinGPT9/clips-studio",
+      "retrievedAt": "2026-11-05T18:25:26.066522+00:00",
+      "stars": 207,
+      "archived": false,
+      "defaultBranch": "main",
+      "head": "2ea80d3124e850e0a550a997edd1e6ef630b50d8",
+      "headDate": "2026-11-05T07:55:37Z",
+      "headMessage": "fix(i18n): translate UI attributes across components (#217)",
+      "licenseAPI": {
+        "key": "agpl-3.0",
+        "name": "GNU Affero General Public License v3.0",
+        "spdx_id": "AGPL-3.0",
+        "url": "https://api.github.com/licenses/agpl-3.0",
+        "node_id": "MDc6TGljZW5zZTE="
+      },
+      "pushedAt": "2026-11-05T14:24:33Z",
+      "latestRelease": {
+        "tag_name": "v2.1.0",
+        "published_at": "2026-10-21T08:09:53Z",
+        "html_url": "https://github.com/ColinGPT9/clips-studio/releases/tag/v2.1.0"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repo": "FFmpeg/FFmpeg",
+      "retrievedAt": "2026-11-05T18:25:25.034226+00:00",
+      "stars": 66560,
+      "archived": false,
+      "defaultBranch": "master",
+      "head": "f8a03cd98daa81d16948308b5b1612aaaa831500",
+      "headDate": "2026-11-05T15:07:16Z",
+      "headMessage": "avformat/framecrcenc: add support for Gain Map packet side data",
+      "licenseAPI": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "pushedAt": "2026-11-05T15:08:55Z",
+      "latestRelease": "not available: HTTPError",
+      "licensePaths": [
+        "COPYING.GPLv2",
+        "COPYING.GPLv3",
+        "COPYING.LGPLv2.1",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "repo": "FoundationVision/ByteTrack",
+      "retrievedAt": "2026-11-05T18:25:24.998691+00:00",
+      "stars": 6798,
+      "archived": false,
+      "defaultBranch": "main",
+      "head": "d1bf0191adff59bc8fcfeaa0b33d3d1642552a99",
+      "headDate": "2022-12-11T07:05:00Z",
+      "headMessage": "Merge pull request #296 from SkalskiP/main",
+      "licenseAPI": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "pushedAt": "2024-06-19T11:45:05Z",
+      "latestRelease": "not available: HTTPError",
+      "licensePaths": [
+        "LICENSE"
+      ]
+    },
+    {
+      "commit": "a9da87456e8f9bd0f204a00c143b016b1a7c9e61",
+      "commitDate": "2026-11-05T03:24:08Z",
+      "retrievedAt": "2026-11-05T18:24:54.393408+00:00"
+    },
+    {
+      "repo": "exeldro/obs-source-record",
+      "head": "fe3f63f237c78f355ae1f549292149cc017876b1",
+      "headDate": "2026-11-04T20:42:59Z",
+      "stars": 679,
+      "licenseAPI": {
+        "key": "gpl-2.0",
+        "name": "GNU General Public License v2.0",
+        "spdx_id": "GPL-2.0",
+        "url": "https://api.github.com/licenses/gpl-2.0",
+        "node_id": "MDc6TGljZW5zZTg="
+      },
+      "retrievedAt": "2026-11-05T18:28:49.371367+00:00"
+    },
+    {
+      "repo": "google-ai-edge/mediapipe",
+      "retrievedAt": "2026-11-05T18:25:25.008513+00:00",
+      "stars": 37564,
+      "archived": false,
+      "defaultBranch": "master",
+      "head": "a86135da4c85cbb3694714ccdefdc2c96c32cc95",
+      "headDate": "2026-11-05T18:01:44Z",
+      "headMessage": "INTERNAL_CHANGE",
+      "licenseAPI": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "pushedAt": "2026-11-05T18:01:54Z",
+      "latestRelease": {
+        "tag_name": "v1.2.2",
+        "published_at": "2026-11-03T22:08:41Z",
+        "html_url": "https://github.com/google-ai-edge/mediapipe/releases/tag/v1.2.2"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repo": "google-ai-edge/mediapipe-samples",
+      "retrievedAt": "2026-11-05T18:25:25.098168+00:00",
+      "stars": 2882,
+      "archived": false,
+      "defaultBranch": "main",
+      "head": "90e4a0e8f162e20dcf1df7c688d30b9b1dbe3370",
+      "headDate": "2026-10-30T19:00:20Z",
+      "headMessage": "Merge pull request #711 from google-ai-edge/kintel-asr",
+      "licenseAPI": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "pushedAt": "2026-10-30T19:00:23Z",
+      "latestRelease": {
+        "tag_name": "v0.1.4",
+        "published_at": "2025-05-01T00:18:24Z",
+        "html_url": "https://github.com/google-ai-edge/mediapipe-samples/releases/tag/v0.1.4"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repo": "obsproject/obs-studio",
+      "retrievedAt": "2026-11-05T18:25:26.075112+00:00",
+      "stars": 79004,
+      "archived": false,
+      "defaultBranch": "master",
+      "head": "7a25c3fd8b5eb87c2d2e0606cae36e32014bc6fa",
+      "headDate": "2026-11-03T16:57:41Z",
+      "headMessage": "win-asio: Blacklist Yamaha Steinberg in Debug builds",
+      "licenseAPI": {
+        "key": "gpl-2.0",
+        "name": "GNU General Public License v2.0",
+        "spdx_id": "GPL-2.0",
+        "url": "https://api.github.com/licenses/gpl-2.0",
+        "node_id": "MDc6TGljZW5zZTg="
+      },
+      "pushedAt": "2026-11-03T19:01:41Z",
+      "latestRelease": {
+        "tag_name": "33.0.1",
+        "published_at": "2026-10-29T21:52:01Z",
+        "html_url": "https://github.com/obsproject/obs-studio/releases/tag/33.0.1"
+      },
+      "licensePaths": [
+        "COPYING"
+      ]
+    },
+    {
+      "repo": "opencv/opencv",
+      "retrievedAt": "2026-11-05T18:25:24.975837+00:00",
+      "stars": 91469,
+      "archived": false,
+      "defaultBranch": "5.x",
+      "head": "07666386e2eb5bafa88c88574433e4df32910fdc",
+      "headDate": "2026-11-05T13:14:14Z",
+      "headMessage": "Merge branch 'release_5.1.0' into 5.x",
+      "licenseAPI": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "pushedAt": "2026-11-05T14:01:51Z",
+      "latestRelease": {
+        "tag_name": "5.0.0",
+        "published_at": "2026-06-06T10:52:34Z",
+        "html_url": "https://github.com/opencv/opencv/releases/tag/5.0.0"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repo": "opencv/opencv_zoo",
+      "head": "48b10fa505aeb51fbd127fc60a5c660040e823b7",
+      "headDate": "2026-10-20T15:55:38Z",
+      "stars": 1113,
+      "licenseAPI": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "retrievedAt": "2026-11-05T18:28:48.141773+00:00"
+    },
+    {
+      "repo": "ultralytics/ultralytics",
+      "retrievedAt": "2026-11-05T18:25:25.068238+00:00",
+      "stars": 63159,
+      "archived": false,
+      "defaultBranch": "main",
+      "head": "87ea3adb378621a2a260acd3296f4f84dd555197",
+      "headDate": "2026-11-05T18:24:33Z",
+      "headMessage": "Synchronize backend precision after module conversions (#27040)",
+      "licenseAPI": {
+        "key": "agpl-3.0",
+        "name": "GNU Affero General Public License v3.0",
+        "spdx_id": "AGPL-3.0",
+        "url": "https://api.github.com/licenses/agpl-3.0",
+        "node_id": "MDc6TGljZW5zZTE="
+      },
+      "pushedAt": "2026-11-05T18:24:34Z",
+      "latestRelease": {
+        "tag_name": "v8.4.202",
+        "published_at": "2026-11-04T00:14:40Z",
+        "html_url": "https://github.com/ultralytics/ultralytics/releases/tag/v8.4.202"
+      },
+      "licensePaths": [
+        "LICENSE"
+      ]
+    }
+  ],
+  "selectedSourceChangeSnapshots": [
+    {
+      "repo": "ColinGPT9/clips-studio",
+      "path": "gaming/layout.py",
+      "sha": "d6e6d9c4d5f96fe17b114261385535ef68aca6cc",
+      "date": "2026-09-28T02:36:42Z",
+      "message": "Game box stops at the webcam; Vertical Live scored like the split"
+    },
+    {
+      "repo": "FFmpeg/FFmpeg",
+      "path": "libavfilter/vf_crop.c",
+      "sha": "65ca8b1f50b850b063bed514330884c74794eeef",
+      "date": "2026-10-18T22:47:35Z",
+      "message": "avfilter/vf_crop: keep the x/y expressions when the new ones fail to parse"
+    },
+    {
+      "repo": "FoundationVision/ByteTrack",
+      "path": "yolox/tracker/byte_tracker.py",
+      "sha": "50d13be0391d0abd1bb2275c901e8640c15287ac",
+      "date": "2021-10-10T17:18:23Z",
+      "message": "update tracker"
+    },
+    {
+      "repo": "google-ai-edge/mediapipe",
+      "path": "mediapipe/examples/desktop/autoflip/quality/scene_camera_motion_analyzer.cc",
+      "sha": "4a2f1fbd6cb5ea09a5835d33c4fcf098b5347c5d",
+      "date": "2026-11-03T16:40:23Z",
+      "message": "No public description"
+    },
+    {
+      "repo": "opencv/opencv",
+      "path": "modules/objdetect/src/face_detect.cpp",
+      "sha": "75c56661d70083ceafbba0f99d47ce697a85ad32",
+      "date": "2026-04-24T12:57:49Z",
+      "message": "objdetect: call setInputShape in FaceDetectorYN to support ONNX Runtime dynamic input"
+    },
+    {
+      "repo": "ultralytics/ultralytics",
+      "path": "ultralytics/trackers/byte_tracker.py",
+      "sha": "190b0f1a5350c6a1d3c117c621ad44cf31937fd1",
+      "date": "2026-10-17T17:47:15Z",
+      "message": "Unwrap OBB track angles to the nearest half-turn form (#26729)"
+    }
+  ],
+  "advancedSegmentationSnapshots": [
+    {
+      "repo": "PeterL1n/RobustVideoMatting",
+      "head": "53d74c6826735f01f4406b5ca9075eee27bec094",
+      "headDate": "2023-03-13T23:53:45Z",
+      "headMessage": "Merge pull request #227 from dcyoung/master",
+      "archived": false,
+      "licenseAPI": {
+        "key": "gpl-3.0",
+        "name": "GNU General Public License v3.0",
+        "spdx_id": "GPL-3.0",
+        "url": "https://api.github.com/licenses/gpl-3.0",
+        "node_id": "MDc6TGljZW5zZTk="
+      },
+      "at": "2026-11-05T18:40:13.881973+00:00",
+      "files": [
+        {
+          "url": "https://raw.githubusercontent.com/PeterL1n/RobustVideoMatting/53d74c6826735f01f4406b5ca9075eee27bec094/LICENSE",
+          "status": 200,
+          "sha256": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
+          "bytes": 35148
+        },
+        {
+          "url": "https://raw.githubusercontent.com/PeterL1n/RobustVideoMatting/53d74c6826735f01f4406b5ca9075eee27bec094/README.md",
+          "status": 200,
+          "sha256": "239354ea615b768de0be7f17a703d784dd1eccd9f773b6be76cacbdde3a4aa06",
+          "bytes": 12297
+        }
+      ],
+      "candidateCodePaths": [
+        "evaluation/generate_imagematte_with_background_image.py",
+        "evaluation/generate_imagematte_with_background_video.py",
+        "evaluation/generate_videomatte_with_background_image.py",
+        "evaluation/generate_videomatte_with_background_video.py",
+        "model/model.py"
+      ]
+    },
+    {
+      "repo": "facebookresearch/sam3",
+      "head": "f1647e8d0c1d280991f4d1b7d974c2704537fe66",
+      "headDate": "2026-10-23T19:49:10Z",
+      "headMessage": "Remove unused type error suppressions (landing group 20)",
+      "archived": false,
+      "licenseAPI": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "at": "2026-11-05T18:40:13.954036+00:00",
+      "files": [
+        {
+          "url": "https://raw.githubusercontent.com/facebookresearch/sam3/f1647e8d0c1d280991f4d1b7d974c2704537fe66/LICENSE",
+          "status": 200,
+          "sha256": "4dea99bfaa016e21bc860d73f344236bd1e5c4977d1a9a8fd32f822b500ae1be",
+          "bytes": 7353
+        },
+        {
+          "url": "https://raw.githubusercontent.com/facebookresearch/sam3/f1647e8d0c1d280991f4d1b7d974c2704537fe66/README.md",
+          "status": 200,
+          "sha256": "da3dd047d18ef9a4b33557bf6f8187cf166218dc8aef40f2e18a67cc5249a502",
+          "bytes": 21417
+        }
+      ],
+      "candidateCodePaths": [
+        "sam3/model/sam1_task_predictor.py",
+        "sam3/model/sam3_base_predictor.py",
+        "sam3/model/sam3_multiplex_video_predictor.py",
+        "sam3/model/sam3_tracking_predictor.py",
+        "sam3/model/sam3_video_predictor.py",
+        "test/test_video_predictor.py"
+      ]
+    },
+    {
+      "repo": "royshil/obs-backgroundremoval",
+      "head": "b2786e87dc1d08ed2f2ce335000a8fb1992dc944",
+      "headDate": "2026-10-18T21:00:00Z",
+      "headMessage": "Merge pull request #1005 from royshil/umireon/actions-lock",
+      "archived": false,
+      "licenseAPI": {
+        "key": "gpl-3.0",
+        "name": "GNU General Public License v3.0",
+        "spdx_id": "GPL-3.0",
+        "url": "https://api.github.com/licenses/gpl-3.0",
+        "node_id": "MDc6TGljZW5zZTk="
+      },
+      "at": "2026-11-05T18:40:14.029370+00:00",
+      "files": [
+        {
+          "url": "https://raw.githubusercontent.com/royshil/obs-backgroundremoval/b2786e87dc1d08ed2f2ce335000a8fb1992dc944/LICENSE",
+          "status": 200,
+          "sha256": "9eb48eee6c68098c471903ac4ef6462fdbaada93899ab6d2d9cb5419aa48a7bc",
+          "bytes": 35141
+        },
+        {
+          "url": "https://raw.githubusercontent.com/royshil/obs-backgroundremoval/b2786e87dc1d08ed2f2ce335000a8fb1992dc944/README.md",
+          "status": 200,
+          "sha256": "26fd5e80846019d55d6383fe0bbb544dfea26ea0f0faf9985b177d4c8829a070",
+          "bytes": 6409
+        }
+      ],
+      "candidateCodePaths": [
+        "src/background-filter.cpp"
+      ]
+    }
+  ]
+}

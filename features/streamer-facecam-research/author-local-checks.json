@@ -1,0 +1,24 @@
+{
+  "utc": "2026-11-05T18:45:46.548615+00:00",
+  "publicDocCount": 7,
+  "localDocumentErrors": [],
+  "foreignChanges": [],
+  "scopePaths": [
+    "docs/research/streamer-facecam/README.md",
+    "docs/research/streamer-facecam/analogs.md",
+    "docs/research/streamer-facecam/architecture-options.md",
+    "docs/research/streamer-facecam/evidence-map.md",
+    "docs/research/streamer-facecam/oss-candidates.md",
+    "docs/research/streamer-facecam/sources.md",
+    "docs/research/streamer-facecam/streamer-cjm-and-pilot.md",
+    "features/streamer-facecam-research/.fa-state/checkpoints.jsonl",
+    "features/streamer-facecam-research/00_complexity_assessment.md",
+    "features/streamer-facecam-research/01_requirements.md",
+    "features/streamer-facecam-research/02_reuse_inventory.md",
+    "features/streamer-facecam-research/06_implementation_plan.md",
+    "features/streamer-facecam-research/source-retrieval-receipts.json",
+    "features/streamer-facecam-research/wording-before-hashes.json"
+  ],
+  "receiptRequestCount": 71,
+  "receiptUniqueURLs": 70
+}

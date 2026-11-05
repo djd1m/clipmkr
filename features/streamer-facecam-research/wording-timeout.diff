@@ -1,0 +1,5 @@
+--- a/docs/research/streamer-facecam/oss-candidates.md
++++ b/docs/research/streamer-facecam/oss-candidates.md
+@@ -11 +11 @@
+-| Детекция лиц YuNet на CPU | [faces.ts:19](https://github.com/djd1m/clipmkr/blob/9375c10238a147fcf43219ab8d9533b75a3ae6c7/apps/worker/src/render/faces.ts#L19), [detect_faces.py:37](https://github.com/djd1m/clipmkr/blob/9375c10238a147fcf43219ab8d9533b75a3ae6c7/apps/worker/assets/scripts/detect_faces.py#L37) | Python/OpenCV и ONNX уже есть. Шаг выборки 0,5 с, лимит 60 с, длинная сторона уменьшается до 640 px. Результат — прямоугольники лиц, не принадлежность автору и не контурная маска |
++| Детекция лиц YuNet на CPU | [faces.ts:19](https://github.com/djd1m/clipmkr/blob/9375c10238a147fcf43219ab8d9533b75a3ae6c7/apps/worker/src/render/faces.ts#L19), [detect_faces.py:37](https://github.com/djd1m/clipmkr/blob/9375c10238a147fcf43219ab8d9533b75a3ae6c7/apps/worker/assets/scripts/detect_faces.py#L37) | Python/OpenCV и ONNX уже есть. Шаг выборки 0,5 с, timeout процесса детекции 60 с, длинная сторона уменьшается до 640 px. Результат — прямоугольники лиц, не принадлежность автору и не контурная маска |
