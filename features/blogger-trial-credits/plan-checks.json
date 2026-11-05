@@ -1,0 +1,78 @@
+{
+  "schema": "blogger-trial-plan-checks/1",
+  "recordedBy": "gpt-6-astra xhigh planner",
+  "authority": "Root explicitly accepted final 01/02/06 on 2026-11-05; Step7/live remain separate",
+  "worktree": "/tmp/clipmkr-blogger-trial-20261105",
+  "base": "e381a2a8034d1424800e85f61625990b4e1bb0e8",
+  "tier": "S",
+  "score": 8,
+  "node": "22.23.4",
+  "recall": {
+    "command": "npm run dz -- recall 'blogger trial credit grant role initial funding audit idempotency' --project /home/clipmkr --json --limit 8",
+    "cwd": "/tmp/clipmkr-public-entry-20261105",
+    "exitCode": 0,
+    "resultCount": 5,
+    "relevantLesson": "teach:0f0ab74f9b8c96e2",
+    "applied": "Initial 30 minutes included in trial high-watermark; repeats cannot refill"
+  },
+  "checks": [
+    {
+      "label": "K1",
+      "command": "npm run dz -- name-check --export raiseTrialCreditsTx --module blogger-trial-credits.integration.test --project /tmp/clipmkr-blogger-trial-20261105 --json",
+      "cwd": "/tmp/clipmkr-public-entry-20261105",
+      "exitCode": 0,
+      "stdout": "\n> n5-clipmaker@0.1.0 dz\n> dz name-check --export raiseTrialCreditsTx --module blogger-trial-credits.integration.test --project /tmp/clipmkr-blogger-trial-20261105 --json\n\n{\"outcome\":\"free\",\"exit\":0,\"results\":[{\"kind\":\"module\",\"name\":\"blogger-trial-credits.integration.test\",\"verdict\":\"free\",\"where\":\"\"},{\"kind\":\"export\",\"name\":\"raiseTrialCreditsTx\",\"verdict\":\"free\",\"where\":\"\"}],\"reason\":\"all 2 name(s) are free\"}\n"
+    },
+    {
+      "label": "K2",
+      "command": "node /tmp/clipmkr-public-entry-20261105/.agents/skills/feature-adr/scripts/check-plan-completeness.mjs /tmp/clipmkr-blogger-trial-20261105/features/blogger-trial-credits --tier=S --require-requirements",
+      "exitCode": 0,
+      "stdout": "NOTE  C9: twin scan over 3 target(s), 2 on disk, 0 unlisted twins (byte-identical only; drifted copies need identity tests)\nNOTE  C8: all 11 requirement ids referenced\nSKIP  C1: no 03_adr/ and the plan claims no ADR work — ADR-coverage check SKIPPED (--tier=S, the legitimate S-tier shape)\nSKIP  C2: no 03_adr/ — Confirmation-test coverage check SKIPPED\nSKIP  C4: no acid corpus declared (no --acid, no `| A<n> |` table in 00_complexity_assessment.md) — acid-naming check SKIPPED\nK2 plan-completeness: PASS (0 failure(s), 0 warning(s), 3 skip(s)) over 0 ADRs, tier S, in /tmp/clipmkr-blogger-trial-20261105/features/blogger-trial-credits\n"
+    },
+    {
+      "label": "OpenSpec",
+      "command": "npm run openspec -- validate blogger-trial-credits --strict",
+      "cwd": "/tmp/clipmkr-blogger-trial-20261105",
+      "exitCode": 0,
+      "stdout": "\n> n5-clipmaker@0.1.0 openspec\n> openspec validate blogger-trial-credits --strict\n\nChange 'blogger-trial-credits' is valid\n"
+    },
+    {
+      "label": "source admission",
+      "command": "node /tmp/clipmkr-public-entry-20261105/.agents/skills/feature-adr/scripts/check-code-targets.mjs --repo /tmp/clipmkr-blogger-trial-20261105 --feature /tmp/clipmkr-blogger-trial-20261105/features/blogger-trial-credits",
+      "exitCode": 0,
+      "stdout": "{\"schema\":\"fa-code-targets-1\",\"status\":\"admitted\",\"manifestDigest\":\"a5e2771b9b8d01b7407c20f33b3a77dce5158262ffed9fd06ac360e17d9af78f\",\"reasons\":[]}\n"
+    },
+    {
+      "label": "coder context",
+      "command": "node /tmp/clipmkr-public-entry-20261105/.agents/skills/feature-adr/scripts/build-coder-context.mjs /tmp/clipmkr-blogger-trial-20261105/features/blogger-trial-credits --tier=S",
+      "exitCode": 0,
+      "status": "complete",
+      "digest": "74cd753e57b9803dd38fbd4ab301afe8aea8b48bfdb7bd05dad773353ddc3159",
+      "sources": [
+        {
+          "path": "01_requirements.md",
+          "kind": "requirements",
+          "bytes": 6709,
+          "digest": "8ef70fb117882a211e135297013028475a940b1ffc0df4b3031336bf16992c67",
+          "status": "read"
+        },
+        {
+          "path": "06_implementation_plan.md",
+          "kind": "plan",
+          "bytes": 10778,
+          "digest": "7182bbe27262d26d0378d10c40ecfa158d268308148a14beac7e73ec2722364c",
+          "status": "read"
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "limitations": [
+    "No product code, tests, runtime or live operation performed by planner",
+    "K2 skips C1/C2 legitimately for S without ADR and C4 without acid corpus",
+    "Full suite and real S3 claims require actual environment-backed verification; absent dependencies are limitations, not PASS",
+    "Expected paid/recovery/consumption/reservation invariants are planned oracles, not implementation evidence"
+  ],
+  "statusHeaderCorrection": "After initial checkpoint, requirements header synchronized with root approval; no semantic change. K2 rerun exit0 same PASS. Coder context rebuilt; original checkpoint retains previous context digest. Root notified; no checkpoint reissued per explicit direction.",
+  "rootStep7": "Root explicitly authorized Sol Step7 after reading actual checks and checkpoint records, 2026-11-05. No live authorization."
+}
