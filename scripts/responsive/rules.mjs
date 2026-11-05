@@ -173,9 +173,9 @@ export function lintCSS(source, filename) {
 
 export const FIRST_SCREEN_VIEWPORTS = [{ w: 390, h: 844 }, { w: 375, h: 667 }, { w: 360, h: 740 }];
 // selector: string | string[] — каждый элемент проверяется ОТДЕЛЬНО (своя находка R9 на каждый).
-// «/» (фича 28): основное действие «Попробовать бесплатно» И демо-клип — оба в первом экране.
+// «/»: утверждённый public entry — CTA в первом экране; demo после формы на телефоне.
 export const FIRST_SCREEN_ACTIONS = [
-  { pattern: /^\/$/, selector: ['.landing-cta', '.landing-demo video'] },
+  { pattern: /^\/$/, selector: ['.landing-cta'] },
   { pattern: /^\/c\/[\w-]+$/, selector: '.cta' },
   // Фича 29 (FR-GROWTH-001): экран записи — панель «Скачать · Ссылка · Гостю» первой карточки. Маршрут под входом:
   // прогон R9 обязан нести storageState, иначе проверит форму входа. Фикстура — только ГОТОВОЕ состояние записи.

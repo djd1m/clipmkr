@@ -166,8 +166,8 @@ it('вход: максимум один повтор после 429, storageStat
 });
 
 it('R9: explicit route and viewport coverage', () => {
-  expect(firstScreenSelector('/')).toEqual(['.landing-cta', '.landing-demo video']);
-  expect(firstScreenSelectors('/')).toEqual(['.landing-cta', '.landing-demo video']);
+  expect(firstScreenSelector('/')).toEqual(['.landing-cta']);
+  expect(firstScreenSelectors('/')).toEqual(['.landing-cta']);
   expect(firstScreenSelectors('/c/abc')).toEqual(['.cta']);
   expect(firstScreenSelectors('/dashboard')).toEqual([]);
   expect(firstScreenSelector('/c/abc')).toBe('.cta');
