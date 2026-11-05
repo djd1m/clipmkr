@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "errors": [],
+  "scopeOnlyFeatureAndOpenSpec": true,
+  "checkedFileCount": 19,
+  "OpenSpecStrict": "valid; issues=[]",
+  "runtimeTests": "NOT RUN — docs only",
+  "independentReview": "NOT RUN",
+  "QCSD_K1_K2_planCheckpoint": "NOT RUN",
+  "schemaComparison": {
+    "migrationRows": 28,
+    "columnDescriptors": 288,
+    "tables": 27,
+    "constraintMetadata": 207,
+    "betweenSidesEqual": true,
+    "localMigrationSHAEqual": true,
+    "B2B5MissingColumns": [],
+    "limit": "definitions/indexes/triggers/data not proved equivalent"
+  },
+  "liveOperationsByThisAgent": false
+}

@@ -1,0 +1,10 @@
+{
+  "status": "proposed",
+  "revision": "draft-2026-11-05-r1",
+  "baseCommit": "80cab4e",
+  "openSpecFiles": {
+    "openspec/changes/cloud-data-consolidation/proposal.md": "833949873106f8cbc5706b09f2cf0b76fa3b85216cda7bc3b28ca9da10e0ec7a",
+    "openspec/changes/cloud-data-consolidation/specs/data-consolidation/spec.md": "5df4827ad6c04cd1fea424eafdc0da3192b270bd5cb7000b315b8c5625cad1dd",
+    "openspec/changes/cloud-data-consolidation/tasks.md": "0c9c884bfbb655350629126950b58fc18be4195ec3ca41fcb14c17d843680f72"
+  }
+}

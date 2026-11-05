@@ -1,0 +1,118 @@
+{
+  "schema": "cloud-consolidation-doc-evidence-1",
+  "implementationApproved": false,
+  "firstRecall": {
+    "toolChunk": "ca647c",
+    "exit": 0,
+    "result": "DZ STORE GUARD UNREADABLE; []",
+    "storeModified": false
+  },
+  "correctedRecall": {
+    "toolChunk": "b000b9",
+    "exit": 0,
+    "resultCount": 5,
+    "cwd": "/tmp/clipmkr-public-entry-20261105"
+  },
+  "commands": [
+    {
+      "at": "2026-11-05T19:42:23.036507+00:00",
+      "args": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "recall",
+        "cloud consolidation preserving data identity",
+        "--project",
+        "/home/clipmkr",
+        "--limit",
+        "5",
+        "--json"
+      ],
+      "cwd": "/tmp/clipmkr-public-entry-20261105",
+      "exit": 0,
+      "stdout": "\n> n5-clipmaker@0.1.0 dz\n> dz recall cloud consolidation preserving data identity --project /home/clipmkr --limit 5 --json\n\n[{\"pattern\":\"Для проверенного deployment Cloud.ru DeepSeek V4 Pro стандартный reasoning приводил к пустому ответу при малом token budget и к 600s timeout в реальном задании. Поле chat_template_kwargs:{thinking:false} в существующей Cloud.ru-only ветви подтверждено uncapped replay actual deployed createSelector: HTTP200,5592ms,0reasoning,1validated fragment; отдельный реальный UIretry завершился2готовымиклипами. Не переносить это как универсальный контракт всех моделей: vendor thinking.type был проигнорирован; OpenRouter payload не менять; диагностический usage не приписывать UIjob. Доказательства: features/cloudru-selection-thinking/08_qe_report.md и09_runtime_acceptance.md, deployed source ebb590260b2df9151b9df62098488e2aaac3ee21. Runtime overallPARTIAL: WebKitdownload не принят.\",\"type\":\"lesson-learned\",\"reward\":0.8,\"rewardSource\":\"default\",\"domain\":\"provider-integration\",\"ts\":\"2026-11-04T21:44:19.747Z\",\"source\":\"dz-teach\",\"dzId\":\"teach:3f027ea3e4e59c20\",\"relevance\":0.01639344262295082,\"similarity\":null},{\"pattern\":\"Clipmkr checkout account isolation: independent Astra Chromium probe reproduced delayed account A checkout success navigating after real React account-key remount B. Reproduced serially 2026-11-05, evidence serial-remediation-20261105/astra-probe-red.json. Abort alone is insufficient: activate/deactivate mounted owner, invalidate attempt identity and abort on cleanup, check identity and signal after fetch AND json and before error/navigation/state. Fault tests must ignore abort and deliver old success/failure after B remount, then prove B has fresh key and explicit retry continuity. UI conditions must be visible next to every CTA with help closed; palette roles follow approved layout-specific primary/secondary styling; display:contents errors require explicit order after CTA.\",\"type\":\"lesson-learned\",\"reward\":0.8,\"rewardSource\":\"default\",\"domain\":\"ui-regression\",\"ts\":\"2026-11-05T05:52:31.405Z\",\"source\":\"dz-teach\",\"dzId\":\"teach:2d16bb3c5fb99858\",\"relevance\":0.016129032258064516,\"similarity\":null},{\"pattern\":\"Clipmkr: secondary VideoCtaForm on the result screen must remain mounted inside initially closed native details. Coordinator screenshot feedback 2026-11-05 and direct VideoDetail.tsx inspection confirmed it was rendered openly below the roster. Reuse the same form and handlers; test closed initial visibility, connected form/input identity and unsaved draft across preferences/polling, then explicit save with exactly one mutation. A green build alone does not establish approved composition.\",\"type\":\"success-pattern\",\"reward\":0.8,\"rewardSource\":\"default\",\"domain\":\"general\",\"ts\":\"2026-11-05T05:35:21.158Z\",\"source\":\"dz-teach\",\"dzId\":\"teach:72dc09ec0bc1fff6\",\"relevance\":0.015873015873015872,\"similarity\":null},{\"pattern\":\"Clipmkr 05.11.2026: владелец просит автоматическую личную ссылку блогера вместо ручного кода. PartnerPanel сейчас требует 6–12 символов и скрыт в закрытом details; ensurePartnerCode уже генерирует 12 URL-safe символов, сериализует первый код по partner и сохраняет самый ранний, включая заблокированный. Переиспользовать его через серверно авторизованный active-blogger путь с сохранением account/antifraud guards; не вызывать mint на mount общего PartnerPanel у обычных пользователей. Назначение роли владельцем не меняет владельца referral identity. До runtime требуется согласовать конкретный макет; текущий артефакт docs/design/2026-11-05-blogger-auto-link.html — статическое предложение, не реализация.\",\"type\":\"success-pattern\",\"reward\":0.8,\"rewardSource\":\"default\",\"domain\":\"general\",\"ts\":\"2026-11-05T12:26:40.228Z\",\"source\":\"dz-teach\",\"dzId\":\"teach:99608aa1a1a6ccf5\",\"relevance\":0.015384615384615385,\"similarity\":null},{\"pattern\":\"Clipmkr SUPPORT-00105.11.2026: владелец сообщил, что история вопросов/ответов видна оператору Libredesk, но не пользователю. Это не доказательство удаления сообщений. Чтение текущего SupportPanel/support-client подтвердило clearSupportIdentity→widget.logout при focus/visibility/account change/cleanup и начало anonymous open с очистки identity; liveidentifiedflag ранее false. Причина конкретного браузерного инцидента ещё не воспроизведена. При исправлении проверять отдельно клиентское восстановление истории после ухода/позднего ответа/relogin и защиту A→B, переиспользуя nativeLibredeskhistory/verifiedidentity; нельзя просто убрать logout или считать операторскую историю успешным клиентским E2E. Контекст и критерии docs/BACKLOG.md SUPPORT-001; реализация отложена.\",\"type\":\"lesson-learned\",\"reward\":0.8,\"rewardSource\":\"default\",\"domain\":\"support-ux\",\"ts\":\"2026-11-05T18:08:53.860Z\",\"source\":\"dz-teach\",\"dzId\":\"teach:06fca65266103bcc\",\"relevance\":0.015625,\"similarity\":null}]\n",
+      "stderr": ""
+    },
+    {
+      "at": "2026-11-05T19:42:23.825602+00:00",
+      "args": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "feature-adr-checkpoint",
+        "--feature-dir",
+        "/tmp/clipmkr-cloud-data-consolidation-20261105/features/cloud-data-consolidation",
+        "--stage",
+        "router",
+        "--input-hash",
+        "fcb57715716225705baa27bef589cafa3910e13b5330804ac4d0cd4222f4c8d4",
+        "--result",
+        "{\"tier\": \"XL\", \"taskKind\": \"research\", \"scope\": \"docs-only proposed architecture\", \"implementationApproved\": false}",
+        "--artifact",
+        "00_complexity_assessment.md",
+        "--json"
+      ],
+      "cwd": "/tmp/clipmkr-public-entry-20261105",
+      "exit": 0,
+      "stdout": "\n> n5-clipmaker@0.1.0 dz\n> dz feature-adr-checkpoint --feature-dir /tmp/clipmkr-cloud-data-consolidation-20261105/features/cloud-data-consolidation --stage router --input-hash fcb57715716225705baa27bef589cafa3910e13b5330804ac4d0cd4222f4c8d4 --result {\"tier\": \"XL\", \"taskKind\": \"research\", \"scope\": \"docs-only proposed architecture\", \"implementationApproved\": false} --artifact 00_complexity_assessment.md --json\n\n{\"ok\":true,\"stage\":\"router\",\"witnessed\":[\"00_complexity_assessment.md\"]}\n",
+      "stderr": ""
+    },
+    {
+      "at": "2026-11-05T19:42:24.473727+00:00",
+      "args": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "feature-adr-checkpoint",
+        "--feature-dir",
+        "/tmp/clipmkr-cloud-data-consolidation-20261105/features/cloud-data-consolidation",
+        "--stage",
+        "requirements",
+        "--input-hash",
+        "7ab85fbb5975a54190c711259a086db3d5aea991a7d9d3cebb9c6db294e44a91",
+        "--result",
+        "{\"status\": \"gathered-proposed\", \"functionalRequirements\": 12, \"implementationApproved\": false, \"ownerAuthority\": \"confirmed objective in root handoff; detailed conflicts and window unresolved\"}",
+        "--artifact",
+        "01_requirements.md,requirements-binding.json",
+        "--json"
+      ],
+      "cwd": "/tmp/clipmkr-public-entry-20261105",
+      "exit": 0,
+      "stdout": "\n> n5-clipmaker@0.1.0 dz\n> dz feature-adr-checkpoint --feature-dir /tmp/clipmkr-cloud-data-consolidation-20261105/features/cloud-data-consolidation --stage requirements --input-hash 7ab85fbb5975a54190c711259a086db3d5aea991a7d9d3cebb9c6db294e44a91 --result {\"status\": \"gathered-proposed\", \"functionalRequirements\": 12, \"implementationApproved\": false, \"ownerAuthority\": \"confirmed objective in root handoff; detailed conflicts and window unresolved\"} --artifact 01_requirements.md,requirements-binding.json --json\n\n{\"ok\":true,\"stage\":\"requirements\",\"witnessed\":[\"01_requirements.md\",\"requirements-binding.json\"]}\n",
+      "stderr": ""
+    },
+    {
+      "at": "2026-11-05T19:42:25.154082+00:00",
+      "args": [
+        "/tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin/node",
+        "/tmp/clipmkr-public-entry-20261105/node_modules/@fission-ai/openspec/bin/openspec.js",
+        "validate",
+        "cloud-data-consolidation",
+        "--type",
+        "change",
+        "--strict",
+        "--json",
+        "--no-interactive"
+      ],
+      "cwd": "/tmp/clipmkr-cloud-data-consolidation-20261105",
+      "exit": 0,
+      "stdout": "{\n  \"items\": [\n    {\n      \"id\": \"cloud-data-consolidation\",\n      \"type\": \"change\",\n      \"valid\": true,\n      \"issues\": [],\n      \"durationMs\": 42\n    }\n  ],\n  \"summary\": {\n    \"totals\": {\n      \"items\": 1,\n      \"passed\": 1,\n      \"failed\": 0\n    },\n    \"byType\": {\n      \"change\": {\n        \"items\": 1,\n        \"passed\": 1,\n        \"failed\": 0\n      }\n    }\n  },\n  \"version\": \"1.0\",\n  \"root\": {\n    \"path\": \"/tmp/clipmkr-cloud-data-consolidation-20261105\",\n    \"source\": \"nearest\"\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "at": "2026-11-05T19:42:26.004370+00:00",
+      "args": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/tmp/clipmkr-cloud-data-consolidation-20261105",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}
