@@ -1,6 +1,7 @@
 import type { Pool, PoolClient } from 'pg';
 import type { BillingMode } from '@clipmaker/shared/config';
 import { CREDIT_TRIAL_SECONDS, CREDIT_SKUS, inputCreditSeconds, type CreditSku, type CreditPurchaseWindows } from '@clipmaker/shared/tariff';
+import { MAX_SOURCE_SECONDS } from '@clipmaker/shared/upload';
 import { transaction } from './quota.js';
 import { effectivePlanSql } from './plan.js';
 import { hasOwnerUnlimited } from './owner-entitlement.js';
@@ -17,6 +18,27 @@ export async function lockCreditAccountForVideo(tx: PoolClient, videoId: string)
 export async function grantTrialTx(tx: PoolClient, accountId: string, source: 'signup' | 'migration_trial'): Promise<void> {
   await tx.query(`INSERT INTO credit_grant(account_id,source,source_key,total_seconds,remaining_seconds)
     VALUES($1,$2,$3,$4,$4) ON CONFLICT DO NOTHING`, [accountId,source,`trial:${accountId}`,CREDIT_TRIAL_SECONDS]);
+}
+// Caller holds the account lock. The trial total is its lifetime high-watermark;
+// raising it adds only new entitlement, leaving consumed and held seconds intact.
+export async function raiseTrialCreditsTx(tx: PoolClient, accountId: string, targetSeconds: number): Promise<
+  { kind: 'raised' | 'unchanged'; beforeTotal: number; afterTotal: number; delta: number } | { kind: 'unavailable' }
+> {
+  if (!Number.isSafeInteger(targetSeconds) || targetSeconds < 120 || targetSeconds > MAX_SOURCE_SECONDS)
+    throw new Error('Непригодный пробный бюджет');
+  accountId = accountId.toLowerCase();
+  await creditAccountLock(tx, accountId);
+  const grant = (await tx.query<{ id: string; total_seconds: number }>(`SELECT id,total_seconds FROM credit_grant
+    WHERE account_id=$1 AND source IN ('signup','migration_trial') AND source_key=$2
+    AND expires_at IS NULL AND payment_ref IS NULL AND recovery_video_id IS NULL
+    AND entitlement_start IS NULL AND entitlement_end IS NULL AND original_entitlement_ref IS NULL
+    AND base_sku IS NULL FOR UPDATE`, [accountId, `trial:${accountId}`])).rows[0];
+  if (!grant) return { kind: 'unavailable' };
+  const delta = Math.max(0, targetSeconds - grant.total_seconds);
+  if (delta) await tx.query(`UPDATE credit_grant SET total_seconds=total_seconds+$2,
+    remaining_seconds=remaining_seconds+$2 WHERE id=$1`, [grant.id, delta]);
+  return { kind: delta ? 'raised' : 'unchanged', beforeTotal: grant.total_seconds,
+    afterTotal: grant.total_seconds + delta, delta };
 }
 export async function optInCredits(pool: Pool, input: { accountId: string; mode: BillingMode; operator: string; reason: string }): Promise<boolean> {
   if (input.mode !== 'credits_v1') return false;

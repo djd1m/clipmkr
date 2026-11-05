@@ -47,6 +47,18 @@ K1: no-new-production-names: сохраняются VideoService.complete/Upload
 нет новой команды, production module или export. Новое имя только unit test file и локальные
 переменные. Соответствие будет проверено реальным git diff перед commit.
 
+## Test-only follow-up: fixture после FR-2
+
+- [ ] TASK-6 (FR-2, FR-3, NFR-1, NFR-2): На actual integration source после реального K2 S/admission
+  и witnessed plan checkpoint привести bad-media payload существующего tests/upload.integration.test.ts
+  к declared24 через Buffer.alloc(body.declared_bytes), без изменения assertions или production.
+  Исходный реальный S3 RED root:35 PASS/1 FAIL из36; actual9 против declared24 правильно даёт409.
+  Проверить diff/bytes, существующие upload unit regressions, tests typecheck/lint; сохранить raw logs
+  и code/spec anti-drift в08. Root затем запускает real S3 subset с existing private fenced profile
+  на isolated test DB, без app DB/MinIO/новых контейнеров. До actual result GREEN остаётся pending.
+  Зависит завершённого исходного server integrity fix; новых module/export/production names нет.
+
 EXPECTED_CODE_TARGETS:
 - apps/web/src/server/video.ts
 - tests/upload-completion-integrity.test.ts
+- tests/upload.integration.test.ts

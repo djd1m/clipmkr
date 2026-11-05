@@ -1,6 +1,7 @@
+import { getBloggerPolicy } from '@clipmaker/db';
 import { AccountDeletion } from './AccountDeletion';
 import { erasurePageState } from '../../server/erasure-page';
-import { remainingLimits } from '../../server/limits';
+import { readDashboardSummary } from '../../server/dashboard-summary';
 import { LimitsPanel } from './LimitsPanel';
 import { ProInterest } from './ProInterest';
 import { PartnerPanel } from './PartnerPanel';
@@ -9,12 +10,24 @@ import { getScreenRuntime } from '../../server/screen-runtime';
 import { pageAccount } from '../../server/page-account';
 import { VideoList } from '../videos/VideoList';
 import { VideoUploader } from '../upload/Uploader';
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ cursor?: string }> }) {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ cursor?: string; upload?: string }> }) {
   if (await erasurePageState()) return null;
   const account = await pageAccount();
-  const cursor = z.string().uuid().safeParse((await searchParams).cursor);
-  const { screen, pool, config } = getScreenRuntime();
-  const [result, remaining] = await Promise.all([screen.list(account, { cursor: cursor.success ? cursor.data : undefined }),
-    remainingLimits(pool, config.limits, account)]);
-  return <><nav className="support-links" aria-label="Помощь"><a href="/verify-email">Подтвердить почту</a><a href="/support">Поддержка</a></nav><VideoUploader creditMode={!!remaining.credits} maxSourceSeconds={remaining.max_source_seconds} /><LimitsPanel remaining={remaining} /><ProInterest creditMode={true} source="partner_dashboard" paymentsOn={config.payments.mode !== 'off'} /><PartnerPanel publicOrigin={config.publicOrigin} /><VideoList videos={result.videos} nextCursor={result.next_cursor} /><AccountDeletion /></>;
+  const params = await searchParams;
+  const cursor = z.string().uuid().safeParse(params.cursor);
+  const { screen, config, pool } = getScreenRuntime();
+  const [result, remaining, bloggerPolicy] = await Promise.all([screen.list(account, { cursor: cursor.success ? cursor.data : undefined }),
+    readDashboardSummary(account), getBloggerPolicy(pool, account)]);
+  const personal = bloggerPolicy?.is_blogger === true;
+  return <><div className={`workspace-upload${personal ? ' workspace-personal' : ''}`}>
+    <div className="workspace-main"><VideoUploader accountScope={account} recoveryIntent={params.upload === 'recovery'} creditMode={!!remaining.credits} maxSourceSeconds={remaining.max_source_seconds} />
+      {!personal && <VideoList videos={result.videos} nextCursor={result.next_cursor} />}</div>
+    <aside className="workspace-aside">{personal && <PartnerPanel personal publicOrigin={config.publicOrigin} />}<LimitsPanel remaining={remaining} /></aside>
+    {personal && <div className="workspace-records-region"><VideoList videos={result.videos} nextCursor={result.next_cursor} /></div>}
+  </div><div className="workspace-secondary">
+    <details><summary>Тарифы и возможности Pro</summary><ProInterest creditMode={true} source="partner_dashboard" paymentsOn={config.payments.mode !== 'off'} /></details>
+    {!personal && <details><summary>Партнёрская программа</summary><PartnerPanel publicOrigin={config.publicOrigin} /></details>}
+    <details><summary>Мой аккаунт</summary><AccountDeletion /></details>
+    <nav className="support-links" aria-label="Помощь"><a href="/verify-email">Подтвердить почту</a><a href="/support">Поддержка</a></nav>
+  </div></>;
 }

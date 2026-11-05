@@ -1,0 +1,9 @@
+{
+  "schema": "clipmkr-requirements-revision-1",
+  "mockupCommit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+  "implementationBase": "24b4b4a",
+  "deltaPath": "openspec/changes/blogger-auto-link/specs/blogger-referral/spec.md",
+  "deltaSha256": "320ac1ea73b4ef2bfba6240c374522bc55f9eeebe1cd930f6b87971a09ad4eb0",
+  "source": "owner request/approval 2026-11-05; QCSD Q-BA-01, R-BAL-01, T-BAL-01 structural rework",
+  "status": "review-input-not-runtime-evidence"
+}

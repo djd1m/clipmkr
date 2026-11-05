@@ -1,18 +1,17 @@
 'use client';
-import { useState } from 'react';
-import { THEME_COLOR, themeCookie, type Theme } from '../lib/theme';
-// A toggle button keeps one accessible name; the state is carried by aria-pressed (WAI-ARIA APG).
-export function ThemeToggle({ initial }: { initial: Theme }) {
-  const [theme, setTheme] = useState<Theme>(initial);
+import { useMemo, useSyncExternalStore } from 'react';
+import type { Theme } from '../lib/theme';
+import { getDocumentPreferences, subscribeDocumentPreferences, updateDocumentPreferences, type DocumentPreferences } from '../lib/workspace-layout';
+
+// SSR snapshot относится к запросу; browser snapshot — к живому Document, включая cached routes.
+export function ThemeToggle({ initial, reportPersistence = true, showLabel = false }: { initial: Theme; reportPersistence?: boolean; showLabel?: boolean }) {
+  const server = useMemo<DocumentPreferences>(() => ({ theme: initial, layout: 'workspace', themeSaved: true, layoutSaved: true }), [initial]);
+  const preferences = useSyncExternalStore(subscribeDocumentPreferences, getDocumentPreferences, () => server);
   function toggle() {
-    const next: Theme = theme === 'light' ? 'dark' : 'light';
-    document.cookie = themeCookie(next);
-    document.documentElement.dataset.theme = next;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[next]);
-    document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next);
-    setTheme(next);
+    const current = getDocumentPreferences();
+    updateDocumentPreferences({ theme: current.theme === 'light' ? 'dark' : 'light' });
   }
-  return <button type="button" className="theme-toggle secondary" aria-label="Светлая тема" aria-pressed={theme === 'light'} onClick={toggle}>
-    <span aria-hidden="true">{theme === 'light' ? '☀︎' : '☾︎'}</span>
-  </button>;
+  return <><button type="button" className="theme-toggle secondary" aria-label={showLabel ? preferences.theme === 'light' ? 'Тёмная тема' : 'Светлая тема' : 'Светлая тема'} aria-pressed={showLabel ? undefined : preferences.theme === 'light'} onClick={toggle}>
+    <span aria-hidden="true">{preferences.theme === 'light' ? '☀︎' : '☾︎'}</span>{showLabel && <span>{preferences.theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}</span>}
+  </button>{reportPersistence && !preferences.themeSaved && <span className="preference-status" role="status">Выбор действует в этой вкладке; сохранить не удалось.</span>}</>;
 }

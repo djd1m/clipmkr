@@ -31,3 +31,12 @@ UploadStorage head/complete и existing admitted/publish. Из проектов 
 | A6 | Чужой/удалённый/несуществующий video_id | Один 404, никаких storage/enqueue side effects |
 | A7 | Complete/HEAD недоступны | Прежний unavailable503, данные сохранены |
 | A8 | Части с дыркой/дублем/нулём | Существующая schema422 до storage |
+
+## Test-only follow-up существующей S3 fixture
+
+После реального S3 прогона root выявил несовместимую fixture: declared24 против9 байт bad media.
+Уровень остаётся S: теперь3 code targets (прежний production, прежний unit и существующий
+tests/upload.integration.test.ts), один upload домен; в follow-up меняется только payload теста.
+Новых module/export/команд/интеграций/UX нет. Исходный unit-only scope выше — история исходного
+фикса. Отдельный real S3 regression разрешён root только через существующий private fenced profile
+и изолированную test DB; подготовку/повтор GREEN выполняет root, не на app DB и не через MinIO.

@@ -23,7 +23,7 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
     VALUES($1,$2,$3,$4)`, [visitor, otherCode, source, status]);
   const accounts = async (n: number) => {
     const ids = Array.from({ length: n }, () => randomUUID());
-    for (const id of ids) await pool.query("INSERT INTO account(id,email,password_hash) VALUES($1,$2,'test-only')", [id, `${id}@example.test`]);
+    for (const id of ids) await pool.query("INSERT INTO account(id,email,password_hash) VALUES($1,$2,'test-only')", [id, `${id}@test.invalid`]);
     return ids;
   };
   const events = async (n: number, ip = prefix, at = now) => {
@@ -40,13 +40,125 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
   beforeEach(async () => {
     now = new Date('2026-09-23T00:00:00Z');
     await pool.query('TRUNCATE account CASCADE');
-    for (const id of [owner, visitor, other]) await pool.query("INSERT INTO account(id,email,password_hash) VALUES($1,$2,'test-only')", [id, `${id}@example.test`]);
+    for (const id of [owner, visitor, other]) await pool.query("INSERT INTO account(id,email,password_hash) VALUES($1,$2,'test-only')", [id, `${id}@test.invalid`]);
     for (const [account, id, code] of [[owner, codeId, 'CODE123'], [other, otherCode, 'OTHER12']]) {
       await pool.query(`WITH p AS (INSERT INTO partner(account_id,display_name) VALUES($1,'Партнёр') RETURNING id)
         INSERT INTO partner_code(id,partner_id,code,status) SELECT $2,id,$3,'active' FROM p`, [account, id, code]);
     }
   });
   afterAll(async () => { if (pool) { await pool.query(`DROP SCHEMA ${schema} CASCADE`); await pool.end(); } });
+  it('personal link concurrent first calls return one identity', async () => {
+    await pool.query('UPDATE account SET is_blogger=true WHERE id=$1', [visitor]);
+    const results = await Promise.all(Array.from({ length: 20 }, () => service.ensurePersonalLink(visitor)));
+    expect(new Set(results.map(row => row.id)).size).toBe(1);
+    expect(results[0]!.code).toMatch(/^[A-Za-z0-9_-]{12}$/);
+    expect(await service.ensurePersonalLink(visitor)).toEqual(results[0]);
+    expect((await pool.query('SELECT count(*) FROM partner_code c JOIN partner p ON p.id=c.partner_id WHERE p.account_id=$1', [visitor])).rows[0].count).toBe('1');
+  });
+  it('personal link rejects normal and deleting accounts without writes', async () => {
+    await expect(service.ensurePersonalLink(visitor)).rejects.toMatchObject({ status: 404 });
+    await pool.query("UPDATE account SET is_blogger=true,status='erasing' WHERE id=$1", [visitor]);
+    await expect(service.ensurePersonalLink(visitor)).rejects.toMatchObject({ status: 404 });
+    expect((await pool.query('SELECT * FROM partner WHERE account_id=$1', [visitor])).rows).toEqual([]);
+  });
+  it('personal link rollback leaves no partial partner after code insert fails', async () => {
+    await pool.query('UPDATE account SET is_blogger=true WHERE id=$1', [visitor]);
+    await pool.query(`CREATE FUNCTION refuse_personal_code() RETURNS trigger LANGUAGE plpgsql AS
+      $$ BEGIN RAISE EXCEPTION 'controlled insert refusal' USING ERRCODE='23505'; END $$`);
+    await pool.query('CREATE TRIGGER refuse_personal_code BEFORE INSERT ON partner_code FOR EACH ROW EXECUTE FUNCTION refuse_personal_code()');
+    try {
+      await expect(service.ensurePersonalLink(visitor)).rejects.toMatchObject({ code: '23505' });
+      expect((await pool.query('SELECT * FROM partner WHERE account_id=$1', [visitor])).rows).toEqual([]);
+    } finally { await pool.query('DROP TRIGGER refuse_personal_code ON partner_code'); await pool.query('DROP FUNCTION refuse_personal_code()'); }
+    expect(await service.ensurePersonalLink(visitor)).toMatchObject({ status: 'active' });
+  });
+  // Poll actual PostgreSQL lock state, rather than assuming a delay implies serialization.
+  const waitBlocked = async () => {
+    for (let n = 0; n < 200; n++) {
+      const rows = await pool.query("SELECT 1 FROM pg_stat_activity WHERE application_name=$1 AND datname=current_database() AND wait_event_type='Lock' AND query LIKE '%account%FOR NO KEY UPDATE%'", [schema]);
+      if (rows.rowCount) return;
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    throw new Error('Expected account lock wait was not observed');
+  };
+  it('personal link serializes role revocation and erasure', async () => {
+    for (const change of ["is_blogger=false", "status='erasing'"]) {
+      await pool.query("UPDATE account SET is_blogger=true,status='active' WHERE id=$1", [visitor]);
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN'); await tx.query(`UPDATE account SET ${change} WHERE id=$1`, [visitor]);
+        const pending = service.ensurePersonalLink(visitor).then(value => ({ value }), error => ({ error }));
+        await waitBlocked(); await tx.query('COMMIT');
+        expect(await pending).toMatchObject({ error: { status: 404 } });
+        expect((await pool.query('SELECT * FROM partner WHERE account_id=$1', [visitor])).rows).toEqual([]);
+      } finally { await tx.query('ROLLBACK'); tx.release(); }
+    }
+    await pool.query("UPDATE account SET is_blogger=true,status='active' WHERE id=$1", [visitor]);
+    const result = await service.ensurePersonalLink(visitor);
+    await pool.query('UPDATE account SET is_blogger=false WHERE id=$1', [visitor]);
+    await expect(service.ensurePersonalLink(visitor)).rejects.toMatchObject({ status: 404 });
+    expect((await service.dashboard(visitor)).codes[0]!.id).toBe(result.id);
+    // Opposite order: issuance owns account lock, then role/erasure waits behind it.
+    for (const change of ["is_blogger=false", "status='erasing'"]) {
+      await pool.query("UPDATE account SET is_blogger=true,status='active' WHERE id=$1", [owner]);
+      const barrier = await pool.connect();
+      try {
+        await barrier.query('BEGIN'); await barrier.query('SELECT id FROM partner WHERE account_id=$1 FOR UPDATE', [owner]);
+        const pending = service.ensurePersonalLink(owner);
+        for (let n = 0; n < 200; n++) {
+          if ((await pool.query("SELECT 1 FROM pg_stat_activity WHERE application_name=$1 AND wait_event_type='Lock' AND query LIKE 'INSERT INTO partner(%'", [schema])).rowCount) break;
+          if (n === 199) throw new Error('Expected partner lock barrier');
+          await new Promise(resolve => setTimeout(resolve, 5));
+        }
+        const changed = pool.query(`UPDATE account SET ${change} WHERE id=$1`, [owner]);
+        for (let n = 0; n < 200; n++) {
+          if ((await pool.query("SELECT 1 FROM pg_stat_activity WHERE application_name=$1 AND wait_event_type='Lock' AND query LIKE 'UPDATE account SET %'", [schema])).rowCount) break;
+          if (n === 199) throw new Error('Expected revocation lock wait');
+          await new Promise(resolve => setTimeout(resolve, 5));
+        }
+        await barrier.query('COMMIT'); expect(await pending).toMatchObject({ id: codeId }); await changed;
+        await expect(service.ensurePersonalLink(owner)).rejects.toMatchObject({ status: 404 });
+      } finally { await barrier.query('ROLLBACK'); barrier.release(); }
+    }
+  });
+  it('personal link retains earliest blocked code during block race', async () => {
+    await pool.query('UPDATE account SET is_blogger=true WHERE id=$1', [owner]);
+    await pool.query("UPDATE partner_code SET status='blocked',blocked_reason='manual' WHERE id=$1", [codeId]);
+    expect(await service.ensurePersonalLink(owner)).toMatchObject({ id:codeId,status:'blocked' });
+    await pool.query("UPDATE partner_code SET status='active',blocked_reason=NULL WHERE id=$1", [codeId]);
+    const tx = await pool.connect();
+    try {
+      await tx.query('BEGIN');
+      await tx.query("UPDATE partner_code SET status='blocked',blocked_reason='manual' WHERE id=$1", [codeId]);
+      const pending = service.ensurePersonalLink(owner);
+      for (let n = 0; n < 200; n++) {
+        if ((await pool.query("SELECT 1 FROM pg_stat_activity WHERE application_name=$1 AND wait_event_type='Lock' AND query LIKE '%partner_code%FOR%'", [schema])).rowCount) break;
+        if (n === 199) throw new Error('Expected code lock wait');
+        await new Promise(resolve => setTimeout(resolve, 5));
+      }
+      await tx.query('COMMIT');
+      expect(await pending).toMatchObject({ id: codeId, status: 'blocked', blocked_reason: 'manual' });
+      expect(await service.ensurePersonalLink(owner)).toMatchObject({ id: codeId, status: 'blocked' });
+      expect((await service.dashboard(owner)).codes).toHaveLength(1);
+    } finally { await tx.query('ROLLBACK'); tx.release(); }
+  });
+  it('personal link preserves campaigns attribution and payment snapshots', async () => {
+    await pool.query('UPDATE account SET is_blogger=true WHERE id=$1', [owner]);
+    await pool.query("UPDATE partner_code SET created_at='2020-01-01' WHERE id=$1", [codeId]);
+    await service.createCode(owner, { code: 'LATER123' }); await apply();
+    const intent = randomUUID(), provider = randomUUID();
+    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,referral_partner_code_id)
+      VALUES($1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,clock_timestamp(),$4)`, [intent, visitor, provider, codeId]);
+    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES($1,$2,'yookassa',$3,99000,clock_timestamp())`, [intent, visitor, provider]);
+    const snapshot = async () => Promise.all(['partner_code','attribution','payment_intent','payment','growth_event'].map(async table =>
+      (await pool.query(`SELECT * FROM ${table} ORDER BY id`)).rows));
+    const before = await snapshot();
+    expect(await service.ensurePersonalLink(owner)).toMatchObject({ id: codeId, code: 'CODE123' });
+    expect(await snapshot()).toEqual(before);
+    await pool.query("UPDATE partner_code SET status='blocked',blocked_reason='manual' WHERE code='LATER123'");
+    expect(await service.ensurePersonalLink(owner)).toMatchObject({ id: codeId, status: 'active' });
+  });
   it('cookie to explicit returns replaced_source and changes exactly the existing row', async () => {
     await seed('cookie'); const before = await attribution();
     expect(await apply()).toMatchObject({ id: before.id, partner_code_id: codeId, source: 'explicit', replaced_source: 'cookie' });
@@ -169,7 +281,7 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
     await pool.query('CREATE TRIGGER test_block AFTER UPDATE ON partner_code FOR EACH ROW EXECUTE FUNCTION test_block_audit()');
     try {
       const accounts = Array.from({ length: 55 }, () => randomUUID());
-      for (const id of accounts) await pool.query("INSERT INTO account(id,email,password_hash) VALUES($1,$2,'test-only')", [id, `${id}@example.test`]);
+      for (const id of accounts) await pool.query("INSERT INTO account(id,email,password_hash) VALUES($1,$2,'test-only')", [id, `${id}@test.invalid`]);
       const results = await Promise.allSettled([...accounts, ...accounts.slice(0, 5)].map((id, i) => apply('CODE123', 'explicit', id, ipPrefix(`192.0.2.${i + 1}`))));
       expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(50);
       for (const r of results) if (r.status === 'rejected') {

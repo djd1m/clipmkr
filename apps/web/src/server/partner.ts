@@ -2,7 +2,7 @@ import type { Pool } from '@clipmaker/db';
 import { z } from 'zod';
 import { moscowDay } from '@clipmaker/shared/upload';
 import { readReferral } from '../lib/partner-referral';
-import { createOwnedPartnerCode } from './partner-code';
+import { createOwnedPartnerCode, ensurePartnerCode } from './partner-code';
 import { UploadError } from './upload-contract';
 
 export const createPartnerCodeSchema = z.object({ code: z.string().regex(/^[A-Za-z0-9_-]{6,12}$/) }).strict();
@@ -34,6 +34,20 @@ export function replacementAllowed(existing: Attribution, source: AttributionSou
 
 export class PartnerService {
   constructor(private readonly pool: Pool, private readonly referralSecret: string, private readonly clock = () => new Date()) {}
+  async ensurePersonalLink(account: string) {
+    const tx = await this.pool.connect();
+    try {
+      await tx.query('BEGIN');
+      const active = await tx.query("SELECT id FROM account WHERE id=$1 AND status='active' AND is_blogger=true FOR NO KEY UPDATE", [account]);
+      if (!active.rowCount) throw new UploadError('not_found', 'Аккаунт блогера не найден', 404);
+      const code = await ensurePartnerCode(tx, account);
+      const result = (await tx.query<{ id: string; code: string; status: 'active' | 'blocked'; blocked_reason: string | null }>(
+        'SELECT id,code,status,blocked_reason FROM partner_code WHERE id=$1 FOR NO KEY UPDATE', [code.id])).rows[0]!;
+      await tx.query('COMMIT');
+      return result;
+    } catch (error) { await tx.query('ROLLBACK'); throw error; }
+    finally { tx.release(); }
+  }
   async createCode(account: string, raw: unknown) {
     const parsed = createPartnerCodeSchema.safeParse(raw);
     if (!parsed.success) throw invalid();

@@ -170,22 +170,26 @@ describe('разметка лендинга', () => {
   it('пустой набор — без демо, без сломанного плеера', () => {
     expect(renderToStaticMarkup(createElement(LandingDemo, { clip: null }))).toBe('');
   });
-  it('первый экран: текст владельца прежний; демо → кнопка «Попробовать бесплатно» → форма #auth с полем почты', () => {
-    const html = renderToStaticMarkup(createElement(Landing, { theme: 'dark' }));
-    expect(html).toContain('Хороший разговор<br/> заслуживает<br/> <em>больше зрителей.</em>');
-    expect(html).toContain('ВАШИ МЫСЛИ. НОВАЯ АУДИТОРИЯ.');
-    const demo = html.indexOf('class="landing-demo"'), cta = html.indexOf('class="landing-cta button" href="#auth"'), form = html.indexOf('<form id="auth"');
-    expect(demo).toBeGreaterThan(html.indexOf('<h1>'));
-    expect(cta).toBeGreaterThan(demo); expect(form).toBeGreaterThan(cta);
-    expect(html).toContain('>Попробовать бесплатно</a>');
-    expect(html).toMatch(/<input id="auth-email" type="email"[^>]*name="email"/);
+  it('публичный вход: согласованный заголовок, CTA → форма → настоящий demo', () => {
+    const html = renderToStaticMarkup(createElement(Landing, { theme: 'dark', creditMode: true }));
+    expect(html).toContain('Одна запись.<br/>Несколько поводов<br/>вас услышать.');
+    expect(html).toContain('Из длинной записи — в короткие клипы');
+    const demo = html.indexOf('class="landing-demo"'), cta = html.indexOf('class="landing-cta public-primary"'), form = html.indexOf('<form id="auth"');
+    expect(cta).toBeGreaterThan(html.indexOf('<h1'));
+    expect(form).toBeGreaterThan(cta); expect(demo).toBeGreaterThan(form);
+    expect(html).toContain('>Начать бесплатно →</a>');
+    expect(html).toContain('id="auth-email"'); expect(html).toContain('type="email"');
+    expect(html).toContain('30 пробных кредитов после регистрации.');
+    expect(html).toContain('Одна запись — до 90 минут');
+    expect(html).not.toContain('site-legal-footer');
   });
-  it('стили демо: только токены, видео 9:16 шириной clamp(7rem,38vw,9.5rem); кнопка скрыта на ≥ 600', () => {
+  it('публичные стили: workspace tokens и компактное native видео, desktop CTA видим', () => {
     const css = readFileSync('apps/web/src/app/globals.css', 'utf8');
-    const block = css.slice(css.indexOf('.landing-demo {'));
-    expect(block).toContain('width:clamp(7rem,38vw,9.5rem)'); expect(block).toContain('aspect-ratio:9/16');
-    expect(block).toContain('background:var(--media-bg)');
-    expect(block).toMatch(/@media\(min-width:600px\) \{\s*\.landing-cta \{ display:none; \}/);
+    const block = css.slice(css.indexOf('/* Утверждённая публичная композиция'));
+    expect(block).toContain('.public-entry .landing-demo video');
+    expect(block).toContain('width:5rem'); expect(block).toContain('aspect-ratio:9/16');
+    expect(block).toContain('.public-entry .landing-cta { width:auto; }');
+    expect(block).toContain('var(--workspace-accent)');
     expect(block).not.toMatch(/#[0-9a-f]{3,8}\b|rgb\(/i);
   });
 });

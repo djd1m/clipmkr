@@ -24,14 +24,16 @@ const cases = [
   ['retention-exclusion-db', 'db', plan, "+ (showcase.length ? ` OR ${clip}.id IN (${showcase.join(',')})` : '')", "+ ''", retentionDb, 'showcase clip survives'],
   ['preview-showcase', 'unit', tariff, " || isShowcaseClip(clip.clipId)) return null;", ') return null;', unit, '«ready»'],
   ['playsinline', 'browser', demo, '<video controls playsInline preload="none"', '<video controls preload="none"', browser, 'видео с playsinline'],
-  ['demo-below-fold', 'browser', css, 'width:clamp(7rem,38vw,9.5rem); height:auto;', 'width:clamp(16rem,80vw,22rem); height:auto;', browser, 'демо и действие в первом экране'],
+  ['public-entry-cta', 'browser', css, '.public-entry .landing-cta { width:auto; }', '.public-entry .landing-cta { display:none; }', browser, 'public entry: CTA visible and mobile form precedes demo'],
 ];
 const docker = spawnSync('docker', ['version', '--format', '{{.Server.Version}}'], { encoding: 'utf8' });
+const hostBrowser = process.env.LANDING_MUTATIONS_HOST_BROWSER === '1';
 const selected = process.argv.slice(2), results = [];
+if (selected.some(id => !cases.some(item => item[0] === id))) throw new Error('Unknown mutation selection');
 for (const [id, kind, file, original, mutation, test, pattern] of cases) {
   if (selected.length && !selected.includes(id)) continue;
   const reason = kind === 'db' && !process.env.DATABASE_URL ? 'DATABASE_URL unavailable; real PostgreSQL required (run in image test)'
-    : kind === 'browser' && docker.status !== 0 ? 'Docker unavailable; Playwright container required (run on host)' : null;
+    : kind === 'browser' && !hostBrowser && docker.status !== 0 ? 'Docker unavailable; Playwright container required (run on host)' : null;
   if (reason) { const result = { id, status: 'not_run', reason }; results.push(result); console.log(JSON.stringify(result)); continue; }
   const source = readFileSync(file, 'utf8');
   if (source.split(original).length !== 2) throw new Error(`Mutation target missing or not unique: ${id}`);
@@ -45,7 +47,7 @@ for (const [id, kind, file, original, mutation, test, pattern] of cases) {
     let child;
     try {
       child = kind === 'browser'
-        ? spawnSync('bash', ['scripts/check-responsive.sh', '--test', ...args.slice(1)], { stdio: ['ignore', fd, fd], timeout: 600000 })
+        ? hostBrowser ? spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', ...args, '--config', 'vitest.browser.config.ts'], { stdio: ['ignore', fd, fd], timeout: 600000 }) : spawnSync('bash', ['scripts/check-responsive.sh', '--test', ...args.slice(1)], { stdio: ['ignore', fd, fd], timeout: 600000 })
         : spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', ...args], { stdio: ['ignore', fd, fd], timeout: 300000 });
     } finally { closeSync(fd); }
     if (child.error || !existsSync(path)) throw child.error ?? new Error(`No receipt: ${path}`);

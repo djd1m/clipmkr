@@ -19,13 +19,14 @@ export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselec
   videoId: string; clips: ClipScreen[]; initialPacks: GuestPackSummary[]; consentHash: string; preselect?: GuestPreselect | null;
 }) {
   const [packs, setPacks] = useState(initialPacks), [selected, setSelected] = useState<string[]>([]);
-  const sectionRef = useRef<HTMLElement>(null), nameRef = useRef<HTMLInputElement>(null), handled = useRef(0);
+  const sectionRef = useRef<HTMLElement>(null), nameRef = useRef<HTMLInputElement>(null), disclosureRef = useRef<HTMLDetailsElement>(null), handled = useRef(0);
   useEffect(() => {
     // Polling replaces `clips` every 5 s; the nonce guard keeps one press = one scroll.
     if (!preselect || preselect.nonce === handled.current) return;
     handled.current = preselect.nonce;
     const selectable = clips.filter(c => c.available).map(c => c.clip_id);
     setSelected(old => addGuestPreselect(old, preselect.clip_id, selectable));
+    if (disclosureRef.current) disclosureRef.current.open = true;
     revealGuestForm(sectionRef.current, nameRef.current, typeof window === 'undefined' ? undefined : window.matchMedia?.bind(window));
   }, [preselect, clips]);
   const [name, setName] = useState(''), [consent, setConsent] = useState(false);
@@ -49,7 +50,7 @@ export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselec
     catch { setMessage('Ссылка включена. Скопируйте её из поля пакета и отправьте гостю.'); }
   }
   return <section ref={sectionRef} aria-labelledby="guest-title" style={{ marginTop: 32 }}>
-    <h2 id="guest-title">Клипы для гостя</h2><p>Отметьте моменты с участием гостя. Разрешение на публикацию нужно получить заранее.</p>
+    <details ref={disclosureRef} className="guest-disclosure"><summary id="guest-title">Клипы для гостя</summary><p>Отметьте моменты с участием гостя. Разрешение на публикацию нужно получить заранее.</p>
     <form onSubmit={event => { event.preventDefault(); void action(create); }}>
       <fieldset disabled={busy} style={{ border: 0, padding: 0, minWidth: 0 }}>
         <label>Имя гостя <input ref={nameRef} value={name} maxLength={100} required onChange={e => setName(e.target.value)} /></label>
@@ -76,5 +77,5 @@ export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselec
         })}>Отозвать пакет</button>
       </>}
     </article>)}
-  </section>;
+  </details></section>;
 }

@@ -1,0 +1,54 @@
+
+> n5-clipmaker@0.1.0 test
+> node scripts/test.mjs tests/blogger-trial-credits.integration.test.ts
+
+
+ RUN  v3.2.7 /tmp/clipmkr-blogger-trial-20261105
+
+ ❯ tests/blogger-trial-credits.integration.test.ts (16 tests | 1 failed) 5783ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > raises existing signup trial and preserves consumed seconds 291ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > raises existing migration_trial trial and preserves consumed seconds 238ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > never refills repeat revoke or lower limit and raises only the lifetime delta 291ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > trial helper rejects invalid second bounds without ledger changes 220ms
+   × Пробный бюджет блогера: настоящий PostgreSQL > accepts uppercase UUIDs without losing canonical account or trial identity 242ms
+     → expected { kind: 'not_found' } to match object { kind: 'updated' }
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 1  433ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 2  362ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 3  343ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 4  418ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes twenty two-owner high-watermark saves, repeat 5  446ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > changes only trial beside paid and recovery grants and preserves held charge history 262ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > preserves legacy policy without implicit credits and refuses missing or noncanonical trial 292ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > serializes trial increase with native reservation and finalize refund through account barriers 266ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > authority erasure and audit failure leave no partial funding or policy 272ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > expected policy refuses stale or malformed maintenance without writes 258ms
+   ✓ Пробный бюджет блогера: настоящий PostgreSQL > audit records positive and zero delta and legacy revoke states within native reason bound 229ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/blogger-trial-credits.integration.test.ts > Пробный бюджет блогера: настоящий PostgreSQL > accepts uppercase UUIDs without losing canonical account or trial identity
+AssertionError: expected { kind: 'not_found' } to match object { kind: 'updated' }
+
+- Expected
++ Received
+
+  {
+-   "kind": "updated",
++   "kind": "not_found",
+  }
+
+ ❯ tests/blogger-trial-credits.integration.test.ts:97:51
+     95|   it('accepts uppercase UUIDs without losing canonical account or tria…
+     96|     const owner = await account(true), id = await account(), before = …
+     97|     expect(await change(owner, id.toUpperCase())).toMatchObject({ kind…
+       |                                                   ^
+     98|     expect(await change(owner.toUpperCase(), id.toUpperCase())).toMatc…
+     99|     await transaction(pool, async tx => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  12:16:30
+   Duration  6.46s (transform 285ms, setup 0ms, collect 377ms, tests 5.78s, environment 0ms, prepare 82ms)

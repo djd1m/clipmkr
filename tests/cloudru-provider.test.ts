@@ -80,7 +80,7 @@ it('synthetic compose and actual entrypoints deliver selected config and isolate
 });
 
 describe('Cloud.ru one-request chat contract', () => {
-  it('sends documented Cloud.ru JSON-object request with prompt schema', async () => {
+  it('sends Cloud.ru-only reasoning override and preserves both provider request contracts', async () => {
     const request = vi.fn<typeof fetch>(async () => Response.json(envelope()));
     const output = await createSelector(config(), request).select(transcript, 360, new AbortController().signal);
     expect(validateFragments(output, transcript, 360)).toEqual([fakeFragment()]);
@@ -90,9 +90,25 @@ describe('Cloud.ru one-request chat contract', () => {
     expect(init).toMatchObject({ method: 'POST', redirect: 'error', headers: { Authorization: 'Bearer synthetic-fm-key', 'Content-Type': 'application/json' } });
     const body = JSON.parse(String(init!.body));
     expect(body).toMatchObject({ model, stream: false, response_format: { type: 'json_object' } });
+    expect(body.chat_template_kwargs).toEqual({ thinking: false });
+    expect(Object.keys(body).sort()).toEqual(['chat_template_kwargs', 'messages', 'model', 'response_format', 'stream']);
     expect(body.response_format).toEqual({ type: 'json_object' }); expect(body.provider).toBeUndefined();
     expect(body.messages[0].content).toContain(JSON.stringify(FRAGMENTS_SCHEMA));
     expect(JSON.parse(body.messages[1].content)).toEqual({ duration_seconds: 360, transcript: { language: 'ru', segments: transcript.segments } });
+
+    const openrouter = loadLlmConfig({ ...environment(), N5_MODEL_PROVIDER: 'live' });
+    const openrouterRequest = vi.fn<typeof fetch>(async () => Response.json(envelope()));
+    await createSelector(openrouter, openrouterRequest).select(transcript, 360, new AbortController().signal);
+    expect(openrouterRequest).toHaveBeenCalledOnce();
+    const [openrouterUrl, openrouterInit] = openrouterRequest.mock.calls[0]!;
+    expect(openrouterUrl).toBe('https://openrouter.ai/api/v1/chat/completions');
+    const openrouterBody = JSON.parse(String(openrouterInit!.body));
+    expect(Object.keys(openrouterBody).sort()).toEqual(['messages', 'model', 'provider', 'response_format']);
+    expect(openrouterBody.chat_template_kwargs).toBeUndefined();
+    expect(openrouterBody.model).toBe(openrouter.model);
+    expect(openrouterBody.response_format).toEqual({ type: 'json_schema', json_schema: { name: 'fragments', strict: true, schema: FRAGMENTS_SCHEMA } });
+    expect(openrouterBody.provider).toEqual({ only: ['Anthropic', 'Claude Platform on AWS'], allow_fallbacks: false, require_parameters: true });
+    expect(openrouterBody.messages[1]).toEqual(body.messages[1]);
   });
   it('local acceptance filters invalid candidates and refuses unknown fields', async () => {
     for (const raw of [{ fragments: [fakeFragment(), { ...fakeFragment(1), score: 0 }] },

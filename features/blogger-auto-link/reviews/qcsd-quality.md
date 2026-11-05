@@ -1,0 +1,25 @@
+# QCSD quality: blogger-auto-link
+
+Роль: `qcsd-quality`, ideation, `family=owner-exception`, самостоятельная новая сессия без контекста разработки. Запрошены `gpt-6.1-terra xhigh`; фактический model ID/effort в доступном контексте запуска не удостоверяются. Это ограничение provenance: соответствие матрице и cross-model должен подтвердить host.
+
+Snapshot nonce `813d60cc-250b-471a-9b7f-93a8eca5dc3b`, revision `9affd49c615347695e46282dbb48f7db400216624718af8c999a4f1592b97d20`; пересчёт manifest SHA-256: 4/4 совпали: `00` 4616771219f77d87740ce420ef5a313915335ae62009ddb8d6b9e17e601ece55, `01` 5dba357376d152a0560582749ecc1216583bc3fe479d5f0ed35a9cad9b5322cd, `ADR` 1090c3dfee9e65e1228837ddbe93e6d3778cabb145af85619df74563ef9bcd7f, `05` f222d5640b65afae67dd0fa53557f3b351963c02614b0b5749d0d645fe4641bb. План `06` вне manifest, SHA-256 `3e960a67d276150e3660498dbb44485a2bd862b8b346d73afbd63665de6d8f7c`.
+
+Вердикт: **needs-rework**. Оценка относится только к моей роли и не является root gate.
+
+## Q-BA-01 — WARNING, structural
+
+При раскрытии прежней статистики возможна кнопка копирования заблокированного личного кода. `01_requirements.md:55` и `05_architecture.md:43,47-48` требуют blocked без copy и доступную вложенную статистику; `06_implementation_plan.md:42-46,53-56` предусматривает её повторное использование, но не указывает проверку при раскрытых campaigns. Существующий `apps/web/src/app/dashboard/PartnerPanel.tsx:16-20,68` передаёт `onCopy` и рисует кнопку для каждого кода до проверки его `status`. Воспроизведение на существующем компоненте: dashboard содержит earliest blocked код, присутствуют `publicOrigin` и `onCopy`; открыть список — кнопка этого кода доступна несмотря на сообщение «Код заблокирован». Это обнаруженный дефект текущего переиспользуемого блока и пробел конкретизации плана, а не утверждение о ещё не написанной реализации. Требуется в personal mode запретить копирование именно заблокированного кода и проверить открытый список с blocked earliest и отдельной active кампанией, сохранив историю и поведение обычного mode.
+
+## Качество и границы
+
+HTSM, качественно, без вымышленных баллов: capability — состояния и сохранение earliest заданы; usability/charisma — утверждённый макет `18e4fa9`, loading/error/blocked/clipboard и responsive; reliability — конкуренция и потеря ответа; security — серверная роль, blocked и чужая статистика; compatibility — Chromium/WebKit по доступности; performance/scalability — timeout и 20 вызовов; installability — доставка через тестовую копию; development — named tests и falsifiers. Вышеуказанный пробел относится к usability/capability и regression.
+
+Прочитаны AGENTS, CLAUDE, core-cjm, review-policy, pinned протокол ideation, studio-extended-qe и reference-протоколы требований/рисков/дизайна тестов/доступности/регрессии; `01`, ADR, `05`, `06`, OpenSpec, owner-approval, HTML макета в `18e4fa9`, существующие `PartnerPanel` и `partner-code`. Согласование утверждается на основании предоставленного документа, не проверялось по исходному разговору. SHA `06` не фиксируется host manifest; вывод по нему привязан к указанному hash. Команды тестирования, браузер, PG, runtime и code/spec anti-drift готового кода не запускались; `verifications` пуст. Независимое QE после реализации, ручная приёмка и host attestation остаются открыты; AQE runtime и другие агенты не запускались.
+
+## Focused originating verification — snapshot a413068f / a965cc78
+
+Независимый пересчёт host: 4/4 совпали: `00` 0af4df96c083be2043b5a3e71013a7b6b46d234edbde7a17fcf1f5c468bd3e02; `01` 038e24ce2f326e19f23ef5f2d8f25573e9a4693e46038e5b64ad49e56e8c934f; `ADR` 94109daf90941ad98bee43ebc224d05ef50073d4acf9d751dd7e47ae83faed32; `05` dc457144dee2ceb47a0b432b416b82dfdaab9a1f6021752e5165439589de27ba. План `06` вне host: 38fb96fc67b5bef047a41539e1e6c9d48b432e35b60dc9af8c091d7f7aa44735. OpenSpec spec SHA256 320ac1ea73b4ef2bfba6240c374522bc55f9eeebe1cd930f6b87971a09ad4eb0 совпадает с `01:97` и `requirements-revision.json:6`; FR mapping `01:88-95`.
+
+`Q-BA-01`: `01:31-34`, `ADR:87-91`, `05:40-45`, `06:46-49,61-64,115` и OpenSpec spec:59-63 теперь определяют запрет copy blocked personal id также в раскрытом PartnerSummary и сохранение active campaign, статистики и ordinary mode. Named browser test и falsifier безусловного copy запланированы. Условие закрыто на уровне исправленного дизайна, исходное условие и evidence сохранены.
+
+`author-handoff-ideation.json` SHA256 c2a00d1ee65d2a2e06be48d8c70bad4d68444ae8e72eafbd8c209ac92e56fc43 совпадает с `receipt.author`, changedScope покрывает все host.changedPaths. Сверены structural delta и author newRisks: `01:37-41`, `ADR:92-97`, `05:55-61`, `06:65-72,116` и OpenSpec spec:65-69 задают будущий real HTTP two-session → service → PG сценарий и account-substitution falsifier. Это проверка документации и phase artifacts; implementationVerified относится к этой фазе. Приложение, тесты, БД, HTTP и falsifiers не запускались. Независимое QE, подтверждение provenance и root evaluation остаются открыты.

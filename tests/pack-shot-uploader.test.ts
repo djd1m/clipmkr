@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 vi.mock('next/navigation', () => ({ useRouter: () => ({}) }));
 import { VideoUploader } from '../apps/web/src/app/upload/Uploader';
 it('checkbox names both effects and credits both CC0 sources', () => {
-  const html = renderToStaticMarkup(createElement(VideoUploader));
+  const html = renderToStaticMarkup(createElement(VideoUploader, {accountScope: '11111111-1111-4111-8111-111111111111'}));
   expect(html).toContain('Добавить музыку и финальный акцент');
   expect(html.match(/<small class="muted">([^<]*)<\/small>/)?.[1]).toBe('Komiku, HoliznaCC0 — музыка CC0 · Kenney — Sci-Fi Sounds, CC0');
   expect(html.match(/type="checkbox"/g)).toHaveLength(3);

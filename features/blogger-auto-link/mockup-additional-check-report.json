@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "webkitChecks": [
+    {
+      "width": 390,
+      "theme": "light",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "passed": true
+    }
+  ],
+  "keyboardChecks": [
+    "Enter/Tab native settings",
+    "Enter demo choice/create",
+    "Выбранный демо-файл сохранён при смене layout"
+  ],
+  "axeChecks": [
+    {
+      "theme": "light",
+      "state": "ready",
+      "violations": []
+    },
+    {
+      "theme": "light",
+      "state": "loading",
+      "violations": []
+    },
+    {
+      "theme": "light",
+      "state": "error",
+      "violations": []
+    },
+    {
+      "theme": "light",
+      "state": "blocked",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "state": "ready",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "state": "loading",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "state": "error",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "state": "blocked",
+      "violations": []
+    }
+  ]
+}

@@ -15,7 +15,9 @@ import { VideoCtaForm } from '../CtaFields';
 export function VideoHeader({ video }: { video: VideoScreen }) {
   return <header className="detail-header"><div className="detail-top"><Link href="/dashboard">← Все записи</Link>
     <details className="video-meta"><summary>Подробнее</summary><p className="video-id">video_id: <code>{video.video_id}</code></p></details></div>
-    <p className="eyebrow">ВАШ ВЫПУСК</p><h1>Из длинного разговора —<br />короткие моменты</h1></header>;
+    <p className="eyebrow">ВАШ ВЫПУСК</p><h1>{video.status === 'done' ? 'Готовые клипы' : 'Клипы записи'}</h1>
+    <p className="workspace-result-lead">{video.duration_seconds !== null && `${(video.duration_seconds / 60).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} мин · `}
+      {video.clips_done} готово / {video.clips_total} выбрано. Выберите фрагмент для просмотра.</p></header>;
 }
 const STEP_MARK: Record<StepView, string> = { done: '✓', running: '◷', silent: '…', failed: '!', pending: '○' };
 /** Лента «Загрузка → Расшифровка → Выбор → Монтаж»: состояние каждой стадии — знаком И текстом, не только цветом. */
@@ -27,6 +29,11 @@ export function StageRibbon({ steps }: { steps: RibbonStep[] }) {
       <span className="visually-hidden"> — {STEP_STATE_TEXT[step.view]}</span></li>)}</ol>;
 }
 export function ProgressPanel({ video, onRetry, busy = false }: { video: VideoScreen; onRetry?: () => void; busy?: boolean }) {
+  if(video.status==='uploading') return <section className="status-panel" role="status" data-state="uploading">
+    <h2>Передача файла не завершена. Обработка ещё не началась</h2>
+    <p>Продолжите в исходной вкладке: нужны сохранённая сессия и исходный файл.</p>
+    <Link className="button secondary" href="/dashboard?upload=recovery#source-file">Выбрать исходный файл и продолжить загрузку</Link>
+  </section>;
   const { tone, steps } = ribbonOf(video);
   const failure = tone === 'failure', success = tone === 'success', silent = tone === 'silent';
   // Готово — лента сворачивается в одну строку: первый экран телефона отдан клипам (FR-GROWTH-001).
@@ -58,6 +65,8 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
   const [error, setError] = useState<string | null>(null), [busy, setBusy] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [guestPreselect, setGuestPreselect] = useState<GuestPreselect | null>(null);
+  const [selectedClipId, setSelectedClipId] = useState<string | null>(() =>
+    (initialClips.find(clip => clip.available) ?? initialClips[0])?.clip_id ?? null);
   useEffect(() => {
     const observe = () => observeClips(clips);
     observe(); window.addEventListener(ANALYTICS_READY, observe);
@@ -74,7 +83,12 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
       try {
         const [next, result] = await Promise.all([rpc<VideoScreen>('video.get', { video_id: videoId }, false, undefined, controller.signal),
           rpc<{ clips: ClipScreen[] }>('clip.list', { video_id: videoId }, false, undefined, controller.signal)]);
-        if (!controller.signal.aborted) { setVideo(next); setClips(result.clips); setError(null); }
+        if (!controller.signal.aborted) {
+          setVideo(next); setClips(result.clips);
+          setSelectedClipId(current => result.clips.some(clip => clip.clip_id === current) ? current
+            : (result.clips.find(clip => clip.available) ?? result.clips[0])?.clip_id ?? null);
+          setError(null);
+        }
       } catch (cause) { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Связь потеряна'); }
       finally { inFlight = false; }
     };
@@ -88,16 +102,38 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
     finally { setBusy(false); router.refresh(); }
   }
   // Local clock also detects silence when polling itself loses the network.
-  const shown = video.user_state === 'выполняется' && now - Date.parse(video.updated_at) > 300000
+  const shown = video.status !== 'uploading' && video.user_state === 'выполняется' && now - Date.parse(video.updated_at) > 300000
     ? { ...video, no_response: true, stage_label: 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.' } : video;
-  return <><VideoHeader video={video} /><ProgressPanel video={shown} onRetry={() => void retry()} busy={busy} />
-    {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}
-    <section className="clips-section"><div className="section-heading"><h2>Ваши клипы</h2><span>{video.clips_done} готово / {video.clips_total} выбрано</span></div>
+  return <><div className="workspace-ready">
+    <div className="studio-ready-intro"><VideoHeader video={video} /><ProgressPanel video={shown} onRetry={() => void retry()} busy={busy} />
+      {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}
       {video.clips_total > 0 && video.clips_total < 3 && <p className="notice">Найдено фрагментов: {video.clips_total}. Самодостаточных моментов меньше трёх — показываем столько, сколько есть.</p>}
       {video.status === 'done' && video.clips_done < video.clips_total && <p className="notice">Часть клипов не удалось собрать. Готовые клипы доступны для скачивания.</p>}
-      <div className="clip-grid">{clips.map(clip => <ClipCard creditMode={creditMode} key={clip.clip_id} clip={clip} actionsFirst={video.status === 'done' && video.clips_done < video.clips_total} paymentsOn={paymentsOn} onSendToGuest={sendToGuest} onMusicQueued={track => setClips(current => current.map(item => item.clip_id === clip.clip_id
-        ? { ...item, music_track_id: track === 'auto' ? null : track, rerendering: true } : item))} />)}</div>
-      {!clips.length && <p className="empty">{video.status === 'failed' ? 'Готовых клипов нет.' : 'Фрагменты появятся здесь после выделения.'}</p>}</section>
-    <VideoCtaForm videoId={videoId} initialKind={initialVideo.cta_kind} initialUrl={initialVideo.cta_url} />
+    </div>
+    <section className="clips-section workspace-result-content" aria-label="Ваши клипы">
+      {clips.length > 0 && <p className="workspace-section-label workspace-selected-caption">Выбранный клип</p>}
+      <div className="workspace-result-regions">
+        <div className="clip-grid studio-clips">{clips.map(clip => <ClipCard creditMode={creditMode} key={clip.clip_id} clip={clip}
+          selected={clip.clip_id === selectedClipId} onSelect={setSelectedClipId}
+          actionsFirst={video.status === 'done' && video.clips_done < video.clips_total} paymentsOn={paymentsOn} onSendToGuest={sendToGuest}
+          onMusicQueued={track => setClips(current => current.map(item => item.clip_id === clip.clip_id
+            ? { ...item, music_track_id: track === 'auto' ? null : track, rerendering: true } : item))} />)}</div>
+        <nav className="workspace-clip-list workspace-list" aria-label="Фрагменты">
+          {clips.length > 0 && <p className="workspace-section-label">Фрагменты</p>}
+          {clips.map(clip => <button type="button" key={clip.clip_id} data-select-clip={clip.clip_id}
+            aria-current={clip.clip_id === selectedClipId ? 'true' : 'false'} onClick={() => setSelectedClipId(clip.clip_id)}>
+            <span className="clip-num">{String(clip.index).padStart(2, '0')}</span><span className="clip-selector-title">{clip.title}</span>
+            <span className="clip-duration">{(clip.duration_seconds ?? clip.end - clip.start).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} с</span>
+          </button>)}
+        </nav>
+      </div>
+      {!clips.length && <p className="empty">{video.status === 'failed' ? 'Готовых клипов нет.' : video.status === 'done'
+        ? 'Готовых клипов нет. Загрузите другую запись, чтобы найти новые фрагменты.' : 'Фрагменты появятся здесь после выделения.'}
+        {(video.status === 'done' || video.status === 'failed') && <> <Link href="/dashboard">Загрузить запись</Link></>}</p>}
+    </section>
+    </div>
+    <details className="cta-disclosure"><summary>Призыв в конце клипов</summary>
+      <VideoCtaForm videoId={videoId} initialKind={initialVideo.cta_kind} initialUrl={initialVideo.cta_url} />
+    </details>
     {consentHash && <GuestPacks videoId={videoId} clips={clips} initialPacks={initialPacks} consentHash={consentHash} preselect={guestPreselect} />}</>;
 }

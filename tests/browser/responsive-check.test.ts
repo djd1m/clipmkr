@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { domRules, axeRule, textZoomRule, firstScreenRule } from '../../scripts/responsive/rules.mjs';
 import { preflight } from '../../scripts/responsive/input.mjs';
 import { chromium, webkit, type Browser, type Page } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, chmodSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { firstScreenSelectors } from '../../scripts/responsive/rules.mjs';
@@ -16,7 +16,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => {}, refresh:
 const landing = (theme: 'dark' | 'light') => `<!doctype html><html lang="ru" data-theme="${theme}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>КлипМейкер</title>
 <style>${readFileSync('apps/web/src/app/globals.css', 'utf8')}</style></head><body>${renderToStaticMarkup(createElement(Landing, { theme }))}</body></html>`;
-const LANDING_ARTIFACTS = 'tests/artifacts/landing-demo/browser';
+const LANDING_ARTIFACTS = process.env.PUBLIC_ENTRY_AUTHOR_OUT;
 let server: Server;
 let base: string;
 beforeAll(async () => {
@@ -86,28 +86,17 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) describe(name
       expect((await axeRule(page)).filter((f: { severity: string }) => f.severity === 'error')).toEqual([]);
     }));
   }
-  // Фича 28 landing-demo: на телефоне в первом экране ОБА — демо-клип и «Попробовать бесплатно» (R9 на каждый селектор).
+  // Утверждённый public entry: CTA в первом экране, форма перед demo на телефоне.
   for (const theme of ['dark', 'light'] as const) {
-    for (const viewport of [{ width: 390, height: 844 }, { width: 375, height: 667 }, { width: 360, height: 740 }]) {
-      it(`R9 / landing-${theme} ${viewport.width}x${viewport.height}: демо и действие в первом экране`, () => fixture(`landing-${theme}`, async page => {
-        const selectors = firstScreenSelectors('/');
-        expect(selectors).toEqual(['.landing-cta', '.landing-demo video']);
-        // Все селекторы до утверждения: красное называет КАЖДЫЙ ушедший за сгиб элемент, а не первый.
-        const findings: { selector: string; message: string }[] = [];
-        for (const selector of selectors) findings.push(...await firstScreenRule(page, selector));
-        const lost = findings.map(f => `${f.selector}: ${f.message}`);
-        expect(lost, `R9 за сгибом: ${JSON.stringify(lost)}`).toEqual([]);
-        const geometry = await page.evaluate(() => {
-          const box = (selector: string) => { const r = document.querySelector(selector)!.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }; };
-          return { h1: box('.landing h1'), video: box('.landing-demo video'), caption: box('.landing-demo figcaption'), cta: box('.landing-cta'), innerHeight };
-        });
-        // Постер 9:16 ЦЕЛИКОМ (решение фичи 28), а не половина.
-        expect(geometry.video.bottom).toBeLessThanOrEqual(viewport.height);
-        expect(Math.abs(geometry.video.height - geometry.video.width * 16 / 9)).toBeLessThanOrEqual(2); // округление до px
-        mkdirSync(LANDING_ARTIFACTS, { recursive: true });
-        const stem = `${LANDING_ARTIFACTS}/${name}-${theme}-first-screen-${viewport.width}x${viewport.height}`;
-        writeFileSync(`${stem}.json`, JSON.stringify(geometry, null, 2) + '\n');
-        await page.screenshot({ path: `${stem}.png`, fullPage: false });
+    for (const viewport of [{ width: 390, height: 844 }, { width: 375, height: 667 }, { width: 360, height: 740 }, { width: 1440, height: 900 }]) {
+      it(`public entry: CTA visible and mobile form precedes demo ${theme} ${viewport.width}`, () => fixture(`landing-${theme}`, async page => {
+        expect(firstScreenSelectors('/')).toEqual(['.landing-cta']);
+        expect(await page.locator('.landing-cta').isVisible()).toBe(true);
+        expect(await firstScreenRule(page, '.landing-cta')).toEqual([]);
+        if (viewport.width < 769) expect(await page.evaluate(() => document.querySelector('#auth')!.getBoundingClientRect().bottom <= document.querySelector('.landing-demo')!.getBoundingClientRect().top)).toBe(true);
+        expect(await page.locator('.landing-demo video').evaluate(el => { const r = el.getBoundingClientRect(); return Math.abs(r.width / r.height - 9 / 16) < .01; })).toBe(true);
+        await page.locator('.landing-demo video').scrollIntoViewIfNeeded();
+        expect(await page.locator('.landing-demo video').isVisible()).toBe(true);
       }, viewport));
     }
     it(`/ landing-${theme}: R1/R2/R5 и axe без отказов; видео с playsinline`, () => fixture(`landing-${theme}`, async page => {
@@ -120,12 +109,12 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) describe(name
     }));
   }
   for (const viewport of [{ width: 320, height: 568 }, { width: 1440, height: 900 }]) {
-    it(`/ landing ${viewport.width}: без горизонтального скролла; на ≥ 600 кнопка скрыта, форма видна`, () => fixture('landing-dark', async page => {
+    it(`/ landing ${viewport.width}: без горизонтального скролла; CTA и форма видны`, () => fixture('landing-dark', async page => {
       expect((await domRules(page, ['R1'])).filter((f: { severity: string }) => f.severity === 'error')).toEqual([]);
       const cta = await page.locator('.landing-cta').isVisible(), form = await page.locator('form#auth').isVisible();
-      expect({ cta, form }).toEqual({ cta: viewport.width < 600, form: true });
-      mkdirSync(LANDING_ARTIFACTS, { recursive: true });
-      await page.screenshot({ path: `${LANDING_ARTIFACTS}/${name}-dark-width-${viewport.width}.png`, fullPage: false });
+      expect({ cta, form }).toEqual({ cta: true, form: true });
+      if (LANDING_ARTIFACTS) { mkdirSync(LANDING_ARTIFACTS, { recursive: true, mode: 0o700 });
+        await page.screenshot({ path: `${LANDING_ARTIFACTS}/${name}-dark-width-${viewport.width}.png`, fullPage: false }); chmodSync(`${LANDING_ARTIFACTS}/${name}-dark-width-${viewport.width}.png`, 0o600); }
     }, viewport));
   }
   it('чистая страница: все отказы отсутствуют', () => fixture('clean', async page => {

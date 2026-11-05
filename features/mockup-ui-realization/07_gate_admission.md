@@ -1,0 +1,59 @@
+# Допуск к исполнению плана: наблюдённые результаты
+
+Текущий статус05.11: PROJECT-INSTALLED GATES PASS; актуальное уточнение AM-6 ниже; настоящий supported plan checkpoint exit0 записан с inputHash302e08dfc8c14fda2f199bb505f4bd50b4f081e61313f2427f46dc0478acf26b и status admitted-project-installed-gates. Ideation CLOSED, независимый challenge содержания06 GO. Исторический запрос исключения оказался ненужным: координатор пропустил уже существующий штатный process:install. Прежние отказы и выводы сохранены ниже как история, не переименованы в PASS. Это протокол допуска к будущему коду, не implementation/QE PASS.
+
+## Исправление установки05.11 — существующий проектный путь
+
+В HEAD уже находились scripts/install-process.sh, patches/feature-adr-next-paths.patch и patches/dz-name-check-app-source.patch (предки4634a7b/0f7fa36). docs/REPRODUCE.md предписывает process:install после npm ci. Координатор не выполнил этот шаг в свежем worktree; это причина ложного организационного блокера, отдельная от реальных ограничений upstream.
+
+В целевом /tmp/clipmkr-mockup-realization-20261104 выполнен npm run process:install: exit0, существующие regression tests2/2PASS. Затем четыре project-pinned name-check вернули FREE exit0, установленный .agents K2 --tier=L --require-requirements вернул PASS:0failures/0warnings/1объявленный C4skip,4ADR,14requirementIDs,28буквальных targets/23existing/0twins. SHA06 остался da3a25715cb1859a2e1743e22bdafda52883cbb004b36f978d13484cd30b51ad. Это **project-patched установленный инструмент**, а не неизменённый upstream PASS или переименование projection.
+
+Независимые /root/gate_repair_analysis_sol (requested Solhigh) и /root/mockup_quality_terra (requested Terraxhigh) прочитали существующие installer/patches/tests и повторили проверки; Terra отдельно проверила изолированный clone. Оба подтвердили поддерживаемый путь без исключения владельца. Ограничения K1 сохранены: apps/packages/scripts, без tests/JSX/MTS/CTS, aliases остаются build; supplemental inventory171trackedtests и lexical name search0hits проверены отдельно, не объявлены native coverage.
+
+Actual source admission после fast-forward ранее проверенного backendfix: admitted, manifestDigest c39719f5e02faae72111a885245568c410cc042137cff212e7a921994e2771aa, empty reasons. Полный build-coder-context exit0 complete; digest302e08dfc8c14fda2f199bb505f4bd50b4f081e61313f2427f46dc0478acf26b, literal62504bytes SHA256935ba660da2c8cbcef4aae1ad5594db1abf1f5cd8872068bf8b392b9102c1e18. Actual commands/stdout/exits: /root/.config/clipmkr/release-parity-20261103/mockup-ui-realization-installed-gates-20261105/. К коду допускает только действительный plan checkpoint; успешный receipt не сочиняется этим текстом.
+
+## Входы
+- План06 SHA256 `da3a25715cb1859a2e1743e22bdafda52883cbb004b36f978d13484cd30b51ad`,10 задач,28 буквальных targets.
+- Ideation revision `b5e0e400da2e89f4462984b812fe30dced990412edc152ba64f3ae2a4efa5da4`, nonce `c4148991-3087-4f0e-a7ed-3dd086a4fa78`. Исходные quality/testability/risk самостоятельно сохранили и проверили все четыре structural условия; actual evaluate exit0 CLOSED. Старые условия/lineage не удалены.
+- Независимый03.6_plan_challenge.md: содержание GO для этой SHA; этот GO отдельно не разрешает Step7. Автор плана Astra, reviewer Terra; известны requested модели, независимой runtime attestation нет.
+
+## K1: совместимость ограниченного native scanner
+Закреплённый CLI0.8.58 на native project вернул exit2 NOT ESTABLISHED: topology приложений не поддержана scanner. Этот результат сохраняется, native scan PASS не утверждается.
+Root выполнил четыре настоящих name-check на private projection274 исходников apps/packages/scripts: bytes сохранены, basename/extension отображены в поддерживаемый scanner layout. Проверены WorkspaceHeader, dashboard-summary, check-mockup-ui-realization, mockup-ui-realization.test и exports WorkspaceHeader/readDashboardSummary; четыре exit0. Отдельный inventory171 tracked test JS/TS и lexical identifier search не нашли совпадений. Это compatibility evidence, не утверждение, что native CLI исследовал приложение напрямую.
+Private evidence directory: /root/.config/clipmkr/release-parity-20261103/mockup-ui-realization-k1/.
+- manifest.private.json SHA256 `39c6b27e8e2da9046d196b4962a753df8664d49e46a59b781b7c1c5d28fd3ab3`.
+- checks.private.json SHA256 `3365b834af4ea1147164c6926e60443368d0e0ce0ed100b670493e5b38db6f1b`.
+- tests-inventory.private.json SHA256 `137489718830288d7649fc4747d21d2a819b12869c3c99f73695158c70d2c89b`.
+
+## K2: сохранённый native отказ и ограниченное отображение путей
+Actual unmodified check-plan-completeness.mjs --tier=L --require-requirements вернул exit1: ровно два C3 markdown-residue на существующих tracked Next paths `apps/web/src/app/dashboard/videos/[videoId]/page.tsx` и `apps/web/src/app/videos/[videoId]/VideoDetail.tsx`. Все14 requirement IDs и4 ADR покрыты; C4 честно SKIP, отдельный acid corpus в00 не объявлен. Никакого native K2 PASS нет.
+Root создал private копию feature inputs: только два literal target segments `[videoId]` в06 отображены в `__NEXT_DYNAMIC_videoId__`; остальные документы/плановые байты неизменны, соответствие двустороннее. Свежий unmodified official checker на projection: K2 PASS,0failures/0warnings/1declaredskip. Vendor, canonical source plan и реальные target paths не переписаны.
+Private evidence directory: /root/.config/clipmkr/release-parity-20261103/mockup-ui-realization-k2/; native.private.log сохраняет отказ, projection.private.log сохраняет PASS. Manifest SHA256 `a35c4117ebb4372e7970e26ed246706a63785e0f3f10fdf835aa16fc89ade171`; projected06 SHA256 `2d9f0346cc41a06def685f6af8d80cfe4890942f3eaa546b1c4690678d0758a9`.
+
+## Буквальный source admission и дополнительные проверки
+Actual unmodified check-code-targets.mjs --repo /tmp/clipmkr-mockup-realization-20261104 --feature features/mockup-ui-realization: exit0 admitted, manifestDigest `7727133fb854f4b64ef09765bd156bee330cc47a08ba055a1f6f6dabe83ee920` на момент измерения до этого07 документа. Это admission исходных28targets, не projection. Этот07 не входит в source manifest discovery; перед checkpoint выполнить свежую проверку исходных targets, а07 связать как отдельный measured artifact.
+Все28paths уникальны:23 existing tracked,5 declared new. Два Next paths точно присутствуют в git ls-files и имеют корректный single dynamic segment; source SHA256 соответственно `6e333dd37796c5cd484c37549f1240b8c60fd2f047cab4ac73dae2b25a04e7c9` и `49fbcd24637d28a170566d00abd0541e6bf29f445be2ca47272e62371a8293af`.
+Private author evidence directory: /root/.config/clipmkr/release-parity-20261103/mockup-ui-author-delta-20261104/; targets.private.json SHA256 `01f3c9ef7d6aee753c5f411f6c1c0f161aa473b641c1bd75727baf1413595a9d`; plan-gates.private.json SHA256 `2519abb31d48bd37cd61911a643ef2970b9f4309667978b4749ae5c7b804b10d` хранит actual commands/stdout/exits.
+
+Дополнение C9 для двух путей, исключённых исходным C3: отдельно пересчитаны SHA256 всех tracked JS/TS исходников; byte-identical twins обоих файлов отсутствуют. Private dynamic-target-twins.private.json SHA256 `b56fc9e82d7cf1d0709c0169616e0dfc8ba378d0a80d989216e6067196598299`. Это проверяет только точные копии, drifted copies требуют runtime identity tests по06.
+
+## Document/spec anti-drift перед commit
+Actual `npm run openspec -- validate mockup-ui-realization --strict --json`: exit0,1change valid,0issues. SHA256 обоих исходных HTML и двух referenced OpenSpec proposal/spec повторно пересчитаны и совпали с буквальными hashes01. 06 сохранил SHAda3a25715cb1859a2e1743e22bdafda52883cbb004b36f978d13484cd30b51ad, все28targets перечислены без изменения. `git diff --cached --check` прошёл; staged scope проверен как15 Markdown feature/OpenSpec документов, без product/test code, .fa-state/.dz/private evidence. Implementation anti-drift остаётся будущей обязанностьюTASK9, выполненного кода здесь нет.
+
+## Историческое следующее действие04.11 (заменено восстановлением штатной установки05.11)
+Независимый Terra reviewer фактически повторил исходные и projected commands, проверил bytes/mapping/inventory и подтвердил узкие compatibility claims в03.6. Нативные исходы остаются K1 NOT ESTABLISHED, K2 FAIL. Закреплённый процесс требует native K2 exit0; reviewer не выдавал исключение или Step7 admission.
+Ожидается ответ владельца на уже отправленный координатором вопрос об explicit exception для этих проверенных adapters. До ответа нет code implementation или checkpoint success. Если исключение будет явно принято, результат supported dz feature-adr-checkpoint --stage plan должен сохранить честный status compatibility-verified и original native failures, точную SHA плана и independent evidence. Если исключение не принято, нужен поддерживаемый исправленный tooling path; vendor/target bytes не подменяются.
+Реализация после действительного допуска следует exclusive A/B/C ownership; ранний test deploy/owner preview отделён от full featureGO, long-media/core-CJM и последующего Cloud. Runtime baseline E2E и его ограничения ведутся координатором отдельно и не превращаются в подтверждение этой новой реализации.
+
+## Фактический переход к Step7
+Plan command вернул {ok:true,stage:plan,witnessed:[06_implementation_plan.md,07_gate_admission.md]}. Baseline впервые инициализирован153a9cd7d14d89776ab38bd83b04594bcb421d50; существующая ideation lineage сохранена. Три отдельные coding sessions A/B/C через Codex CLI0.166.0 requested gpt-6.1-sol high получают полный literal promptBlock62504bytes в stdin; SHA935ba660da2c8cbcef4aae1ad5594db1abf1f5cd8872068bf8b392b9102c1e18 проверен launcher перед запуском. Задания и JSONL логи с thread IDs сохраняются приватно, права0700/0600, данные аккаунтов туда не добавлялись. Это настоящий запуск реализации, не её завершение.
+Повторный supplementary inventory текущих171trackedtestfiles:0matches, SHA256cb27808421cb16f3353b5b06c35831a785ec4e434ae371a9bf13a1dfcf1254d3. Исходники установленного инструмента и hashes существующих patches сохранены installed-tool-hashes.private.json. Teach нового фактического урока об установке: teach:b9ca1b2cc77e0c4e, actual recall после teach вернул этот ID. Историческое ожидание owner exception снято восстановлением предписанной установки, а не разрешением проигнорировать ненулевой exit.
+
+
+## AM-6: поддержка существующего регрессионного теста
+
+До изменения tests/credit-packages-ui.test.ts план измеренно дополнен этим существующим файлом. Это обслуживание прежней проверки навигации/disabled после переноса навигации в WorkspaceHeader, без нового продуктового поведения. Текущий06 SHA256: c91c95724c83a0a1127df647995fd2bf0abf4cfd706b48824e4a8db297b953fc; 29 буквальных targets. Ранее приведённые28targets и302e08… относятся к исходному допуску, сохранённому в истории.
+
+Фактический project-installed K2 после уточнения: exit0,29targets,14requirementIDs,4ADR,0failures/0warnings/1объявленный skip. Новых имён для K1 нет: изменяется уже существующий тест. Свежий admission e25216226d55fd18aeea6db272f9e634ead35f539bdb550ff87f02cde91b0f04 — admitted, reasons пуст. Полный context: d016e8992af3f154917128b99788ed8573247666d00df269420dacca5c81e74c,63733bytes literal promptBlock; SHA25612a6d1dcbcd568aeff6592e0799d6923181a4152ee4dda621f07dc11c30190ac. Terra независимо дала scoped GO этому уточнению.
+
+Настоящий npm run dz -- feature-adr-checkpoint --stage plan выполнен до правки теста с указанным inputHash; status admitted-test-only-amendment, exit0, witnessed06/07. Приватные аргументы, stdout/stderr и код возврата сохранены в am6-plan-checkpoint.private.json в ранее указанном закрытом каталоге. Предыдущие receipts/base-ref/ideation lineage сохранены. После этого отдельный автор выполнил maintenance: исходный RED,7/7 и46/46focused GREEN; удаление ссылки и включение checkout в обеих запрещённых ветках дают реальный именованный RED в изолированных копиях. Это доказательства AM-6, не полный QE.

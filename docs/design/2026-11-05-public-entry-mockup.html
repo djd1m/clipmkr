@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru" data-workspace-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>clipmkr — макет публичной главной</title>
+<style>
+    :root[data-workspace-theme=light]{
+      --workspace-scheme:light;
+      --workspace-canvas:#f4f4f3;
+      --workspace-surface:#fdfdfc;
+      --workspace-panel:#ffffff;
+      --workspace-text:#202020;
+      --workspace-muted:#565656;
+      --workspace-accent:#305d45;
+      --workspace-accent-hover:#244936;
+      --workspace-on-accent:#ffffff;
+      --workspace-divider:#d0d0ce;
+      --workspace-control-border:#737373;
+      --workspace-soft:#eeeeec;
+      --workspace-selected:#e9e9e6;
+      --workspace-hover:#f0f0ed;
+      --workspace-focus:#305d45;
+      --workspace-clear:transparent;
+      --workspace-poster:#e3e3e0;
+      --workspace-poster-shape:#c9c9c5;
+      --workspace-poster-ring:#d2d2ce;
+      --workspace-poster-2:#e7e7e4;
+      --workspace-poster-shape-2:#c5c5c1;
+      --workspace-poster-3:#dededb;
+      --workspace-poster-shape-3:#c3c3bf;
+      --workspace-shadow:#20202066;
+      --workspace-backdrop:#101010cc;
+    }
+    :root[data-workspace-theme=dark]{
+      --workspace-scheme:dark;
+      --workspace-canvas:#111111;
+      --workspace-surface:#1a1a1a;
+      --workspace-panel:#222222;
+      --workspace-text:#f1f1ef;
+      --workspace-muted:#bdbdb9;
+      --workspace-accent:#8fd4a4;
+      --workspace-accent-hover:#b5e6c2;
+      --workspace-on-accent:#151515;
+      --workspace-divider:#454543;
+      --workspace-control-border:#858580;
+      --workspace-soft:#272725;
+      --workspace-selected:#30302d;
+      --workspace-hover:#2c2c29;
+      --workspace-focus:#8fd4a4;
+      --workspace-clear:transparent;
+      --workspace-poster:#2c2c29;
+      --workspace-poster-shape:#353532;
+      --workspace-poster-ring:#484844;
+      --workspace-poster-2:#30302d;
+      --workspace-poster-shape-2:#3b3b37;
+      --workspace-poster-3:#282826;
+      --workspace-poster-shape-3:#343430;
+      --workspace-shadow:#0008;
+      --workspace-backdrop:#101010cc;
+    }
+
+*{box-sizing:border-box}html{background:var(--workspace-canvas);color-scheme:var(--workspace-scheme);font-size:100%}body{overflow-wrap:anywhere;margin:0;color:var(--workspace-text);font:1rem/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}button,a,input,summary{touch-action:manipulation}button,a{ -webkit-tap-highlight-color:transparent}button{cursor:pointer}button,a,summary,input{scroll-margin:1rem}:focus-visible{outline:3px solid var(--workspace-focus);outline-offset:3px}a{color:var(--workspace-accent);text-underline-offset:3px}button{color:var(--workspace-text)}[hidden]{display:none!important}h1,h2,p,figure{margin:0}h1{font-size:clamp(2rem,3.3vw,3rem);font-weight:760;letter-spacing:-.045em;line-height:1.12}h2{font-size:1.35rem;letter-spacing:-.025em;line-height:1.25}.shell{width:min(72rem,calc(100% - 3rem));margin:auto}.notice{font-size:.8rem;background:var(--workspace-soft);border-bottom:1px solid var(--workspace-divider);padding:.55rem 0}.notice .shell{border-left:3px solid var(--workspace-accent);padding-left:.7rem}header{min-height:5rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;border-bottom:1px solid var(--workspace-divider)}.brand{font-size:1.3rem;letter-spacing:-.045em;font-weight:800}.header-actions{display:flex;flex-wrap:wrap;max-width:100%;align-items:center;gap:.6rem;margin-left:auto}.plain,.secondary{background:var(--workspace-panel);border:1px solid var(--workspace-control-border);padding:.55rem .8rem;border-radius:.2rem;min-height:2.75rem}.plain{background:transparent}.plain:hover,.secondary:hover{background:var(--workspace-hover)}.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(20rem,25rem);grid-template-areas:"intro auth" "example auth";column-gap:clamp(2rem,5vw,5rem);row-gap:2rem;padding:3rem 0 2rem}.intro{grid-area:intro;padding-top:.3rem}.eyebrow{font-size:.73rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--workspace-accent);margin-bottom:1rem}.lead{font-size:1rem;color:var(--workspace-muted);max-width:32rem;margin:1.1rem 0 1.3rem}.primary{display:inline-block;background:var(--workspace-accent);border:1px solid var(--workspace-accent);color:var(--workspace-on-accent);border-radius:.2rem;padding:.7rem 1rem;font-weight:700;min-height:2.9rem;text-decoration:none;text-align:center}.primary:hover{background:var(--workspace-accent-hover)}.trial{font-size:.82rem;color:var(--workspace-muted);margin-top:.65rem}.trial strong{color:var(--workspace-text)}.path{display:flex;gap:1rem;flex-wrap:wrap;list-style:none;margin:1.5rem 0 0;padding:0;font-size:.82rem;color:var(--workspace-muted)}.path b{color:var(--workspace-accent);margin-right:.35rem}.auth{grid-area:auth;align-self:start;background:var(--workspace-panel);border:1px solid var(--workspace-divider);padding:1.5rem;border-radius:.25rem}.modes{display:flex;gap:1rem;border-bottom:1px solid var(--workspace-divider);margin-bottom:1.3rem}.mode{flex:1;min-width:0;background:transparent;border:0;border-bottom:2px solid transparent;padding:0 0 .7rem;font-size:.87rem;font-weight:700}.mode[aria-pressed=true]{border-bottom-color:var(--workspace-accent);color:var(--workspace-accent)}.form-intro{font-size:.82rem;color:var(--workspace-muted);margin:.4rem 0 1.1rem}label{display:block;font-size:.86rem;font-weight:650;margin-top:.9rem}input{display:block;width:100%;min-width:0;border:1px solid var(--workspace-control-border);background:var(--workspace-surface);color:var(--workspace-text);border-radius:.2rem;padding:.6rem .7rem;min-height:2.9rem;margin-top:.35rem}input[aria-invalid=true]{border-width:2px}.hint{font-size:.76rem;color:var(--workspace-muted);margin-top:.35rem}.error{font-size:.82rem;margin-top:.8rem;font-weight:650}.error:empty{display:none}.partner{font-size:.8rem;margin:1rem 0}.partner summary{cursor:pointer;min-height:2rem;color:var(--workspace-muted)}.partner label{margin-top:.25rem}.submit{width:100%;margin-top:.2rem}.legal{font-size:.73rem;color:var(--workspace-muted);margin-top:.8rem}.link-button{border:0;background:transparent;color:var(--workspace-accent);padding:0;text-decoration:underline;text-underline-offset:3px;font:inherit;text-align:left;cursor:pointer}.help{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin-top:1rem;font-size:.8rem}.help button{min-height:2.25rem}.example{grid-area:example;display:flex;flex-wrap:wrap;gap:1rem;border-top:1px solid var(--workspace-divider);padding-top:1.1rem;align-items:center}.example figcaption{flex:1 1 12rem;min-width:0}.poster{flex:0 0 5rem;width:5rem;aspect-ratio:9/16;background:var(--workspace-poster);position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:.45rem}.poster::before{content:"";position:absolute;inset:20% 18%;background:var(--workspace-poster-shape);transform:rotate(-12deg)}.poster::after{content:"";position:absolute;width:70%;aspect-ratio:1;top:10%;right:-20%;border:.6rem solid var(--workspace-poster-ring);border-radius:50%}.poster span{position:relative;z-index:1;font-size:.62rem;font-weight:750;background:var(--workspace-surface);padding:.2rem}.example-title{font-size:.8rem;font-weight:750}.example p{font-size:.8rem;color:var(--workspace-muted);margin:.35rem 0}.example small{font-size:.71rem;color:var(--workspace-muted)}.details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--workspace-divider);border-bottom:1px solid var(--workspace-divider);padding:1.3rem 0;gap:1.8rem}.details h2{font-size:.9rem;margin-bottom:.35rem}.details p{font-size:.81rem;color:var(--workspace-muted)}footer{display:flex;flex-wrap:wrap;gap:.6rem 1.3rem;padding:1.2rem 0 2rem;font-size:.75rem;color:var(--workspace-muted)}footer span{margin-right:auto}dialog{width:min(30rem,calc(100% - 2rem));max-height:calc(100dvh - 2rem);overflow:auto;background:var(--workspace-panel);color:var(--workspace-text);border:1px solid var(--workspace-control-border);padding:1.5rem;border-radius:.25rem}dialog::backdrop{background:var(--workspace-backdrop)}dialog p{font-size:.9rem;color:var(--workspace-muted);margin:1rem 0}dialog button{margin-top:.4rem}code{font-size:.9em;overflow-wrap:anywhere}noscript{display:block;padding:1rem}
+@media(max-width:48rem){.shell{width:calc(100% - 2rem)}header{min-height:4.3rem;gap:.5rem}.header-actions{gap:.4rem}.header-actions button{font-size:.8rem;padding:.45rem .65rem}.hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "auth" "example";gap:1.5rem;padding:1.8rem 0}.intro{padding:0}h1{font-size:2.1rem;max-width:27rem}.eyebrow{margin-bottom:.7rem}.lead{margin:.8rem 0 1rem;font-size:.94rem}.path{gap:.5rem 1rem;margin-top:1rem}.auth{padding:1.2rem}.details{grid-template-columns:minmax(0,1fr);gap:1rem}.example{padding-top:1rem}.notice{font-size:.73rem}.trial{font-size:.78rem}}
+@media(max-width:23rem){.shell{width:calc(100% - 1.5rem)}.brand{font-size:1.15rem}.header-actions{gap:.3rem}.header-actions button{padding:.45rem .5rem}.hero{padding-top:1.4rem}h1{font-size:1.9rem}.auth{padding:1rem}.mode{font-size:.8rem}}
+@media(prefers-reduced-motion:no-preference){button,a{transition:background-color .12s ease}}
+</style>
+</head>
+<body>
+<div class="notice"><div class="shell">Макет для согласования • данные не отправляются</div></div>
+<header class="shell"><span class="brand">clipmkr</span><div class="header-actions"><button class="plain" id="theme" type="button" aria-pressed="false">Тёмная тема</button><button class="plain" type="button" data-mode="login">Войти</button></div></header>
+<main class="shell">
+<div class="hero">
+<section class="intro" aria-labelledby="promise"><p class="eyebrow">Из длинной записи — в короткие клипы</p><h1 id="promise">Одна запись.<br>Несколько поводов<br>вас услышать.</h1><p class="lead">Загрузите подкаст, интервью или вебинар. clipmkr выберет фрагменты и подготовит вертикальные клипы с субтитрами. Вам останется скачать и опубликовать.</p><a class="primary" id="start" href="#auth">Начать бесплатно →</a><p class="trial"><strong>30 пробных кредитов после регистрации.</strong><br>Это 30 минут исходной записи: 1 кредит = 60 секунд.</p><ol class="path" aria-label="Как это работает"><li><b>01</b>Загрузите запись</li><li><b>02</b>Получите клипы</li><li><b>03</b>Скачайте</li></ol></section>
+<section class="auth" id="auth" aria-labelledby="auth-title">
+<div class="modes" role="group" aria-label="Регистрация или вход"><button class="mode" type="button" data-mode="register" aria-pressed="true">Создать аккаунт</button><button class="mode" type="button" data-mode="login" aria-pressed="false">Войти</button></div>
+<h2 id="auth-title">Создать аккаунт</h2><p class="form-intro" id="mode-note">Начните с 30 пробных кредитов.</p>
+<form id="auth-form" action="#auth" method="dialog">
+<label for="email">Электронная почта</label><input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error"><p class="hint" id="email-error"></p>
+<label for="password">Пароль</label><input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required aria-describedby="password-hint password-error"><p class="hint" id="password-hint">От 8 символов, не больше 72 байт. Кириллица и эмодзи занимают больше одного байта.</p><p class="hint" id="password-error"></p>
+<details class="partner"><summary>Есть код партнёра? Необязательно</summary><label for="partner">Код партнёра</label><input id="partner" name="partner_code" maxlength="12" autocomplete="off"></details>
+<p class="error" id="errors" role="alert" aria-atomic="true"></p>
+<button class="primary submit" id="submit" type="submit">Создать аккаунт</button>
+<p class="legal" id="legal-note">Создавая аккаунт, вы принимаете <button class="link-button" type="button" data-info="terms">соглашение</button> и <button class="link-button" type="button" data-info="privacy">политику конфиденциальности</button>.</p>
+</form>
+<nav class="help" aria-label="Помощь со входом"><button class="link-button" type="button" data-info="recovery">Забыли пароль?</button><button class="link-button" type="button" data-info="support">Поддержка</button></nav>
+<p class="hint">В этом макете аккаунт не создаётся и вход не выполняется.</p>
+</section>
+<figure class="example"><div class="poster" aria-hidden="true"><span>Главная мысль —<br>в одном клипе</span></div><figcaption><div class="example-title">Пример результата</div><p>Вертикальный кадр 9:16<br>Субтитры прямо в видео</p><small>Условная иллюстрация, не видео.<br>Реальные клипы появятся после обработки вашей записи.</small></figcaption></figure>
+</div>
+<section class="details" aria-label="Кредиты и ограничения"><div><h2>Пробный старт — 30 минут</h2><p>30 кредитов хватит на 30 минут исходной записи. Более длинная запись потребует дополнительного баланса.</p></div><div><h2>Одна запись — до 90 минут</h2><p>Это предел длительности файла для обычного пользователя. Он не увеличивает пробный баланс.</p></div><div><h2>Дальше — пакеты кредитов</h2><p>Дополнительные кредиты можно выбрать в кабинете. 1 кредит соответствует 60 секундам исходной записи.</p></div></section>
+</main>
+<footer class="shell"><span>clipmkr · Из записи в клипы</span><button class="link-button" type="button" data-info="terms">Соглашение</button><button class="link-button" type="button" data-info="privacy">Конфиденциальность</button><button class="link-button" type="button" data-info="support">Поддержка</button></footer>
+<dialog id="info" aria-labelledby="dialog-title"><h2 id="dialog-title" tabindex="-1"></h2><p id="dialog-body"></p><button class="secondary" id="close" type="button">Понятно</button></dialog>
+<noscript>Это интерактивный макет. Для переключения режимов и темы нужен JavaScript. Данные не отправляются.</noscript>
+<script>
+'use strict';
+const root=document.documentElement, theme=document.getElementById('theme');
+function setTheme(value){root.dataset.workspaceTheme=value;theme.setAttribute('aria-pressed',String(value==='dark'));theme.textContent=value==='dark'?'Светлая тема':'Тёмная тема'}
+try{setTheme(localStorage.getItem('clipmkr-public-entry-demo-theme')==='dark'?'dark':'light')}catch{setTheme('light')}
+theme.addEventListener('click',()=>{const value=root.dataset.workspaceTheme==='light'?'dark':'light';setTheme(value);try{localStorage.setItem('clipmkr-public-entry-demo-theme',value)}catch{}});
+const form=document.getElementById('auth-form'),email=document.getElementById('email'),password=document.getElementById('password'),errors=document.getElementById('errors');
+let mode='register';
+function clearErrors(){errors.textContent='';for(const input of [email,password]){input.removeAttribute('aria-invalid');document.getElementById(input.id+'-error').textContent=''}password.setCustomValidity('')}
+function selectMode(value,focus=true){mode=value;clearErrors();document.querySelectorAll('.mode').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mode===mode)));document.getElementById('auth-title').textContent=mode==='register'?'Создать аккаунт':'Войти в clipmkr';document.getElementById('mode-note').textContent=mode==='register'?'Начните с 30 пробных кредитов.':'Ваши записи и клипы — в вашем кабинете.';document.getElementById('submit').textContent=mode==='register'?'Создать аккаунт':'Войти →';document.getElementById('legal-note').hidden=mode!=='register';password.autocomplete=mode==='register'?'new-password':'current-password';if(focus){email.focus();}}
+document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>selectMode(button.dataset.mode)));
+document.getElementById('start').addEventListener('click',event=>{event.preventDefault();selectMode('register');});
+function validatePassword(){password.setCustomValidity('');if(mode==='register'&&new TextEncoder().encode(password.value).length>72)password.setCustomValidity('Пароль должен занимать не больше 72 байт. Сократите его.');}
+password.addEventListener('input',()=>{clearErrors();validatePassword()});email.addEventListener('input',clearErrors);
+form.addEventListener('invalid',event=>{const field=event.target;field.setAttribute('aria-invalid','true');let message=field===email?(email.validity.valueMissing?'Введите электронную почту.':'Проверьте адрес электронной почты.'):(password.validity.valueMissing?'Введите пароль.':password.validity.customError?password.validationMessage:'Пароль должен содержать не меньше 8 символов.');document.getElementById(field.id+'-error').textContent=message;errors.textContent=message;},true);
+form.addEventListener('submit',event=>{event.preventDefault();clearErrors();validatePassword();if(!form.reportValidity())return;showInfo('Демонстрация формы',mode==='register'?'Поля заполнены. В приложении здесь начнётся создание аккаунта и переход в кабинет. Макет ничего не отправляет и не создаёт аккаунт.':'Поля заполнены. В приложении здесь выполняется проверка данных и вход в кабинет. Макет не проверяет аккаунт и ничего не отправляет.');});
+const dialog=document.getElementById('info');
+function showInfo(title,body){document.getElementById('dialog-title').textContent=title;document.getElementById('dialog-body').textContent=body;dialog.showModal();document.getElementById('dialog-title').focus({preventScroll:true});dialog.scrollTop=0;}
+const messages={recovery:['Восстановление пока недоступно','На текущем тестовом сайте отправка писем отключена. Письмо для сброса пароля сейчас отправить нельзя. Раздел помощи в приложении — /support; доступность ответа поддержки не подтверждена. Этот макет писем не отправляет.'],support:['Помощь со входом','В приложении раздел поддержки находится по адресу /support. В макете переход не выполняется. Адрес поддержки сейчас не настроен; работа оператора не проверена.'],terms:['Пользовательское соглашение','В приложении документ доступен по адресу /legal/terms. Это пояснение макета, а не текст соглашения; при реализации будет переиспользован действующий документ.'],privacy:['Политика конфиденциальности','В приложении документ доступен по адресу /legal/privacy. Макет не отправляет данные формы и не сохраняет их. В браузере сохраняется только выбор демо-темы.']};
+document.querySelectorAll('[data-info]').forEach(button=>button.addEventListener('click',()=>showInfo(...messages[button.dataset.info])));document.getElementById('close').addEventListener('click',()=>dialog.close());
+</script>
+</body></html>

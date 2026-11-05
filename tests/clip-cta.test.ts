@@ -245,9 +245,9 @@ describe('формы призыва: загрузка и экран записи
   });
   it('загрузчик передаёт вид и адрес в video.create и хранит их для возобновления тем же ключом', () => {
     const source = readFileSync('apps/web/src/app/upload/Uploader.tsx', 'utf8');
-    expect(source).toContain('cta_kind: current.ctaKind, cta_url: current.ctaUrl');
-    expect(source).toContain('ctaKind: readCtaKind(saved.ctaKind)');
-    expect(source).toMatch(/const problem = resumed \? null : ctaProblem\(ctaKind, ctaUrl\);\s+if \(problem\) \{ setMessage\(problem\); return; \}\s+const current =/);
+    expect(source).toContain('cta_kind:value.options.ctaKind,cta_url:value.options.ctaUrl');
+    expect(source).toContain('setCtaKind(previous.options.ctaKind)');
+    expect(source.indexOf('ctaProblem(ctaKind,ctaUrl)')).toBeLessThan(source.indexOf('key:crypto.randomUUID()'));
     expect(readFileSync('apps/web/src/app/videos/[videoId]/VideoDetail.tsx', 'utf8')).toContain('<VideoCtaForm videoId={videoId} initialKind={initialVideo.cta_kind}');
   });
 });

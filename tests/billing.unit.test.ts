@@ -21,6 +21,7 @@ import { ProInterest } from '../apps/web/src/app/dashboard/ProInterest';
 import { environment } from './fixtures/environment';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/' }));
 vi.mock('../apps/web/src/app/theme-server', () => ({ requestTheme: async () => 'light' }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ cookie: 'n5_theme=light' }) }));
 
 const LIVE = { N5_PAYMENTS_MODE: 'live', YOOKASSA_SHOP_ID: '123456', YOOKASSA_SECRET_KEY: 'test_secret', YOOKASSA_TEST_MODE: 'true' };
 
@@ -257,4 +258,50 @@ describe('экраны: выключенная и включённая опла�
     const on = renderToStaticMarkup(createElement(ProInterest, { source: 'clip_card', paymentsOn: true }));
     expect(on).toContain('href="/upgrade?from=clip_card"'); expect(on).toContain('990'); expect(on).not.toContain('Нужен тариф побольше');
   });
+});
+
+it('compact packages retain canonical amounts, actual TEST marker and per-offer disabled reasons', async () => {
+  const { UpgradeScreen } = await import('../apps/web/src/app/upgrade/UpgradeScreen');
+  const props = { creditMode: true, catalogOnly: false, salesEnabled: false, title: 'Про', price: '3990 ₽', days: 30, paidMinutes: 270,
+    current: { plan: 'free' as const, plan_source: 'default', plan_paid_until: null } };
+  const html = renderToStaticMarkup(createElement(UpgradeScreen, props));
+  for (const sku of ['start_v1', 'pro_v1', 'addon_v1']) {
+    expect(html).toContain(`data-sku="${sku}"`);
+    expect(html).toContain(`aria-describedby="offer-reason-${sku}"`);
+  }
+  expect(html.match(/disabled=""/g)).toHaveLength(3);
+  expect(html).not.toContain('TEST');
+  expect(renderToStaticMarkup(createElement(UpgradeScreen, { ...props, testMode: true }))).toContain('TEST · Тестовая оплата');
+  expect(html).toContain('Продажа новых пакетов временно выключена');
+});
+
+it('upgrade guards precede private reads and header uses exactly one existing credit read', async () => {
+  vi.resetModules();
+  let authenticated = true;
+  const readBilling = vi.fn(async () => ({ billing_policy: 'credits_v1', plan: 'free', plan_source: 'default', plan_paid_until: null, owner_unlimited: false }));
+  const readBalance = vi.fn(async (_pool: unknown, _accountId: string): Promise<{ available_seconds: number; reserved_seconds: number; next_expiry: null } | null> => ({ available_seconds: 121, reserved_seconds: 0, next_expiry: null }));
+  const readWindows = vi.fn(async () => null);
+  vi.doMock('@clipmaker/db', () => ({ readAccountBilling: readBilling, readCreditBalance: readBalance, readCreditPurchaseWindows: readWindows }));
+  vi.doMock('../apps/web/src/server/runtime', () => ({ getRuntime: () => ({ pool: {}, payments: null,
+    config: { billingMode: 'credits_v1', payments: { mode: 'off' }, limits: { N5_LIMIT_PAID_USER_MINUTES: 270 } },
+    auth: { authenticate: async () => authenticated ? { account_id: '11111111-1111-4111-8111-111111111111' } : null } }) }));
+  vi.doMock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'private-test-session' }) }), headers: async () => new Headers({ cookie: 'n5_theme=light' }) }));
+  vi.doMock('next/navigation', () => ({ redirect: (path: string) => { throw new Error(`REDIRECT ${path}`); }, useRouter: () => ({ refresh() {}, push() {} }) }));
+  try {
+    const { default: UpgradePage } = await import('../apps/web/src/app/upgrade/page');
+    authenticated = false;
+    await expect(UpgradePage({ searchParams: Promise.resolve({}) })).rejects.toThrow('REDIRECT /#auth');
+    expect(readBilling).not.toHaveBeenCalled(); expect(readBalance).not.toHaveBeenCalled();
+    authenticated = true;
+    const html = renderToStaticMarkup(await UpgradePage({ searchParams: Promise.resolve({}) }));
+    expect(readBalance).toHaveBeenCalledTimes(1); expect(readWindows).toHaveBeenCalledTimes(1);
+    expect(readBalance.mock.calls[0]?.[1]).toBe('11111111-1111-4111-8111-111111111111');
+    expect(html).toContain('2,02 кредитов'); expect(html).not.toContain('TEST');
+    readBalance.mockResolvedValueOnce(null);
+    const unavailable = renderToStaticMarkup(await UpgradePage({ searchParams: Promise.resolve({}) }));
+    expect(unavailable).toContain('Баланс недоступен'); expect(unavailable).not.toContain('Баланс <strong>0');
+  } finally {
+    for (const name of ['@clipmaker/db', '../apps/web/src/server/runtime', 'next/headers', 'next/navigation']) vi.doUnmock(name);
+    vi.resetModules();
+  }
 });

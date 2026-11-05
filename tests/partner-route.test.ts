@@ -1,6 +1,6 @@
 import { beforeEach, it, expect, vi } from 'vitest';
 const deps = vi.hoisted(() => ({
-  auth: { authenticate: vi.fn() }, partners: { apply: vi.fn(), dashboard: vi.fn(), createCode: vi.fn() },
+  auth: { authenticate: vi.fn() }, partners: { apply: vi.fn(), dashboard: vi.fn(), createCode: vi.fn(), ensurePersonalLink: vi.fn() },
   video: { create: vi.fn() }, publicOrigin: 'https://app.example', trustedProxyHops: 1, allowMutation: vi.fn(),
 }));
 vi.mock('../apps/web/src/server/upload-runtime', () => ({ getUploadRuntime: () => deps }));
@@ -56,4 +56,32 @@ it('createCode uses session owner and rejects owner injection and malformed camp
   expect(deps.partners.createCode).toHaveBeenCalledOnce();
   deps.auth.authenticate.mockResolvedValue(null);
   expect((await call({ code: 'BLOGGER1' })).status).toBe(401);
+});
+
+const personalRequest = (input: unknown = {}, origin = 'https://app.example') => {
+  const headers = request().headers; headers.set('origin', origin);
+  return new Request('https://app.example/api/trpc/partner.ensurePersonalLink', { method: 'POST', headers, body: JSON.stringify(input) });
+};
+it('personal link mutation uses session and rejects injected input', async () => {
+  deps.partners.ensurePersonalLink.mockResolvedValue({ id: 'own', code: 'AUTO12345678', status: 'active', blocked_reason: null });
+  const response = await POST(personalRequest()); expect(response.status).toBe(202);
+  expect(response.headers.get('cache-control')).toContain('no-store');
+  expect(deps.partners.ensurePersonalLink).toHaveBeenCalledWith('session-account');
+  for (const input of [{ account_id: 'foreign' }, { is_blogger: true }, { code: 'MANUAL12' }, null]) expect((await POST(personalRequest(input))).status).toBe(422);
+  expect(deps.partners.ensurePersonalLink).toHaveBeenCalledOnce();
+  deps.partners.ensurePersonalLink.mockRejectedValue(new Error('private database details'));
+  const failed = await POST(personalRequest()); expect(failed.status).toBe(500); expect(await failed.text()).not.toContain('private database details');
+});
+it('personal link GET cannot mint', async () => {
+  const response = await GET(new Request('https://app.example/api/trpc/partner.ensurePersonalLink?input=%7B%7D', { headers: request().headers }));
+  expect(response.status).toBe(405); expect(deps.partners.ensurePersonalLink).not.toHaveBeenCalled();
+});
+it('personal link rejects unauthenticated and foreign origin requests', async () => {
+  expect((await POST(personalRequest({}, 'https://foreign.test.invalid'))).status).toBe(403);
+  deps.auth.authenticate.mockResolvedValue(null); expect((await POST(personalRequest())).status).toBe(401);
+  expect(deps.partners.ensurePersonalLink).not.toHaveBeenCalled();
+});
+it('personal link rate refusal precedes body and service', async () => {
+  deps.allowMutation.mockResolvedValue(false); const req = personalRequest(), reader = vi.spyOn(req.body!, 'getReader');
+  expect((await POST(req)).status).toBe(429); expect(reader).not.toHaveBeenCalled(); expect(deps.partners.ensurePersonalLink).not.toHaveBeenCalled();
 });
