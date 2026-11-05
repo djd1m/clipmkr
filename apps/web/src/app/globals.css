@@ -495,5 +495,6 @@ html:has(.workspace-shell), :root[data-theme=light]:has(.workspace-shell), body:
   :root[data-workspace-layout=studio] .workspace-ready .clip-preview { width:min(100%,17rem); }
   :root[data-workspace-layout=studio] .workspace-shell .studio-plan-row { grid-template-columns:1.6rem minmax(0,1fr); padding:1rem 0; }
   :root[data-workspace-layout=studio] .studio-plan .package-end { grid-column:2; justify-content:flex-start; max-width:none; }
+  :root[data-workspace-layout=studio] .studio-plan button { min-width:min(9rem,100%); }
   :root[data-workspace-layout=studio] .studio-plans-intro h1 { font-size:2.4rem; }
 }

@@ -228,6 +228,52 @@ for (const [name, launcher] of Object.entries({ chromium, webkit })) describe(`m
       }
     });
   });
+  it.each([320, 390].flatMap(width => ['catalogOnly', 'salesOff'].map(branch => [width, branch] as const)))('unavailable packages reflow at 200%% text on %ipx (%s) without clipping terms or actions', async (width, branch) => {
+    await open(browser, 'plans', 3, width, async page => {
+      // Те же ветки UpgradePage: legacy catalogue без windows и credits_v1 при выключенной продаже.
+      const patch = { catalogOnly: branch === 'catalogOnly', salesEnabled: false };
+      await page.evaluate(patch => (window as unknown as Window & { renderAccount(account: string, patch: object): void }).renderAccount('reflow', { ...patch, ...(patch.catalogOnly ? { purchaseWindows: undefined } : {}) }), patch);
+      await expect.poll(() => page.locator('.workspace-package button:disabled').count()).toBe(3);
+      for (const layout of ['workspace', 'studio']) for (const theme of ['light', 'dark']) {
+        await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+        await preferences(page, layout, theme);
+        const before = await page.locator('.workspace-package button').first().evaluate(node => {
+          const style = getComputedStyle(node); return { font: parseFloat(style.fontSize), padding: parseFloat(style.paddingTop), height: node.getBoundingClientRect().height };
+        });
+        await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+        await page.evaluate(() => new Promise<void>(done => requestAnimationFrame(() => requestAnimationFrame(() => done()))));
+        expect(await page.locator('html').evaluate(node => ({ font: parseFloat(getComputedStyle(node).fontSize), width: node.scrollWidth })), `${layout}/${theme} root bounds`).toEqual({ font: 32, width });
+        checks.assertContent(await checks.content(page), 3, layout, 'plans');
+        expect(await page.locator('.packages-help').getAttribute('open')).toBeNull();
+        for (const sku of ['start_v1', 'pro_v1', 'addon_v1']) {
+          const offer = page.locator(`[data-sku="${sku}"]`), button = offer.locator('button'), terms = offer.locator('.package-purchase-terms');
+          expect(await terms.isVisible()).toBe(true);
+          expect(await terms.innerText()).toContain('Покупка разовая, без автоматического списания');
+          expect(await terms.innerText()).toContain('неиспользованный остаток сгорает');
+          expect(await offer.locator(`#offer-reason-${sku}`).innerText()).toBe(branch === 'catalogOnly' ? 'Покупка этих пакетов для вашего аккаунта пока недоступна.' : 'Продажа новых пакетов временно выключена.');
+          expect(await button.isDisabled()).toBe(true);
+          await button.scrollIntoViewIfNeeded();
+          const bounds = await offer.evaluate(node => {
+            const button = node.querySelector('button')!, terms = node.querySelector('.package-purchase-terms')!, style = getComputedStyle(button);
+            const b = button.getBoundingClientRect(), t = terms.getBoundingClientRect();
+            const text = document.createRange(); text.selectNodeContents(button);
+            return { left: b.left, right: b.right, top: b.top, bottom: b.bottom, height: b.height, viewport: innerWidth, viewportHeight: innerHeight,
+              termsBottom: t.bottom, font: parseFloat(style.fontSize), padding: parseFloat(style.paddingTop),
+              textFits: Array.from(text.getClientRects()).every(r => r.left >= b.left && r.right <= b.right && r.top >= b.top && r.bottom <= b.bottom) };
+          });
+          expect(bounds.left).toBeGreaterThanOrEqual(0); expect(bounds.right).toBeLessThanOrEqual(bounds.viewport);
+          expect(bounds.top).toBeGreaterThanOrEqual(0); expect(bounds.bottom).toBeLessThanOrEqual(bounds.viewportHeight);
+          expect(bounds.top).toBeGreaterThanOrEqual(bounds.termsBottom);
+          expect(bounds.font).toBeCloseTo(before.font * 2, 1); expect(bounds.padding).toBeCloseTo(before.padding * 2, 1);
+          expect(bounds.height).toBeGreaterThanOrEqual(before.height * 2 - 1); expect(bounds.textFits).toBe(true);
+        }
+        // Disabled CTA не входит в Tab order; следующий шаг остаётся доступен с клавиатуры.
+        const help = page.locator('.packages-help summary'); await help.focus(); await page.keyboard.press('Enter');
+        expect(await page.locator('.packages-help').getAttribute('open')).not.toBeNull(); await page.keyboard.press('Enter');
+        await page.keyboard.press('Tab'); expect(await page.locator('a[href="/dashboard"]').last().evaluate(node => node === document.activeElement)).toBe(true);
+      }
+    });
+  });
   it('approved_screen_regions_reject_legacy_bodies', async () => {
     for (const screen of ['upload', 'ready', 'plans']) await open(browser, screen, 3, 1440, async page => {
       for (const layout of ['workspace', 'studio']) {
