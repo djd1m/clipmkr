@@ -67,3 +67,9 @@
 Provider read-only preflight10:17:18UTC: TESTshop подтверждён, все15платежей TEST (10succeeded/5canceled), pending0. В старой БД created0, в текущей public БД три created: точечные providerGET показывают2canceled/1succeeded с совпадающими test/shop/order. Значит drain НЕ пройден, нужно штатное reconciliation; ручные кредиты/SQL замены запрещены. Это важный незакрытый приёмочный пункт.
 
 Следующий config-only блок потребует feature-adr requirements/OpenSpec/plan/K2 и независимого opsreview до apply. Candidate должен сохранять6файлов/Resend/image/nonweb/data, сначала включать только TESTreceiver с checkout=false; отдельно проверять точный callbackroute/IPchain, затем штатное reconciliation; открывать checkout после этого. Cloud не менять. Новые оплаченные попытки до этого не создавать.
+
+## Подтверждение владельца по входу
+
+После нажатия вкладки владелец подтвердил «Появляется Войти в clipmkr», затем «теперь все работает!». Инцидент недоступности переключения закрыт без изменения пароля, ролей или кода. Подтверждена UX-неоднозначность: серое доступное действие было воспринято как disabled. Требуется учитывать при следующем согласованном макете, не утверждая несуществующий backend defect.
+
+Pinned dz teach успешно записал урок `teach:022538219dc14c96`, actual writer `/home/clipmkr/.dz`, no-mirror; recall до диагностики выполнен. Подтверждение обычного входа не является отдельным подтверждением reset→login после восстановления пароля: этот recovery-пункт остаётся открытым.
