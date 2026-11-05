@@ -56,4 +56,3 @@ stdout | tests/credit-packages.integration.test.ts > credit packages on isolated
       Tests  97 passed (97)
    Start at  12:17:21
    Duration  23.38s (transform 1.32s, setup 0ms, collect 2.49s, tests 19.14s, environment 1ms, prepare 557ms)
-

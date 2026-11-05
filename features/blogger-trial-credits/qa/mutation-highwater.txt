@@ -169,7 +169,7 @@ AssertionError: expected { …(16) } to match object { total_seconds: 7200, …(
     224|     expect(await trial(id)).toMatchObject({ total_seconds: 7200, remai…
        |                             ^
     225|   });
-    226| 
+    226|
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
 
@@ -197,4 +197,3 @@ AssertionError: expected false to be true // Object.is equality
       Tests  10 failed | 6 passed (16)
    Start at  12:16:58
    Duration  6.67s (transform 369ms, setup 0ms, collect 473ms, tests 5.90s, environment 0ms, prepare 87ms)
-

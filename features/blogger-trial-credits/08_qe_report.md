@@ -60,3 +60,7 @@ Full suite, S3, remote CI, live UI и адресный backfill не выпол�
 ```json
 {"ok":true,"kind":"ledger","stage":"qe","verdict":"written","exit":0,"reason":"appended and verified by re-reading the tail","blocking":false,"target":"/tmp/clipmkr-blogger-trial-20261105/.dz/feature-adr/run-cost-ledger.jsonl"}
 ```
+
+При публикации текстовых логов удалены концевые пробелы и пустые строки в конце файла.
+Исходные raw logs сохранены закрыто; команды, assertion/results и проверенные исходники
+не изменялись. Структурное ревью кода этим форматированием не подменялось.

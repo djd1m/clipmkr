@@ -126,7 +126,7 @@ AssertionError: expected { …(16) } to deeply equal { …(16) }
     103|     expect(await trial(id)).toEqual({ ...before, total_seconds: 9000, …
        |                             ^
     104|   });
-    105| 
+    105|
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
 
@@ -225,7 +225,7 @@ AssertionError: expected { …(16) } to match object { total_seconds: 7200, …(
     224|     expect(await trial(id)).toMatchObject({ total_seconds: 7200, remai…
        |                             ^
     225|   });
-    226| 
+    226|
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
 
@@ -234,4 +234,3 @@ AssertionError: expected { …(16) } to match object { total_seconds: 7200, …(
       Tests  12 failed | 4 passed (16)
    Start at  12:16:51
    Duration  6.39s (transform 302ms, setup 0ms, collect 398ms, tests 5.70s, environment 0ms, prepare 83ms)
-

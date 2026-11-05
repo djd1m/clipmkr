@@ -52,4 +52,3 @@ AssertionError: expected { kind: 'not_found' } to match object { kind: 'updated'
       Tests  1 failed | 15 passed (16)
    Start at  12:16:30
    Duration  6.46s (transform 285ms, setup 0ms, collect 377ms, tests 5.78s, environment 0ms, prepare 82ms)
-
