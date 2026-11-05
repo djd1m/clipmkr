@@ -17,9 +17,9 @@
 <header class="topbar"><div class="brand"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M3 6h10l12 8-12 8H3V6Z" stroke="currentColor" stroke-width="2"/><path d="m11 10 6 4-6 4v-8Z" fill="currentColor"/></svg>clipmkr<span class="edition"> / журнал работы</span></div><div class="actions"><button class="btn primary" id="present">Режим показа ↗</button><button class="btn" id="print">Печать</button></div></header>
 <main id="main">
 <div class="hero"><p class="eyebrow">Отчёт для занятия · 30 октября — 5 ноября 2026</p><h1>От работающего клипа<br>к доказанному результату<span style="color:var(--green)">.</span></h1><div class="hero-bottom"><p class="lede">Что изменилось в Clipmkr за неделю, зачем это было нужно и какие обещания ещё предстоит подтвердить.</p><div class="note"><p><strong>Только Clipmkr. Срез на <span id="cutoff"></span>.</strong><br>У каждого результата своя граница проверки. Зелёный тест, согласованный макет и пройденный пользовательский путь учитываются отдельно.</p><p style="margin-bottom:0" id="coverage"></p></div></div></div>
-<nav class="chapter-nav" aria-label="Разделы отчёта"><a href="#progress">01 / Карта прогресса</a><a href="#history">02 / Хронология</a><a href="#next">03 / План</a><a href="#lessons">04 / Уроки</a></nav>
+<nav class="chapter-nav" aria-label="Разделы отчёта"><a href="#design-references">CJM и макеты ↗</a><a href="#progress">01 / Карта прогресса</a><a href="#history">02 / Хронология</a><a href="#next">03 / План</a><a href="#lessons">04 / Уроки</a></nav>
 <noscript><p class="noscript">Для поиска и отображения встроенных данных включите JavaScript в браузере. Файл работает локально без сети. Краткое содержание: подтверждён короткий путь до воспроизведения и скачивания; текущая полная приёмка и настоящая оплата не завершены; частичный повтор и автоматическая ссылка — одобренные макеты; перенос базы остановлен.</p></noscript>
-<section id="progress"><div class="section-heading"><span class="section-no">01</span><div><h2>Прогресс без общего процента</h2><p class="section-subtitle">Внедрённые исправления, решения по интерфейсу и будущая приёмка находятся на разных уровнях. Ниже — карта результатов, а не оценка готовности всего продукта.</p></div></div><div class="summary-grid" id="summary"></div><div class="count-strip" id="event-counts" aria-label="Количество событий по статусу"></div><div class="boundary"><h3>Полная приёмка<br>ещё открыта</h3><div><p>На Cloud-стенде 4 ноября пройдены 90/120 минут и TEST-покупки с возвратом. Это исторические результаты конкретной версии и среды.</p><p style="margin-top:14px">Повторная полная приёмка изменённой версии 5 ноября ещё открыта. Локальный платёжный candidate не доказывает новую реальную оплату. Частичный повтор и личная ссылка — одобренные макеты.</p></div></div></section>
+<section id="design-references"><div class="section-heading"><span class="section-no">↗</span><div><h2>CJM и макеты</h2><p class="section-subtitle">Прямые ссылки на GitHub: схемы пути, обязательная приёмка, HTML и PNG макетов. Выбранный исторически CJM D и статус каждого макета подписаны отдельно. Ссылки требуют сети и открываются только по нажатию.</p><button class="btn primary no-print" id="present-designs" style="margin-bottom:25px">Показать слайд «CJM и макеты» ↗</button></div></div><div class="plan-grid" id="design-list"></div></section><section id="progress"><div class="section-heading"><span class="section-no">01</span><div><h2>Прогресс без общего процента</h2><p class="section-subtitle">Внедрённые исправления, решения по интерфейсу и будущая приёмка находятся на разных уровнях. Ниже — карта результатов, а не оценка готовности всего продукта.</p></div></div><div class="summary-grid" id="summary"></div><div class="count-strip" id="event-counts" aria-label="Количество событий по статусу"></div><div class="boundary"><h3>Полная приёмка<br>ещё открыта</h3><div><p>На Cloud-стенде 4 ноября пройдены 90/120 минут и TEST-покупки с возвратом. Это исторические результаты конкретной версии и среды.</p><p style="margin-top:14px">Повторная полная приёмка изменённой версии 5 ноября ещё открыта. Локальный платёжный candidate не доказывает новую реальную оплату. Частичный повтор и личная ссылка — одобренные макеты.</p></div></div></section>
 <section id="history"><div class="section-heading"><span class="section-no">02</span><div><h2>Изменение → польза → доказательство</h2><p class="section-subtitle">Хронология содержательных событий. Раскройте карточку, чтобы увидеть проверки и точный источник. Поиск и фильтры применяются только к этим событиям.</p></div></div><form class="filters" id="filters" role="search"><div class="field"><label for="search">Найти в событиях</label><input id="search" type="search" placeholder="Например: клипы, почта, оплата" autocomplete="off"></div><div class="field"><label for="status">Статус</label><select id="status"><option value="">Все статусы</option></select></div><div class="field"><label for="topic">Тема</label><select id="topic"><option value="">Все темы</option></select></div><button class="btn" type="reset">Сбросить</button></form><div class="results-line"><span id="results" role="status" aria-live="polite" aria-atomic="true"></span><span>Источник открывается только по нажатию · новая вкладка</span></div><div class="timeline" id="timeline"></div><div class="empty" id="empty" hidden><h3>Ничего не найдено</h3><p>Измените запрос или сбросьте фильтры.</p><button class="btn" id="empty-reset">Сбросить фильтры</button></div></section>
 <section id="next"><div class="section-heading"><span class="section-no">03</span><div><h2>Следующие сценарии</h2><p class="section-subtitle">Отдельный план: где идёт работа, что ждёт реализации, что заблокировано и что остановлено владельцем. Критерии ниже описывают будущую проверку.</p></div></div><div class="count-strip" id="next-counts" style="margin:0 0 25px" aria-label="Количество следующих действий по статусу"></div><div class="plan-grid" id="plan"></div></section>
 <section id="lessons"><div class="section-heading"><span class="section-no">04</span><div><h2>Уроки, которые меняют работу</h2><p class="section-subtitle">Ошибки и ограничения полезны, когда превращаются в конкретный способ действовать и проверять результат.</p></div></div><div class="lessons-grid" id="lesson-list"></div></section>
@@ -1295,6 +1295,203 @@
         "e21"
       ]
     }
+  ],
+  "designReferences": [
+    {
+      "id": "cjm",
+      "title": "CJM и обязательная приёмка",
+      "statusLabel": "Исторически выбран CJM D",
+      "description": "CJM D — путь A плюс клипы для гостя (CLAUDE.md). A/B/C в документе — варианты; наличие схемы не доказывает прохождение сценария.",
+      "sources": [
+        {
+          "path": "docs/CJM_Variants.html",
+          "label": "CJM — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/CJM_Variants.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/CJM_Variants.md",
+          "label": "CJM — Markdown",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/CJM_Variants.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "label": "Обязательная приёмка",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/acceptance/core-cjm.md",
+          "workingTree": false
+        },
+        {
+          "path": "CLAUDE.md",
+          "label": "Выбор CJM D",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/CLAUDE.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "main",
+      "title": "Основной макет · 4 ноября",
+      "statusLabel": "Исторический макет",
+      "description": "Исходный дизайн для сопоставления с изменениями. Его наличие не является новой приёмкой текущего приложения.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-04-mockup.html",
+          "label": "Макет — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/2026-11-04-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/mockup-home-1440.png",
+          "label": "Главная — PNG, 1440",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/mockup-home-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/mockup-home-390.png",
+          "label": "Главная — PNG, 390",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/mockup-home-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "public-entry",
+      "title": "Публичный вход · 5 ноября",
+      "statusLabel": "Согласованный макет; реализация — в хронологии",
+      "description": "Публичный вход и главная. Подтверждённый результат реализации описан отдельно в событии e09.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-public-entry-mockup.html",
+          "label": "Public entry — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/2026-11-05-public-entry-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/public-entry-light-1440.png",
+          "label": "Светлая тема — PNG, 1440",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/public-entry-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/public-entry-dark-390.png",
+          "label": "Тёмная тема — PNG, 390",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/public-entry-dark-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "auto-link",
+      "title": "Личная ссылка блогера",
+      "statusLabel": "Макет одобрен; реализация впереди",
+      "description": "Блогер копирует готовую личную ссылку. Одобрение конкретного макета не доказывает автоматическую выдачу ссылки в runtime.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-blogger-auto-link.html",
+          "label": "Личная ссылка — HTML",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/2026-11-05-blogger-auto-link.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/blogger-auto-link-light-1440.png",
+          "label": "Личная ссылка — PNG, 1440",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/screenshots/blogger-auto-link-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/blogger-auto-link-light-390.png",
+          "label": "Личная ссылка — PNG, 390",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/screenshots/blogger-auto-link-light-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "partial",
+      "title": "Частичный повтор клипа",
+      "statusLabel": "Макет одобрен; реализация впереди",
+      "description": "Повтор только неготового клипа и сохранение готового результата. Не названо внедрённой функцией.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-partial-render-recovery-mockup.html",
+          "label": "Частичный повтор — HTML",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/2026-11-05-partial-render-recovery-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/partial-render-recovery-1440.png",
+          "label": "Частичный повтор — PNG, 1440",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/screenshots/partial-render-recovery-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/partial-render-recovery-390.png",
+          "label": "Частичный повтор — PNG, 390",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/screenshots/partial-render-recovery-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "ux",
+      "title": "Новый UX трёх ролей",
+      "statusLabel": "Ожидает согласования",
+      "description": "Новый набор экранов: пользователь, блогер и владелец. Это предложение для обсуждения; согласование и реализация не подтверждены.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-ux-simplification.html",
+          "label": "Новый UX — HTML",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/2026-11-05-ux-simplification.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-ordinary-light-1440.png",
+          "label": "Пользователь — PNG, 1440",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-ordinary-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-blogger-light-1440.png",
+          "label": "Блогер — PNG, 1440",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-blogger-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-owner-light-1440.png",
+          "label": "Владелец — PNG, 1440",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-owner-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-ordinary-light-390.png",
+          "label": "Пользователь — PNG, 390",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-ordinary-light-390.png",
+          "workingTree": false
+        }
+      ]
+    }
   ]
 }
 </script>
@@ -1323,16 +1520,19 @@ function renderEvents(){const query=$('search').value.trim().toLocaleLowerCase('
 $('search').addEventListener('input',renderEvents);$('status').addEventListener('change',renderEvents);$('topic').addEventListener('change',renderEvents);$('filters').addEventListener('submit',event=>event.preventDefault());$('filters').addEventListener('reset',()=>setTimeout(renderEvents,0));$('empty-reset').addEventListener('click',()=>{$('filters').reset();$('search').focus()});renderEvents();
 $('plan').innerHTML=data.nextSteps.map(eventMarkup).join('');
 $('lesson-list').innerHTML=data.lessons.map((item,index)=>`<article class="lesson" id="${esc(item.id)}"><div class="lesson-num">${String(index+1).padStart(2,'0')}</div><h3>${esc(item.title)}</h3><p>${esc(item.what)}</p><p class="why"><strong>Как применять.</strong> ${esc(item.why)}</p><p class="limitation"><strong>Граница.</strong> ${esc(item.limitations)}</p>${detailMarkup(item)}</article>`).join('');
+function designMarkup(item){return `<article class="event"><p class="eyebrow">${esc(item.statusLabel)}</p><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p>${sourcesMarkup(item.sources)}</article>`}
+$('design-list').innerHTML=data.designReferences.map(designMarkup).join('');
 $('guardrails').innerHTML=data.guardrails.map(line=>`<li>${esc(line)}</li>`).join('');
 const byId=new Map([...data.events,...data.lessons,...data.nextSteps].map(item=>[item.id,item]));
 const slides=[
- {title:'Один клип — ещё не весь продукт',description:'Учебная история Clipmkr за 30 октября — 5 ноября: какой результат появился, чем он доказан и где заканчивается доказательство.',summary:true},
  ...data.story.map((story,index)=>({title:story.title,description:['Сквозной путь должен завершаться воспроизводимым и скачиваемым результатом.','Каждое изменение решает конкретную проблему пользователя или поставки.','Исторический прогон, локальный тест и реальный браузерный путь имеют разные границы.','Замечание становится полезным, когда меняет следующее действие и способ проверки.','Согласованные решения и открытые вопросы остаются отдельными от внедрённого результата.'][index]||'',ids:story.eventIds||story.lessonIds||[]})),
+ {title:'CJM и макеты',description:'Откройте HTML или PNG на точной ревизии GitHub. Новый UX ожидает согласования; одобренные макеты остаются отдельными от реализации.',designs:true},
  {title:'Следующая цель — закрыть сценарий',description:'Завершить текущую полную приёмку, отдельно подтвердить оплату и реализовать согласованные UX-решения. Перенос данных остаётся остановленным.',ids:data.nextSteps.map(item=>item.id)}
 ];
 let slideIndex=0,returnFocus=null;
-function renderSlide(){const slide=slides[slideIndex];$('slide-counter').textContent=`${slideIndex+1} / ${slides.length}`;const items=slide.summary?data.summary:(slide.ids||[]).map(id=>byId.get(id)).filter(Boolean);$('slide-content').innerHTML=`<h2 class="slide-title" id="slide-title" tabindex="-1">${esc(slide.title)}</h2><p class="slide-description">${esc(slide.description)}</p><div class="slide-grid">${items.map(item=>`<article class="slide-item">${badge(item.status)}<h3>${esc(item.title)}</h3><p>${esc(item.text||item.what)}</p>${item.limitations?`<p class="slide-limit"><strong>Граница.</strong> ${esc(item.limitations)}</p>`:''}${!slide.summary?`<a href="#${esc(item.id)}" class="slide-source" data-event-id="${esc(item.id)}" style="font-size:14px">К карточке и источникам ↓</a>`:''}</article>`).join('')}</div>`;$('previous').disabled=slideIndex===0;$('next-slide').disabled=slideIndex===slides.length-1;$('slide-content').scrollTop=0;}
+function renderSlide(){const slide=slides[slideIndex];$('slide-counter').textContent=`${slideIndex+1} / ${slides.length}`;const items=slide.summary?data.summary:(slide.ids||[]).map(id=>byId.get(id)).filter(Boolean);$('slide-content').innerHTML=`<h2 class="slide-title" id="slide-title" tabindex="-1">${esc(slide.title)}</h2><p class="slide-description">${esc(slide.description)}</p><div class="slide-grid">${slide.designs?data.designReferences.map(designMarkup).join(''):items.map(item=>`<article class="slide-item">${badge(item.status)}<h3>${esc(item.title)}</h3><p>${esc(item.text||item.what)}</p>${item.limitations?`<p class="slide-limit"><strong>Граница.</strong> ${esc(item.limitations)}</p>`:''}${!slide.summary?`<a href="#${esc(item.id)}" class="slide-source" data-event-id="${esc(item.id)}" style="font-size:14px">К карточке и источникам ↓</a>`:''}</article>`).join('')}</div>`;$('previous').disabled=slideIndex===0;$('next-slide').disabled=slideIndex===slides.length-1;$('slide-content').scrollTop=0;}
 function moveSlide(delta){const next=Math.max(0,Math.min(slides.length-1,slideIndex+delta));if(next!==slideIndex){slideIndex=next;renderSlide();$('slide-title').focus({preventScroll:true})}}
+$('present-designs').addEventListener('click',()=>{returnFocus=document.activeElement;slideIndex=slides.findIndex(item=>item.designs);renderSlide();$('presentation').showModal();$('close-presentation').focus()});
 $('present').addEventListener('click',()=>{returnFocus=document.activeElement;slideIndex=0;renderSlide();$('presentation').showModal();$('close-presentation').focus()});$('close-presentation').addEventListener('click',()=>$('presentation').close());$('presentation').addEventListener('close',()=>{if(returnFocus?.isConnected)returnFocus.focus({preventScroll:true})});$('previous').addEventListener('click',()=>moveSlide(-1));$('next-slide').addEventListener('click',()=>moveSlide(1));$('presentation').addEventListener('keydown',event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();moveSlide(event.key==='ArrowRight'?1:-1)}});$('presentation').addEventListener('click',event=>{const link=event.target.closest('[data-event-id]');if(link){event.preventDefault();const id=link.dataset.eventId;returnFocus=null;$('presentation').close();if(data.events.some(item=>item.id===id)){$('search').value='';$('status').value='';$('topic').value='';renderEvents()}const target=$(id);if(target){target.querySelector('details').open=true;target.setAttribute('tabindex','-1');target.focus();target.scrollIntoView({block:'start'})}}});
 let printState=null;window.addEventListener('beforeprint',()=>{if(printState)return;printState={filters:[$('search').value,$('status').value,$('topic').value],open:[...document.querySelectorAll('article:has(details[open])')].map(item=>item.id)};$('search').value='';$('status').value='';$('topic').value='';renderEvents();document.querySelectorAll('details').forEach(item=>item.open=true)});window.addEventListener('afterprint',()=>{if(!printState)return;[$('search').value,$('status').value,$('topic').value]=printState.filters;renderEvents();document.querySelectorAll('details').forEach(item=>item.open=printState.open.includes(item.closest('article')?.id));printState=null});$('print').addEventListener('click',()=>window.print());
 </script>

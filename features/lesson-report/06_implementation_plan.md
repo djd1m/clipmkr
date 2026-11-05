@@ -44,6 +44,15 @@ trial-code deployed, auto-link/partial approved-only, UX redesign in progress,
 заново ради рассказа; исторические результаты подписаны своей датой/границей.
 Полнота этого файла не означает правильность всех фактов, это задача T3.
 
+- T5 — specification/implementation; FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-8:
+  проверить существование Git-файлов CJM/макетов/PNG по точным ревизиям; добавить
+  каталог ссылок в canonical JSON, заметный раздел и отдельный слайд HTML, обновить
+  инструкцию; сохранить LR-01/LR-02. План принят координатором по прямому запросу
+  владельца; до HTML повторить настоящий K2. После: file:// Chrome offline 1440/390,
+  canonical equality, ссылки/клавиатура/слайд, network0/JSerrors0/overflow0 и печать.
+  Обновить author-handoff; новая правка требует originating Astra recheck и нового
+  host snapshot, прежнее QE не переносится на новые байты.
+
 EXPECTED_CODE_TARGETS:
 - docs/reports/2026-11-05-lesson-report.html
 - docs/reports/2026-11-05-lesson-data.json

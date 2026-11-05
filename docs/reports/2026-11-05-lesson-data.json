@@ -1266,5 +1266,202 @@
         "e21"
       ]
     }
+  ],
+  "designReferences": [
+    {
+      "id": "cjm",
+      "title": "CJM и обязательная приёмка",
+      "statusLabel": "Исторически выбран CJM D",
+      "description": "CJM D — путь A плюс клипы для гостя (CLAUDE.md). A/B/C в документе — варианты; наличие схемы не доказывает прохождение сценария.",
+      "sources": [
+        {
+          "path": "docs/CJM_Variants.html",
+          "label": "CJM — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/CJM_Variants.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/CJM_Variants.md",
+          "label": "CJM — Markdown",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/CJM_Variants.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "label": "Обязательная приёмка",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/acceptance/core-cjm.md",
+          "workingTree": false
+        },
+        {
+          "path": "CLAUDE.md",
+          "label": "Выбор CJM D",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/CLAUDE.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "main",
+      "title": "Основной макет · 4 ноября",
+      "statusLabel": "Исторический макет",
+      "description": "Исходный дизайн для сопоставления с изменениями. Его наличие не является новой приёмкой текущего приложения.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-04-mockup.html",
+          "label": "Макет — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/2026-11-04-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/mockup-home-1440.png",
+          "label": "Главная — PNG, 1440",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/mockup-home-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/mockup-home-390.png",
+          "label": "Главная — PNG, 390",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/mockup-home-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "public-entry",
+      "title": "Публичный вход · 5 ноября",
+      "statusLabel": "Согласованный макет; реализация — в хронологии",
+      "description": "Публичный вход и главная. Подтверждённый результат реализации описан отдельно в событии e09.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-public-entry-mockup.html",
+          "label": "Public entry — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/2026-11-05-public-entry-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/public-entry-light-1440.png",
+          "label": "Светлая тема — PNG, 1440",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/public-entry-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/public-entry-dark-390.png",
+          "label": "Тёмная тема — PNG, 390",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/public-entry-dark-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "auto-link",
+      "title": "Личная ссылка блогера",
+      "statusLabel": "Макет одобрен; реализация впереди",
+      "description": "Блогер копирует готовую личную ссылку. Одобрение конкретного макета не доказывает автоматическую выдачу ссылки в runtime.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-blogger-auto-link.html",
+          "label": "Личная ссылка — HTML",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/2026-11-05-blogger-auto-link.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/blogger-auto-link-light-1440.png",
+          "label": "Личная ссылка — PNG, 1440",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/screenshots/blogger-auto-link-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/blogger-auto-link-light-390.png",
+          "label": "Личная ссылка — PNG, 390",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/screenshots/blogger-auto-link-light-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "partial",
+      "title": "Частичный повтор клипа",
+      "statusLabel": "Макет одобрен; реализация впереди",
+      "description": "Повтор только неготового клипа и сохранение готового результата. Не названо внедрённой функцией.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-partial-render-recovery-mockup.html",
+          "label": "Частичный повтор — HTML",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/2026-11-05-partial-render-recovery-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/partial-render-recovery-1440.png",
+          "label": "Частичный повтор — PNG, 1440",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/screenshots/partial-render-recovery-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/partial-render-recovery-390.png",
+          "label": "Частичный повтор — PNG, 390",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/screenshots/partial-render-recovery-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "ux",
+      "title": "Новый UX трёх ролей",
+      "statusLabel": "Ожидает согласования",
+      "description": "Новый набор экранов: пользователь, блогер и владелец. Это предложение для обсуждения; согласование и реализация не подтверждены.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-ux-simplification.html",
+          "label": "Новый UX — HTML",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/2026-11-05-ux-simplification.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-ordinary-light-1440.png",
+          "label": "Пользователь — PNG, 1440",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-ordinary-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-blogger-light-1440.png",
+          "label": "Блогер — PNG, 1440",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-blogger-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-owner-light-1440.png",
+          "label": "Владелец — PNG, 1440",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-owner-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/ux-simplification-ordinary-light-390.png",
+          "label": "Пользователь — PNG, 390",
+          "commit": "9365e990c39660836dc3588af43ff8bb37490e1e",
+          "url": "https://github.com/djd1m/clipmkr/blob/9365e990c39660836dc3588af43ff8bb37490e1e/docs/design/screenshots/ux-simplification-ordinary-light-390.png",
+          "workingTree": false
+        }
+      ]
+    }
   ]
 }

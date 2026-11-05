@@ -36,3 +36,13 @@
 План и факты ведутся в features/lesson-report; OpenSpec используется как требуемый
 журнал дельты документа. Форматные проверки не заменяют браузер и независимую
 проверку значимых статусов.
+
+- **FR-8. CJM и макеты.** По прямому замечанию владельца 05.11.2026 добавить
+  заметный раздел «CJM и макеты» и отдельный слайд с точными GitHub-ссылками на
+  CJM HTML/Markdown, core-CJM, реальные HTML и PNG основного/public-entry,
+  одобренных blogger-auto-link/partial-render и нового UX (ожидает согласования).
+  Исторически выбран CJM D (CLAUDE.md); A/B/C — варианты, а не выполненные сценарии.
+  Проверить файлы через git show, сохранить LR-01/LR-02, заново проверить документ.
+
+OpenSpec дельта: `openspec/changes/lesson-report/specs/lesson-report/spec.md`, SHA-256
+`b7b93653a1cca1802967c9fbb328bacddf9bfa180de5b322bb568cf119ffaf6e` (ревизия FR-8).

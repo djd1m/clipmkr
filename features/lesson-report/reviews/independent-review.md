@@ -1,4 +1,38 @@
-# Независимая проверка учебного отчёта Clipmkr
+# Актуальная проверка дополнения FR-8: CJM и макеты
+
+05.11.2026,15:39UTC. **GO / A− для новой статической ревизии.**
+Originating reviewer самостоятельно прочитал обновлённые requirements/plan/OpenSpec/MD
+и фактический handoff83ec45dd…, сверил8/8 host hashes, nonce и полный changedScope6paths.
+Новая revision: `c509c200be5ce60371fa0b85c043d1a570ce3463028ce66d3b046ae429efc7e3`;
+nonce: `4860c435-8d9d-4abc-823e-9956f25c5811`.
+HTML SHA256 `0caa86ed25e44af1668f3a39a310fe934f484e4a417ced2cc37b8758a8a6c9c6`;
+JSON SHA256 `e8f5ec32cb860c1683930f95c12acfc008c76d3007f9111693c6590e79af3d3d`.
+
+Независимо выполнен `git show commit:path` для **21/21** новых ссылок шести групп,
+URL точно соответствуют существующим файлам. CLAUDE.md подтверждает исторический
+выбор CJM D; варианты A/B/C не названы приёмкой. Согласованные auto-link/partial
+отделены от реализации; новый UX явно ожидает согласования, что соответствует
+прочитанному owner-approval на9365e990. Внешние страницы GitHub не открывались:
+доступ к ним зависит от сети и прав читателя.
+
+Собственный новый focused Playwright/Chromium run от15:39:09UTC — **32/32**:
+file:// offline1440/390,6групп/21ссылка, target blank/noopener, JSON equality,
+прямой вход на слайд6из7, стрелки, Escape/возврат фокуса, focus ссылок, screen и
+print без overflow, resources сохраняются в печати; network0/pageerrors0.
+Mobile screenshot просмотрен. Evidence приватно: `reviewer/fr8.cjs`,
+`fr8-results.json`, `fr8-sources.json`, `fr8-390.png`, `fr8-1440.png`.
+Это32проверки нового документа, прежние118не выданы за повтор на новых байтах.
+
+LR-01scope и LR-02CSS сохранены и независимо перепроверены; исходные conditions
+не изменены, обе verifications — structural на новой revision. Новых находок нет.
+Code/spec anti-drift: FR8 отражён в данных, видимом разделе, отдельном слайде и MD;
+продуктовый runtime не затронут. Фактический historical review и его ограничения
+сохранены ниже. Обновлена только собственная reviewer entry; actual evaluate и
+доставка остаются действиями координатора.
+
+---
+
+# Первоначальная независимая проверка учебного отчёта Clipmkr
 
 **Итог: GO для проверенного статического документа; оценка A−.**
 Открытых подтверждённых дефектов в проверенной области нет. LR-01 и LR-02 исправлены
