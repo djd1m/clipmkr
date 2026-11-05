@@ -1,11 +1,15 @@
 # Тестовый checkout одного аккаунта
 
-Подготовлен M design snapshot на source-базе `24b4b4a`, без runtime/DB/provider/deploy операций.
-Поручение и граница отсутствия нового UI: `owner-authority.md`. User delta — exact path/hash в 01/JSON.
-8 production/config файлов + 5 existing tests + existing provider fixture + 2 test-only файла; без новой таблицы, роли, endpoint, provider или UI.
+5 ноября 2026 года проверенная реализация опубликована только на `https://clipmkr.ru`.
+Глобальная покупка выключена; единственное персональное исключение задаётся закрытой
+серверной настройкой и действует только с тестовыми ключами ЮKassa.
 
-Initial QCSD дал QL-01/QL-02/QT-001; structural rework ожидает нового measured prepare и focused review.
-Root K1 canonical export FREE; новые test module names и K2 ещё pending;
-Astra design проверяется Terra, Sol code — новой Astra. Этот README не является stage receipt.
-Private identity/credentials не читались архитектором и не включены в документы. Существующий
-native TEST flow будет доступен только configured session account при global checkout false.
+- Требования и точная OpenSpec-ревизия: [01_requirements.md](01_requirements.md).
+- Архитектура и план: [05_architecture.md](05_architecture.md), [06_implementation_plan.md](06_implementation_plan.md).
+- Реальные проверки: [08_qe_report.md](08_qe_report.md), [подтверждение координатора](08_host_qe_record.md).
+- Поставка и текущий доступ: [09_runtime_acceptance.md](09_runtime_acceptance.md).
+
+Исходный M-план и ранние находки сохранены как история; текущий source QE закрыт
+после исправлений и независимой проверки другой моделью. Полная приёмка настоящего
+тестового магазина целевым пользователем остаётся отдельным шагом: проверка политики
+доступа не означает совершённую покупку или начисленные кредиты. Cloud.ru не обновлялся.
