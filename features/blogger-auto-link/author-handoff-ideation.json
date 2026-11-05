@@ -1,0 +1,25 @@
+{
+  "addressed": [
+    "Q-BA-01",
+    "R-BAL-01",
+    "T-BAL-01"
+  ],
+  "changedScope": [
+    "features/blogger-auto-link/00_complexity_assessment.md",
+    "features/blogger-auto-link/01_requirements.md",
+    "features/blogger-auto-link/03_adr/001-ensure-personal-link-with-guarded-post.md",
+    "features/blogger-auto-link/05_architecture.md",
+    "features/blogger-auto-link/06_implementation_plan.md",
+    "features/blogger-auto-link/README.md",
+    "features/blogger-auto-link/requirements-revision.json",
+    "openspec/changes/blogger-auto-link/specs/blogger-referral/spec.md"
+  ],
+  "classification": "structural",
+  "delta": "Уточнён запрет copy blocked personal id в раскрытом campaigns при сохранении другой active кампании/ordinary mode; добавлен один интеграционный кейс двух реальных HTTP-сессий → service → PG с ownership/403 и account-substitution falsifier. OpenSpec/FR mapping/hash синхронизированы.",
+  "evidence": "Прочитаны три initial reports reviews/qcsd-{quality,risk,testability}.md и исходные conditions. Изменены только документы требований/ADR/архитектуры/плана и их текущий status. AM-1/AM-2 называют реальные будущие test titles/path; runtime, тесты и K2 ещё не запускались. Изменения каждого semantic input перечислены changedScope; этот handoff и author receipt — выходные review-метаданные.",
+  "newRisks": {
+    "assessment": "Новых рисков после анализа фактической документной дельты не выявлено.",
+    "evidence": "Сохраняются один existing service/endpoint, существующий HTTP/PG browser harness, 9 планируемых файлов, прежние данные/генератор/обычный mode; новые проверки расширяют falsifiability границы принадлежности и раскрытого UI. Runtime не исследован исполнением и не объявлен безопасным.",
+    "conditions": []
+  }
+}

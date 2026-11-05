@@ -1,0 +1,192 @@
+{
+  "passed": true,
+  "engine": "Chromium",
+  "checks": [
+    "Личный блок открыт у загрузки, код придумывать не нужно",
+    "24 сочетания темы/компоновки/ширины/текста без горизонтального переполнения",
+    "390px: действие Создать клипы на первом экране",
+    "Clipboard success/failure проверены контролируемым browser stub; OS clipboard не заявляется",
+    "Загрузка/ошибка/повтор/блокировка и прежний адрес в demo проверены",
+    "Тема и компоновка сохраняются независимо; только 2 demo-ключа",
+    "Focus ring и высота основного действия >=44 px",
+    "axe WCAG 2 A/AA + 2.1 AA Chromium, текущая тёмная Монтажная: 0 нарушений"
+  ],
+  "reflow": [
+    {
+      "theme": "light",
+      "layout": "workspace",
+      "width": 320,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "workspace",
+      "width": 320,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "workspace",
+      "width": 390,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "workspace",
+      "width": 390,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "workspace",
+      "width": 1440,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "workspace",
+      "width": 1440,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "studio",
+      "width": 320,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "studio",
+      "width": 320,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "studio",
+      "width": 390,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "studio",
+      "width": 390,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "studio",
+      "width": 1440,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "layout": "studio",
+      "width": 1440,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "workspace",
+      "width": 320,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "workspace",
+      "width": 320,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "workspace",
+      "width": 390,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "workspace",
+      "width": 390,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "workspace",
+      "width": 1440,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "workspace",
+      "width": 1440,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "studio",
+      "width": 320,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "studio",
+      "width": 320,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "studio",
+      "width": 390,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "studio",
+      "width": 390,
+      "font": 200,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "studio",
+      "width": 1440,
+      "font": 100,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "layout": "studio",
+      "width": 1440,
+      "font": 200,
+      "overflow": false
+    }
+  ],
+  "axeViolations": [],
+  "networkRequests": [],
+  "jsErrors": [],
+  "limitations": [
+    "Скринридер и системный clipboard не проверены",
+    "Идемпотентность/роль/антифрод/runtime не проверяются статическим HTML",
+    "Независимый QE не выполнялся"
+  ]
+}

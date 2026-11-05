@@ -1,0 +1,188 @@
+{
+  "schema": "clipmkr-author-handoff-1",
+  "status": "ready_for_originating_focused_review",
+  "at": "2026-11-05T17:25:49.761189+00:00",
+  "requestedAuthorModel": "gpt-6.1-sol",
+  "requestedReasoning": "high",
+  "sessionId": "01a1ac89-b85c-7d62-9ad0-54d55e1f6d2c",
+  "head": "24b4b4a4be4364659142b1428511fb634378ddbc",
+  "branch": "feat/blogger-auto-link-20261105",
+  "reviewInputNonce": "c2abbe2b-2585-4a6e-8a51-407cc6939753",
+  "reviewInputRevision": "267e3dda26362903d497852cf0bc3aa2c8d165912450689a5db61c6545441865",
+  "currentRework": [
+    "QE-BAL-01",
+    "QE-BAL-02",
+    "QE-BAL-03"
+  ],
+  "changedCodeComparedWithQeInput": [
+    "apps/web/src/app/dashboard/PartnerPanel.tsx",
+    "apps/web/src/app/globals.css",
+    "tests/browser/blogger-auto-link.test.ts"
+  ],
+  "sourceFiles": {
+    "apps/web/src/server/partner.ts": "894b6366f567e58316d67e72f6bdc9c6ad20c1dba60be5b2b3154c2df3f38e37",
+    "apps/web/src/server/trpc.ts": "62a68eeefef45e580f8eace4fc045d24032f48ab2c2d8e2bd3e3fa834e58c4a3",
+    "apps/web/src/lib/rpc.ts": "8d0317153d8ae46102317b0b674514e6745bd87f3cd5312fbf61efb6cbf9e39e",
+    "apps/web/src/app/dashboard/page.tsx": "07d70c87db79134a90c018a5622cef27b1c875dd0ef1c0a199b041bf7d8ae2b5",
+    "apps/web/src/app/dashboard/PartnerPanel.tsx": "0cc10516712feb87951e014a34e8698ad7857bc6214757019143da225a7a9608",
+    "apps/web/src/app/globals.css": "b87b98bcec9aa038249a2c8556248b8cf9c2242c6f0c6d306a71dd5c9f9da3a9",
+    "tests/partner.integration.test.ts": "ab9030ccb54c3cbbdfd2e807e3c07044c1e8c4055510263e91926494cfd52873",
+    "tests/partner-route.test.ts": "6f6771c635765bb36c6240ba6d4d851138e3bf6d938dc770bfc8f58bace1cf6e",
+    "tests/browser/blogger-auto-link.test.ts": "612055ee0185ba95cf29d0b809dd406a49079fa4cc51dc5d1eb3b79d0e0976b0"
+  },
+  "sourceSetDigest": "ef2c9b3c3e13ddf25b1e3cb2057f98e6aa2df177764cf8e187025856a0113ec5",
+  "admission": {
+    "schema": "fa-code-targets-1",
+    "status": "admitted",
+    "manifestDigest": "eafecbe9c54dff47fed7aa423a7ed398594560c94da61f97585303058bd39c79",
+    "reasons": []
+  },
+  "checks": [
+    {
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.browser.config.ts tests/browser/blogger-auto-link.test.ts -t 'actual SSR dashboard|clipboard denial selects|readonly personal URL' --reporter=verbose",
+      "log": "/tmp/blogger-rework-20261105/red.log",
+      "exit": 1,
+      "failed": 6,
+      "deselected": 14,
+      "purpose": "bounded pre-fix repro",
+      "logSha256": "0d7ba5952bf42f7c72f07c4ec2c5f83367466d163517da8f21473718ba170f74"
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.browser.config.ts tests/browser/blogger-auto-link.test.ts --reporter=verbose",
+      "log": "/tmp/blogger-rework-20261105/browser-final.log",
+      "exit": 0,
+      "passed": 20,
+      "deselected": 0,
+      "logSha256": "1fc8fe3e1fb2b0b49c7f2e701c96a3a411213aac62345eac0f7ffbbf0842f941"
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.browser.config.ts tests/browser/blogger-auto-link.test.ts -t 'personal link layout retains uploader' --reporter=verbose",
+      "log": "/tmp/blogger-rework-20261105/uploader-final.log",
+      "exit": 0,
+      "passed": 2,
+      "deselected": 18,
+      "purpose": "final added accepted-state assertion",
+      "logSha256": "a0b8f321108e3ab3d1e48813b05b76cb78c17bc52a48ea9591f3f58ab47a3a27"
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.browser.config.ts tests/browser/mockup-ui-realization.test.ts -t 'native_picker_and_options_survive_layout|approved_screen_regions_reject_legacy_bodies|real_content_variants_keep_every_action' --reporter=verbose",
+      "log": "/tmp/blogger-rework-20261105/ui-regression.log",
+      "exit": 0,
+      "passed": 6,
+      "deselected": 24,
+      "logSha256": "5de95f0612048469b2e68fd2ddb9b30aa12c1c3f6a0cd26c8c40e4c417a93d3a"
+    },
+    {
+      "command": "npm test -- tests/mockup-ui-realization.test.ts tests/theme.test.ts",
+      "log": "/tmp/blogger-rework-20261105/ui-unit.log",
+      "exit": 0,
+      "passed": 51,
+      "deselected": 0,
+      "logSha256": "68d5aecdfe1d20d92c8c091d4f91240212d7c5e32540068e8684384e36ddf618"
+    },
+    {
+      "command": "npm run typecheck",
+      "log": "/tmp/blogger-rework-20261105/typecheck.log",
+      "exit": 0,
+      "logSha256": "1b4b658aae5b9ff1fab2830785a99fb6149f6727dcfc8485f493c745a36ffc13"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tests/tsconfig.json",
+      "log": "/tmp/blogger-rework-20261105/test-types-freeze.log",
+      "exit": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "npm run lint",
+      "log": "/tmp/blogger-rework-20261105/lint.log",
+      "exit": 0,
+      "logSha256": "03d26c6ef0841b6eac1a8fb620e782e15d97a1f4467dc4566747082c86361443"
+    },
+    {
+      "command": "npm run build",
+      "log": "/tmp/blogger-rework-20261105/build.log",
+      "exit": 0,
+      "logSha256": "3d4f1eef0862d7121fdac6d1292ab2904531d752ce3d07d270329389af59684f"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "actualChangedMeasuredPaths": [
+    "apps/web/src/app/dashboard/PartnerPanel.tsx",
+    "apps/web/src/app/globals.css",
+    "ownauthorprogress.md",
+    "tests/artifacts/blogger-auto-link/chromium-first-open-1440.png",
+    "tests/artifacts/blogger-auto-link/chromium-first-open-390.png",
+    "tests/artifacts/blogger-auto-link/chromium-studio-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/chromium-studio-dark-320.png",
+    "tests/artifacts/blogger-auto-link/chromium-studio-dark-390.png",
+    "tests/artifacts/blogger-auto-link/chromium-studio-light-1440.png",
+    "tests/artifacts/blogger-auto-link/chromium-studio-light-320.png",
+    "tests/artifacts/blogger-auto-link/chromium-studio-light-390.png",
+    "tests/artifacts/blogger-auto-link/chromium-workspace-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/chromium-workspace-dark-320.png",
+    "tests/artifacts/blogger-auto-link/chromium-workspace-dark-390.png",
+    "tests/artifacts/blogger-auto-link/chromium-workspace-light-1440.png",
+    "tests/artifacts/blogger-auto-link/chromium-workspace-light-320.png",
+    "tests/artifacts/blogger-auto-link/chromium-workspace-light-390.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-studio-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-studio-dark-390.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-studio-light-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-studio-light-390.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-workspace-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-workspace-dark-390.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-workspace-light-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/chromium-ssr-workspace-light-390.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-studio-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-studio-dark-390.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-studio-light-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-studio-light-390.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-workspace-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-workspace-dark-390.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-workspace-light-1440.png",
+    "tests/artifacts/blogger-auto-link/rework/webkit-ssr-workspace-light-390.png",
+    "tests/artifacts/blogger-auto-link/webkit-first-open-1440.png",
+    "tests/artifacts/blogger-auto-link/webkit-first-open-390.png",
+    "tests/artifacts/blogger-auto-link/webkit-studio-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/webkit-studio-dark-320.png",
+    "tests/artifacts/blogger-auto-link/webkit-studio-dark-390.png",
+    "tests/artifacts/blogger-auto-link/webkit-studio-light-1440.png",
+    "tests/artifacts/blogger-auto-link/webkit-studio-light-320.png",
+    "tests/artifacts/blogger-auto-link/webkit-studio-light-390.png",
+    "tests/artifacts/blogger-auto-link/webkit-workspace-dark-1440.png",
+    "tests/artifacts/blogger-auto-link/webkit-workspace-dark-320.png",
+    "tests/artifacts/blogger-auto-link/webkit-workspace-dark-390.png",
+    "tests/artifacts/blogger-auto-link/webkit-workspace-light-1440.png",
+    "tests/artifacts/blogger-auto-link/webkit-workspace-light-320.png",
+    "tests/artifacts/blogger-auto-link/webkit-workspace-light-390.png",
+    "tests/browser/blogger-auto-link.test.ts"
+  ],
+  "dependencies": [
+    "apps/web/src/app/WorkspaceHeader.tsx",
+    "apps/web/src/app/WorkspaceSettings.tsx",
+    "apps/web/src/app/upload/Uploader.tsx",
+    "apps/web/src/lib/workspace-layout.ts",
+    "apps/web/src/lib/upload-parts.ts"
+  ],
+  "reworkHandoff": "features/blogger-auto-link/07_code_changes/rework-handoff.json",
+  "independentReview": "originating_qe_primary_focused_pending_root_prepare",
+  "reviewerConditionsClosedByAuthor": false,
+  "learning": {
+    "teachId": "teach:40d2af054826c106",
+    "teachExit": 0,
+    "recallReadBackHits": 7,
+    "store": "/home/clipmkr/.dz",
+    "mirrored": false
+  },
+  "limitations": [
+    "Только локальные actual SSR/React/HTTP/PG; uploader PUT/complete — управляемая фикстура, не S3/опубликованный Next E2E.",
+    "SSR account resolver/erasure/list/summary подставлены на серверной UI границе; реальный getBloggerPolicy, HTTP auth, PartnerService и PostgreSQL не подменяются.",
+    "Не повторялись1543 regression и legacy responsive по прямому текущему ограничению; новое независимое review не выполнялось автором."
+  ],
+  "publicationInstruction": "Владелец разрешил clipmkr.ru; Cloud полностью отменён. Автор не делает deployment/commit/push в этом блоке.",
+  "committed": false,
+  "pushed": false,
+  "deployed": false
+}
