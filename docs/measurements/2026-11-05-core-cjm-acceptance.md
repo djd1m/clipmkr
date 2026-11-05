@@ -55,3 +55,15 @@
 ## Права в опубликованном UI
 
 Штатный вход ранее созданного синтетического QA-аккаунта прошёл. Playwright с действительной сессией: обычному пользователю доступна «Партнёрская программа»; GET owner API вернул403; переход на `/dashboard/bloggers` вернул пользователя в `/dashboard`. Все три проверки PASS; не выполнялись POST управления ролями и изменения реальных аккаунтов. Private evidence: `role-guards.private.json`.
+
+## Проверка сообщения владельца о недоступном входе
+
+Владелец сообщил: вкладка «Войти» серая сразу при открытии. Проводится диагностика, исправление ещё не заявлено. Actual anonymous Chromium на390/1440: обе кнопки «Войти» visible, disabled=false; нажатие вкладки меняет заголовок на «Войти в clipmkr» и submit на «Войти →», pageerrors0. Обычный вход существующего QA-аккаунта фактически прошёл перед новым upload. Это не доказывает состояние вкладки владельца; ожидается результат его нажатия. Evidence `login-tabs.private.json`, анонимные screenshots в закрытом каталоге. Данные/пароль владельца не менялись.
+
+## TEST callback: уточнение фактической маршрутизации
+
+Владелец подтвердил переключение магазина на `https://clipmkr.ru/api/webhooks/yookassa-test`. После этого отдельный Sol high read-only ops audit обнаружил, что route исторически ведёт к другому `n5-referral-paytest-20261028`, а UI — к n5-clipmaker. Подтверждены и файл `/home/dz-projects-2026/edge/Caddyfile`, и загруженная конфигурация Caddy. Рекомендация адреса до такой проверки была преждевременной; ошибка признана владельцу. Включения checkout/runtime/proxy не выполнено.
+
+Provider read-only preflight10:17:18UTC: TESTshop подтверждён, все15платежей TEST (10succeeded/5canceled), pending0. В старой БД created0, в текущей public БД три created: точечные providerGET показывают2canceled/1succeeded с совпадающими test/shop/order. Значит drain НЕ пройден, нужно штатное reconciliation; ручные кредиты/SQL замены запрещены. Это важный незакрытый приёмочный пункт.
+
+Следующий config-only блок потребует feature-adr requirements/OpenSpec/plan/K2 и независимого opsreview до apply. Candidate должен сохранять6файлов/Resend/image/nonweb/data, сначала включать только TESTreceiver с checkout=false; отдельно проверять точный callbackroute/IPchain, затем штатное reconciliation; открывать checkout после этого. Cloud не менять. Новые оплаченные попытки до этого не создавать.
