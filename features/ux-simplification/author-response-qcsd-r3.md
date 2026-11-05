@@ -1,0 +1,11 @@
+# Авторский ответ QCSD R3 — UXR-02
+
+Прочитан exact originating `reviews/qcsd-risk-r2.md`: UXR-01 design verified по этому report, UXR-02 OPEN. Авторский fix, не closure и не собственная reviewer verification. Другие девять исходных условий не переопределяются; их R2 addressed/evidence сохранены через author-response-qcsd-r2.md и handoff-r2.
+
+Исправлены ADR002/04/05/proposed06: baseline конкретного clip/attempt фиксируется синхронно **до mutation**, immutable до окончания attempt. Ack не содержит version; он переводит phase и запускает fresh read, не захватывает baseline заново. Capture7→commit8→poll8 до ack→ack→fresh8 теперь допускает queued/fast success/terminal failure без вечного pending. Unknown baseline запрещает mutation до read/new explicit Apply; concurrent state отображается честно, без доказательства принадлежности по одной версии и без автоматического повтора. Старый файл доступен лишь по фактической availability; terminal failure не маскируется.
+
+`music_apply_ignores_pre_apply_poll` расширен этими тремя ветками, unknown/concurrent cases и отрицательным контролем baseline на ack; прежний stale-after-ack/generation RED сохранён. Task3, прежние UI dependencies и тот же browser test target,22 targets неизменны. Всё runtime NOT RUN; исходный UXR-02/qcsd-risk/acceptance meaning неизменны. Никакого нового API/store/ack payload.
+
+Перед edits побайтно сохранены только четыре необходимые docs в history/qcsd-r2/ с исходными relative paths. R1/R2 manifests/reports/host/receipts не правились. OpenSpec/requirements/approved design/owner approval и source не менялись. Фактические проверки: snapshots byte equality; exact22 rows/sole marker at EOF; nonempty string evidence и closed author object shape; changedScope покрывает все накопленные native measured изменения R1→R3; R3 manifest remeasure и hash verification; все остальные существующие feature/source/design/spec bytes неизменны. Это document integrity, не native closure/checkpoint.
+
+Остаточный риск UXR-02: native ack без operation ID не позволяет доказать принадлежность конкурентного render; read failure может продлевать видимое ожидание, не даёт разрешения повторить mutation. Originating risk recheck и общие gates PENDING; Step6 не финализирован.

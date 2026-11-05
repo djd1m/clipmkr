@@ -39,3 +39,11 @@ D1: A сохраняет существующую систему и ограни
 - Мониторинг: screenshot/keyboard regression перед поставкой, owner walkthrough на clipmkr.ru; ответственные Sol и отдельный QE. Здесь NOT RUN, WCAG compliance не заявляется.
 - Given studio/light и dirty draft, When theme/layout переключены и settings закрыт, Then draft и player node прежние, account Link доступен с клавиатуры. HIGH риск глобального CSS смягчён scoped rules и regression всех 21 семейств.
 - Негативные контроли будущего visual oracle: заменить зелёный акцент синим, скрыть четвёртый клип, обрезать условия — проверки обязаны различить нарушения. Dependency-down/cookie denial оставляет notice о несохранённом выборе; не подменять это успешным persistence.
+
+## R2: boundaries самостоятельных сцен и видимых последствий
+
+UXQ-001/002, UXU-001/002/003, UXA-001: scoped account-grid содержит оформление/доступ и баланс/помощь; stats содержит personal card **перед** счётчиками; owner report — отдельная main scene без формы назначения, не раскрытый details под ней. Скрытая owner scene не остаётся в accessibility tree/tab order; draft хранится в BloggerAdmin, CSS не имитирует независимый экран одной прокруткой. Snapshot oracle обязан различать эти композиции на390/1440, обеих themes/layouts; остальные320/zoom проверки сохраняются.
+
+Results h1 `tabIndex=-1` всегда видим вне clips/guest conditions; focus-visible не обрезать overflow и не прятать при zero clips. Блок последствий music/CTA расположен до соответствующей кнопки, с читаемым контрастом, без collapse по busy/failed и без fixed-height обрезки. Это не новая палитра и не изменение frozen HTML.
+
+Дополнительные Confirmation: `account_screen_native_data`, `stats_personal_card_exact_scene`, `owner_report_approved_screen`, `guest_close_last_trigger_focus_result_heading`, `music_and_cta_consequences_visible` в `tests/browser/ux-simplification.test.ts`; scoped geometry/palette — существующие два workspace harness targets. Negative controls inline-report, hidden personal-card, hidden warning и removed h1 focusability должны быть различимы. NOT RUN; самостоятельное closure остаётся исходным reviewers.

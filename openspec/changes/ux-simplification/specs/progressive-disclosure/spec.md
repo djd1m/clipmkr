@@ -58,3 +58,43 @@ authenticated layout, компоненты, preferences и серверные gu
 - **AND** личная auto-link SHALL оставаться обнаружимой на основном экране
 - **AND** период SHALL честно называться «за всё время», если текущий API предоставляет только его
 - **AND** серверные role/ownership проверки SHALL сохраняться, прямой URL SHALL NOT расширять доступ.
+
+
+### Requirement: Полнота самостоятельных согласованных состояний
+Account SHALL показывать реальные session/email/access, восстановление через существующий forgot flow, balance/reserved/file limit/quota, доступный каталог пакетов, preferences/support/delete/signout. Owner/TEST/error SHALL определяться существующими server readers, без demo чисел и новых прав.
+
+#### Scenario: Прямой вход в статистику
+- **WHEN** блогер открывает statistics напрямую, перезагружает её или фильтрует показатели
+- **THEN** личная карточка SHALL получать canonical oldest identity/status из независимого нефильтрованного чтения существующего dashboard API, без ensure mutation
+- **AND** blocked personal SHALL NOT иметь copy; активная дополнительная ссылка SHALL сохранять copy после установления identity; empty/error/unknown SHALL NOT подменяться случайным кодом.
+
+#### Scenario: Отчёт владельца
+- **WHEN** владелец открывает месячный отчёт на существующей странице управления
+- **THEN** отчёт SHALL заменить assignment область самостоятельным состоянием с back, сохраняя parent draft и серверные права
+- **AND** same state/theme/layout/width SHALL сравниваться с approved HTML.
+
+#### Scenario: Данные аккаунта недоступны
+- **WHEN** существующий reader профиля, баланса или доступа недоступен
+- **THEN** UI SHALL показывать ошибку/неопределённость либо существующий layout error boundary без фиктивного баланса, email или checkout eligibility.
+
+### Requirement: Безопасный переход и актуальное подтверждение действий
+Новые account/stats links SHALL сохранять native upload guard. Music/CTA SHALL показывать реальные последствия до mutation, а accepted music SHALL NOT откатываться от poll, начатого до acknowledgement.
+
+#### Scenario: Активная передача и навигация
+- **WHEN** пользователь нажимает новый account/stats anchor при активной попытке
+- **THEN** cancel SHALL сохранять URL и передачу, leave SHALL инвалидировать попытку и abort запросы; idle SHALL NOT запрашивать confirm
+- **AND** reload/Back SHALL учитывать фактические ограничения beforeunload и same-document history; возврат SHALL NOT обещать автоматический resume/complete, неизвестный результат complete SHALL проверяться сервером.
+
+#### Scenario: Поздний poll после music apply
+- **WHEN** старое чтение приходит после успешного apply
+- **THEN** оно SHALL NOT откатывать accepted track или повторно включать apply; новое чтение SHALL подтверждать queued/success/failure
+- **AND** настоящий terminal failure SHALL оставаться видимым, старый доступный файл и изменённый draft SHALL сохраняться в пределах их фактической доступности.
+
+#### Scenario: Последствия до сохранения
+- **WHEN** пользователь готов применить музыку или сохранить CTA
+- **THEN** пересборка, расход дневного лимита и доступность прежнего файла SHALL объясняться до запроса; URL-only CTA SHALL отличаться от изменения вида
+- **AND** UI SHALL NOT выдумывать остаток/цену, которых нет в ответе сервера.
+
+#### Scenario: Исчез последний trigger гостевого пакета
+- **WHEN** пакет закрывается после удаления original trigger и текущего clip summary
+- **THEN** focus SHALL перейти на всегда видимый mounted results heading с tabIndex=-1; при наличии current summary приоритет SHALL быть у него, без постоянной дополнительной Tab остановки.
