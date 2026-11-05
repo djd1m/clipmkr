@@ -8,7 +8,7 @@ Inputs read: 03_adr, 05_architecture.md, 04_domain_model.md, pinned feature-adr/
 
 Цель: FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7 реализованы для всех 21 семейств из root05, без изменения серверных контрактов/прав/цен/лимитов. Ближайшие три результата: upload → processing/partial → ready/share. Они не заменяют остальные 18 семейства. Текущая база `a4488b4caf602f093a0cc3393b4903e210cb3989`; auto-link и personal TEST checkout уже существуют и сохраняются. Coverage % не измерялся, runtime работоспособность не утверждается.
 
-Implementation **L14**: planned WRITE scope = 14 UI/CSS + 2 SSR pages + 9 test/harness = **25** разрешённых для правки paths; literal native measurement block в конце содержит **37** paths (эти25 +12READ-ONLY dependencies), см.BR-1. Фактическое количество изменённых файлов не утверждается. Target23 `tests/progress-screen.test.ts` добавлен только новым prospective scope amendment; прежний22-target checkpoint остаётся историческим. См. `scope-amendment-23.md`. Existing test-only targets24/25 добавлены prospective amendment `scope-amendment-25.md`; предыдущий WRITE23/measurement35 план сохранён `history/scope25/06_implementation_plan.md`. Добавлены два bounded presentation wrappers account/page.tsx и partner/page.tsx; share остаётся существующим contextual компонентом. Лимит25 полностью выбран: новая правка вне этих25 требует отдельного пересмотра router/плана/gates до кода. Server/API/DB/pkg/env/worker/provider/DNS не targets. Этот planner не запускает code/runtime; ограничение его сессии не отменяет разрешения пользователя координатору на шаги1–4. Новых агентов здесь нет.
+Implementation **L14**: planned WRITE scope = 14 UI/CSS + 2 SSR pages + 9 test/harness = **25** разрешённых для правки paths; literal native measurement block в конце содержит **39** paths (эти25 +14READ-ONLY dependencies; актуализация QE-R1 ниже), см.BR-1. Фактическое количество изменённых файлов не утверждается. Target23 `tests/progress-screen.test.ts` добавлен только новым prospective scope amendment; прежний22-target checkpoint остаётся историческим. См. `scope-amendment-23.md`. Existing test-only targets24/25 добавлены prospective amendment `scope-amendment-25.md`; предыдущий WRITE23/measurement35 план сохранён `history/scope25/06_implementation_plan.md`. Добавлены два bounded presentation wrappers account/page.tsx и partner/page.tsx; share остаётся существующим contextual компонентом. Лимит25 полностью выбран: новая правка вне этих25 требует отдельного пересмотра router/плана/gates до кода. Server/API/DB/pkg/env/worker/provider/DNS не targets. Этот planner не запускает code/runtime; ограничение его сессии не отменяет разрешения пользователя координатору на шаги1–4. Новых агентов здесь нет.
 
 ## Предусловия и checkpoints
 
@@ -16,7 +16,7 @@ Implementation **L14**: planned WRITE scope = 14 UI/CSS + 2 SSR pages + 9 test/h
 |---|---|
 | TASK-P0 | Specification: exact HTML согласован владельцем, evidence owner-approval.md/call_f0a94c16c93f49b38617215d46b23b7a. Исправленный ADR-001 сохраняет отдельные account/stats состояния; повторное approval не требуется. Это не успешный native checkpoint |
 | TASK-P1 | Architecture/QCSD: шесть originating Terra reviews R3 clean; native host/review revision `8089a54c3cb9281c79972e951c318814e62a3eff7829abcecdf1fd40ab680659`, nonce `8eff00a1-1ae5-4320-97e9-1615f6d0ba20`. Actual evaluate: verdict closed, unresolved=[], reasons=[]; все7 native manifest digests сверены. Десять исходных условий закрыты на уровне проекта, будущие Confirmation NOT RUN |
-| TASK-P2 | Plan: literal ADR/FR task coverage, A1…A10 и AM-1…AM-13,plannedWriteScope25/nativeManifestTargets37 (12READ-ONLY); actual K2 tier L/requirements/acid, затем exact-final-plan build-coder-context. Остальные native checkpoint/K1/source-admission выполняет координатор по настоящим receipts; здесь их успех не заявляется |
+| TASK-P2 | Plan: literal ADR/FR task coverage, A1…A10 и AM-1…AM-13,plannedWriteScope25/nativeManifestTargets39 (14READ-ONLY); actual K2 tier L/requirements/acid, затем exact-final-plan build-coder-context. Остальные native checkpoint/K1/source-admission выполняет координатор по настоящим receipts; здесь их успех не заявляется |
 
 P0/P1 выполнены как prerequisites согласования/design closure. P2 зависит от обоих; Task1 начинается после фактических оставшихся gates координатора, без повторного owner approval. Proof evaluate: `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-qcsd/r3-final-evaluate.private.json`, SHA-256 `92f115f9c71efad8fdb02353d38bff05c15920dd96cdb8168dcc7dc1c92d3e18`; current `.fa-state/review-convergence-ideation-host.json` и `review-convergence-ideation-review.json`. Verifications принадлежат исходным reviewers; author не меняет их entries. На настоящих переходах coordinator читает релевантный pinned recall.
 
@@ -100,7 +100,7 @@ Source inspection и allowed pinned recall: exit0,5 записей, IDs/прим
 
 ## Amendments
 
-Ниже исходные10 условий R1→R2→R3 и обязательные проверки реализации; design closure не снимает test obligations. Все AM tests ниже добавляются в **tests/browser/ux-simplification.test.ts**; actual Next-app harness для AM-1/5 размещается в этом же target по существующему образцу per-account-test-checkout-next. AM-8 также дополняет tests/browser/blogger-cabinet.test.ts. Geometry/palette — прежние scripts/workspace-presentation-local.mjs и scripts/check-workspace-presentation.test.mjs; unit ownership — tests/clip-card.test.ts. Новых файлов сверх22 не требуется. CtaFields/layout/server readers — read-only dependencies.
+Ниже исходные10 условий R1→R2→R3 и обязательные проверки реализации; design closure не снимает test obligations. Все AM tests ниже добавляются в **tests/browser/ux-simplification.test.ts**; actual Next-app harness для AM-1/5 размещается в этом же target по существующему образцу per-account-test-checkout-next. AM-8 также дополняет tests/browser/blogger-cabinet.test.ts. Geometry/palette — прежние scripts/workspace-presentation-local.mjs и scripts/check-workspace-presentation.test.mjs; unit ownership — tests/clip-card.test.ts. Новых файлов сверх22 не требуется. CtaFields переведён в WRITE prospective QE-R1 ниже; layout/server readers остаются READ-ONLY.
 
 AM-1 (qcsd/qcsd-risk, UXR-01): TASK-1/5: WorkspaceHeader, PartnerPanel, Uploader. Confirmation: Account/stats cancel/leave/idle, Back/reload/return/unknownComplete; выключенный guard ломает cancel; NOT RUN → test `active_upload_new_routes_and_history` in `tests/browser/ux-simplification.test.ts` (fails if reverted).
 
@@ -141,7 +141,7 @@ Exact reviewed R3 plan сохранён до правок: `history/qcsd-r3/06_i
 
 ## BR-1 — READ-ONLY review inputs и отдельный WRITE scope
 
-Техническое уточнение измерения до formal QE. **plannedWriteScope25** — разрешённые application/test/harness paths (прежние23 +2 existing regression targets по scope25), не утверждение фактического количества изменённых файлов. Conservative complexity budget25≤25, L14; actual changed count измеряется отдельным final Git diff. Дополнительно12 существующих critical dependency owners ниже включены в literal native measurement block только для хеширования: **nativeManifestTargets37 = plannedWriteScope25 + readonlyReviewInputs12** (первоначальный BR-1:23+12=35, его receipt неизменен). Их редактировать нельзя: любое изменение требует отдельного обоснования/admission до правки. Generation context не является фактом его чтения; parent отдельно обеспечивает actual read полного текущего37-input context автором.
+Техническое уточнение измерения до formal QE. **plannedWriteScope25** — разрешённые application/test/harness paths (прежние23 +2 existing regression targets по scope25), не утверждение фактического количества изменённых файлов. Conservative complexity budget25≤25, L14; actual changed count измеряется отдельным final Git diff. Дополнительно14 существующих critical dependency owners ниже включены в literal native measurement block только для хеширования: **nativeManifestTargets39 = plannedWriteScope25 + readonlyReviewInputs14** (первоначальный BR-1:23+12=35, его receipt неизменен). Их редактировать нельзя: любое изменение требует отдельного обоснования/admission до правки. Generation context не является фактом его чтения; parent отдельно обеспечивает actual read полного текущего39-input context автором.
 
 Основание границы:05_architecture.md§74 явно описывает read/reuse без edits вне minimal implementation target list;§46 исключает worker/server/DB topology changes. Complexity Files dimension иcap25 относятся к плановым edit/change путям, не к числу неизменных источников проверки. Для nativeQE skill08 требует relevant unchanged dependencies в declared measurement inputs; финальные153apphashes в07_code_changes не заменяют измерение native helper. Никаких новых библиотек/API/schema/architecture/requirements/поведения или разрешений здесь нет; прежний23-target receipt сохраняет исходный смысл.
 
@@ -156,11 +156,15 @@ Exact reviewed R3 plan сохранён до правок: `history/qcsd-r3/06_i
 | `packages/db/src/payments.ts` | Actual readAccountBilling owner | `c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b` |
 | `apps/web/src/server/limits.ts` | Quota/credits/source-limit reader behind summary | `ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20` |
 | `packages/db/src/blogger-policy.ts` | Existing blogger SSR route guard owner | `2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e` |
-| `apps/web/src/app/videos/CtaFields.tsx` | Existing per-video CTA state/mutation owner | `d90cb1cae74de04389cd6c8d13ad7bdc1c5c1862d468ac5144b46e15103a7870` |
+| `apps/web/src/app/videos/VideoList.tsx` | Unchanged existing video list, reused without edits | `aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec` |
 | `apps/web/src/lib/upload-resume.ts` | Account-scoped upload resume storage/validation | `5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864` |
 | `apps/web/src/app/dashboard/layout.tsx` | Authenticated/erasure-aware dashboard SSR shell | `4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65` |
 
-Точный разрешённый WRITE scope (25; additional12 толькоREAD):
+| `apps/web/src/app/dashboard/AccountDeletion.tsx` | Account-bound irreversible consent state owner | `913096a7a43e7656b3be6b8b937b35b0b7a4531cc54c3d1c8455e8e790f966fd` |
+
+| `apps/web/src/app/support/SignOut.tsx` | Account-bound logout busy/error state owner | `54b3397981e916a3eda571e7b937dc2f6cd1afb44fcc358f7fb2e318ff9d0436` |
+
+Точный разрешённый WRITE scope (25; additional14 толькоREAD):
 
 - `apps/web/src/app/globals.css`
 - `apps/web/src/app/WorkspaceHeader.tsx`
@@ -169,7 +173,7 @@ Exact reviewed R3 plan сохранён до правок: `history/qcsd-r3/06_i
 - `apps/web/src/app/dashboard/LimitsPanel.tsx`
 - `apps/web/src/app/dashboard/PartnerPanel.tsx`
 - `apps/web/src/app/upload/Uploader.tsx`
-- `apps/web/src/app/videos/VideoList.tsx`
+- `apps/web/src/app/videos/CtaFields.tsx`
 - `apps/web/src/app/videos/[videoId]/VideoDetail.tsx`
 - `apps/web/src/app/clips/ClipCard.tsx`
 - `apps/web/src/app/clips/ClipMusicChoice.tsx`
@@ -188,13 +192,30 @@ Exact reviewed R3 plan сохранён до правок: `history/qcsd-r3/06_i
 - `tests/browser/blogger-auto-link.test.ts`
 - `tests/browser/billing.test.ts`
 
-Перед formal QE проверить сохранность12 baseline hashes; native snapshot должен реально включить каждый path/digest, а не только prose/listing. После любого изменения любого из37 measurementinputs текущие review bindings устаревают по правилам native checker. Полный transitive graph не заявляется: выбран bounded minimum прямых важных source owners/entry wiring по реальным imports. K1 для уже существующих readonly modules не требует объявления имён свободными; новых exports/commands/modules этот refinement не вводит. Ideation/ADR/requirements/architecture и их receipts не меняются, nativeQEprepare здесь не выполняется.
+Перед formal QE проверить сохранность14 baseline hashes; native snapshot должен реально включить каждый path/digest, а не только prose/listing. После любого изменения любого из39 measurementinputs текущие review bindings устаревают по правилам native checker. Полный transitive graph не заявляется: выбран bounded minimum прямых важных source owners/entry wiring по реальным imports. K1 для уже существующих readonly modules не требует объявления имён свободными; новых exports/commands/modules этот refinement не вводит. Ideation/ADR/requirements/architecture и их receipts не меняются, nativeQEprepare здесь не выполняется.
 
 ## Scope25 — prospective admission и повторный router
 
 Добавлены только два существующих regression harness paths; WRITE25 + READ-ONLY12 =37 measurement inputs. Router пересчитан в этом amendment без переписывания immutable root00: Files3 (25≤25), Domains3, Integrations1, Breaking2, Models1, Cross-cutting4 = L14. Новых domains/contracts/backend integrations/models нет; architecture/ADR/OpenSpec/requirements и approved HTML не меняются. K1 для этого delta: новых command/module/export names нет; существующие локальные fixture handlers не создают публичного API, прежний genuine K1 сохраняется. Предыдущий WRITE23 план SHA `54537fca57c0862d7c3c4d0d7e7346b886354b39c6cc748eba73b97f3ae66b7e` сохранён побайтно в history/scope25; старым receipts не приписывается37 inputs.
 
 Новый pinned K2/target admission/build-coder-context выполняется на этих окончательных bytes; поддерживаемый dz plan checkpoint только после PASS. Actual outputs хранятся приватно как ui-qcsd/scope25*.json. Generated complete context ещё не означает consumed: автор обязан реально прочитать весь promptBlock37 до будущих edits24/25; parent обеспечивает передачу и проверку фактического чтения без усечения. Native QE prepare здесь не запускается, post-fix tests не объявлены пройденными. Recall перед amendment реально вернул3 lessons; применены project-pinned gates, строгий reflow oracle и полный actual context read (teach:b9ca1b2cc77e0c4e, teach:3326a09ebf1b6466, teach:2d8870b993b572e2).
+
+## QE-R1 — prospective corrective admission
+
+Первый genuine native QE evaluate: unresolved6, rounds1; revision `0c807d4d6102de9be726e5b437aa8fc2e839ae5269b6e0407d5cb50b7ff03f3e`, nonce `3bfbdd0b-4dae-418f-85ea-ff5292d7f1a7`. Два прежних форматных отказа сохранены, не отдельные review cycles. Шесть originating условий группируются в четыре фактических дефекта; ни один здесь не объявлен исправленным.
+
+Это **план будущих исправлений**, до редактирования новых owner paths: unchanged VideoList переведён WRITE→READ-ONLY, CtaFields READ-ONLY→WRITE; разрешённые WRITE по-прежнему25. Добавлены два unchanged READ-ONLY owners AccountDeletion/SignOut. Текущая measurement граница **39 =25 WRITE+14 READ-ONLY**. Router повторно оценён: Files3, Domains3, Integrations1, Breaking2, Models1, Cross-cutting4 = **L14**, cap25. Новых API/DB/env/provider/прав/сервисов/пользовательских возможностей нет, HTML/FR/ADR/OpenSpec прежние. Исторический plan c5255046… сохранён byte-for-byte `history/qe-r1/06_implementation_plan.md`; scope25 receipts не переименованы в scope39.
+
+| Task | Originating conditions / FR / ADR | Исправление и Confirmation |
+|---|---|---|
+| TASK-10 | UXQE-P1-FOCUS, QA-ARCH-01; FR-5/7; ADR-002/003 | GuestPacks: focus имени после visible DOM commit, initial/reopen по одному nonce; не красть фокус при poll. В existing UX browser target проверять activeElement **до fill** initial/reopen, Chromium/WebKit; прежний код должен дать RED. Close/fallback/consent regressions сохранить |
+| TASK-11 | UXQE-P2-CTA-FEEDBACK, QA-ARCH-02; FR-3/5; ADR-002/003 | Existing CtaFields VideoCtaForm остаётся единственным владельцем draft/RPC; узкая optional feedback projection по существующему ClipMusicChoice pattern, VideoDetail показывает pending/failure/success вне закрываемого edit/disclosure. Hold RPC→закрыть details/панель или Share/другой clip→видны status/error, draft сохранён, запрос ровно один; success также виден. Existing callers/direct unit mocks совместимы |
+| TASK-12 | QE-SEC-001; FR-4/5/7; ADR-001/002 | Existing SSR dashboard и partner page устанавливают account-bound reset/identity boundary по стабильному непрозрачному ключу, используя уже установленный Node crypto/HMAC pattern и session secret; не отображать session token/account UUID и не менять auth. A→B native Next router.refresh в том же документе: B identity/stats/copy, ни старых A данных, ни late A response; ordinary/personal summary тоже проверяются. Нового ensure/RPC нет |
+| TASK-13 | QE-SEC-002; FR-4/5; ADR-001/002 | Account SSR boundary remount/reset всего account-specific client subtree по account identity; SignOut/credits/deletion busy/consent не переходят A→B. Native RSC refresh: B email, unchecked confirmation, disabled delete, **ноль account.delete/DELETE**. Destructive click не нужен; прежний A→B код обязан дать RED |
+
+Все новые регрессии размещаются в существующем WRITE `tests/browser/ux-simplification.test.ts`; имена private local fixtures не публичные exports. K1: новых command/module/export names не требуется; прежние K1 действуют. K2 + target admission + full coder context regeneration + настоящий plan checkpoint выполняются на окончательных bytes до edits. Автор обязан прочитать весь актуальный literal context, не только summary. Затем genuine begin-repair с теми же тремя originating reviewer roles; author assessment покрывает **все6 IDs и все host-measured changes/dependencies**, originating reviewers независимо проверяют собственные условия и полный delta. Никакого reset authority, подмены старых receipts или closure по одному зелёному тесту.
+
+Проверки: реальный RED→GREEN четырёх сценариев; новое стабильное production Next build; полный UX suite Chromium/WebKit/native Next, затронутые CTA/unit/progress/account/payment/auto-link regressions; negative controls без source mutation в shared live runtime. Public source provider CJM и реальная TEST оплата остаются последующей поставкой; текущий49/49 не закрывает найденные дефекты. После исправлений обновить07 manifest/freeze/build hashes и anti-drift, повторить formal Step8 и Step9 до deploy. Cloud/DNS/customer data не трогать.
 
 EXPECTED_CODE_TARGETS:
 - apps/web/src/app/globals.css
@@ -234,3 +255,5 @@ EXPECTED_CODE_TARGETS:
 - apps/web/src/app/videos/CtaFields.tsx
 - apps/web/src/lib/upload-resume.ts
 - apps/web/src/app/dashboard/layout.tsx
+- apps/web/src/app/dashboard/AccountDeletion.tsx
+- apps/web/src/app/support/SignOut.tsx
