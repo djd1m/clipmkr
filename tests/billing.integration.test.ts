@@ -14,9 +14,13 @@ import { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhoo
 import { createYooKassaProvider } from '../apps/web/src/server/payments/yookassa';
 import { createFakePaymentProvider } from '../apps/web/src/server/payments/fake';
 import type { PaymentProvider } from '../apps/web/src/server/payments/provider';
+import { checkoutAllowedForAccount, loadWebConfig, type WebConfig } from '../packages/shared/src/config';
+import { environment } from './fixtures/environment';
+import { AuthService } from '../apps/web/src/server/auth';
+import { PgAuthStore } from '../apps/web/src/server/auth-store';
+import bcrypt from 'bcrypt';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
 import { SECRET, SHOP_ID, startFakeYooKassa, type FakeYooKassa } from './fixtures/fake-yookassa-server';
-
 const databaseUrl = process.env.DATABASE_URL;
 const PUBLIC = 'https://clipmkr.test.invalid';
 const YOOKASSA_IP = '185.71.76.10';
@@ -24,7 +28,6 @@ const YOOKASSA_IP = '185.71.76.10';
 const xff = (ip: string) => `${ip}, 10.0.0.2, 10.0.0.3`;
 const DAY = 86_400_000;
 type Json = { data?: Record<string, unknown>; error?: { code: string; message: string } };
-
 describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем PostgreSQL', () => {
   let pool: Pool;
   let yk: FakeYooKassa;
@@ -39,18 +42,19 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     yk = await startFakeYooKassa();
   }, 60_000);
   afterAll(async () => { await yk?.close(); if (pool) { await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); await pool.end(); } });
-
   const yookassa = () => createYooKassaProvider({ shopId: SHOP_ID, secretKey: SECRET, testMode: true, apiBase: yk.apiBase });
-  function wire(provider: PaymentProvider | null = yookassa(), checkoutEnabled = true) {
-    const deps = createBillingDependencies({ pool, publicOrigin: PUBLIC, trustedProxyHops: 2, provider, allowMutation: async () => true,
-      allowRead: async () => true, authenticate: async (token) => (sessions.has(token) ? { account_id: sessions.get(token)! } : null), log: () => {} });
-    deps.checkoutEnabled = checkoutEnabled;
+  function wire(provider: PaymentProvider | null = yookassa(), checkoutEnabled = true, context?: { config: WebConfig; auth: AuthService }) {
+    const deps = createBillingDependencies({ pool, billingMode: context?.config.billingMode, checkoutAllowed: (id, policy) => context ? checkoutAllowedForAccount(context.config, id, policy, !!provider) : checkoutEnabled, publicOrigin: PUBLIC, trustedProxyHops: 2, provider, allowMutation: async () => true,
+      allowRead: async () => true, authenticate: async (token) => context ? context.auth.authenticate(token) : (sessions.has(token) ? { account_id: sessions.get(token)! } : null), log: () => {} });
+    let lastRequest: Request | undefined;
     const call = async (handler: (r: Request) => Promise<Response>, url: string, init: RequestInit) => {
-      const r = await handler(new Request(url, init));
+      lastRequest = new Request(url, init);
+      const r = await handler(lastRequest);
       return { status: r.status, body: await r.json() as Json };
     };
     return {
-      checkout: (token: string, payload: unknown) => call(createCheckoutHandler(deps), `${PUBLIC}/api/checkout`, { method: 'POST',
+      get lastRequest() { return lastRequest; },
+      checkout: (token: string, payload: unknown) => call(createCheckoutHandler(deps), `${PUBLIC}/api/checkout${context ? '?account_id=00000000-0000-4000-8000-000000000001' : ''}`, { method: 'POST',
         headers: { origin: PUBLIC, cookie: `__Host-n5_session=${token}`, 'content-type': 'application/json', 'x-forwarded-for': xff('198.51.100.7') }, body: JSON.stringify(payload) }),
       status: async (token: string, intent: string) => {
         const r = await createCheckoutStatusHandler(deps)(new Request(`${PUBLIC}/api/checkout/${intent}`, { headers: { cookie: `__Host-n5_session=${token}`, 'x-forwarded-for': xff('198.51.100.7') } }), intent);
@@ -92,7 +96,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     yk.pay(payment.id);
     return { intent, paymentId: payment.id };
   }
-
   it('pauses checkout creation while webhook and status remain live', async () => {
     const a = await account(); const normal = wire(); const frozen = wire(yookassa(), false); const idempotency = key();
     const before = await normal.checkout(a.token, { idempotency_key: idempotency });
@@ -107,7 +110,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await frozen.notify(yk.notification(payment.id))).body.data).toMatchObject({ applied: false, reason: 'duplicate' });
     expect((await frozen.status(a.token, intent)).body.data).toMatchObject({ status: 'succeeded' });
   });
-
   it('snapshots valid referral once under the account lock and excludes self, rejected and unknown', async () => {
     const a = await account(), first = await account(), second = await account();
     const makeCode = async (id: string) => (await pool.query(`WITH p AS (INSERT INTO partner(account_id,display_name) VALUES($1,'test') RETURNING id)
@@ -142,7 +144,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
       expect(await saved(result.intent.id)).toBeNull();
     } finally { await holder.query('ROLLBACK'); holder.release(); }
   });
-
   it('migration backfills only attribution known before the intent', async () => {
     const name = `snapshot_backfill_${randomBytes(8).toString('hex')}`;
     const isolated = createPool(databaseUrl!, name);
@@ -161,7 +162,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
       expect(rows).toEqual([{ idempotency_key: 'new-key-1', referral_partner_code_id: code }, { idempotency_key: 'old-key-1', referral_partner_code_id: null }]);
     } finally { await isolated.query(`DROP SCHEMA IF EXISTS ${name} CASCADE`); await isolated.end(); }
   });
-
   it('AC-1: оплата выключена — оформление, опрос и вебхук 404, намерений нет', async () => {
     const w = wire(null);
     const a = await account();
@@ -169,7 +169,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await w.notify('{}')).status).toBe(404);
     expect(await count('SELECT count(*)::int AS n FROM payment_intent WHERE account_id = $1', [a.id])).toBe(0);
   });
-
   it('AC-2: намерение создаётся ДО провайдера; повтор с тем же ключом — то же намерение и ОДИН платёж у ЮKassa; цена из кода', async () => {
     const a = await account();
     let seenBeforeProvider = -1;
@@ -196,7 +195,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await w.checkout(a.token, { idempotency_key: key() })).body.error?.code).toBe('unauthorized');
     expect(await count(`SELECT count(*)::int AS n FROM payment_intent WHERE account_id = $1`, [a.id])).toBe(1);
   });
-
   it('AC-3: уведомление об успехе → paid, источник payment, срок now()+30 сут, намерение succeeded; чужое намерение — 404', async () => {
     const w = wire();
     const a = await account();
@@ -210,7 +208,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     const other = await account();
     expect((await w.status(other.token, intent)).status).toBe(404);
   });
-
   it('AC-4 повтор: одно событие дважды — срок +30, не +60; 20 одновременных доставок — ОДНО применение, одна строка payment', async () => {
     const w = wire();
     const a = await account();
@@ -229,7 +226,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect(await count(`SELECT count(*)::int AS n FROM payment WHERE provider_payment_id = $1`, [second.paymentId])).toBe(1);
     expect(days(await billing(c.id))).toBe(30);
   });
-
   it('AC-5 подделка: чужой IP, неоплаченный платёж, сумма перезапроса ≠ заявленной — 400 и ни одной записи; настоящее уведомление после подделки применяется', async () => {
     const w = wire();
     const a = await account();
@@ -251,7 +247,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     // Подделка с угаданным object.id НЕ заняла ключ: настоящая доставка того же платежа применяется.
     expect((await w.notify(raw)).body.data).toMatchObject({ applied: true, plan: 'paid' });
   });
-
   it('AC-6 недоступность (урок N1): ЮKassa 500 при перезапросе → 503 без единой записи; после восстановления та же доставка применяется', async () => {
     const w = wire();
     const a = await account();
@@ -262,7 +257,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect(await count(`SELECT count(*)::int AS n FROM payment_event WHERE provider_event_id = $1`, [`payment_succeeded:${paymentId}`])).toBe(0);
     expect((await w.notify(raw)).body.data).toMatchObject({ applied: true, plan: 'paid' });
   });
-
   it('исключение ВНУТРИ транзакции оплаты: ключ откатывается, ответ 503, повтор той же доставки применяет полным путём', async () => {
     const w = wire();
     const a = await account();
@@ -274,7 +268,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect(await count(`SELECT count(*)::int AS n FROM payment_event WHERE provider_event_id = $1`, [`payment_succeeded:${paymentId}`])).toBe(0);
     expect((await w.notify(yk.notification(paymentId))).body.data).toMatchObject({ applied: true, plan: 'paid' });
   });
-
   it('AC-7 перестановка: две оплаты в любом порядке — срок +60 от старта', async () => {
     const w = wire();
     const a = await account();
@@ -283,7 +276,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     for (const p of [second, first]) expect((await w.notify(yk.notification(p.paymentId))).status).toBe(200);
     expect(days(await billing(a.id))).toBe(60);
   });
-
   it('AC-7 возврат (OWN-019 п.3): refund.succeeded → refunded + needs_review, план НЕ снимается автоматически', async () => {
     const w = wire();
     const a = await account();
@@ -295,7 +287,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
       .toEqual({ status: 'refunded', needs_review: true, review_reason: 'refund' });
     expect((await billing(a.id)).plan).toBe('paid');
   });
-
   it('AC-7 возврат ПРЕЖДЕ оплаты — план не выдаётся; 10+10 одновременных оплата/возврат — одна строка refunded, два события', async () => {
     const w = wire();
     const a = await account();
@@ -318,7 +309,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     if (b2.plan === 'paid') expect(days(b2)).toBe(30); else expect(b2.plan_paid_until).toBeNull();
     expect(await count(`SELECT count(*)::int AS n FROM payment_event WHERE provider_event_id IN ($1, $2)`, [`payment_succeeded:${p2.paymentId}`, `refund_succeeded:${r2}`])).toBe(2);
   });
-
   it('AC-7 блокировка платежа: возврат держит блокировку и ещё не закоммичен — оплата ЖДЁТ и видит возврат, план не выдаётся', async () => {
     const w = wire();
     const a = await account();
@@ -338,7 +328,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await pay!).body.data).toEqual({ applied: false, reason: 'refunded' });
     expect((await billing(a.id)).plan).toBe('free');
   });
-
   it('AC-8 сумма ≠ цене намерения: платёж needs_review amount_mismatch, план НЕ выдан, опрос — pending (не «успех»)', async () => {
     const provider = createFakePaymentProvider();
     const w = wire(provider);
@@ -354,7 +343,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
       .toEqual({ needs_review: true, review_reason: 'amount_mismatch', amount_minor: 50_000 });
     expect((await w.status(a.token, intent)).body.data).toMatchObject({ status: 'pending' });
   });
-
   it('AC-9 оплата от аккаунта в статусе erasing: needs_review account_erasing, план не выдан', async () => {
     const w = wire();
     const a = await account();
@@ -365,7 +353,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await pool.query('SELECT review_reason, account_id FROM payment WHERE provider_payment_id = $1', [paymentId])).rows[0])
       .toEqual({ review_reason: 'account_erasing', account_id: a.id });
   });
-
   it('AC-9 гонка со стиранием аккаунта: оплата и возврат ждут аккаунт (порядок account → payment_intent), взаимоблокировки нет', async () => {
     const w = wire();
     // Как retention.eraseAccount: аккаунт FOR UPDATE → удаление намерений → статус deleted, одним коммитом.
@@ -399,7 +386,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await pool.query('SELECT status, intent_id, account_id FROM payment WHERE provider_payment_id = $1', [refunded.paymentId])).rows[0])
       .toEqual({ status: 'refunded', intent_id: null, account_id: null });
   });
-
   it('отказ у провайдера: платёж отменён → опрос экрана возврата отвечает canceled; повтор оформления после суток — тот же платёж', async () => {
     const w = wire();
     const a = await account();
@@ -415,7 +401,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     expect((await w.status(a.token, intent)).body.data).toMatchObject({ status: 'canceled' });
     expect((await w.checkout(a.token, { idempotency_key: k })).body.data).toMatchObject({ status: 'canceled', redirect_url: null });
   });
-
   it('опрос возврата отдаёт ДЕЙСТВУЮЩИЙ план: успешное намерение при истёкшем сроке — account_plan free', async () => {
     const w = wire();
     const a = await account();
@@ -424,7 +409,6 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     await pool.query(`UPDATE account SET plan_paid_until = now() - interval '1 minute' WHERE id = $1`, [a.id]);
     expect((await w.status(a.token, intent)).body.data).toMatchObject({ status: 'succeeded', account_plan: 'free', plan_paid_until: null });
   });
-
   it('план оператора сильнее оплаты: оплата поверх него не превращает бессрочный план в истекающий', async () => {
     const w = wire();
     const a = await account('paid');
@@ -432,5 +416,77 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     const { paymentId } = await paid(a, w);
     expect((await w.notify(yk.notification(paymentId))).body.data).toMatchObject({ applied: true });
     expect(await billing(a.id)).toMatchObject({ plan: 'paid', plan_source: 'operator' });
+  });
+  describe('per-account TEST checkout with real sessions and PostgreSQL', () => {
+    const A = '00000000-0000-4000-8000-000000000001', B = '00000000-0000-4000-8000-000000000002';
+    const env = { ...environment(), N5_BILLING_MODE: 'credits_v1', N5_CHECKOUT_ENABLED: 'false', N5_TEST_CHECKOUT_ACCOUNT_ID: A,
+      N5_PAYMENTS_MODE: 'live', YOOKASSA_SHOP_ID: SHOP_ID, YOOKASSA_SECRET_KEY: SECRET, YOOKASSA_TEST_MODE: 'true' };
+    let context: { config: WebConfig; auth: AuthService }, a: string, b: string;
+    beforeAll(async () => {
+      const config = loadWebConfig(env); context = { config, auth: new AuthService(new PgAuthStore(pool, 'credits_v1'), config.sessionSecret) };
+      const hash = await bcrypt.hash('synthetic-checkout-password', 10);
+      for (const id of [A, B]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy) VALUES($1,$2,$3,'credits_v1')", [id, `${id}@test.invalid`, hash]);
+      a = (await context.auth.login(`${A}@test.invalid`, 'synthetic-checkout-password', '198.51.100.0/24'))!;
+      b = (await context.auth.login(`${B}@test.invalid`, 'synthetic-checkout-password', '198.51.100.0/24'))!;
+      expect(await context.auth.authenticate(a)).toMatchObject({ account_id: A }); expect(await context.auth.authenticate(b)).toMatchObject({ account_id: B });
+    });
+    const rows = (table: string) => count(`SELECT count(*)::int n FROM ${table}`);
+    const ledger = () => Promise.all(['payment_event', 'payment', 'credit_grant'].map(rows));
+    const allow = () => { context.config = loadWebConfig(env); return wire(yookassa(), false, context); };
+    const revoke = () => { context.config = loadWebConfig({ ...env, N5_TEST_CHECKOUT_ACCOUNT_ID: '' }); };
+    const body = (key = randomUUID()) => ({ sku: 'start_v1', idempotency_key: key });
+    it('two sessions enforce test checkout before body intent and provider', async () => {
+      const w = allow(), before = await rows('payment_intent'), calls = yk.createKeys.length + yk.readCalls;
+      for (const [token, payload] of [[b, 'not-json'], [b, { ...body(), account_id: A, email: `${A}@test.invalid`, role: 'owner', testMode: true }], ['', {}]] as const) {
+        expect((await w.checkout(token, payload)).status).toBe(token ? 503 : 401); expect(w.lastRequest!.bodyUsed).toBe(false);
+      }
+      expect(await rows('payment_intent')).toBe(before); expect(yk.createKeys.length + yk.readCalls).toBe(calls);
+      expect((await w.checkout(a, { ...body(), account_id: B, email: 'forged@test.invalid', testMode: true })).status).toBe(422);
+      expect(await rows('payment_intent')).toBe(before); expect(yk.createKeys.length + yk.readCalls).toBe(calls);
+      const baseline = await rows('credit_grant'), result = await w.checkout(a, body()); expect(result.status).toBe(201);
+      const intent = result.body.data!.intent_id as string;
+      expect((await pool.query('SELECT account_id,sku FROM payment_intent WHERE id=$1', [intent])).rows).toEqual([{ account_id: A, sku: 'start_v1' }]);
+      expect(await rows('credit_grant')).toBe(baseline); expect((await w.status(b, intent)).status).toBe(404);
+      expect((await pool.query('SELECT plan,owner_unlimited,billing_policy FROM account WHERE id=$1', [A])).rows[0]).toEqual({ plan: 'free', owner_unlimited: false, billing_policy: 'credits_v1' });
+    });
+    it('test checkout exception preserves retry and notification idempotency', async () => {
+      const w = allow(), key = randomUUID(), before = yk.created, one = await w.checkout(a, body(key)), two = await w.checkout(a, body(key));
+      expect(one.status).toBe(201); expect(two.body.data!.intent_id).toBe(one.body.data!.intent_id);
+      const intent = one.body.data!.intent_id as string, payment = yk.byOrder(intent)!; expect(yk.created - before).toBe(1); revoke();
+      expect((await w.checkout(a, body())).status).toBe(503); expect((await w.checkout(a, body(key))).status).toBe(503);
+      expect((await w.status(a, intent)).body.data).toMatchObject({ status: 'pending' });
+      yk.pay(payment.id); const baseline = await rows('credit_grant');
+      expect((await w.notify(yk.notification(payment.id))).body.data).toMatchObject({ applied: true });
+      expect((await w.notify(yk.notification(payment.id))).body.data).toMatchObject({ applied: false, reason: 'duplicate' });
+      expect(await rows('credit_grant')).toBe(baseline + 1);
+    });
+    it('overlapping test checkout creates one provider payment per intent key', async () => {
+      const w = allow(), key = randomUUID(), before = { intents: await rows('payment_intent'), payments: yk.created, keys: yk.createKeys.length, grants: await rows('credit_grant') };
+      const barrier = yk.holdNextCreates(2), overlapping = [w.checkout(a, body(key)), w.checkout(a, body(key))];
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try { await Promise.race([barrier.arrived, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('Provider overlap not reached')), 5000); })]); }
+      finally { clearTimeout(timer); barrier.release(); }
+      const results = await Promise.all(overlapping); expect(results.map(r => r.status)).toEqual([201, 201]);
+      const intent = results[0]!.body.data!.intent_id as string; expect(results[1]!.body.data!.intent_id).toBe(intent);
+      expect(yk.createKeys.slice(before.keys)).toEqual([intent, intent]); expect(yk.created - before.payments).toBe(1);
+      expect([...yk.payments.values()].filter(p => p.metadata.order_id === intent)).toHaveLength(1); expect(await rows('payment_intent')).toBe(before.intents + 1);
+      const payment = yk.byOrder(intent)!; yk.pay(payment.id);
+      const applied = await Promise.all([w.notify(yk.notification(payment.id)), w.notify(yk.notification(payment.id))]);
+      expect(applied.filter(r => r.body.data?.applied === true)).toHaveLength(1); expect(await rows('credit_grant')).toBe(before.grants + 1);
+    });
+    it('test checkout handler never bypasses live mismatch', async () => {
+      const w = allow(); context.config = { ...context.config, payments: { mode: 'live', shopId: SHOP_ID, secretKey: SECRET, testMode: false } };
+      const before = await rows('payment_intent'), calls = yk.createKeys.length + yk.readCalls;
+      expect((await w.checkout(a, body())).status).toBe(503); expect(w.lastRequest!.bodyUsed).toBe(false);
+      expect(await rows('payment_intent')).toBe(before); expect(yk.createKeys.length + yk.readCalls).toBe(calls);
+    });
+    it('revoked test exception rejects non-test webhook before ledger writes', async () => {
+      const w = allow(), result = await w.checkout(a, body()); expect(result.status).toBe(201);
+      const payment = yk.byOrder(result.body.data!.intent_id as string)!; yk.pay(payment.id);
+      const raw = yk.notification(payment.id); revoke(); const before = await ledger(); payment.test = false;
+      expect((await w.notify(raw)).status).toBe(400); expect(await ledger()).toEqual(before); payment.test = true;
+      expect((await w.notify(raw)).body.data).toMatchObject({ applied: true }); expect(await ledger()).toEqual(before.map(n => n + 1));
+      expect((await w.notify(raw)).body.data).toMatchObject({ applied: false, reason: 'duplicate' }); expect(await ledger()).toEqual(before.map(n => n + 1));
+    });
   });
 });

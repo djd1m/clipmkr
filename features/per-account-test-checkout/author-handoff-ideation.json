@@ -1,0 +1,27 @@
+{
+  "addressed": [
+    "QL-01",
+    "QL-02",
+    "QT-001"
+  ],
+  "changedScope": [
+    "features/per-account-test-checkout/00_complexity_assessment.md",
+    "features/per-account-test-checkout/01_requirements.md",
+    "features/per-account-test-checkout/02_reuse_inventory.md",
+    "features/per-account-test-checkout/03.5_ideation_report.md",
+    "features/per-account-test-checkout/03_adr/001-limit-test-checkout-to-session-account.md",
+    "features/per-account-test-checkout/05_architecture.md",
+    "features/per-account-test-checkout/06_implementation_plan.md",
+    "features/per-account-test-checkout/README.md",
+    "features/per-account-test-checkout/requirements-revision.json",
+    "openspec/changes/per-account-test-checkout/specs/checkout-access/spec.md"
+  ],
+  "classification": "structural",
+  "delta": "Усилены реальные provider concurrency/webhook negative оракулы и native Next HTML/Flight privacy; предусмотрен minimal inline opaque remount key только при подтверждении экспозиции; найденные callback consumers перечислены; targets расширены existing fixture и двумя test-only файлами. OpenSpec/FR/hash синхронизированы. До нового host snapshot в planned targets добавлен .env.example: пустой optional key и русский TEST-only/global-false комментарий, без публикации UUID и без изменения UI. Сам template не изменён.",
+  "evidence": "Прочитаны все 3 initial reports и exact conditions; прочитаны fake-yookassa fixture, provider raw.test, Next Link/header, native startup/preflight, published RSC runners, client lifecycle regression и все найденные callback consumers. Ни код, ни Next/provider/tests не выполнялись. Все изменённые measured inputs 00/01/ADR/05 и прочие design paths перечислены в changedScope. Объявление env-template согласовано координатором до fresh prepare; связанные counts, TASK-2, reuse и architecture уточнены. OpenSpec смысл и hash не менялись.",
+  "newRisks": {
+    "assessment": "Новая test-only сложность child process/transport учтена; новых неразрешённых рисков сверх исходных условий в документной дельте не выявлено.",
+    "evidence": "Reuse native Next/preflight/crypto/sessionSecret; отдельный loopback process, bounded cleanup, synthetic PG schema/Redis namespace, local-only provider bridge до runtime, no production API-base knob. Opaque key не меняет auth и сохраняет account remount. Runtime verification ещё отсутствует.",
+    "conditions": []
+  }
+}

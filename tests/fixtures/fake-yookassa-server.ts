@@ -16,6 +16,9 @@ export interface FakeYooKassa {
   apiBase: string;
   payments: Map<string, Payment>;
   created: number;
+  createKeys: string[];
+  readCalls: number;
+  holdNextCreates(expected: number): { arrived: Promise<void>; release(): void };
   // Управление: 5xx на чтение платежа; подмена суммы в ответе перезапроса; платёж создаётся уже оплаченным.
   failReads: boolean;
   readAmountOverride: string | null;
@@ -42,8 +45,17 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
 export async function startFakeYooKassa(options: { test?: boolean } = {}): Promise<FakeYooKassa> {
   const test = options.test ?? true;
   const byKey = new Map<string, string>();
+  let barrier: { enter(): Promise<void> } | null = null;
   const state: Omit<FakeYooKassa, 'apiBase' | 'close'> = {
-    payments: new Map(), refunds: new Map(), created: 0, failReads: false, readAmountOverride: null,
+    payments: new Map(), refunds: new Map(), created: 0, createKeys: [], readCalls: 0, failReads: false, readAmountOverride: null,
+    holdNextCreates(expected) {
+      if (barrier || !Number.isInteger(expected) || expected < 2) throw new Error('Invalid create barrier');
+      let seen = 0, arrive!: () => void, release!: () => void;
+      const arrived = new Promise<void>(resolve => { arrive = resolve; });
+      const gate = new Promise<void>(resolve => { release = resolve; });
+      barrier = { async enter() { if (++seen === expected) arrive(); await gate; } };
+      return { arrived, release() { barrier = null; release(); } };
+    },
     forgetIdempotence() { byKey.clear(); },
     pay(id) { const p = state.payments.get(id)!; p.status = 'succeeded'; p.paid = true; p.captured_at = stamp(); p.income_amount = { value: p.amount.value, currency: 'RUB' }; },
     cancel(id) { const p = state.payments.get(id)!; p.status = 'canceled'; },
@@ -64,9 +76,12 @@ export async function startFakeYooKassa(options: { test?: boolean } = {}): Promi
       const url = new URL(req.url ?? '/', 'http://fake');
       if (req.method === 'POST' && url.pathname === '/payments') {
         const key = String(req.headers['idempotence-key'] ?? '');
+        const body = await readBody(req) as { amount: { value: string }; metadata: { order_id: string } };
+        state.createKeys.push(key);
+        if (barrier) await barrier.enter();
+        // После полного body и контролируемого overlap lookup/create атомарны в event loop.
         const existing = byKey.get(key);
         if (existing) return send(res, 200, state.payments.get(existing));
-        const body = await readBody(req) as { amount: { value: string }; metadata: { order_id: string } };
         const id = randomUUID();
         const payment: Payment = { id, status: 'pending', amount: { value: body.amount.value, currency: 'RUB' }, paid: false, test,
           recipient: { account_id: SHOP_ID }, metadata: { order_id: body.metadata.order_id },
@@ -76,6 +91,7 @@ export async function startFakeYooKassa(options: { test?: boolean } = {}): Promi
       }
       const pay = /^\/payments\/([0-9a-f-]{36})$/.exec(url.pathname);
       if (req.method === 'GET' && pay) {
+        state.readCalls++;
         if (state.failReads) return send(res, 500, { type: 'error', code: 'internal_server_error' });
         const p = state.payments.get(pay[1]!);
         if (!p) return send(res, 404, { type: 'error', code: 'not_found' });

@@ -1,0 +1,1999 @@
+{
+  "schema": "clipmkr-author-handoff-1",
+  "status": "Авторские проверки завершены; требуется независимое ревью root",
+  "sourceFrozen": true,
+  "updatedAt": "2026-11-05T18:25:38.100988+00:00",
+  "author": {
+    "model": "gpt-6.1-sol",
+    "reasoning": "high",
+    "session": "отдельная авторская сессия по назначению пользователя",
+    "independent": false
+  },
+  "base": "24b4b4a4be4364659142b1428511fb634378ddbc",
+  "branch": "feat/per-account-test-checkout-20261105",
+  "literalContextDigest": "eb8f2de14326291a178012e5bd281c1cfcb10dda36e9dee327c9c72efe10e3d2",
+  "openspecDeltaSha256": "1c8457610d97f282cea1d55f1f641f983c0798ee813a1cd7483f78926a3c5b6e",
+  "sourceSetDigest": "471b3c3a69e711f43f81f07b847f360e720fa8cf1905095390307fcb135a01e5",
+  "sourceSetDigestDefinition": "SHA-256 JSON.stringify отсортированного массива {path,digest} всех 24 EXPECTED_CODE_TARGETS; не включает авторские отчёты",
+  "sourceSet": [
+    {
+      "path": ".env.example",
+      "digest": "a5f23bc5558784dd5fdaf0f23adc8299c100a2cb7ae5a8d010c8bd7c222c1bdb"
+    },
+    {
+      "path": "apps/web/src/app/upgrade/UpgradeScreen.tsx",
+      "digest": "7f221ab699c033a57069d9eeef4c73101d3a1ec9d578547fc697e57b64cd064b"
+    },
+    {
+      "path": "apps/web/src/app/upgrade/page.tsx",
+      "digest": "ed0048a6d008e6fd03f31760db456217e9d7d3645829c96732eb84eea340f781"
+    },
+    {
+      "path": "apps/web/src/preflight.ts",
+      "digest": "b02acbae7c59bde881b483c5a22b837ac2302de464a8f387280708469b7ced8f"
+    },
+    {
+      "path": "apps/web/src/server/billing-deps.ts",
+      "digest": "f34b3f34c5d4197a272114349106a4fc93f4b35b1b5852fc1b8ef991b2d08f69"
+    },
+    {
+      "path": "apps/web/src/server/billing-handler.ts",
+      "digest": "2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0"
+    },
+    {
+      "path": "apps/web/src/server/billing-runtime.ts",
+      "digest": "c90d4900cd7ffebfb4be679203d513f4c84034e3340992f021abd30ffd9bcfb2"
+    },
+    {
+      "path": "apps/web/src/server/environment.ts",
+      "digest": "9d8a633c0b6842a651dab6e761fc3b5af783b610686bff04518fda30425e3a43"
+    },
+    {
+      "path": "apps/web/src/server/payments/config.ts",
+      "digest": "74cb871d1437faa690b35d6b85e4f473cc20a871c3cbe9e11cc20aeb1946af9b"
+    },
+    {
+      "path": "apps/web/src/server/payments/yookassa.ts",
+      "digest": "eeaaef4bcd60f011b21fb20831c7f4f412cd9bbcd7ab8d6ca19914aa5cbaf4e5"
+    },
+    {
+      "path": "docker-compose.yml",
+      "digest": "f2078334454a14c5968b05d5f41083dd07b44e370c129585059ac279c2d24aef"
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "digest": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b"
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "digest": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f"
+    },
+    {
+      "path": "packages/shared/src/tariff.ts",
+      "digest": "01f8ff900f06de520a8b571b8d5a6e30dff8563e2667173b9ca753e8caa7f66d"
+    },
+    {
+      "path": "tests/billing.integration.test.ts",
+      "digest": "8abeb3fc1445a035ea9262715e28a03a25c02d2999da3152061ecc2e5dbc0047"
+    },
+    {
+      "path": "tests/billing.unit.test.ts",
+      "digest": "5e3db2c3355b669f707607cd5f9a9f11333016553af85584620db803910a9d7a"
+    },
+    {
+      "path": "tests/browser/per-account-test-checkout-next.test.ts",
+      "digest": "22cf515cc53e3646becd4726c12826bc74b9ec80c8166cb04bb69c9f716e64fa"
+    },
+    {
+      "path": "tests/credit-packages-ui.test.ts",
+      "digest": "14fbb1d4b6c2da1b29c784e9a852948ef57ec2da470546e0dd04d06ce1f1f573"
+    },
+    {
+      "path": "tests/credit-packages.integration.test.ts",
+      "digest": "32bb3e6ba3a1e44645c7d5aef043059956dc734a5e6ee7d1d26d4f9718dfe603"
+    },
+    {
+      "path": "tests/fixtures/environment.ts",
+      "digest": "d1c53da86d68bd5f471b5849c56cdd2aa9b2ee193d6783be85b5a1a1c0cfcf99"
+    },
+    {
+      "path": "tests/fixtures/fake-yookassa-server.ts",
+      "digest": "bc6d53c790d9a6dc12d18c6c289214e2a3d3548e08b865356a57c75958aed75b"
+    },
+    {
+      "path": "tests/fixtures/payment-test-transport.mjs",
+      "digest": "97d875c52585ad260836f19d5584d1a652dc48ad00ee38f4587820e757a4c7d1"
+    },
+    {
+      "path": "tests/payments-guards.test.ts",
+      "digest": "c19d85a1d66ab87d51e01981c551dc1bd9d56b5c9ae96b02469e4dab816857e8"
+    },
+    {
+      "path": "tests/wiring.test.ts",
+      "digest": "22b705b15924e69d2a1164e050981bee6f8dd61118118b7b4c0edc1f9aa03877"
+    }
+  ],
+  "changedFiles": [
+    {
+      "path": ".env.example",
+      "digest": "a5f23bc5558784dd5fdaf0f23adc8299c100a2cb7ae5a8d010c8bd7c222c1bdb"
+    },
+    {
+      "path": "apps/web/src/app/upgrade/page.tsx",
+      "digest": "ed0048a6d008e6fd03f31760db456217e9d7d3645829c96732eb84eea340f781"
+    },
+    {
+      "path": "apps/web/src/server/billing-deps.ts",
+      "digest": "f34b3f34c5d4197a272114349106a4fc93f4b35b1b5852fc1b8ef991b2d08f69"
+    },
+    {
+      "path": "apps/web/src/server/billing-handler.ts",
+      "digest": "2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0"
+    },
+    {
+      "path": "apps/web/src/server/billing-runtime.ts",
+      "digest": "c90d4900cd7ffebfb4be679203d513f4c84034e3340992f021abd30ffd9bcfb2"
+    },
+    {
+      "path": "apps/web/src/server/environment.ts",
+      "digest": "9d8a633c0b6842a651dab6e761fc3b5af783b610686bff04518fda30425e3a43"
+    },
+    {
+      "path": "docker-compose.yml",
+      "digest": "f2078334454a14c5968b05d5f41083dd07b44e370c129585059ac279c2d24aef"
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "digest": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f"
+    },
+    {
+      "path": "tests/billing.integration.test.ts",
+      "digest": "8abeb3fc1445a035ea9262715e28a03a25c02d2999da3152061ecc2e5dbc0047"
+    },
+    {
+      "path": "tests/billing.unit.test.ts",
+      "digest": "5e3db2c3355b669f707607cd5f9a9f11333016553af85584620db803910a9d7a"
+    },
+    {
+      "path": "tests/browser/per-account-test-checkout-next.test.ts",
+      "digest": "22cf515cc53e3646becd4726c12826bc74b9ec80c8166cb04bb69c9f716e64fa"
+    },
+    {
+      "path": "tests/credit-packages-ui.test.ts",
+      "digest": "14fbb1d4b6c2da1b29c784e9a852948ef57ec2da470546e0dd04d06ce1f1f573"
+    },
+    {
+      "path": "tests/credit-packages.integration.test.ts",
+      "digest": "32bb3e6ba3a1e44645c7d5aef043059956dc734a5e6ee7d1d26d4f9718dfe603"
+    },
+    {
+      "path": "tests/fixtures/environment.ts",
+      "digest": "d1c53da86d68bd5f471b5849c56cdd2aa9b2ee193d6783be85b5a1a1c0cfcf99"
+    },
+    {
+      "path": "tests/fixtures/fake-yookassa-server.ts",
+      "digest": "bc6d53c790d9a6dc12d18c6c289214e2a3d3548e08b865356a57c75958aed75b"
+    },
+    {
+      "path": "tests/fixtures/payment-test-transport.mjs",
+      "digest": "97d875c52585ad260836f19d5584d1a652dc48ad00ee38f4587820e757a4c7d1"
+    },
+    {
+      "path": "tests/payments-guards.test.ts",
+      "digest": "c19d85a1d66ab87d51e01981c551dc1bd9d56b5c9ae96b02469e4dab816857e8"
+    }
+  ],
+  "reviewManifestDigest": "7d0032817aeed2d95acf812475dcba4ff07b4ac79135b06dde39a916630fba2e",
+  "reviewManifest": [
+    {
+      "path": ".env.example",
+      "digest": "a5f23bc5558784dd5fdaf0f23adc8299c100a2cb7ae5a8d010c8bd7c222c1bdb"
+    },
+    {
+      "path": "apps/web/src/app/upgrade/UpgradeScreen.tsx",
+      "digest": "7f221ab699c033a57069d9eeef4c73101d3a1ec9d578547fc697e57b64cd064b"
+    },
+    {
+      "path": "apps/web/src/app/upgrade/page.tsx",
+      "digest": "ed0048a6d008e6fd03f31760db456217e9d7d3645829c96732eb84eea340f781"
+    },
+    {
+      "path": "apps/web/src/preflight.ts",
+      "digest": "b02acbae7c59bde881b483c5a22b837ac2302de464a8f387280708469b7ced8f"
+    },
+    {
+      "path": "apps/web/src/server/billing-deps.ts",
+      "digest": "f34b3f34c5d4197a272114349106a4fc93f4b35b1b5852fc1b8ef991b2d08f69"
+    },
+    {
+      "path": "apps/web/src/server/billing-handler.ts",
+      "digest": "2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0"
+    },
+    {
+      "path": "apps/web/src/server/billing-runtime.ts",
+      "digest": "c90d4900cd7ffebfb4be679203d513f4c84034e3340992f021abd30ffd9bcfb2"
+    },
+    {
+      "path": "apps/web/src/server/environment.ts",
+      "digest": "9d8a633c0b6842a651dab6e761fc3b5af783b610686bff04518fda30425e3a43"
+    },
+    {
+      "path": "apps/web/src/server/payments/config.ts",
+      "digest": "74cb871d1437faa690b35d6b85e4f473cc20a871c3cbe9e11cc20aeb1946af9b"
+    },
+    {
+      "path": "apps/web/src/server/payments/yookassa.ts",
+      "digest": "eeaaef4bcd60f011b21fb20831c7f4f412cd9bbcd7ab8d6ca19914aa5cbaf4e5"
+    },
+    {
+      "path": "docker-compose.yml",
+      "digest": "f2078334454a14c5968b05d5f41083dd07b44e370c129585059ac279c2d24aef"
+    },
+    {
+      "path": "features/per-account-test-checkout/00_complexity_assessment.md",
+      "digest": "144cecdd0e2e958a4fabf30814266aa862fb8504010514cea0118f2910a35050"
+    },
+    {
+      "path": "features/per-account-test-checkout/01_requirements.md",
+      "digest": "2d69bf5856e10bf10d35b59a42ecc444f3e96ea2c65580dcaabd82b544102b89"
+    },
+    {
+      "path": "features/per-account-test-checkout/03.5_ideation_report.md",
+      "digest": "6cd6df0fecd5a374f38ba50a0c07f09e74756e5873bc632deb20e57ad343e7fa"
+    },
+    {
+      "path": "features/per-account-test-checkout/03_adr/001-limit-test-checkout-to-session-account.md",
+      "digest": "85e16b0924e1348b6d4a5257a6085b37b85614424be13f7678a479f4656964ba"
+    },
+    {
+      "path": "features/per-account-test-checkout/05_architecture.md",
+      "digest": "3de5c39dfae38214c1dfba22285f7ed09d625f816c93df25f9d556fa711aac3e"
+    },
+    {
+      "path": "features/per-account-test-checkout/06_implementation_plan.md",
+      "digest": "85b5d6e1fc80d3d618684c6aada0276822d3500e3a2f49260e2e85cacb012bb0"
+    },
+    {
+      "path": "openspec/changes/per-account-test-checkout/proposal.md",
+      "digest": "6f4b94bd02197a97fa43f39ff9ffbd436225de13a443e5ccd919a5a6595c1a4a"
+    },
+    {
+      "path": "openspec/changes/per-account-test-checkout/specs/checkout-access/spec.md",
+      "digest": "1c8457610d97f282cea1d55f1f641f983c0798ee813a1cd7483f78926a3c5b6e"
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "digest": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b"
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "digest": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f"
+    },
+    {
+      "path": "packages/shared/src/tariff.ts",
+      "digest": "01f8ff900f06de520a8b571b8d5a6e30dff8563e2667173b9ca753e8caa7f66d"
+    },
+    {
+      "path": "tests/billing.integration.test.ts",
+      "digest": "8abeb3fc1445a035ea9262715e28a03a25c02d2999da3152061ecc2e5dbc0047"
+    },
+    {
+      "path": "tests/billing.unit.test.ts",
+      "digest": "5e3db2c3355b669f707607cd5f9a9f11333016553af85584620db803910a9d7a"
+    },
+    {
+      "path": "tests/browser/per-account-test-checkout-next.test.ts",
+      "digest": "22cf515cc53e3646becd4726c12826bc74b9ec80c8166cb04bb69c9f716e64fa"
+    },
+    {
+      "path": "tests/credit-packages-ui.test.ts",
+      "digest": "14fbb1d4b6c2da1b29c784e9a852948ef57ec2da470546e0dd04d06ce1f1f573"
+    },
+    {
+      "path": "tests/credit-packages.integration.test.ts",
+      "digest": "32bb3e6ba3a1e44645c7d5aef043059956dc734a5e6ee7d1d26d4f9718dfe603"
+    },
+    {
+      "path": "tests/fixtures/environment.ts",
+      "digest": "d1c53da86d68bd5f471b5849c56cdd2aa9b2ee193d6783be85b5a1a1c0cfcf99"
+    },
+    {
+      "path": "tests/fixtures/fake-yookassa-server.ts",
+      "digest": "bc6d53c790d9a6dc12d18c6c289214e2a3d3548e08b865356a57c75958aed75b"
+    },
+    {
+      "path": "tests/fixtures/payment-test-transport.mjs",
+      "digest": "97d875c52585ad260836f19d5584d1a652dc48ad00ee38f4587820e757a4c7d1"
+    },
+    {
+      "path": "tests/payments-guards.test.ts",
+      "digest": "c19d85a1d66ab87d51e01981c551dc1bd9d56b5c9ae96b02469e4dab816857e8"
+    },
+    {
+      "path": "tests/wiring.test.ts",
+      "digest": "22b705b15924e69d2a1164e050981bee6f8dd61118118b7b4c0edc1f9aa03877"
+    }
+  ],
+  "validation": {
+    "focused-am5-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "focused-am5-current",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.unit.test.ts",
+          "tests/billing.integration.test.ts",
+          "tests/payments-guards.test.ts",
+          "tests/credit-packages.integration.test.ts",
+          "tests/credit-packages-ui.test.ts",
+          "tests/wiring.test.ts",
+          "tests/clip-music-choice.test.ts"
+        ],
+        "exit": 0,
+        "seconds": 51.96,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/focused-am5-current.log",
+        "sha256": "baf98fddbb0918cd8ec2d6c72d9b9b7847b173721e2f5a8904f2553bdb62e917"
+      }
+    },
+    "full-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "full-current",
+        "command": [
+          "npm",
+          "test"
+        ],
+        "exit": 0,
+        "seconds": 866.76,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/full-current.log",
+        "sha256": "f57c66241708f5fe14771a503aeab57d89d14dd29a6f5595cd5011db5205e074"
+      }
+    },
+    "native-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "native-current",
+        "command": [
+          "node",
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "--config",
+          "vitest.browser.config.ts",
+          "tests/browser/per-account-test-checkout-next.test.ts",
+          "tests/browser/mockup-ui-realization.test.ts"
+        ],
+        "exit": 0,
+        "seconds": 239.08,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-current.log",
+        "sha256": "ab4c7f17c7bb0d5b889d620c7cd729226772188aedda129546b92c3cff81f8f3"
+      }
+    },
+    "typecheck-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "typecheck-current",
+        "command": [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        "exit": 0,
+        "seconds": 37.51,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-current.log",
+        "sha256": "1b4b658aae5b9ff1fab2830785a99fb6149f6727dcfc8485f493c745a36ffc13"
+      }
+    },
+    "lint-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "lint-current",
+        "command": [
+          "npm",
+          "run",
+          "lint"
+        ],
+        "exit": 0,
+        "seconds": 2.19,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/lint-current.log",
+        "sha256": "03d26c6ef0841b6eac1a8fb620e782e15d97a1f4467dc4566747082c86361443"
+      }
+    },
+    "build": {
+      "status": "завершена",
+      "receipt": {
+        "name": "build",
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "exit": 0,
+        "seconds": 63.03,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/build.log",
+        "sha256": "43666b5b817c646ab52671c9a83ef441b05620d153a830570d480da62c073941"
+      }
+    },
+    "env-wiring-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "env-wiring-current",
+        "command": [
+          "node",
+          "--experimental-strip-types",
+          "/tmp/per-account-env-wiring.mjs"
+        ],
+        "exit": 0,
+        "seconds": 2.92,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/env-wiring-current.log",
+        "sha256": "f956a290389dea838a726f2684522dc3e3342edcd471572b4a720bd03c1c21a7"
+      }
+    },
+    "diff-current": {
+      "status": "завершена",
+      "receipt": {
+        "name": "diff-current",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit": 0,
+        "seconds": 0.03,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/diff-current.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "openspec-validate": {
+      "status": "завершена",
+      "receipt": {
+        "name": "openspec-validate",
+        "command": [
+          "npm",
+          "run",
+          "openspec",
+          "--",
+          "validate",
+          "per-account-test-checkout",
+          "--strict"
+        ],
+        "exit": 0,
+        "seconds": 1.2,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/openspec-validate.log",
+        "sha256": "1780d1bc5d8c2ee69907a028379eb1dd04b16fe8dc09bf0b4fdf44f6fd88cc4a"
+      }
+    }
+  },
+  "mutationEvidence": [
+    {
+      "name": "exact-account",
+      "red": {
+        "name": "mutant-exact-account",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "two sessions enforce test checkout"
+        ],
+        "exit": 1,
+        "seconds": 5.08,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-exact-account.log",
+        "sha256": "6e4e491d83bef6b1579985e0e3cd4a51cc8f20dff06460d66c5451364d3c53f4"
+      },
+      "restoredGreen": {
+        "name": "restored-exact-account",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "two sessions enforce test checkout"
+        ],
+        "exit": 0,
+        "seconds": 4.66,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-exact-account.log",
+        "sha256": "3090c6c5de40cafcf2f544cf351f2af5e0dd1d185f3c072200dfc13772cb61ee"
+      },
+      "status": "RED→GREEN"
+    },
+    {
+      "name": "test-mode",
+      "red": {
+        "name": "mutant-test-mode",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.unit.test.ts",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "test checkout exception rejects live|test checkout handler never bypasses live"
+        ],
+        "exit": 1,
+        "seconds": 5.36,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-test-mode.log",
+        "sha256": "67d9d6d92d4cb560b4a9ac45f81827eee31777e5a2fcf3a89d41f9c4cdf556a2"
+      },
+      "restoredGreen": {
+        "name": "restored-test-mode",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.unit.test.ts",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "test checkout exception rejects live|test checkout handler never bypasses live"
+        ],
+        "exit": 0,
+        "seconds": 5.57,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-test-mode.log",
+        "sha256": "9d7fe706beafe928d96d9ccb3a488856a9d8411170a5668a23582d9800a88a9f"
+      },
+      "status": "RED→GREEN"
+    },
+    {
+      "name": "ssr-policy",
+      "red": {
+        "name": "mutant-ssr-policy",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.unit.test.ts",
+          "-t",
+          "test checkout SSR and POST"
+        ],
+        "exit": 1,
+        "seconds": 3.41,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-ssr-policy.log",
+        "sha256": "c61099b0ac21e9eb2240ce3751527cf04d22d1ff13bc86fc8407ffd569a5e0c8"
+      },
+      "restoredGreen": {
+        "name": "restored-ssr-policy",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.unit.test.ts",
+          "-t",
+          "test checkout SSR and POST"
+        ],
+        "exit": 0,
+        "seconds": 3.45,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-ssr-policy.log",
+        "sha256": "2a1416499937b81e9edea6f712b0ca8ecc9965d212f4e286765ddd8fc7461cf0"
+      },
+      "status": "RED→GREEN"
+    },
+    {
+      "name": "runtime-callback-v2",
+      "red": {
+        "name": "mutant-runtime-callback-v2",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/payments-guards.test.ts",
+          "-t",
+          "runtime forwards required checkout policy"
+        ],
+        "exit": 1,
+        "seconds": 3.75,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-runtime-callback-v2.log",
+        "sha256": "1556ad7f30cc37180d5ab46eebc0e6c2661045db3b1b8be6c10899609fcf94fa"
+      },
+      "restoredGreen": {
+        "name": "restored-runtime-callback-v2",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/payments-guards.test.ts",
+          "-t",
+          "runtime forwards required checkout policy"
+        ],
+        "exit": 0,
+        "seconds": 2.62,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-runtime-callback-v2.log",
+        "sha256": "853df2d516ab6e374030f49dfde233864f47d15a795f346b73ebd81155ef2cb7"
+      },
+      "status": "RED→GREEN"
+    },
+    {
+      "name": "webhook-test",
+      "red": {
+        "name": "mutant-webhook-test",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "revoked test exception rejects non-test webhook"
+        ],
+        "exit": 1,
+        "seconds": 4.12,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-webhook-test.log",
+        "sha256": "47a170201f9c7f83e5ef04a3173bff7b82367a970c8345d61366c4ed683c2c6a"
+      },
+      "restoredGreen": {
+        "name": "restored-webhook-test",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "revoked test exception rejects non-test webhook"
+        ],
+        "exit": 0,
+        "seconds": 4.11,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-webhook-test.log",
+        "sha256": "640a50baefdd98652a8baebee0cc1afd4c2098bed148489ab6660f5e55261be8"
+      },
+      "status": "RED→GREEN"
+    },
+    {
+      "name": "provider-key",
+      "red": {
+        "name": "mutant-provider-key",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "overlapping test checkout creates one provider payment"
+        ],
+        "exit": 1,
+        "seconds": 4.21,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-provider-key.log",
+        "sha256": "eed7ed75444565d4025b5ea8bfaaa7f7acda26ce3212ff4e74126ffb313deef7"
+      },
+      "restoredGreen": {
+        "name": "restored-provider-key",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "overlapping test checkout creates one provider payment"
+        ],
+        "exit": 0,
+        "seconds": 4.2,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-provider-key.log",
+        "sha256": "25647767a7723b57607d3d91afee094a8c5b7e4d4675ebad05b2ba7f6870e886"
+      },
+      "status": "RED→GREEN"
+    },
+    {
+      "name": "provider-duplicate",
+      "red": {
+        "name": "mutant-provider-duplicate",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "overlapping test checkout creates one provider payment"
+        ],
+        "exit": 1,
+        "seconds": 3.99,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-provider-duplicate.log",
+        "sha256": "9f5ce03d87be212023e85da371dc45d99320ec5419957b293348f21a327d5b72"
+      },
+      "restoredGreen": {
+        "name": "restored-provider-duplicate",
+        "command": [
+          "npm",
+          "test",
+          "--",
+          "tests/billing.integration.test.ts",
+          "-t",
+          "overlapping test checkout creates one provider payment"
+        ],
+        "exit": 0,
+        "seconds": 4.13,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-provider-duplicate.log",
+        "sha256": "7cacb2047eaf71064fbc39bda3f46d63903dbb5556fe3e2c3167924c73302823"
+      },
+      "status": "RED→GREEN"
+    }
+  ],
+  "commands": [
+    {
+      "name": "green-config",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "-t",
+        "test checkout (account config|exception rejects|policy allows)"
+      ],
+      "exit": 0,
+      "seconds": 2.17,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/green-config.log",
+      "sha256": "e3b7b82e16ae75bb748e93860e051be28304b7992d8e89fd447bc26046fee569"
+    },
+    {
+      "name": "red-env",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "-t",
+        "test checkout environment"
+      ],
+      "exit": 1,
+      "seconds": 1.83,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/red-env.log",
+      "sha256": "28e392b7ab4d534edbfed112e28f00cd9ee47ba2ea7e762b56ee7c4e1bdc420a"
+    },
+    {
+      "name": "green-env",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "-t",
+        "test checkout environment"
+      ],
+      "exit": 0,
+      "seconds": 1.77,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/green-env.log",
+      "sha256": "674e930c59b074f3d294cd14461c5c1f1b326bab9c3e1e35abeb55d3b3496773"
+    },
+    {
+      "name": "red-required-callback",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "-t",
+        "missing required checkout callback"
+      ],
+      "exit": 1,
+      "seconds": 2.24,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/red-required-callback.log",
+      "sha256": "99a353a55ecd7efc4f172f469eb22d5a5cc6b97ea6102db7a4d667065149880a"
+    },
+    {
+      "name": "green-required-callback",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "tests/payments-guards.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 2.97,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/green-required-callback.log",
+      "sha256": "5941166e2498cb47a0a3b9160afd7c25f21c1aa19d8c0f3860d21e38dbc7f413"
+    },
+    {
+      "name": "red-ssr",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "-t",
+        "test checkout SSR and POST"
+      ],
+      "exit": 1,
+      "seconds": 2.47,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/red-ssr.log",
+      "sha256": "d23fd5c38873c3607be7753684617fcdfd5ab3e8055f767bf42c94f2644f837f"
+    },
+    {
+      "name": "green-ssr",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "-t",
+        "test checkout SSR and POST"
+      ],
+      "exit": 0,
+      "seconds": 2.41,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/green-ssr.log",
+      "sha256": "65be7c23c1661a8eb4aff5a5c2acbcbbc05ae40a1109982bc8deb93cf7a6068f"
+    },
+    {
+      "name": "focused-pg",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "tests/billing.integration.test.ts",
+        "tests/payments-guards.test.ts",
+        "tests/credit-packages.integration.test.ts",
+        "tests/credit-packages-ui.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 19.57,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/focused-pg.log",
+      "sha256": "ce7e024ce858b51a17d5fe20581ef5c80d38efda9a8cdb4216b59a9a9115b70d"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 2,
+      "seconds": 20.96,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck.log",
+      "sha256": "7bfabeaf267fe223b28babd3bb67faaa88506926d65f80979ca2cce3ae74c037"
+    },
+    {
+      "name": "build-raw-key",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 73.63,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/build-raw-key.log",
+      "sha256": "de10a7afa922eb4b1a299f4241bdbce3dfc825bfb1d2bf1b7de062ecab46b459"
+    },
+    {
+      "name": "typecheck-after-shared",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 2,
+      "seconds": 39.12,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-after-shared.log",
+      "sha256": "30e5aca5a23f001331b6ca30f9d8cc9617e9151d935fd00601f89334c6d26d0d"
+    },
+    {
+      "name": "focused-pg-refined",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "tests/payments-guards.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 6.88,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/focused-pg-refined.log",
+      "sha256": "9dc784b17acacab532509d7705e0063470a02263ee41470fd20a2e65b42ccaa1"
+    },
+    {
+      "name": "native-raw-key-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "-t",
+        "native Next responses hide"
+      ],
+      "exit": 1,
+      "seconds": 3.48,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-raw-key-red.log",
+      "sha256": "64f3711a78da32665b5b4f9d376f2e86dd5bdb351ad8e1801a96480eb10a61cb"
+    },
+    {
+      "name": "native-raw-key-red-2",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "-t",
+        "native Next responses hide"
+      ],
+      "exit": 1,
+      "seconds": 3.72,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-raw-key-red-2.log",
+      "sha256": "8aff5a88ad5180a8fa30364a852b87c215859bf73b798368e296f9b15f9b8d3e"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "seconds": 1.85,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/lint.log",
+      "sha256": "03d26c6ef0841b6eac1a8fb620e782e15d97a1f4467dc4566747082c86361443"
+    },
+    {
+      "name": "native-raw-key-red-3",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "-t",
+        "native Next responses hide"
+      ],
+      "exit": 1,
+      "seconds": 3.43,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-raw-key-red-3.log",
+      "sha256": "d5b385b97282dbae38e58cb3680e082b79761653546e15eb03c3bae7501e4873"
+    },
+    {
+      "name": "native-raw-key-red-4",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "-t",
+        "native Next responses hide"
+      ],
+      "exit": 1,
+      "seconds": 6.29,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-raw-key-red-4.log",
+      "sha256": "061c964f44158a096d1a9e00a69211bf66a680e21f79384d9a22b4cce31a71bc"
+    },
+    {
+      "name": "env-wiring",
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/tmp/per-account-env-wiring.mjs"
+      ],
+      "exit": 0,
+      "seconds": 2.3,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/env-wiring.log",
+      "sha256": "4155c9b6abbaf5f0b47ec367959b23e6e2eb29ce5cefb7e044f7da22daee2530"
+    },
+    {
+      "name": "typecheck-final",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 2,
+      "seconds": 33.94,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-final.log",
+      "sha256": "66a5df493de5690aa0b8061af427b7f766736e1a5284fa38949b280e4164a69e"
+    },
+    {
+      "name": "focused-final",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "tests/billing.integration.test.ts",
+        "tests/payments-guards.test.ts",
+        "tests/credit-packages.integration.test.ts",
+        "tests/credit-packages-ui.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 22.51,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/focused-final.log",
+      "sha256": "cb09b4b16e8347db699438e8c466f5b07db6586e4d0815522c26ead4c6a0c3e2"
+    },
+    {
+      "name": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 63.03,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/build.log",
+      "sha256": "43666b5b817c646ab52671c9a83ef441b05620d153a830570d480da62c073941"
+    },
+    {
+      "name": "native-focused",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 10.62,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-focused.log",
+      "sha256": "4ad7647d8a31cec1a3bd8a0a8818960062a6101fe627a76dab75d9628879a55e"
+    },
+    {
+      "name": "typecheck-verified",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 40.99,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-verified.log",
+      "sha256": "1b4b658aae5b9ff1fab2830785a99fb6149f6727dcfc8485f493c745a36ffc13"
+    },
+    {
+      "name": "native-focused-2",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 130.21,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-focused-2.log",
+      "sha256": "d5f890f2d85946c7c14c194043da16dea2fed5eac15c6aa080a156064f9cad84"
+    },
+    {
+      "name": "native-capture",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 9.28,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-capture.log",
+      "sha256": "0ebe0c3e7dc69babbe22b380c9dc1ad78c68a4b768e1281a3db944f25014d602"
+    },
+    {
+      "name": "mutant-exact-account",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "two sessions enforce test checkout"
+      ],
+      "exit": 1,
+      "seconds": 5.08,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-exact-account.log",
+      "sha256": "6e4e491d83bef6b1579985e0e3cd4a51cc8f20dff06460d66c5451364d3c53f4"
+    },
+    {
+      "name": "restored-exact-account",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "two sessions enforce test checkout"
+      ],
+      "exit": 0,
+      "seconds": 4.66,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-exact-account.log",
+      "sha256": "3090c6c5de40cafcf2f544cf351f2af5e0dd1d185f3c072200dfc13772cb61ee"
+    },
+    {
+      "name": "mutant-test-mode",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "test checkout exception rejects live|test checkout handler never bypasses live"
+      ],
+      "exit": 1,
+      "seconds": 5.36,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-test-mode.log",
+      "sha256": "67d9d6d92d4cb560b4a9ac45f81827eee31777e5a2fcf3a89d41f9c4cdf556a2"
+    },
+    {
+      "name": "restored-test-mode",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "test checkout exception rejects live|test checkout handler never bypasses live"
+      ],
+      "exit": 0,
+      "seconds": 5.57,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-test-mode.log",
+      "sha256": "9d7fe706beafe928d96d9ccb3a488856a9d8411170a5668a23582d9800a88a9f"
+    },
+    {
+      "name": "mutant-ssr-policy",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "-t",
+        "test checkout SSR and POST"
+      ],
+      "exit": 1,
+      "seconds": 3.41,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-ssr-policy.log",
+      "sha256": "c61099b0ac21e9eb2240ce3751527cf04d22d1ff13bc86fc8407ffd569a5e0c8"
+    },
+    {
+      "name": "restored-ssr-policy",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "-t",
+        "test checkout SSR and POST"
+      ],
+      "exit": 0,
+      "seconds": 3.45,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-ssr-policy.log",
+      "sha256": "2a1416499937b81e9edea6f712b0ca8ecc9965d212f4e286765ddd8fc7461cf0"
+    },
+    {
+      "name": "mutant-runtime-callback",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "-t",
+        "runtime forwards required checkout policy"
+      ],
+      "exit": 1,
+      "seconds": 1.73,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-runtime-callback.log",
+      "sha256": "c61ac8b1a35e669b50c14ffa48ade830cd758477186f5a1263937461cf75d4d7"
+    },
+    {
+      "name": "restored-runtime-callback",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "-t",
+        "runtime forwards required checkout policy"
+      ],
+      "exit": 1,
+      "seconds": 2.24,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-runtime-callback.log",
+      "sha256": "47e512d4f402fe3bb54e44eee3e718b50c633b3832f9eb8cc3bb1b5986787c91"
+    },
+    {
+      "name": "native-green",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "tests/browser/mockup-ui-realization.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 358.75,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-green.log",
+      "sha256": "e063d8a503830f988bd340f35954ddfade48469060712fbaa8714b33e0b28c0f"
+    },
+    {
+      "name": "native-capture-current",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 12.28,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-capture-current.log",
+      "sha256": "7f4c5a5585a01d8814bf35a92c44b9bb3509dd87f4607b6dd906f065e2707c33"
+    },
+    {
+      "name": "mutant-runtime-callback-v2",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "-t",
+        "runtime forwards required checkout policy"
+      ],
+      "exit": 1,
+      "seconds": 3.75,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-runtime-callback-v2.log",
+      "sha256": "1556ad7f30cc37180d5ab46eebc0e6c2661045db3b1b8be6c10899609fcf94fa"
+    },
+    {
+      "name": "restored-runtime-callback-v2",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "-t",
+        "runtime forwards required checkout policy"
+      ],
+      "exit": 0,
+      "seconds": 2.62,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-runtime-callback-v2.log",
+      "sha256": "853df2d516ab6e374030f49dfde233864f47d15a795f346b73ebd81155ef2cb7"
+    },
+    {
+      "name": "mutant-webhook-test",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "revoked test exception rejects non-test webhook"
+      ],
+      "exit": 1,
+      "seconds": 4.12,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-webhook-test.log",
+      "sha256": "47a170201f9c7f83e5ef04a3173bff7b82367a970c8345d61366c4ed683c2c6a"
+    },
+    {
+      "name": "restored-webhook-test",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "revoked test exception rejects non-test webhook"
+      ],
+      "exit": 0,
+      "seconds": 4.11,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-webhook-test.log",
+      "sha256": "640a50baefdd98652a8baebee0cc1afd4c2098bed148489ab6660f5e55261be8"
+    },
+    {
+      "name": "mutant-provider-key",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "overlapping test checkout creates one provider payment"
+      ],
+      "exit": 1,
+      "seconds": 4.21,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-provider-key.log",
+      "sha256": "eed7ed75444565d4025b5ea8bfaaa7f7acda26ce3212ff4e74126ffb313deef7"
+    },
+    {
+      "name": "restored-provider-key",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "overlapping test checkout creates one provider payment"
+      ],
+      "exit": 0,
+      "seconds": 4.2,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-provider-key.log",
+      "sha256": "25647767a7723b57607d3d91afee094a8c5b7e4d4675ebad05b2ba7f6870e886"
+    },
+    {
+      "name": "mutant-provider-duplicate",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "overlapping test checkout creates one provider payment"
+      ],
+      "exit": 1,
+      "seconds": 3.99,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/mutant-provider-duplicate.log",
+      "sha256": "9f5ce03d87be212023e85da371dc45d99320ec5419957b293348f21a327d5b72"
+    },
+    {
+      "name": "restored-provider-duplicate",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.integration.test.ts",
+        "-t",
+        "overlapping test checkout creates one provider payment"
+      ],
+      "exit": 0,
+      "seconds": 4.13,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/restored-provider-duplicate.log",
+      "sha256": "7cacb2047eaf71064fbc39bda3f46d63903dbb5556fe3e2c3167924c73302823"
+    },
+    {
+      "name": "native-engines",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 25.06,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-engines.log",
+      "sha256": "df22b52c0333ec56f1dcd6ade46f734868a5fd3f3a4b0b47c9e61e5280ba4dde"
+    },
+    {
+      "name": "wiring-am4-red",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/wiring.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 15.28,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/wiring-am4-red.log",
+      "sha256": "4a3ea86df89c9c664098e2afb099cbaf648d017e2c5cfc77d2d98c7b7c37803a"
+    },
+    {
+      "name": "native-verified",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 14.74,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-verified.log",
+      "sha256": "d4064ddd435f9a7cfc08d794a8c64f06df48f4dc436b19484217aa03020479b7"
+    },
+    {
+      "name": "wiring-am4-green",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/wiring.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 22.76,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/wiring-am4-green.log",
+      "sha256": "79217a3ca03d33c5302228d996a4d3530862d804c12d7bea506d5a1deca7d0d4"
+    },
+    {
+      "name": "full-test",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 1,
+      "seconds": 871.47,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/full-test.log",
+      "sha256": "e2c4d65b4e88168e9e5434c272ea031b6c8d7139314ee0b477a5b81d9192fcab"
+    },
+    {
+      "name": "typecheck-final-tree",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 2,
+      "seconds": 36.67,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-final-tree.log",
+      "sha256": "e9564fd958049efef66d5ffb266bf1acfe6367584d59fb3e53024aa7c1bee96e"
+    },
+    {
+      "name": "teach-flight",
+      "command": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "teach",
+        "--from-file",
+        "/tmp/per-account-flight-lesson.txt",
+        "--domain",
+        "security",
+        "--type",
+        "lesson-learned",
+        "--project",
+        "/home/clipmkr",
+        "--no-mirror"
+      ],
+      "exit": 0,
+      "seconds": 0.81,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/teach-flight.log",
+      "sha256": "adbc02de91f4ecaf53d8f191a856df22554a773fc4613edb1a9fb3d42782ef03"
+    },
+    {
+      "name": "lint-final-tree",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "seconds": 1.92,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/lint-final-tree.log",
+      "sha256": "03d26c6ef0841b6eac1a8fb620e782e15d97a1f4467dc4566747082c86361443"
+    },
+    {
+      "name": "recall-flight",
+      "command": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "recall",
+        "React key inline Flight HMAC",
+        "--project",
+        "/home/clipmkr"
+      ],
+      "exit": 0,
+      "seconds": 0.98,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/recall-flight.log",
+      "sha256": "665ca1c62e142ef80f1d619d9a24b9739df8e2e54546b1cae560127f8b90b077"
+    },
+    {
+      "name": "typecheck-validated",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 39.07,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-validated.log",
+      "sha256": "1b4b658aae5b9ff1fab2830785a99fb6149f6727dcfc8485f493c745a36ffc13"
+    },
+    {
+      "name": "openspec-validate",
+      "command": [
+        "npm",
+        "run",
+        "openspec",
+        "--",
+        "validate",
+        "per-account-test-checkout",
+        "--strict"
+      ],
+      "exit": 0,
+      "seconds": 1.2,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/openspec-validate.log",
+      "sha256": "1780d1bc5d8c2ee69907a028379eb1dd04b16fe8dc09bf0b4fdf44f6fd88cc4a"
+    },
+    {
+      "name": "wiring-typed-green",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/wiring.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 22.21,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/wiring-typed-green.log",
+      "sha256": "11ae6c90248bc766f2a5f49ea8304b83ae19ac7dd0ed91f829685d46cdf6c15b"
+    },
+    {
+      "name": "full-final",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 130,
+      "seconds": 219.3,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/full-final.log",
+      "sha256": "a4ddfe8a390f2c3675b2ed45afbf44fbca38e8e20f904af63a7e57478f20870d"
+    },
+    {
+      "name": "native-final",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "tests/browser/mockup-ui-realization.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 252.79,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-final.log",
+      "sha256": "4eeb9b1f53f62571882b19f50cbbedc21545f5c969e73cf5295e280c1dada75a"
+    },
+    {
+      "name": "shared-fixture-am5-red",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/payments-guards.test.ts",
+        "tests/wiring.test.ts",
+        "tests/clip-music-choice.test.ts"
+      ],
+      "exit": 1,
+      "seconds": 20.33,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/shared-fixture-am5-red.log",
+      "sha256": "875c5600b7b96ec686d10793c8914adf0a096b4972a75051b932d27aa6afd13e"
+    },
+    {
+      "name": "lint-current",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "seconds": 2.19,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/lint-current.log",
+      "sha256": "03d26c6ef0841b6eac1a8fb620e782e15d97a1f4467dc4566747082c86361443"
+    },
+    {
+      "name": "focused-am5-current",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/billing.unit.test.ts",
+        "tests/billing.integration.test.ts",
+        "tests/payments-guards.test.ts",
+        "tests/credit-packages.integration.test.ts",
+        "tests/credit-packages-ui.test.ts",
+        "tests/wiring.test.ts",
+        "tests/clip-music-choice.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 51.96,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/focused-am5-current.log",
+      "sha256": "baf98fddbb0918cd8ec2d6c72d9b9b7847b173721e2f5a8904f2553bdb62e917"
+    },
+    {
+      "name": "diff-current",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.03,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/diff-current.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "env-wiring-current",
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/tmp/per-account-env-wiring.mjs"
+      ],
+      "exit": 0,
+      "seconds": 2.92,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/env-wiring-current.log",
+      "sha256": "f956a290389dea838a726f2684522dc3e3342edcd471572b4a720bd03c1c21a7"
+    },
+    {
+      "name": "typecheck-current",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 37.51,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/typecheck-current.log",
+      "sha256": "1b4b658aae5b9ff1fab2830785a99fb6149f6727dcfc8485f493c745a36ffc13"
+    },
+    {
+      "name": "native-current",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "tests/browser/mockup-ui-realization.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 239.08,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/native-current.log",
+      "sha256": "ab4c7f17c7bb0d5b889d620c7cd729226772188aedda129546b92c3cff81f8f3"
+    },
+    {
+      "name": "code-targets-current",
+      "command": [
+        "node",
+        "node_modules/@dzhechkov/skills-feature-adr/templates/.claude/skills/feature-adr/scripts/check-code-targets.mjs",
+        "--repo",
+        "/tmp/clipmkr-per-account-test-checkout-20261105",
+        "--feature",
+        "features/per-account-test-checkout"
+      ],
+      "exit": 0,
+      "seconds": 0.17,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/code-targets-current.log",
+      "sha256": "2136a1733ca85ffa91d7745f171f862cda38c91031efb0383d39c127a7af2712"
+    },
+    {
+      "name": "full-current",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 866.76,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/full-current.log",
+      "sha256": "f57c66241708f5fe14771a503aeab57d89d14dd29a6f5595cd5011db5205e074"
+    },
+    {
+      "name": "raw-key-mutant-build",
+      "command": [
+        "env",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 55.28,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-mutant-build.log",
+      "sha256": "905492f9750e8d88deaeecc2ba5ea2f04148c68a7ac984e338dc089b82c25c1b"
+    },
+    {
+      "name": "raw-key-mutant-native",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts",
+        "-t",
+        "native Next responses hide"
+      ],
+      "exit": 1,
+      "seconds": 8.92,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-mutant-native.log",
+      "sha256": "a599569c0488322cd8a08d0efe27949105f2e1c8cb366d67a09f9daa2b5bb44c"
+    },
+    {
+      "name": "raw-key-restored-build",
+      "command": [
+        "env",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 42.38,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-restored-build.log",
+      "sha256": "18abc5de7f717e4437179e36e3b8bba977c8f4cb715dbde49d7fb8b11ba5a806"
+    },
+    {
+      "name": "raw-key-restored-native",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/per-account-test-checkout-next.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 12.72,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-restored-native.log",
+      "sha256": "5461b57a1752e01db66cdb78db8bf55123905f5def0daffc74da8e5f71caf975"
+    }
+  ],
+  "nativeEvidence": {
+    "directory": "/tmp/next_checkout_31b3fa5f67616fc4",
+    "files": [
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-0-A-flight.txt",
+        "sha256": "8a91fb22e71ec9d8e5b675f34e858b827c40980ff6e022eb2dbe18ddc23b0688",
+        "bytes": 3430
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-0-A-html.txt",
+        "sha256": "703a3394380d2642aca2eaae2ec382a1530ad9f1b8e83e047c1e37db879bb1f5",
+        "bytes": 18272
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-1-B-flight.txt",
+        "sha256": "521a2107577e013ab42323190df9a1bcbc226e111f3bf6c8c3366f7bd3fc04b2",
+        "bytes": 3431
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-1-B-html.txt",
+        "sha256": "c9414267772bde1749dda367ebbba56740be55f0bea01ac8ed41b9b69057c9c5",
+        "bytes": 18891
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-2-A-flight.txt",
+        "sha256": "96ad18870944df9135fc4890addb302820e8eaa91a24afd7fd990e40ebee11b2",
+        "bytes": 3430
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-2-A-html.txt",
+        "sha256": "67e57f6f8bf8d61fa89c1b33add40d1b14e308695f246301fff2a7be48bef524",
+        "bytes": 18272
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/chromium-capture-summary.json",
+        "sha256": "5b36e54fcfcef54dff6bd91682190c525b7e1b8d57d6df669948357d295cfdb4",
+        "bytes": 73
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/next.log",
+        "sha256": "d64d598b1d5d6cf86887f0c8e595078197325f27feaadcaaac12ac7813c87bac",
+        "bytes": 1068
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-0-A-flight.txt",
+        "sha256": "4b1f6165688eef3a6dc9a17b5afdf2ff75ca0eeea3c5e4abea722a147423a819",
+        "bytes": 3430
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-0-A-html.txt",
+        "sha256": "d4b780570ebac3237d5d37d113a1ecd2f17f8381b58c229828360572d5782476",
+        "bytes": 18272
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-1-B-flight.txt",
+        "sha256": "326b1fde8ea46b0fc7d8abd55fc20a59b42b166df0cb698ab482b6a79c1791ae",
+        "bytes": 3431
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-1-B-html.txt",
+        "sha256": "1b8ad09617c5560def5e8e9a9d8893a9bf87b9d5c332fe07fba210323e17eb86",
+        "bytes": 18891
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-2-A-flight.txt",
+        "sha256": "b533dd172bc6c42cb1524d4b3b97889a722c03573fc6dee75307781412afc128",
+        "bytes": 3430
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-2-A-html.txt",
+        "sha256": "a8ea5cc01c848637387c1a032247c94e35ac63d017bc053875c2366989c782d6",
+        "bytes": 18272
+      },
+      {
+        "path": "/tmp/next_checkout_31b3fa5f67616fc4/webkit-capture-summary.json",
+        "sha256": "5b36e54fcfcef54dff6bd91682190c525b7e1b8d57d6df669948357d295cfdb4",
+        "bytes": 73
+      }
+    ],
+    "captures": {
+      "chromium": {
+        "directHtmlResponses": 3,
+        "flightResponses": 3,
+        "nonemptyFlightResponses": 3
+      },
+      "webkit": {
+        "directHtmlResponses": 3,
+        "flightResponses": 3,
+        "nonemptyFlightResponses": 3
+      }
+    }
+  },
+  "rawKeyMutation": {
+    "status": "RED→restoreGREEN",
+    "receipts": {
+      "raw-key-mutant-build": {
+        "name": "raw-key-mutant-build",
+        "command": [
+          "env",
+          "NEXT_TELEMETRY_DISABLED=1",
+          "npm",
+          "run",
+          "build"
+        ],
+        "exit": 0,
+        "seconds": 55.28,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-mutant-build.log",
+        "sha256": "905492f9750e8d88deaeecc2ba5ea2f04148c68a7ac984e338dc089b82c25c1b"
+      },
+      "raw-key-mutant-native": {
+        "name": "raw-key-mutant-native",
+        "command": [
+          "node",
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "--config",
+          "vitest.browser.config.ts",
+          "tests/browser/per-account-test-checkout-next.test.ts",
+          "-t",
+          "native Next responses hide"
+        ],
+        "exit": 1,
+        "seconds": 8.92,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-mutant-native.log",
+        "sha256": "a599569c0488322cd8a08d0efe27949105f2e1c8cb366d67a09f9daa2b5bb44c"
+      },
+      "raw-key-restored-build": {
+        "name": "raw-key-restored-build",
+        "command": [
+          "env",
+          "NEXT_TELEMETRY_DISABLED=1",
+          "npm",
+          "run",
+          "build"
+        ],
+        "exit": 0,
+        "seconds": 42.38,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-restored-build.log",
+        "sha256": "18abc5de7f717e4437179e36e3b8bba977c8f4cb715dbde49d7fb8b11ba5a806"
+      },
+      "raw-key-restored-native": {
+        "name": "raw-key-restored-native",
+        "command": [
+          "node",
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "--config",
+          "vitest.browser.config.ts",
+          "tests/browser/per-account-test-checkout-next.test.ts"
+        ],
+        "exit": 0,
+        "seconds": 12.72,
+        "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/raw-key-restored-native.log",
+        "sha256": "5461b57a1752e01db66cdb78db8bf55123905f5def0daffc74da8e5f71caf975"
+      }
+    }
+  },
+  "testCounts": {
+    "focused": {
+      "passed": 124,
+      "skipped": 0,
+      "files": 7
+    },
+    "native": {
+      "passed": 32,
+      "skipped": 0,
+      "files": 2
+    },
+    "full": {
+      "passed": 1546,
+      "skipped": 15,
+      "filesPassed": 149,
+      "filesSkipped": 1
+    }
+  },
+  "reproScripts": [
+    {
+      "path": "/root/.config/clipmkr/per-account-test-checkout-20261105/per-account-author-run.py",
+      "sha256": "960ae1d8d84430349887edddf7632feda9d0282d722e97fbb8d06fc0a6a0b96a"
+    },
+    {
+      "path": "/root/.config/clipmkr/per-account-test-checkout-20261105/per-account-env-wiring.mjs",
+      "sha256": "4a3bcc172c96b3734d277ec2115f91ca1d21a061d5f5446aedf34553b30033a7"
+    },
+    {
+      "path": "/root/.config/clipmkr/per-account-test-checkout-20261105/per-account-mutations.py",
+      "sha256": "cb5143507b84c58ce5c2ec79a084797c2ed66ae586f7ab568af9386919a66d8f"
+    },
+    {
+      "path": "/root/.config/clipmkr/per-account-test-checkout-20261105/per-account-source-snapshot.mjs",
+      "sha256": "d4c31c225155cccae3dbff13e77fd84823e4af183a0d3b9d43901f2dc7cb298d"
+    },
+    {
+      "path": "/root/.config/clipmkr/per-account-test-checkout-20261105/per-account-raw-key-mutation.py",
+      "sha256": "a6606dab5ef20efb54a8b723b0b531c8f060a6bdae0bf50a7234f769fadc8d7b"
+    }
+  ],
+  "repro": {
+    "node": "/tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin/node",
+    "profile": "/root/.config/clipmkr/blogger-auto-link-20261105/local-qe.env",
+    "privateReceipts": "/root/.config/clipmkr/per-account-test-checkout-20261105/commands.private.jsonl",
+    "isolatedMutationCopy": "/tmp/checkout-mutants-t62c0mhs"
+  },
+  "independentReview": {
+    "status": "NOT RUN автором; root выполняет gpt-6-astra xhigh в новой сессии после host prepare",
+    "authorSelfCheck": "Прочитан code-critic; не независимое ревью"
+  },
+  "antiDrift": {
+    "requirements": "не изменены автором",
+    "ADR": "не изменён автором",
+    "architecture": "не изменена автором",
+    "plan": "AM-4/AM-5 менял только root; окончательный literal context повторно проверен",
+    "semanticDependencies": "7 файлов, включая восстановленный tests/wiring.test.ts, совпадают с HEAD",
+    "changedCount": 17,
+    "scope": "Только 8 production/config + 5 existing tests + 2 existing fixtures + 2 test-only файла"
+  },
+  "limitations": [
+    "Настоящий магазин ЮKassa/реальный shop E2E NOT RUN: только local loopback fixture, без LIVE списаний.",
+    "15 существующих S3 проверок полного набора не считаются PASS; профиль реального S3 отсутствует по scope.",
+    "HTTP браузерный transport подаёт test-only Cookie/XFF через route.fetch и передаёт настоящие Next HTML/Flight bytes без изменения; production Secure-cookie/TLS приёмка NOT RUN.",
+    "Публичный synthetic origin https://test.invalid используется для штатного HTTPS returnUrl; Next и provider API находятся на loopback.",
+    "Локальная fixture не доказывает ЮKassa idempotency TTL24h.",
+    "Deploy/private overlay/Cloud.ru/DNS/живые аккаунты/роли/credentials/commit/push NOT RUN по поручению.",
+    "В checkout privacy проверяются ответы /upgrade и его Flight; приватные props другого существующего upload/dashboard пути вне этой дельты."
+  ],
+  "lessons": {
+    "teachId": "teach:ef4c120ef7d89cb8",
+    "store": "/home/clipmkr/.dz",
+    "mirror": false,
+    "teachReceipt": {
+      "name": "teach-flight",
+      "command": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "teach",
+        "--from-file",
+        "/tmp/per-account-flight-lesson.txt",
+        "--domain",
+        "security",
+        "--type",
+        "lesson-learned",
+        "--project",
+        "/home/clipmkr",
+        "--no-mirror"
+      ],
+      "exit": 0,
+      "seconds": 0.81,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/teach-flight.log",
+      "sha256": "adbc02de91f4ecaf53d8f191a856df22554a773fc4613edb1a9fb3d42782ef03"
+    },
+    "recallReceipt": {
+      "name": "recall-flight",
+      "command": [
+        "npm",
+        "run",
+        "dz",
+        "--",
+        "recall",
+        "React key inline Flight HMAC",
+        "--project",
+        "/home/clipmkr"
+      ],
+      "exit": 0,
+      "seconds": 0.98,
+      "log": "/root/.config/clipmkr/per-account-test-checkout-20261105/recall-flight.log",
+      "sha256": "665ca1c62e142ef80f1d619d9a24b9739df8e2e54546b1cae560127f8b90b077"
+    }
+  }
+}

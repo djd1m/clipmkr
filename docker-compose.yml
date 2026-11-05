@@ -50,6 +50,7 @@ services:
       # Оплата ЮKassa (фича 30, ADR-019). Дефис БЕЗ двоеточия: не задана → off (экран интереса); явно ПУСТАЯ строка
       # доезжает до web и валит старт (honest-configuration CFG-I2), а не превращается в off молча.
       N5_CHECKOUT_ENABLED: ${N5_CHECKOUT_ENABLED-true}
+      N5_TEST_CHECKOUT_ACCOUNT_ID: ${N5_TEST_CHECKOUT_ACCOUNT_ID-}
       N5_PAYMENTS_MODE: ${N5_PAYMENTS_MODE-off}
       N5_MAIL_MODE: ${N5_MAIL_MODE-disabled}
       N5_RESEND_API_KEY: ${N5_RESEND_API_KEY-}

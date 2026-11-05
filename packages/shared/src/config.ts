@@ -94,12 +94,34 @@ export function loadWebConfig(env: Environment) {
   }
   const checkout = env.N5_CHECKOUT_ENABLED ?? 'true';
   if (checkout !== 'true' && checkout !== 'false') throw new Error('N5_CHECKOUT_ENABLED: нужно true или false');
-  return Object.freeze({ ...connections, limits, publicOrigin, sessionSecret, billingMode: loadBillingMode(env), checkoutEnabled: checkout === 'true',
+  const billingMode = loadBillingMode(env);
+  const payments = loadPaymentsConfig(env);
+  const testCheckoutAccountId = env.N5_TEST_CHECKOUT_ACCOUNT_ID || null;
+  if (testCheckoutAccountId !== null) {
+    if (testCheckoutAccountId.length !== 36 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(testCheckoutAccountId)) {
+      throw new Error('N5_TEST_CHECKOUT_ACCOUNT_ID: нужен один canonical lowercase UUID без пробелов');
+    }
+    if (checkout !== 'false' || billingMode !== 'credits_v1' || payments.mode !== 'live' ||
+        !payments.testMode || !payments.secretKey.startsWith('test_') || payments.secretKey.length <= 5) {
+      throw new Error('N5_TEST_CHECKOUT_ACCOUNT_ID: исключение требует выключенного checkout, credits_v1 и TEST-магазина ЮKassa с test_ ключом');
+    }
+  }
+  return Object.freeze({ ...connections, limits, publicOrigin, sessionSecret, billingMode, checkoutEnabled: checkout === 'true', testCheckoutAccountId,
     s3: Object.freeze({ ...loadS3Config(env), publicEndpoint: loadS3PublicEndpoint(env) }),
     support: loadSupportConfig(env), mail: loadMailConfig(env),
-    trustedProxyHops: loadTrustedProxyHops(env), payments: loadPaymentsConfig(env) });
+    trustedProxyHops: loadTrustedProxyHops(env), payments });
 }
 export type WebConfig = ReturnType<typeof loadWebConfig>;
+// Identity и billing policy приходят только от серверных readers, никогда из тела checkout.
+export function checkoutAllowedForAccount(config: WebConfig, accountId: string | null | undefined,
+  accountBillingPolicy: string | null | undefined, providerReady: boolean): boolean {
+  if (!providerReady || !accountId) return false;
+  if (config.checkoutEnabled) return true;
+  return config.testCheckoutAccountId !== null && accountId === config.testCheckoutAccountId &&
+    config.billingMode === 'credits_v1' && accountBillingPolicy === 'credits_v1' &&
+    config.payments.mode === 'live' && config.payments.testMode &&
+    config.payments.secretKey.startsWith('test_') && config.payments.secretKey.length > 5;
+}
 // Разделение соответствует compose: воркерам не передаётся SESSION_SECRET.
 export function loadWorkerConfig(role: Exclude<ServiceRole, 'web'>, env: Environment) {
   const connections = loadConnectionConfig(env);

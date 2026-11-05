@@ -1,0 +1,42 @@
+# Независимое QCSD design review: qcsd-risk
+
+Вердикт: **clean** по проверенному документальному scope роли. Подтверждённых находок и условий нет. Это не gate PASS и не подтверждение реализации или приёмки оплаты.
+
+## Идентификация и входы
+
+Запрошенная модель: `gpt-6.1-terra xhigh`; платформенный независимый источник фактического ID модели/effort в этой сессии не предоставлен, поэтому подтверждать его не могу. Отдельная сессия: SHA-256 от `CODEX_SESSION_ID` — `5b7c90a9b775c82865e585322430466be66b689eb6c1589a19d1db1429e183e9`; сам идентификатор не записан, поскольку имеет форму UUID и пользователь запретил реальные UUID в документах. Независимая роль: qcsd-risk, семейство owner-exception; архитектор указан в запросе как `gpt-6-astra xhigh`. Выводы других ревьюеров и автора как доказательство не читались.
+
+Входы: `AGENTS.md`, `CLAUDE.md`, `docs/acceptance/core-cjm.md`; `features/per-account-test-checkout/00_complexity_assessment.md`, `01_requirements.md`, `02_reuse_inventory.md`, ADR-001, `05_architecture.md`, `06_implementation_plan.md`, `owner-authority.md`, `requirements-revision.json`, связанная OpenSpec delta и proposal, подготовленный host snapshot. SHA-256 OpenSpec delta совпал с requirements-revision. Применены инструкции модуля `03.5-ideation-swarm.md`, навыков `code-impl` и `studio-extended-qe`, а также материалы testing и extended QE Product Studio. Текущий HEAD соответствует заявленной базе `24b4b4a4be4364659142b1428511fb634378ddbc`.
+
+## Граница и доказательства проверки
+
+- **Доверие и экспозиция.** `auth-store.ts:37` связывает session с активным account; `billing-handler.ts:83` получает identity из auth и проверяет origin, `billing-deps.ts:27` читает активную billing policy; `payments.ts:24` вновь проверяет активность при создании intent. Проект размещает обязательный callback после auth и до body/intent/provider, с точным сопоставлением UUID и TEST/credits constraints. Для SSR `upgrade/page.tsx:17` читает ту же session, а `page.tsx:27` сейчас не учитывает checkoutEnabled: проект предлагает общий серверный predicate. На основании чтения — реализуемая граница, не доказательство работающего нового guard.
+- **Fail-closed и доставка.** `config.ts:87`, `environment.ts`, `preflight.ts:5`, `runtime.ts:10`, `docker-compose.yml:52` показывают цепочку, которую план намерен расширить. В compose существующий default global checkout — true, поэтому для исключения принципиально явное false; требования и ADR требуют fail startup при конфликте. Пустой, malformed, список, пробелы, off/fake, live key, false testMode и legacy включены в проектную матрицу. Префикс ключа не доказывает подлинность тестового магазина: это отдельно оговорено ADR.
+- **Callback и потребители.** Поиск всех `BillingDependencies`, `BillingWiring`, `createBillingDependencies`, `createCheckoutHandler` и checkoutEnabled нашёл runtime и три тестовых wiring-потребителя: billing unit/integration, payments-guards и credit-packages integration. `payments-guards.test.ts:130` применяет приведение типа, потому один typecheck не доказывает фактическую доставку callback; план требует его обновить и проверять реальное wiring. Status и webhook получают те же dependencies, но отдельные обработчики (`billing-handler.ts:159,192`), и их нельзя ограничивать новым checkout guard.
+- **Провайдер и lifecycle.** ЮKassa adapter `yookassa.ts:142,150-152,208-210,216` проверяет магазин и `raw.test` при нормализации ответов, и после отправки create нормализует результат. Webhook перепроверяет данные провайдера, а DB применяет платёж с проверкой владельца и идемпотентности. План требует отзыв с сохранением TEST provider, повтор и конкурентность; отключение provider, как указано в ADR, изменит доступность status/webhook. Ни provider, ни сеть не вызывались.
+- **Реалистичность оракулов.** Существующий `billing.integration.test.ts:28-47` использует реальный PostgreSQL при наличии изолированной БД, но сессии там хранятся в `Map`, а provider подменён локальным сервером. Поэтому его текущее существование не доказывает AuthService/PG session → validated config → runtime → handler; FR и план отдельно требуют эту цепочку для A и B. Обязательные будущие оракулы: B/anonymous/spoof дают ноль новых intent и provider calls, A создаёт intent своей session; SSR с валидными окнами отличает активные от disabled кнопок; отсутствие exception и ошибка режима закрывают доступ; отзыв сохраняет status и повторный verified webhook без двойного grant. Удаление exact-account guard, TEST-проверки или callback wiring должно ломать соответствующий тест. Проверка account-switch с существующим browser regression указана в плане.
+
+## Ограничения
+
+Runtime-код и новые тесты ещё не существуют; ни один тест реализации не запускался и никакой PASS не заявляется. Нет доказательства actual UI, реального тестового магазина, получения результата владельцем или полного `core-cjm` платёжного сценария. Исследование ограничено исключением одного аккаунта, а не полной приёмкой платежей; отсутствует полномочие на live charges, Cloud, SSH и изменение среды. Остальные QCSD роли, K1/K2, независимое QE, code/spec anti-drift и owner acceptance остаются отдельными действиями. Допущение отдельной сессии подтверждено доступным session hash; заявленную модель и её cross-model отличие платформа в этой сессии не удостоверила.
+
+## Focused ideation review после structural rework
+
+Тот же session hash; requested `gpt-6.1-terra xhigh`, фактическая модель/effort платформой отдельно не удостоверены. Повторно проверен actual author handoff с `addressed` QL-01, QL-02, QT-001, structural classification и оценкой новых рисков. У этой роли исходных собственных conditions нет; чужие условия и их закрытие оценивают originating reviewers. Собственная delta verification — structural, `implementationVerified=true` исключительно в смысле проверки изменённого дизайна.
+
+Измеренная host revision: `5835e26d516fe9049ed6241f370874637d7f9f5463624cb39589d6dded145cf9`. Фактические SHA-256 совпали с manifest:
+
+- `00_complexity_assessment.md`: `144cecdd0e2e958a4fabf30814266aa862fb8504010514cea0118f2910a35050`
+- `01_requirements.md`: `2d69bf5856e10bf10d35b59a42ecc444f3e96ea2c65580dcaabd82b544102b89`
+- `03_adr/001-limit-test-checkout-to-session-account.md`: `85e16b0924e1348b6d4a5257a6085b37b85614424be13f7678a479f4656964ba`
+- `05_architecture.md`: `3de5c39dfae38214c1dfba22285f7ed09d625f816c93df25f9d556fa711aac3e`
+
+OpenSpec delta и `requirements-revision.json` совпадают по SHA-256 `1c8457610d97f282cea1d55f1f641f983c0798ee813a1cd7483f78926a3c5b6e`. План, inventory и OpenSpec прочитаны как связанные зависимости, но не включены в измеренный host manifest данной фазы.
+
+- Existing `fake-yookassa-server.ts:66-74` действительно делает lookup до await body; исправленный дизайн требует атомарный lookup/create после body и test barrier, наблюдает attempts, одинаковый provider key, unique payment, intent и grant отдельно. Это локальный оракул без доказательства TTL настоящего провайдера.
+- Existing adapter `yookassa.ts` повторно получает payment и проверяет `raw.test`; проект требует после отзыва negative requery=false и нулевые event/payment/grant, затем true с одним grant и duplicate, включая фальсификатор удаления guard.
+- Existing `UpgradePage` использует account key; новый дизайн проверяет полный initial HTML/inline Flight и непустой `text/x-component` при существующей Next Link navigation. При подтверждённой экспозиции — HMAC с существующим sessionSecret и domain separation; проверяются стабильность, различие A/B и stale-response regression. Экспозиция и фальсификатор ещё не наблюдались.
+- Для Next планирует ограниченный loopback child, real AuthService/PG sessions, изолированные test PG/Redis, pre-init local-only transport с отказом внешних URL и bounded cleanup; нет нового production provider override. Реальность и изоляцию этого harness, включая прокидывание PG schema и Redis test scope в native runtime, необходимо подтвердить при реализации.
+- Consumer inventory проверен поиском по текущим источникам: runtime/deps, unit и integration wiring, credit-packages, payments-guards double cast, все три routes, SSR и сохранённый scalar config. `.env.example` сейчас не содержит нового ключа; план добавляет только пустой optional key, typed environment bridge и compose только web.
+
+Вердикт qcsd-risk по фактически проверенной дельте: **clean**, новых собственных условий нет. Код, Next, provider и PG тесты в этой фазе не запускались; PASS не заявляется. Итог всей convergence, K1/K2, QE и owner acceptance остаются за соответствующими исполнителями.

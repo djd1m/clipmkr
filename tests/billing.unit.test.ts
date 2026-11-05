@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { loadLimits, loadWebConfig } from '../packages/shared/src/config';
+import { checkoutAllowedForAccount, loadLimits, loadWebConfig } from '../packages/shared/src/config';
 import { PAID_PLAN_DAYS, PAID_PRICE_MINOR, clipExpiry, effectivePlan, formatRubles, loadPaymentsConfig } from '../packages/shared/src/tariff';
 import { CTA_FRAME_LABELS, CTA_FRAME_LABELS_PAID, ctaFrameLabel } from '../packages/shared/src/cta';
 import { prepareCta } from '../apps/worker/src/render/cta-overlay';
@@ -207,7 +207,7 @@ describe('порядок входа маршрутов оплаты', () => {
   function deps(calls: string[], over: Partial<BillingDependencies> = {}): BillingDependencies {
     const touch = (name: string) => async () => { calls.push(name); throw new Error(`${name} не должен вызываться`); };
     return {
-      publicOrigin: PUBLIC, trustedProxyHops: 2, provider: unused, log: () => {},
+      publicOrigin: PUBLIC, trustedProxyHops: 2, provider: unused, log: () => {}, checkoutAllowed: () => true,
       authenticate: async () => { calls.push('auth'); return { account_id: '11111111-1111-4111-8111-111111111111' }; },
       allowMutation: async () => { calls.push('limit'); return true; }, allowRead: async () => { calls.push('read-limit'); return true; },
       createIntent: touch('intent'), setIntentPayment: touch('set'), readIntent: touch('read'), markCanceled: touch('cancel'),
@@ -235,6 +235,15 @@ describe('порядок входа маршрутов оплаты', () => {
       expect((await createCheckoutHandler(deps(calls))(post('/api/checkout', { origin: PUBLIC }, body))).status, JSON.stringify(body)).toBe(422);
     }
     expect(calls.filter((c) => !['auth', 'limit'].includes(c))).toEqual([]);
+  });
+  it('missing required checkout callback fails closed before reading body', async () => {
+    const calls: string[] = [];
+    const incomplete = deps(calls);
+    Reflect.deleteProperty(incomplete, 'checkoutAllowed');
+    const request = post('/api/checkout', { origin: PUBLIC }, { idempotency_key: 'repeat-key' });
+    expect((await createCheckoutHandler(incomplete)(request)).status).toBe(503);
+    expect(request.bodyUsed).toBe(false);
+    expect(calls).toEqual(['auth', 'limit']);
   });
   it('AC-5/AC-6 вебхук: адрес вне сетей ЮKassa — 400 ДО провайдера; подделка 400; недоступность 503 — без записи', async () => {
     const seen: string[] = [];
@@ -283,7 +292,7 @@ it('upgrade guards precede private reads and header uses exactly one existing cr
   const readWindows = vi.fn(async () => null);
   vi.doMock('@clipmaker/db', () => ({ readAccountBilling: readBilling, readCreditBalance: readBalance, readCreditPurchaseWindows: readWindows }));
   vi.doMock('../apps/web/src/server/runtime', () => ({ getRuntime: () => ({ pool: {}, payments: null,
-    config: { billingMode: 'credits_v1', payments: { mode: 'off' }, limits: { N5_LIMIT_PAID_USER_MINUTES: 270 } },
+    config: { sessionSecret: 'synthetic-unit-session-secret-32-chars', billingMode: 'credits_v1', payments: { mode: 'off' }, limits: { N5_LIMIT_PAID_USER_MINUTES: 270 } },
     auth: { authenticate: async () => authenticated ? { account_id: '11111111-1111-4111-8111-111111111111' } : null } }) }));
   vi.doMock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'private-test-session' }) }), headers: async () => new Headers({ cookie: 'n5_theme=light' }) }));
   vi.doMock('next/navigation', () => ({ redirect: (path: string) => { throw new Error(`REDIRECT ${path}`); }, useRouter: () => ({ refresh() {}, push() {} }) }));
@@ -300,6 +309,107 @@ it('upgrade guards precede private reads and header uses exactly one existing cr
     readBalance.mockResolvedValueOnce(null);
     const unavailable = renderToStaticMarkup(await UpgradePage({ searchParams: Promise.resolve({}) }));
     expect(unavailable).toContain('Баланс недоступен'); expect(unavailable).not.toContain('Баланс <strong>0');
+  } finally {
+    for (const name of ['@clipmaker/db', '../apps/web/src/server/runtime', 'next/headers', 'next/navigation']) vi.doUnmock(name);
+    vi.resetModules();
+  }
+});
+
+
+const TEST_ACCOUNT_A = '00000000-0000-4000-8000-000000000001';
+const TEST_ACCOUNT_B = '00000000-0000-4000-8000-000000000002';
+function testCheckoutEnvironment() {
+  return { ...environment(), N5_BILLING_MODE: 'credits_v1', N5_CHECKOUT_ENABLED: 'false',
+    N5_TEST_CHECKOUT_ACCOUNT_ID: TEST_ACCOUNT_A, N5_PAYMENTS_MODE: 'live',
+    YOOKASSA_SHOP_ID: '123456', YOOKASSA_SECRET_KEY: 'test_secret_key', YOOKASSA_TEST_MODE: 'true' };
+}
+it('test checkout account config absent empty invalid and multiple values', () => {
+  for (const value of [undefined, '']) {
+    const env: NodeJS.ProcessEnv = { ...testCheckoutEnvironment() };
+    if (value === undefined) delete env.N5_TEST_CHECKOUT_ACCOUNT_ID; else env.N5_TEST_CHECKOUT_ACCOUNT_ID = value;
+    const config = loadWebConfig(env);
+    expect(config.testCheckoutAccountId).toBeNull();
+    expect(checkoutAllowedForAccount(config, TEST_ACCOUNT_A, 'credits_v1', true)).toBe(false);
+  }
+  for (const value of [' ', '\t', ` ${TEST_ACCOUNT_A}`, `${TEST_ACCOUNT_A} `, `${TEST_ACCOUNT_A}\n`,
+    'ABCDEF00-0000-4000-8000-000000000001', 'owner@example.invalid', '*', `${TEST_ACCOUNT_A},${TEST_ACCOUNT_B}`,
+    JSON.stringify([TEST_ACCOUNT_A]), '00000000000040008000000000000001']) {
+    let message = '';
+    try { loadWebConfig({ ...testCheckoutEnvironment(), N5_TEST_CHECKOUT_ACCOUNT_ID: value }); }
+    catch (error) { message = (error as Error).message; }
+    expect(message).toContain('N5_TEST_CHECKOUT_ACCOUNT_ID');
+    expect(message).toBe('N5_TEST_CHECKOUT_ACCOUNT_ID: нужен один canonical lowercase UUID без пробелов');
+  }
+  expect(loadWebConfig(testCheckoutEnvironment()).testCheckoutAccountId).toBe(TEST_ACCOUNT_A);
+});
+it('test checkout exception rejects live and contradictory config', () => {
+  for (const delta of [{ N5_CHECKOUT_ENABLED: 'true' }, { N5_BILLING_MODE: 'legacy' },
+    { N5_PAYMENTS_MODE: 'off' }, { N5_PAYMENTS_MODE: 'fake' }, { YOOKASSA_TEST_MODE: 'false' },
+    { YOOKASSA_SECRET_KEY: 'live_synthetic' }, { YOOKASSA_SECRET_KEY: 'test_' }]) {
+    expect(() => loadWebConfig({ ...testCheckoutEnvironment(), ...delta }), JSON.stringify(delta)).toThrow('N5_TEST_CHECKOUT_ACCOUNT_ID');
+  }
+  // Обычный режим без исключения сохраняет прежнюю трактовку driver/key.
+  const global = loadWebConfig({ ...testCheckoutEnvironment(), N5_TEST_CHECKOUT_ACCOUNT_ID: '',
+    N5_CHECKOUT_ENABLED: 'true', YOOKASSA_TEST_MODE: 'false', YOOKASSA_SECRET_KEY: 'live_synthetic' });
+  expect(checkoutAllowedForAccount(global, TEST_ACCOUNT_B, 'legacy_daily_v1', true)).toBe(true);
+});
+it('test checkout policy allows only exact test session account', () => {
+  const config = loadWebConfig(testCheckoutEnvironment());
+  expect(checkoutAllowedForAccount(config, TEST_ACCOUNT_A, 'credits_v1', true)).toBe(true);
+  for (const id of [TEST_ACCOUNT_B, null, undefined, '', ` ${TEST_ACCOUNT_A}`, TEST_ACCOUNT_A.toUpperCase().replace('4000', '4ABC')]) {
+    expect(checkoutAllowedForAccount(config, id, 'credits_v1', true)).toBe(false);
+  }
+  expect(checkoutAllowedForAccount(config, TEST_ACCOUNT_A, 'credits_v1', false)).toBe(false);
+  for (const policy of ['legacy_daily_v1', null, undefined, 'CREDITS_V1']) expect(checkoutAllowedForAccount(config, TEST_ACCOUNT_A, policy, true)).toBe(false);
+  for (const payments of [{ mode: 'off' as const }, { mode: 'fake' as const },
+    { mode: 'live' as const, shopId: '123456', secretKey: 'test_secret_key', testMode: false },
+    { mode: 'live' as const, shopId: '123456', secretKey: 'live_synthetic', testMode: true }]) {
+    expect(checkoutAllowedForAccount({ ...config, payments }, TEST_ACCOUNT_A, 'credits_v1', true)).toBe(false);
+  }
+  expect(checkoutAllowedForAccount({ ...config, billingMode: 'legacy' }, TEST_ACCOUNT_A, 'credits_v1', true)).toBe(false);
+});
+
+it('test checkout SSR and POST agree for allowed and other sessions', async () => {
+  vi.resetModules();
+  let accountId: string | null = TEST_ACCOUNT_A;
+  let config = loadWebConfig(testCheckoutEnvironment());
+  let ready = true;
+  const windows = { asOf: '2030-01-01T00:00:00Z', baseStart: '2030-01-01T00:00:00Z', baseEnd: '2030-01-31T00:00:00Z',
+    addonStart: '2030-01-01T00:00:00Z', addonEnd: '2030-01-31T00:00:00Z', scheduled: false };
+  vi.doMock('@clipmaker/db', () => ({
+    readAccountBilling: async () => ({ billing_policy: 'credits_v1', plan: 'free', plan_source: 'none', plan_paid_until: null, owner_unlimited: false }),
+    readCreditBalance: async () => ({ available_seconds: 0 }), readCreditPurchaseWindows: async () => windows,
+  }));
+  vi.doMock('../apps/web/src/server/runtime', () => ({ getRuntime: () => ({ pool: {}, payments: ready ? {} : null, config,
+    auth: { authenticate: async () => accountId ? { account_id: accountId } : null } }) }));
+  vi.doMock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'private-test-session' }) }), headers: async () => new Headers() }));
+  vi.doMock('next/navigation', () => ({ redirect: (path: string) => { throw new Error(`REDIRECT ${path}`); }, useRouter: () => ({ refresh() {}, push() {} }) }));
+  const provider: PaymentProvider = { name: 'yookassa', createPayment: vi.fn(), getPayment: vi.fn(), verifyNotification: vi.fn() };
+  const deps = { publicOrigin: 'https://test.invalid', trustedProxyHops: 1, provider,
+    authenticate: async () => accountId ? { account_id: accountId } : null, allowMutation: async () => true,
+    billingPolicy: async () => 'credits_v1', checkoutAllowed: (id: string, policy: string | null) => checkoutAllowedForAccount(config, id, policy, ready),
+    log: () => {}, createIntent: vi.fn() } as unknown as BillingDependencies;
+  try {
+    const { default: Page } = await import('../apps/web/src/app/upgrade/page');
+    for (const state of ['allowed', 'other', 'revoked', 'provider-off'] as const) {
+      accountId = state === 'other' ? TEST_ACCOUNT_B : TEST_ACCOUNT_A;
+      config = loadWebConfig({ ...testCheckoutEnvironment(), N5_TEST_CHECKOUT_ACCOUNT_ID: state === 'revoked' ? '' : TEST_ACCOUNT_A });
+      ready = state !== 'provider-off';
+      const tree = await Page({ searchParams: Promise.resolve({}) });
+      const html = renderToStaticMarkup(tree);
+      const buttons = [...html.matchAll(/<section\b[^>]*data-sku=[^>]*>[\s\S]*?<button\b([^>]*)>/g)].map(match => match[1]!);
+      expect(buttons).toHaveLength(3);
+      expect(buttons.filter(b => b.includes('disabled=""'))).toHaveLength(state === 'allowed' ? 0 : 3);
+      expect(html).toContain('TEST · Тестовая оплата');
+      for (const privateValue of [TEST_ACCOUNT_A, TEST_ACCOUNT_B, 'test_secret_key']) expect(html).not.toContain(privateValue);
+      const request = new Request('https://test.invalid/api/checkout', { method: 'POST', body: 'invalid-json', headers: {
+        origin: 'https://test.invalid', 'content-type': 'application/json', cookie: '__Host-n5_session=' + 'a'.repeat(43), 'x-forwarded-for': '198.51.100.1, 127.0.0.1' } });
+      expect((await createCheckoutHandler(deps)(request)).status).toBe(state === 'allowed' ? 422 : 503);
+      expect(request.bodyUsed).toBe(state === 'allowed');
+    }
+    accountId = null;
+    await expect(Page({ searchParams: Promise.resolve({}) })).rejects.toThrow('REDIRECT /#auth');
+    expect(deps.createIntent).not.toHaveBeenCalled(); expect(provider.createPayment).not.toHaveBeenCalled();
   } finally {
     for (const name of ['@clipmaker/db', '../apps/web/src/server/runtime', 'next/headers', 'next/navigation']) vi.doUnmock(name);
     vi.resetModules();
