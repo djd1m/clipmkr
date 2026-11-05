@@ -1,0 +1,399 @@
+{
+  "schemaVersion": 1,
+  "kind": "author-design-remediation-handoff",
+  "createdAt": "2026-11-05T15:20:04.444947+00:00",
+  "feature": "ux-simplification",
+  "authorSession": "/root/ux_audit_regular",
+  "authorModelConfiguration": "gpt-6.1-sol high; назначение, не независимая runtime-аттестация",
+  "classification": "static-prototype-only; author evidence, not independent approval",
+  "base": {
+    "htmlSha256": "d3feda2e02b80b5a20a0f44348d36c637a00371004d88a51cdfea5d91b3d9295",
+    "reviewPath": "features/ux-simplification/reviews/design-independent-review.md",
+    "reviewSha256": "fc1faaeb9bdf0b89a3bfacfdc30e30b1ae58c1978e9e6e6ab31ff0065505bb1c",
+    "reviewVerdict": "NEEDS_REWORK; исходный отчёт не изменён"
+  },
+  "proposal": {
+    "htmlPath": "docs/design/2026-11-05-ux-simplification.html",
+    "htmlSha256": "a85b3f073a335871e421ea2079269fa19c71f42a263d7b0bd17ae30469c50e68",
+    "notesPath": "docs/design/2026-11-05-ux-simplification.md",
+    "notesSha256": "b859c311ddcaf1d10ffed0cc5c84f260dd8e9b9a40c60a08cb2a9b5943a0926b",
+    "requiresFreshHostPrepare": true,
+    "requiresOriginatingReviewOf": [
+      "UX-R1",
+      "UX-R2",
+      "UX-R3",
+      "UX-R4",
+      "UX-R5"
+    ],
+    "independentRecheckStatus": "not performed by author"
+  },
+  "addressed": [
+    {
+      "id": "UX-R1",
+      "priority": "P1",
+      "classification": "prototype-consent-context",
+      "status": "addressed_by_author",
+      "delta": "Согласие сбрасывается после create, при начале нового пакета и изменении имени/состава. Новая форма unchecked, кнопка disabled до явного согласия.",
+      "evidence": [
+        "UX-R1 consent reset after create",
+        "UX-R1 new context unchecked",
+        "UX-R1 new context submit disabled",
+        "UX-R1 name change invalidates consent",
+        "UX-R1 clip change invalidates consent"
+      ]
+    },
+    {
+      "id": "UX-R2",
+      "priority": "P2",
+      "classification": "prototype-state-preservation",
+      "status": "addressed_by_author",
+      "delta": "Черновик/сохранённый CTA и URL хранятся вне DOM, музыка — отдельно для выбранного клипа. Перерисовка, Play и clip selection не возвращают none/empty.",
+      "evidence": [
+        "UX-R2 saved CTA survives Play render",
+        "UX-R2 saved CTA survives clip selection",
+        "UX-R2 music draft survives Play"
+      ]
+    },
+    {
+      "id": "UX-R3",
+      "priority": "P2",
+      "classification": "prototype-native-validation-focus",
+      "status": "addressed_by_author",
+      "delta": "Native invalid capture раскрывает ancestor details, фокусирует фактически невалидное поле и показывает validationMessage; проверка required/range/step не обходится.",
+      "evidence": [
+        "UX-R3 invalid ancestor revealed",
+        "UX-R3 invalid field focused",
+        "UX-R3 native range invalid blocks save",
+        "UX-R3 native invalid 2.5",
+        "UX-R3 native invalid 1441"
+      ]
+    },
+    {
+      "id": "UX-R4",
+      "priority": "P2",
+      "classification": "prototype-guest-pack-lifecycle",
+      "status": "addressed_by_author",
+      "delta": "Созданные пакеты сохраняются в demo-модели независимо от панели; повторное Поделиться показывает created/sent/revoked и допустимые send/copy/revoke.",
+      "evidence": [
+        "UX-R4 old pack copy returns",
+        "UX-R4 old pack revoke returns",
+        "UX-R4 revoke persists",
+        "UX-R4 revoked pack has no copy/revoke"
+      ]
+    },
+    {
+      "id": "UX-R5",
+      "priority": "P2",
+      "classification": "design-function-preservation",
+      "status": "addressed_by_author",
+      "delta": "В guest-контексте доступны несколько ready-клипов. Extra referral form внутри закрытых дополнительных показателей/ссылок статистики; музыка имеет контекстное demo-preview/stop без аудио/сети.",
+      "evidence": [
+        "UX-R5 partial only ready guest clips",
+        "UX-R5 created multi-clip pack",
+        "UX-R5 music preview contextual",
+        "UX-R5 extra referral code in context"
+      ]
+    }
+  ],
+  "changedScope": {
+    "modified": [
+      "docs/design/2026-11-05-ux-simplification.html",
+      "docs/design/2026-11-05-ux-simplification.md"
+    ],
+    "new": [
+      "features/ux-simplification/author-handoff.json",
+      "docs/design/screenshots/ux-simplification-guest-multi-dark-390.png",
+      "docs/design/screenshots/ux-simplification-owner-invalid-dark-390.png",
+      "docs/design/screenshots/ux-simplification-blogger-extras-dark-390.png"
+    ],
+    "regeneratedScreenshots": [
+      {
+        "path": "docs/design/screenshots/ux-simplification-blogger-dark-1440.png",
+        "sha256": "57ee4f749e2669c69cca05ba3ddfdf56124b5af44bd964089e72b27e72626784"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-blogger-dark-390.png",
+        "sha256": "b662038e96163866fde257452c883fc580809a289bf2033da57d959de1d674a1"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-blogger-extras-dark-390.png",
+        "sha256": "c98c2f3246d127e3439ac368d6358adce28945d3a261de08516d71030195cb0f"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-blogger-light-1440.png",
+        "sha256": "b2b81a6af49fc746f54115941eabf786f5b1f7ec9a67a553d8815b346f62008f"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-blogger-light-390.png",
+        "sha256": "972f03b78b99d0904e9196194d1b4b73dc33b28fed9bb1a2bdb8622d8e815555"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-guest-multi-dark-390.png",
+        "sha256": "a8e14d34d04552de0b3d9a8edda961261c0e55e215abd057bf4660f22e182882"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-ordinary-dark-1440.png",
+        "sha256": "98c6aff8c0cee6df91703aeb936f65b51b003555f4aa603dfd45e94e9cb35595"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-ordinary-dark-390.png",
+        "sha256": "517e8b49e04d9591f01e5005920cc2800adf783505fc5dc37253f9264f8f4e80"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-ordinary-light-1440.png",
+        "sha256": "fb6debc44e1bc42e326eab9b5de997325007a7c4d2cd8d4f2fc315ee56a51d7b"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-ordinary-light-390.png",
+        "sha256": "69d57309338dfc8062c39650b03b69264859ee6b80ed4a76fa45bfa9f8a068b3"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-owner-dark-1440.png",
+        "sha256": "3005bec6d59f41cebb4e9816196b07f2a997d229e01a6c43fcb052f3b0509de2"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-owner-dark-390.png",
+        "sha256": "291b8372bef8ef19d660fb20e98bc9f7af904c7bf4fce9111ebbe0d1b7dfc770"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-owner-invalid-dark-390.png",
+        "sha256": "3af566667cd8f69f45ddcb4aac72d328e4bf0c10c0b1d1a4c78e17a1a259613b"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-owner-light-1440.png",
+        "sha256": "ee905caf462413fabd410381809fa9e97131d32445f28f2e92b75d8a10b6c6ef"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-owner-light-390.png",
+        "sha256": "1aa9825028860082fafe704c4226764e92849e84c53d3d279cadfca1a5cf7061"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-partial-dark-1440.png",
+        "sha256": "600481247be1035cdb1cba3572815618f9eb3ea3bf4c742479f394ff83f4fb27"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-partial-dark-390.png",
+        "sha256": "5eef4f98eaf685bf581caae781a050608fbd812213f072433ade238c533eb4f9"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-partial-light-1440.png",
+        "sha256": "d602c061ac3c0ac857caa453e943e7f85b145605b93d186063b2cd6c616cd160"
+      },
+      {
+        "path": "docs/design/screenshots/ux-simplification-partial-light-390.png",
+        "sha256": "807531bd1fae95974727a7dce949064b86ca9246aada16da07b36c35eddc07c7"
+      }
+    ],
+    "screenshotScopeMeaning": "Все19 PNG реально перегенерированы; это не утверждение, что у прежних16 каждый byte изменился.",
+    "unchangedBoundaries": [
+      "apps/",
+      "packages/",
+      "DB",
+      "roles",
+      "provider/real media/network",
+      "deployment/DNS",
+      "review report and reviewer receipt"
+    ]
+  },
+  "delta": [
+    "Локальная модель guest draft/packs, record CTA и per-clip music вместо DOM-only значения.",
+    "Обнаружимое native validation recovery.",
+    "Контекстные controls сохраняют FR-3 без новых API.",
+    "Основной default и исходные uploader values false/true/true/none сохранены."
+  ],
+  "evidence": {
+    "runner": "Playwright1.60.0 Chromium, Node22.23.4, file://",
+    "privateScript": "/root/.config/clipmkr/release-parity-20261103/ux-simplification-20261105/regular/review-fixes-check.mjs",
+    "privateResult": "/root/.config/clipmkr/release-parity-20261103/ux-simplification-20261105/regular/review-fixes.private.json",
+    "resultSha256": "a480b8aaf6a8a032c260e74fcec4f99ed130e0d993d2d5f7d26d0e1644c0e699",
+    "passed": true,
+    "checks": [
+      {
+        "name": "UX-R5 partial only ready guest clips",
+        "pass": true
+      },
+      {
+        "name": "UX-R1 consent reset after create",
+        "pass": true
+      },
+      {
+        "name": "UX-R5 created multi-clip pack",
+        "pass": true
+      },
+      {
+        "name": "UX-R4 old pack copy returns",
+        "pass": true
+      },
+      {
+        "name": "UX-R4 old pack revoke returns",
+        "pass": true
+      },
+      {
+        "name": "UX-R1 new context unchecked",
+        "pass": true
+      },
+      {
+        "name": "UX-R1 new context submit disabled",
+        "pass": true
+      },
+      {
+        "name": "UX-R1 name change invalidates consent",
+        "pass": true
+      },
+      {
+        "name": "UX-R1 clip change invalidates consent",
+        "pass": true
+      },
+      {
+        "name": "UX-R4 revoke persists",
+        "pass": true
+      },
+      {
+        "name": "UX-R4 revoked pack has no copy/revoke",
+        "pass": true
+      },
+      {
+        "name": "UX-R2 saved CTA survives Play render",
+        "pass": true
+      },
+      {
+        "name": "UX-R2 saved CTA survives clip selection",
+        "pass": true
+      },
+      {
+        "name": "UX-R2 music draft survives Play",
+        "pass": true
+      },
+      {
+        "name": "UX-R5 music preview contextual",
+        "pass": true
+      },
+      {
+        "name": "UX-R3 invalid ancestor revealed",
+        "pass": true
+      },
+      {
+        "name": "UX-R3 invalid field focused",
+        "pass": true
+      },
+      {
+        "name": "UX-R3 native range invalid blocks save",
+        "pass": true
+      },
+      {
+        "name": "UX-R3 native invalid 2.5",
+        "pass": true
+      },
+      {
+        "name": "UX-R3 native invalid 1441",
+        "pass": true
+      },
+      {
+        "name": "UX-R5 extra referral code in context",
+        "pass": true
+      },
+      {
+        "name": "no overflow ordinary/1440/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow blogger/1440/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow owner/1440/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow partial/1440/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow ordinary/1440/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow blogger/1440/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow owner/1440/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow partial/1440/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow ordinary/390/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow blogger/390/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow owner/390/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow partial/390/dark",
+        "pass": true
+      },
+      {
+        "name": "no overflow ordinary/390/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow blogger/390/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow owner/390/light",
+        "pass": true
+      },
+      {
+        "name": "no overflow partial/390/light",
+        "pass": true
+      },
+      {
+        "name": "no JavaScript errors",
+        "pass": true
+      },
+      {
+        "name": "no console errors",
+        "pass": true
+      },
+      {
+        "name": "no external requests",
+        "pass": true
+      }
+    ],
+    "browserPageErrors": [],
+    "browserConsoleErrors": [],
+    "externalHttpRequests": 0,
+    "screenshots": 19,
+    "scope": "Целевые воспроизведения UX-R1…UX-R5 и16 базовых screenshot-сцен 1440/390 dark/light. Прежние128 не заявляются повторёнными на новой версии."
+  },
+  "newRisks": [
+    {
+      "classification": "preview-lifetime",
+      "description": "Состояние хранится только в памяти страницы и сбрасывается reload; долговечность runtime не моделируется."
+    },
+    {
+      "classification": "synthetic-controls",
+      "description": "Preview музыки, дополнительные ссылки и guest-пакеты синтетические; нет реальных медиа, clipboard, API и security/ownership доказательств."
+    },
+    {
+      "classification": "remaining-review",
+      "description": "Авторские targeted PASS не разрешают замечания независимо; нужен новый frozen packet и originating reviewer recheck всех5."
+    }
+  ],
+  "notClaimed": [
+    "owner approval общего макета",
+    "feature-adr/QCSD/K1/K2 или runtime delivery gate",
+    "application implementation",
+    "authenticated blogger/owner E2E",
+    "full accessibility certification"
+  ]
+}
