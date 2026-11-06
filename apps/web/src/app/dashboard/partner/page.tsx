@@ -13,6 +13,7 @@ export default async function DashboardPartnerPage() {
   if (policy?.is_blogger !== true) notFound();
   return <div key={createHmac('sha256', config.sessionSecret).update(`partner-owner-v1:${account}`).digest('hex')} className="workspace-partner-page">
     <header className="workspace-title"><h1>Статистика</h1><p>Результаты вашей ссылки за всё время.</p></header>
+    {config.payments.mode === 'live' && config.payments.testMode && <p role="status" className="workspace-test">TEST · Тестовые платежи. Реальных списаний нет. Выручка и расчёты — учебные.</p>}
     <PartnerPanel personal presentation="statistics" publicOrigin={config.publicOrigin} />
     <Link href="/dashboard">← В кабинет</Link>
   </div>;

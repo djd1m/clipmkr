@@ -70,8 +70,7 @@ it('cabinet exposes pricing and authenticated upgrade keeps catalogue open witho
   const layout=readFileSync('apps/web/src/app/dashboard/layout.tsx','utf8');
   expect(layout).toContain('<WorkspaceHeader');
   const header=renderToStaticMarkup(createElement(WorkspaceHeader,{owner:false,balanceLabel:null,initialTheme:'dark',initialLayout:'workspace'}));
-  expect(header).toMatch(/<a\b[^>]*\shref="\/upgrade\?from=partner_dashboard"[^>]*>Тарифы<\/a>/);
-  expect(readFileSync('apps/web/src/app/dashboard/page.tsx','utf8')).toContain('<ProInterest creditMode={true}');
+  expect(header).toMatch(/<a\b[^>]*\saria-label="Тарифы"[^>]*\shref="\/upgrade\?from=partner_dashboard"[^>]*>Баланс недоступен · Пакеты<\/a>/);
   const source=readFileSync('apps/web/src/app/upgrade/page.tsx','utf8');
   expect(source).not.toContain('notFound');
   expect(source).toContain('if (!session) redirect(login)');
@@ -89,4 +88,24 @@ it('payment outage keeps credit catalogue visible with every purchase disabled',
   const html=renderToStaticMarkup(createElement(UpgradeScreen,{creditMode:true,salesEnabled:false,purchaseWindows:{asOf:'2030-01-01T00:00:00Z',baseStart:'2030-01-01T00:00:00Z',baseEnd:'2030-01-31T00:00:00Z',addonStart:'2030-01-01T00:00:00Z',addonEnd:'2030-01-31T00:00:00Z',scheduled:false},title:'Pro',price:'990 ₽',days:30,paidMinutes:270,current:{plan:'free',plan_source:'none',plan_paid_until:null}}));
   expect((html.match(/<button\b[^>]*\sdisabled=""(?=\s|>)[^>]*>/g)??[])).toHaveLength(3);
   expect(html).toContain('Продажа новых пакетов временно выключена');
+});
+
+
+it('TEST purchase notice stays in every package CTA area and legacy checkout only in test mode', () => {
+  const props = { salesEnabled: true, title: 'Pro', price: '990 ₽', days: 30, paidMinutes: 270, current: { plan: 'free' as const, plan_source: 'none', plan_paid_until: null } };
+  const notice = 'TEST · Тестовая оплата. Реальных списаний нет.';
+  for (const testMode of [true, false]) {
+    const html = renderToStaticMarkup(createElement(UpgradeScreen, { ...props, creditMode: true, testMode }));
+    const packages = html.match(/<section[^>]*data-sku="[^"]+"[^>]*>[\s\S]*?<\/section>/g) ?? [];
+    expect(packages).toHaveLength(3);
+    for (const offer of packages) {
+      const area = offer.slice(offer.indexOf('<p class="package-purchase-terms'), offer.indexOf('</button>'));
+      expect(area.includes(notice)).toBe(testMode);
+      if (testMode) expect(area.indexOf(notice)).toBeLessThan(area.indexOf('<button'));
+    }
+    expect(html.includes('TEST · Тестовая оплата</span>')).toBe(testMode);
+    const legacy = renderToStaticMarkup(createElement(UpgradeScreen, { ...props, testMode }));
+    expect(legacy.includes(notice)).toBe(testMode);
+    if (testMode) expect(legacy.indexOf(notice)).toBeLessThan(legacy.indexOf('<button'));
+  }
 });

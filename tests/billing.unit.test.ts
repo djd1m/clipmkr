@@ -19,20 +19,22 @@ import { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhoo
 import { RETURN_DEADLINE_MS, RETURN_MAX_ATTEMPTS, decideReturnState, safeNextPath } from '../apps/web/src/lib/payment-return';
 import { ProInterest } from '../apps/web/src/app/dashboard/ProInterest';
 import { environment } from './fixtures/environment';
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/' }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/', redirect: (path: string) => { throw new Error(`redirect:${path}`); }, notFound: () => { throw new Error('notFound'); } }));
 vi.mock('../apps/web/src/app/theme-server', () => ({ requestTheme: async () => 'light' }));
-vi.mock('next/headers', () => ({ headers: async () => new Headers({ cookie: 'n5_theme=light' }) }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ cookie: 'n5_theme=light' }), cookies: async () => ({ get: () => ({ value: 'synthetic-session' }) }) }));
 
 const LIVE = { N5_PAYMENTS_MODE: 'live', YOOKASSA_SHOP_ID: '123456', YOOKASSA_SECRET_KEY: 'test_secret', YOOKASSA_TEST_MODE: 'true' };
 
-it('test payment environment is explicitly labelled', async () => {
+it('public layout keeps TEST payment notices out of landing and auth', async () => {
   const { default: Layout } = await import('../apps/web/src/app/layout');
   const label = 'Тестовый стенд ЮKassa. Реальных списаний нет. Суммы и расчёты в кабинетах — учебные.';
   try {
-    for (const [mode, testMode, visible] of [['live', 'true', true], ['live', 'false', false], ['off', 'true', false]] as const) {
+    for (const [mode, testMode] of [['live', 'true'], ['live', 'false'], ['off', 'true']] as const) {
       for (const [name, value] of Object.entries({ ...LIVE, N5_PAYMENTS_MODE: mode, YOOKASSA_TEST_MODE: testMode })) vi.stubEnv(name, value);
       const html = renderToStaticMarkup(await Layout({ children: createElement('main', null, 'Контент') }));
-      expect(html.includes(label)).toBe(visible);
+      expect(html).not.toContain(label);
+      expect(html).toContain('<main>Контент</main>');
+      expect(html).toContain('data-theme="light"');
     }
   } finally { vi.unstubAllEnvs(); }
 });
@@ -414,4 +416,84 @@ it('test checkout SSR and POST agree for allowed and other sessions', async () =
     for (const name of ['@clipmaker/db', '../apps/web/src/server/runtime', 'next/headers', 'next/navigation']) vi.doUnmock(name);
     vi.resetModules();
   }
+});
+it('financial pages label only TEST calculations before panels and preserve account badge and role guards', async () => {
+  vi.resetModules();
+  vi.doMock('next/headers', () => ({ headers: async () => new Headers({ cookie: 'n5_theme=light' }), cookies: async () => ({ get: () => ({ value: 'synthetic-session' }) }) }));
+  vi.doMock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/', redirect: (path: string) => { throw new Error(`redirect:${path}`); }, notFound: () => { throw new Error('notFound'); } }));
+  const config = { sessionSecret: 'synthetic-test-notice-secret', publicOrigin: 'https://example.invalid', payments: { mode: 'live', testMode: true } };
+  const account = '00000000-0000-4000-8000-000000000001';
+  const authenticate = vi.fn().mockResolvedValue({ account_id: account });
+  const policy = vi.fn().mockResolvedValue({ is_blogger: true });
+  const owner = vi.fn().mockResolvedValue(true);
+  vi.doMock('../apps/web/src/server/page-account', () => ({ pageAccount: async () => account }));
+  vi.doMock('../apps/web/src/server/screen-runtime', () => ({ getScreenRuntime: () => ({ config, pool: {} }) }));
+  vi.doMock('../apps/web/src/server/runtime', () => ({ getRuntime: () => ({ config, pool: {}, auth: { authenticate } }) }));
+  vi.doMock('@clipmaker/db', async (original) => ({ ...await original<object>(), getBloggerPolicy: policy, hasOwnerUnlimited: owner, readAccountBilling: async () => null }));
+  vi.doMock('../apps/web/src/app/dashboard/PartnerPanel', () => ({ PartnerPanel: () => createElement('div', { 'data-panel': 'partner' }, 'Выручка до комиссии') }));
+  vi.doMock('../apps/web/src/app/dashboard/bloggers/BloggerAdmin', () => ({ default: () => createElement('div', { 'data-panel': 'owner' }, 'Выручка пакетов') }));
+  vi.doMock('../apps/web/src/server/support/page-state', () => ({ supportPageState: async () => ({ account: null, mailAvailable: false }) }));
+  vi.doMock('../apps/web/src/server/dashboard-summary', () => ({ readDashboardSummary: async () => null }));
+  vi.doMock('../apps/web/src/app/dashboard/LimitsPanel', () => ({ LimitsPanel: () => createElement('div', null, 'Баланс') }));
+  const modules = ['next/headers', 'next/navigation', '../apps/web/src/server/page-account', '../apps/web/src/server/screen-runtime', '../apps/web/src/server/runtime', '@clipmaker/db', '../apps/web/src/app/dashboard/PartnerPanel', '../apps/web/src/app/dashboard/bloggers/BloggerAdmin', '../apps/web/src/server/support/page-state', '../apps/web/src/server/dashboard-summary', '../apps/web/src/app/dashboard/LimitsPanel'];
+  try {
+    const { default: PartnerPage } = await import('../apps/web/src/app/dashboard/partner/page');
+    const { default: OwnerPage } = await import('../apps/web/src/app/dashboard/bloggers/page');
+    const { default: AccountPage } = await import('../apps/web/src/app/dashboard/account/page');
+    const notice = 'TEST · Тестовые платежи. Реальных списаний нет. Выручка и расчёты — учебные.';
+    for (const [mode, testMode, visible] of [['live', true, true], ['live', false, false], ['off', false, false], ['off', true, false]] as const) {
+      config.payments = { mode, testMode };
+      for (const [page, panel] of [[PartnerPage, 'partner'], [OwnerPage, 'owner']] as const) {
+        const html = renderToStaticMarkup(await page());
+        expect(html.includes(notice), `${panel}:${mode}:${testMode}`).toBe(visible);
+        expect(html).toContain(`data-panel="${panel}"`);
+        if (visible) {
+          expect(html.indexOf(notice)).toBeLessThan(html.indexOf(`data-panel="${panel}"`));
+          expect(html).toContain('<p role="status" class="workspace-test">');
+        }
+      }
+      const accountHtml = renderToStaticMarkup(await AccountPage());
+      expect(accountHtml.includes('TEST · Тестовая оплата')).toBe(visible);
+    }
+    policy.mockResolvedValue({ is_blogger: false });
+    await expect(PartnerPage()).rejects.toThrow('notFound');
+    authenticate.mockResolvedValue(null);
+    await expect(OwnerPage()).rejects.toThrow('redirect:/');
+    authenticate.mockResolvedValue({ account_id: account }); owner.mockResolvedValue(false);
+    await expect(OwnerPage()).rejects.toThrow('redirect:/dashboard');
+  } finally { for (const name of modules) vi.doUnmock(name); vi.resetModules(); }
+});
+it('legacy dashboard revenue stays contextually labelled only in TEST', async () => {
+  vi.resetModules();
+  const config = { sessionSecret: 'synthetic-legacy-notice-secret', publicOrigin: 'https://example.invalid', payments: { mode: 'live', testMode: true } };
+  const policy = vi.fn().mockResolvedValue({ is_blogger: false });
+  const notice = 'TEST · Тестовые платежи. Реальных списаний нет. Выручка и расчёты — учебные.';
+  vi.doMock('../apps/web/src/server/page-account', () => ({ pageAccount: async () => '00000000-0000-4000-8000-000000000001' }));
+  vi.doMock('../apps/web/src/server/erasure-page', () => ({ erasurePageState: async () => false }));
+  vi.doMock('../apps/web/src/server/screen-runtime', () => ({ getScreenRuntime: () => ({ config, pool: {}, screen: { list: async () => ({ videos: [], next_cursor: null }) } }) }));
+  vi.doMock('../apps/web/src/server/dashboard-summary', () => ({ readDashboardSummary: async () => ({ credits: null, owner_unlimited: false, max_source_seconds: 5400 }) }));
+  vi.doMock('@clipmaker/db', () => ({ getBloggerPolicy: policy }));
+  vi.doMock('../apps/web/src/app/dashboard/PartnerPanel', () => ({ PartnerPanel: ({ presentation }: { presentation?: string }) => createElement('div', { 'data-panel': presentation === 'summary' ? 'summary' : 'legacy' }, presentation === 'summary' ? 'Ваша ссылка' : 'Выручка до комиссии') }));
+  vi.doMock('../apps/web/src/app/videos/VideoList', () => ({ VideoList: () => createElement('div', null, 'Записи') }));
+  vi.doMock('../apps/web/src/app/upload/Uploader', () => ({ VideoUploader: () => createElement('div', null, 'Загрузка') }));
+  const modules = ['../apps/web/src/server/page-account', '../apps/web/src/server/erasure-page', '../apps/web/src/server/screen-runtime', '../apps/web/src/server/dashboard-summary', '@clipmaker/db', '../apps/web/src/app/dashboard/PartnerPanel', '../apps/web/src/app/videos/VideoList', '../apps/web/src/app/upload/Uploader'];
+  try {
+    const { default: Dashboard } = await import('../apps/web/src/app/dashboard/page');
+    for (const [mode, testMode, visible] of [['live', true, true], ['live', false, false], ['off', false, false], ['off', true, false]] as const) {
+      config.payments = { mode, testMode };
+      policy.mockResolvedValue({ is_blogger: false });
+      const html = renderToStaticMarkup(await Dashboard({ searchParams: Promise.resolve({}) }));
+      const details = html.match(/<details><summary>Партнёрская программа<\/summary>([\s\S]*?)<\/details>/)?.[1];
+      expect(details).toBeDefined();
+      expect(details).toContain('data-panel="legacy"');
+      expect(html.includes(notice)).toBe(visible);
+      expect(details!.includes(notice)).toBe(visible);
+      if (visible) expect(details!.indexOf(notice)).toBeLessThan(details!.indexOf('data-panel="legacy"'));
+      policy.mockResolvedValue({ is_blogger: true });
+      const personalHtml = renderToStaticMarkup(await Dashboard({ searchParams: Promise.resolve({}) }));
+      expect(personalHtml).toContain('data-panel="summary"');
+      expect(personalHtml).not.toContain('data-panel="legacy"');
+      expect(personalHtml).not.toContain(notice);
+    }
+  } finally { for (const name of modules) vi.doUnmock(name); vi.resetModules(); }
 });

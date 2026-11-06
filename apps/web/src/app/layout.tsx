@@ -10,7 +10,6 @@ import { counterId } from '../lib/acquisition-analytics';
 import { readEnvironment } from '../server/environment';
 import { THEME_COLOR } from '../lib/theme';
 import { requestTheme } from './theme-server';
-import { loadPaymentsConfig } from '@clipmaker/shared/tariff';
 // cookies/headers make every page dynamic; `/` loses static prerender on purpose (SSR theme, no flash).
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'КлипМейкер' };
@@ -21,6 +20,6 @@ export async function generateViewport(): Promise<Viewport> {
 export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await requestTheme();
   const layout = workspaceLayoutFromCookie((await headers()).get('cookie') ?? undefined);
-  const env = readEnvironment(), payments = loadPaymentsConfig(env);
-  return <html lang="ru" data-theme={theme} data-workspace-layout={layout}><body><WorkspacePreferenceSync initialLayout={layout} initialTheme={theme} />{payments.mode === 'live' && payments.testMode && <div role="status">Тестовый стенд ЮKassa. Реальных списаний нет. Суммы и расчёты в кабинетах — учебные.</div>}{children}<SupportLauncher /><AcquisitionAnalytics counter={counterId(env.N5_METRIKA_COUNTER_ID)} /></body></html>;
+  const env = readEnvironment();
+  return <html lang="ru" data-theme={theme} data-workspace-layout={layout}><body><WorkspacePreferenceSync initialLayout={layout} initialTheme={theme} />{children}<SupportLauncher /><AcquisitionAnalytics counter={counterId(env.N5_METRIKA_COUNTER_ID)} /></body></html>;
 }

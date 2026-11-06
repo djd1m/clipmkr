@@ -23,6 +23,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     {personal && <aside className="workspace-aside"><PartnerPanel personal presentation="summary" publicOrigin={config.publicOrigin} /></aside>}
     <div className="workspace-records-region"><VideoList videos={result.videos} nextCursor={result.next_cursor} /></div>
   </div>
-    {!personal && <div className="workspace-secondary"><details><summary>Партнёрская программа</summary><PartnerPanel publicOrigin={config.publicOrigin} /></details></div>}
+    {!personal && <div className="workspace-secondary"><details><summary>Партнёрская программа</summary>{config.payments.mode === 'live' && config.payments.testMode && <p role="status" className="workspace-test">TEST · Тестовые платежи. Реальных списаний нет. Выручка и расчёты — учебные.</p>}<PartnerPanel publicOrigin={config.publicOrigin} /></details></div>}
   </Fragment>;
 }

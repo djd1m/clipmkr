@@ -1,0 +1,6 @@
+{
+  "path": "openspec/changes/test-notice-context/specs/contextual-test-notices/spec.md",
+  "sha256": "029052958d2e42d38774d6863387eb61cb73572bd7803da0133b4aa362f61ba7",
+  "sourceBase": "44cc7c4c45fb8b89d8be8bfc48e04abb9439b78d",
+  "amendment": "QE-TEST-001: reachable dashboard legacy financial surface"
+}

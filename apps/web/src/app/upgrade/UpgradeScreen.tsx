@@ -89,7 +89,7 @@ export function UpgradeScreen(p: UpgradeProps) {
             </div>
             <div className="studio-plan-end package-end">
               <p className="workspace-package-price studio-plan-price">{formatRubles(offer.priceMinor)}</p>
-              <p className="package-purchase-terms muted">Покупка разовая, без автоматического списания. Срок — {offer.days} дней; неиспользованный остаток сгорает.
+              <p className="package-purchase-terms muted">{p.testMode && <>TEST · Тестовая оплата. Реальных списаний нет. </>}Покупка разовая, без автоматического списания. Срок — {offer.days} дней; неиспользованный остаток сгорает.
                 {!p.ownerUnlimited && !p.catalogOnly && ' Даты предварительные; итоговые даты покажем после подтверждения оплаты.'}</p>
               {reason && <p id={`offer-reason-${sku}`} className="muted">{reason}</p>}
               <button disabled={busy || reason !== null} type="button" className={sku === 'pro_v1' ? 'action-primary' : 'action-secondary secondary'} aria-describedby={error && checkoutSku === sku ? `offer-error-${sku}` : reason ? `offer-reason-${sku}` : undefined} onClick={() => void pay(sku)}>{p.ownerUnlimited ? 'Покупка не требуется' : busy && checkoutSku === sku ? 'Переходим к оплате…' : reason ? 'Покупка пока недоступна' : offer.kind === 'addon' ? 'Купить сейчас' : `Купить ${offer.title} на следующий период`}</button>
@@ -118,7 +118,7 @@ export function UpgradeScreen(p: UpgradeProps) {
     </ul>
     <p className="muted">Уже готовые клипы не перерисовываются: метка вшита в кадр.</p>
     {p.ownerUnlimited ? <p role="status" className="notice">Доступ владельца: без лимитов, покупать пакет не нужно.</p> : <CurrentPlanNote current={p.current} title={p.title} />}
-    <p>Оплата картой или СБП через ЮKassa. После оплаты вернётесь сюда, и тариф включится сам.</p>
+    <p>{p.testMode && <>TEST · Тестовая оплата. Реальных списаний нет. </>}Оплата картой или СБП через ЮKassa. После оплаты вернётесь сюда, и тариф включится сам.</p>
     {error && <p role="alert">{error}</p>}
     <button type="button" disabled={p.ownerUnlimited === true || busy} onClick={() => { void pay(); }}>{busy ? 'Переходим к оплате…' : `Оплатить ${p.price}`}</button>
     <p><a className="button secondary" href="/dashboard">В кабинет</a></p>
