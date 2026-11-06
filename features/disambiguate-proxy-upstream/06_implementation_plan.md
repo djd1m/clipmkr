@@ -1,0 +1,135 @@
+# S-план: однозначный source proxy upstream
+
+Inputs read: AGENTS/CLAUDE/core-cjm/review-policy/model-matrix; feature-adr00/01/06, code-goal-planner reference, code-impl; existing proxy/Caddyfile/Compose/proxy-rate/ip/runner/caller; OpenSpec exacthashes в01. `03_adr` и `05_architecture` для S не создаются; меняется конкретный deployment binding, не архитектура/финансовое правило.
+
+## Goal state и порядок
+Ныне baseline корректно STOP из-за aliasweb. Цель: reviewed source-site overlay и strict selected-name matcher, затем отдельная управляемая same-inode операция с evidence, после которой root может заново решить допуск CJM. Это не доказательство оплаты или маршрута provider.
+
+- [ ] TASK-1 — FR-1 NFR-1 A5, specification/pseudocode. После принятия требований и fresh независимого plan review создать только site overlay из exactbase10e57 с одной upstreamзаменой, документировать source-site выбор в `docs/REPRODUCE.md`; base `proxy/Caddyfile` и base Compose byte-identical; добавить только source-only `deploy/source-proxy.compose.yml` по механизму ниже. ExpectedsiteSHAcdefca96ac35bf1c293f39d6f5282232ccb3bf0c9f649688698a437715a6a023. Test: portable customproject инструкция сохраняется, exact overlay/base diff допускает только upstream. Done: rendered/adapted candidate только один expectedupstream, headers/trust/transport прежние. Без build/redeploy app.
+- [ ] TASK-2 — FR-2 FR-4 NFR-1 A1 A2 A3, refinement; dependsTASK-1. В existing private runner изменить expectedDISKSHA/upstream и выбор кандидатов/hosts на точное `n5-clipmaker-web-1`. Полный набор общих сетей/endpoint aliases+DNSNames+container names, inventory membership, единственный approvedmain/containerid и актуальные addresses, proxy DNS overrides/hostname safeguards во всех selector locations: upstream dial, сетевые Aliases/DNSNames/Name, proxy Config.Hostname и /etc/hosts, loaded/adapted/health/artifact/store/TEST checks сохраняются. Не принимать `web`, произвольный список, conditional/dynamic proxy. Новые reviewedrunnerSHA и callerpin связываются в отдельном private manifest; code/caller source frozen целиком для focused independent review. Готовность source/pin ещё не допускает runtime.
+- [ ] TASK-3 — FR-2 FR-3 FR-4 NFR-1 A1 A2 A3 A4 A5, refinement; dependsTASK-2. Новый private offline fixture `proxy-upstream-binding.private.py` исполняет actual validate_proxy_binding на synthetic receipt/inventory, не альтернативную реализацию. Fixture preparation: из observed23 записей получить21 только удалением побайтно/структурно идентичных дубликатов ID с отдельным provenance; divergent duplicate → STOP. Production CONTAINER_INVENTORY duplicate guard не менять. RED старый web/ambiguous receipt; GREEN exactsite+unique target при иных чужихweb aliases. Негативы: второй selectedname на любой общей сети, alias/DNSNames/name collision, main missing/foreignartifact/incomplete inventory/hosts-DNS override, wrongdiskhash/loaded!=adapted/wrongport/multiple/conditional proxy. Каждый negative обязан достичь своей ветки при остальных валидных hashes/config/inventory: alias-negative проверяет AMBIGUOUS_OR_SHIFTED_ALIAS, не ранний HASH/CONTAINER_INVENTORY. Добавить hostname и hosts выбранного имени, ExtraHosts/Dns/DnsSearch/DnsOptions; удаление каждого selected-name guard должно ломать соответствующий негатив. Удаление uniqueness либо exactupstream guard должно ломать негатив; все прежние существующие fixturecases сохраняются. Реальные own temp fd/inode backup/write/truncate/fsync и failure/restore probes проверяют последовательность стандартных root ops; Caddy/SSH/network в offline fixtures помечены simulated. Targeted existing proxy-rate/IP tests — реальные app functions; real Caddy validate и runtime evidence отдельно. Перед completion независимый code-critic/Astra проверяет полный actual public+private delta и code/spec anti-drift; mocks не принимаются как runtimeDNS proof.
+- [ ] TASK-4 — FR-3 FR-4 NFR-1 A4 A5, completion; dependsTASK-3 и independent clean review/root GO. Root повторяет recall и fresh read-only preflight: exact host, ro single-file mount/source/dev+inode/hash, proxy/main containers/PID/artifact11a90/image4afa, нет unknown/incomplete proxy operation и нет active payments; existing known callback healthy_unconfirmed/applied=false marker с exact binding и actual applied receipt не стирается и не считается unknown только по дисковому флагу, cooperating writer lock, current loaded==adapted, current complete all-shared-network inventory с уникальным selectedname. Historical inode из закрытого evidence — только anchor, при drift STOP, не переопределять наугад. Backup exactoldbytes0600/fsync/hash и durable operation record до первой записи. Все hash/read/write-loop/truncate/restore lengths берутся из captured bytes/len(bytes), не из Unicode character count; для наблюдённой базы сейчас1476 UTF-8bytes(1065символов), candidate1491bytes, эти наблюдения не baked runtime lengths. Один удержанный verifiedfd: fullwrite-loop candidate/truncate/fsync без rename → same-inode host+containerhash → Caddyvalidate/reload → loaded==adapted candidate → health11a90/XFF/identity, container/PID прежние. Каждый отказ до первой записи: STOP без mutation/rollback; после known synchronous failure: только при доказанном завершении внешнего вызова и сохранных control/inode восстановить verifiedbackup тем жеfd/inode, fsync, validate/reload/health/loaded control. Timeout/unknown external completion(включая Caddyreload) → incidentSTOP: никаких последующих write/reload до выяснения completion/control; inode/backup/control unknown также incident/no further writes/business. Завершить durable record лишь по фактическим outputs. Известный callback marker не удалять/не переписывать; перед дальнейшей business-операцией выполнить fresh canonical revalidate его exactbinding, даже если отдельный actualapply receipt уже appliedtrue. Обычный copy/rename и authorfixture не являются closure. Нового executor/framework не создавать; точные стандартные параметры ниже входят в план, а actual fresh bindings/операционный body root предъявляет отдельно до runtime GO.
+
+DAG последовательный: requirements/root+Astra planreview → TASK1→2→3 → independent code/QE → root runtimeGO→TASK4. Вне этих gates код/runtime запрещён. Автор requested Sol6.1high; root организует fresh Astraxhigh planning/code review. Других агентов автор не запускает.
+
+## Повторяемая поставка source-site (DIR-02)
+Выбран один maintained механизм: native Compose override `deploy/source-proxy.compose.yml`, только `services.proxy.volumes: [./deploy/source-proxy.Caddyfile:/etc/caddy/Caddyfile:ro]`. Compose объединяет volumes по target; полный rendered target должен быть ровно один, read_only=true, source — canonical site artifact. В `docs/REPRODUCE.md` отдельная source-site ветка заменяет ВСЕ обычные последующие source-deploy команды на пару `-f` ниже; base/custom-project/Cloud инструкции сохраняются. Чужое effective project/site, неизвестные artifact/mount/config bytes → отказ до `up`. Проверка effective project учитывает `.env`, а не только shell env. Не печатать полный rendered config с env.
+
+Команды ниже — будущий **cold deployment**, отдельное разрешённое окно с recreate, НЕ текущий warm transition. Место: `test-apps-server.com`, canonical каталог `/home/dz-projects-2026/2026-AUG-PU-Projects/2026-AUG-PU-Projects/projects/05-podcast-clips-opus`; `test "$(hostname)" = test-apps-server.com` и `test "$(pwd -P)" = /home/dz-projects-2026/2026-AUG-PU-Projects/2026-AUG-PU-Projects/projects/05-podcast-clips-opus` обязательны до Compose. Путь `.env` — existing private source env, его содержимое не выводить.
+
+```sh
+set -eu
+set -o pipefail
+docker compose --project-directory . --env-file .env --profile edge -f docker-compose.yml -f deploy/source-proxy.compose.yml config --format json | python3 -c 'import json,sys,pathlib; c=json.load(sys.stdin); v=[v for v in c["services"]["proxy"]["volumes"] if v["target"]=="/etc/caddy/Caddyfile"]; assert c["name"]=="n5-clipmaker"; assert len(v)==1 and v[0]["type"]=="bind" and v[0].get("read_only") is True and pathlib.Path(v[0]["source"]).resolve()==pathlib.Path("deploy/source-proxy.Caddyfile").resolve()'
+docker compose --project-directory . --env-file .env --profile edge -f docker-compose.yml -f deploy/source-proxy.compose.yml up -d --no-build
+```
+
+До последней команды verify exact reviewed artifact SHA/base diff и fresh admitted runtime operation/identity. Если candidate bytes + rendered config/mount + deployed service config уже совпали и loaded==adapted, это no-op: не вызывать `up`/reload/write. Если исходное состояние не равно известному base или reviewed candidate — STOP, не переписывать. Тесты будущих инструкций покрывают чужой effective project из `.env`, foreign cwd/site, unknown bytes, повторный candidate no-op и обязательное присутствие override на последующем ordinary source deploy. Текущий live mount остаётся прежним: controlled same-inode write в фактический старый bind source. Future cold mount switch и новый container/PID не являются частью текущего runtime GO.
+
+## Точная runtime последовательность root (DIR-03/05; пока НЕ исполнена)
+Локальный source/private-file этап сериализуется `/root/.config/clipmkr/shared-git.lock`; Git lock освобождается до SSH/runtime. Отдельный runtime lock **на source host**: `/root/.config/clipmkr/proxy-upstream.lock`, root-owned regular0600 в root-private0700 parent, nofollow+nlink1 проверяются перед flock. Root process открывает FD без truncate, получает `fcntl.flock(fd, LOCK_EX|LOCK_NB)`; busy/unknown → немедленный STOP (не ждать/не красть lock). Единственный root process держит FD от preflight до подтверждённого результата/rollback; PID/start/control фиксируются. Cooperative deploy/payment operators обязуются не выполнять конкурирующие действия в этом окне; Git lock этого не обеспечивает. При kill lock отпускается, но durable incomplete operation запрещает новый apply до ручного reconciliation. Callback lock/marker/history не переписываются.
+
+1. В existing source SSH alias `clipmkr-site-test` с pinned config `/root/.config/clipmkr/release-parity-20261103/site-test.sshconfig`: hostname exact `test-apps-server.com`, runtime lock, отдельная durable proxy operation `/root/.config/clipmkr/proxy-upstream-20261106/operation.private.json`, unique backup `/root/.config/clipmkr/proxy-upstream-20261106/baseline.<operation-nonce>.private.Caddyfile`, parent root0700/files0600; existing incomplete marker запрещает новый apply, не перезаписывается. Fresh inspect main/intermediate/edge+legacy: ID/image/revision/PID/StartedAt/mounts/network/endpoints; main revision11a90/image4afa, callback binding и known callback operation/actual receipt сверяются canonical revalidate. Unknown/incomplete proxy operation → STOP. Снимки/oldinode — anchors, не authorization.
+2. Actual BOTH-store collector `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/collect-cutover-readonly.private.mjs` передать без изменения `docker exec -i <container> node --input-type=module -e <captured collector>` последовательно для `n5-clipmaker-web-1` и `n5-referral-paytest-20261028`, затем повторить обе проверки. Collector использует REPEATABLE READ READ ONLY, полные bounded payment_intent/payment/payment_event rows и только GET `/v3/payments/<existing known id>`. Tables/providers/config двух повторов должны совпасть, оба globalEnabled=false/TEST/shop/target/store bindings прежние; все известные provider objects terminal succeeded/canceled с bound intent/shop/amount, нет intent без известного terminal bound provider или с pending/waiting_for_capture/unknown provider, inflight/delivery conflict; terminal историческая неисполненная задолженность не превращается в active payment только по created-флагу intent. Исторический terminal unfulfilled TEST debt с knownownership/полной binding и ранее принятыми cutover eventbounds фиксируется отдельно как read-only deferred, не grant/relay/SQL repair; existing business cutover24h сохраняется. Новые unreconciled operations блокируют apply. Любой неполный collector/CAP/GET/schema/unknown status → STOP. Повторный collector и critical inspect после контроля должны исключить наблюдаемый drift. Native baseline/account balance не доказывают noactivepayments. Не создавать ownsession/checkout/payment/relay и не менять provider. Cooperative window не исключает будущий пользовательский клик абсолютно: residual manual concurrency явно принят как ограничение; при появлении новых rows/conflict → STOP, без расширения env/app scope.
+3. До записи: disk/adapted/loaded совпадают и известный hash10e57…; если уже exactcandidate cdef… и все проверки пройдены — no-op без write/reload. Иначе unknown bytes → STOP. Снять полный inventory union ВСЕХ proxy networks: selected-name единственен у approved main; directhealth не заменяет inventory. Проверить actual single-file ro bind source exact `/home/dz-projects-2026/2026-AUG-PU-Projects/2026-AUG-PU-Projects/projects/05-podcast-clips-opus/proxy/Caddyfile` → `/etc/caddy/Caddyfile`, dev+inode/ownership/mode/nlink/type. Root открывает source `os.open(path, os.O_RDWR|os.O_NOFOLLOW)` без truncate; fstat/path/container identity и captured bytes до любой записи. Candidate проверяется existing Caddy validate до live write в отдельном private scratch config без переключения mount.
+4. Через удержанный sourceFD прочитать полный bounded baseline. Backup: `os.open(unique_backup, O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW, 0o600)`, full-write loop, `os.fsync(backup_fd)`, fsync parent, повторный hash/read; исходные uid/gid/mode и exactbytes сохраняются. Durable operation record до write. Live write: `os.lseek(fd,0,SEEK_SET)`, цикл `os.write(fd, memoryview(candidate)[offset:])` с отказом на zero/short progress до полного len(candidate), `os.ftruncate(fd,len(candidate))`, `os.fsync(fd)`. Проверить FD/path/container bytesSHA/dev+inode и unchanged ownership/mode. Все lengths — len(captured bytes), ни одного baked character count. Не os.replace/mv/copy-overbind.
+5. На source host стандартные команды ниже с outer `timeout --signal=TERM --kill-after=5s 20s`; SSH ConnectTimeout10, общий control read timeout45. Все stdout/stderr/exit сохранять privately, not env. Ненулевой known synchronous validate/control → STOP/проверяемый rollback; timeout/124/137/SSH loss/unknown reload completion → incident STOP без следующих write/reload, даже попытки restore. Deadline — предел ожидания, не доказательство завершения remote процесса.
+
+```sh
+timeout --signal=TERM --kill-after=5s 20s docker exec n5-clipmaker-proxy-1 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+timeout --signal=TERM --kill-after=5s 20s docker exec n5-clipmaker-proxy-1 caddy adapt --config /etc/caddy/Caddyfile --adapter caddyfile
+timeout --signal=TERM --kill-after=5s 20s docker exec n5-clipmaker-proxy-1 caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+timeout --signal=TERM --kill-after=5s 20s docker exec n5-clipmaker-proxy-1 wget -qO- http://127.0.0.1:2019/config/
+timeout --signal=TERM --kill-after=5s 20s docker exec n5-clipmaker-proxy-1 wget -qO- http://n5-clipmaker-web-1:3000/health
+curl --silent --show-error --max-time 10 --dump-header /root/.config/clipmkr/proxy-upstream-20261106/health.headers.private --output /root/.config/clipmkr/proxy-upstream-20261106/health.body.private https://clipmkr.ru/health
+curl --silent --show-error --max-time 10 --request POST --header 'Content-Type: application/json' --header 'X-Forwarded-For: 185.71.76.1' --data '{}' --dump-header /root/.config/clipmkr/proxy-upstream-20261106/spoof.headers.private --output /root/.config/clipmkr/proxy-upstream-20261106/spoof.body.private https://clipmkr.ru/api/webhooks/yookassa-test
+```
+
+6. Validate exit0 до reload; JSON adapted==loaded, exactcandidate disk SHA, publichealth11a90 + expected release header. Safe spoof POST `'{}'` идёт через publicedge/intermediate/canonical webhook из nonprovider source: expected400, body error code `verification_failed` по unchanged billing-handler.ts:202–205, не success/200 и не provider request. Он обязан достигнуть source-IP rejection раньше provider.verifyNotification/provider GET и financial writes (raw body read допустим); не использовать событие/ID/relay. Реальные targeted proxy-rate/IP tests проверяют missing-hop; spoof-public sample сам не раскрывает полный IP trace, дополнительно unchanged trusted_proxies/transport/hops и edge rewrite/adapted delta. `/health` не XFF proof. Повторить critical inspect/inode/hash/loaded/all-network uniqueness/financial reads ПОСЛЕ health/spoof. Любой drift → STOP; success не разрешает business.
+7. Known synchronous failure после write + доказанный control/completion + тот же inode → восстановить exactbackup тем же FD fullwrite/truncate(len(backup))/fsync, validation/reload/loaded/health и повторные identities. Unknown completion/inode/backup/control → **никаких дальнейших write/reload**; durable incident с backup сохранён, новый независимый SSH read-only устанавливает процессы/completion/mount/loaded. После kill/обрыва root вручную получает lock, перечисляет incomplete record, проверяет backup+resource и только после отдельного recovery решения выполняет восстановление тем же inode; unknown bytes/path не затирать, auto retry/recreate запрещён. Возврат к `web` — безопасный baseline STOP, не PASS. Без нового generic executor/framework и без изменения closed callback executor.
+
+## Критические ограничения и gates
+Existing callback gate09305c/history/closedexecutor/bridge остаются неизменны, контейнеры не пересоздаются. Это обнаруженный runtimeDNS факт после callbackapply, не способ открыть QE5. Финансовые/session/provider проверки не расширяются; ни новых сессий, ни checkout для проверки DNS. После rollback старогоweb baseline новый stricthelper ожидаемо STOP; это не повод ослабить matcher. Cloud/c/DNS/live charges не затрагиваются.
+
+K1: actual pinned `name-check --module proxy-upstream-binding.private --project <worktree> --json` для нового private fixture basename; отдельный filesystem поиск исключает collision вне TypeScript scope CLI. Этот gate проверяет имя в найденном source, не правильность Python/config. Public command/export не добавляются. K2: installed project-patched check-plan-completeness `features/disambiguate-proxy-upstream --tier=S --require-requirements`, actual cwd worktree; exit0 required, не approval. Before eventual Step7 native target/context admission и genuine stage checkpoints исполняет root только после actual gates. Planning/requirement receipts не представляют owner/code/QE/runtime approval.
+
+Тестовые/supporting private source paths вне repo не включаются traversal в target declaration. Они входят в отдельный complete reviewer manifest(knownoldrunnerb0/callerfc5, futureSHA PENDING) и не ускользают из anti-drift. Публичные raw inspect/env/backup не коммитятся. Future native public targets ниже — site overlay и reproducibility doc; никаких чужих callback/native paths.
+
+## Риски и решение
+Single-file ro bind требует same-inode write и verified rollback; downtime0 не обещается. Alias uniqueness проверяется по полному actual inventory, direct health — только дополнительная проверка. Переносимость сохраняется site overlay, drift с base обнаруживается exactdiff/hash. Если нужны новое network/env/recreate/генерическийoperator или иные WRITE targets — STOP/re-route до кода.
+
+## Mapping originating direction review
+Private originating `proxy-upstream-review/report.private.md` (ACCEPTED_WITH_LIMITS, не code/runtime GO) остаётся неизменным. DIR-01 → TASK4 capturedbytes1476→1491 и exacthash/diff; DIR-02 → «Повторяемая поставка» + TASK1; DIR-03 → runtime1–7/unknown STOP/manualrecovery; DIR-04 → TASK2/3 actualguard/все selectors/branch-specific negatives; DIR-05 → runtime2/6 + exact private manifest ниже. Это план выполнения условий; future fixtures/live checks ещё не исполнены, own reviewer проверяет их отдельно.
+
+Private allowlist до кода: canonical `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/run.private.py` SHA b0c142aaac4bc7f43a687f4de1b575b4d602c54fcbcc073c0c1688457e1e84b4; caller `/root/.config/clipmkr/ui-recovery-cloud-20261105/paid-media-only/paid-media-only.private.mjs` SHA fc5083de57c3d213101ae34d09ef9025a981be0bf2baad571584dacefe833b34; новый `/root/.config/clipmkr/payment-delivery-20261106/proxy-upstream-author/proxy-upstream-binding.private.py` отсутствует/PENDING. Historical `/root/.config/clipmkr/payment-delivery-20261106/scenarios/decline/run.private.py` тот же b0c142… не переписывать; root synchronizes future runnable copies только при отдельном CJM допуске. Native probe ababad30d66c6d878623e54478308e943bfb1182c06b934487d38465511a67e0 и preparer c814a400eafc528c796bb9cf564e0ce9cae46166921929ee8053a6acb4a09c90 неизменны. В runner меняются только proxy selected-name predicates/disk pin; WRITER_HASHES, callback/upstream, exact release/image/TEST/shop/store/target/credits_v1/global-off/windows/correlation/ledger checks byte-identical. Caller — только runner pin; новый callerSHA/self-pin invoke сверяется root, обход запрещён. Old bytes сохраняются exact history до edit, полный public+private diff входит в review.
+
+## Фактическая привязка после первого QE — 06.11.2026
+
+Первый freeze сохранён в Git commit7e7f30a3b6f2ef88a87f824ba3d8c3c0ae67084e
+(plan SHA83424baa0749502dab617fb55bb4dbc84c1393965f58027033c69e6f70fa1b86).
+Настоящий native R1 unresolved QE-PROXY-01, а не PASS. Ни старые receipt/conditions,
+ни closed callback source/history не удалены. Ниже — актуальные bytes после локальной
+авторской доработки; independent same-origin verification ещё PENDING, runtime GO нет.
+Требования/OpenSpec/functional scope не меняются. Предыдущая private allowlist выше
+описывает состояние ДО кода. Приватные источники не коммитятся, полные hashes включены
+в measured plan для actual native binding, вместе с публичными targets.
+
+| Источник | SHA-256 |
+|---|---|
+| `/tmp/clipmkr-disambiguate-proxy-upstream-20261106/deploy/source-proxy.Caddyfile` | `cdefca96ac35bf1c293f39d6f5282232ccb3bf0c9f649688698a437715a6a023` |
+| `/tmp/clipmkr-disambiguate-proxy-upstream-20261106/deploy/source-proxy.compose.yml` | `54c204b6ee898a4451d16658a3f9d26155cada7a8a726b8aeb1f44ff7c9102ab` |
+| `/tmp/clipmkr-disambiguate-proxy-upstream-20261106/docs/REPRODUCE.md` | `2f74834a9784039c35682983b2418031390e7a44b3a996fc69ce85774b8fd2f6` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/run.private.py` | `f15ce1e17ec83226eaa59bce153866a09a5077310391bc143bf04d736baed01e` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/paid-media-only/paid-media-only.private.mjs` | `5eaeaaf189c1fc77dbbce6d0d382d175bd7594d72166a37ba156210a34ad7ae7` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-upstream-codeauthor/proxy-upstream-binding.private.py` | `b14d7f8b0cfd615dad043685f4f920a06a4738a186d4c8e639d5bc3133753d81` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/root-proxy-command.private.py` | `4a667829506d52d81124912747abda0fcd39ccc0be1710f4a2aabc3380bd46b1` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/fixture.private.py` | `f0f0c00e7315c078769e98006ae35565c5c2ba4f0c7a506c8e29ada8a8990fb2` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/input-contract.private.md` | `7df2acfea5bfd7bb429c567702eb8c0ef6ab00bcd2313f1cbc11f71a7469cb73` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/runbook.private.md` | `65b7a13c6bb84eb71667ec8633452c779237ffd217945d82a3fbd7b859e0c3a8` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/collect-cutover-readonly.private.mjs` | `39b849cf573f76caf24a70f71b154c709c5bf0330b43f617c4ed8f5fe4577690` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/apply-route.private.py` | `db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/launch-route.private.py` | `b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892` |
+
+Доработка QE-PROXY-01: live fullwrite переиспользует captured immutable db0 primitive.
+Только exact Stop args write deadline / zero-invalid write из его незавершённого loop
+могут перейти к восстановлению при совместимых captured partial bytes и сохранных
+control/inode/backup. Любой другой отказ fullwrite, включая readback mismatch ПОСЛЕ
+завершённых writes/truncate/fsync и OSError неизвестной фазы, даёт Uncontrolled/incident
+без дальнейших live writes/reload. Prefix compatibility сама по себе не доказывает
+фазу или личность writer. Coupling к exact db0 требует нового review при замене source.
+Known Caddy validation failure после успешной записи и доказанный own partial restore
+сохранены. Требования не ослабляются под результат теста.
+
+DOC02: cwd-relative Git object HEAD:./proxy/Caddyfile работает в standalone и actual
+nested source repository; immutable base SHA/exact one-upstream diff/known mounted
+base-or-candidate guards сохраняются. Actual root SSH read подтвердил старый путь128,
+relative путь0/1476bytes/SHA10e57. Собственные реальные Git-layout probes проверили
+old RED/new GREEN; они не выдаются за remote execution.
+
+Root прочитал actual final evidence: validator45, mutations16, fd8, прежние16 instruction
+cases +16 old/new standalone/nested layout cases; proposed body30/30. Existing9proxy-rate
+доказаны originating reviewer в R1 и не повторялись без изменения app sources.
+Root исходный reachable-prefix counterexample дал RED на85e7 и GREEN на4a66:
+после readback mismatch0/0 последующих writes/reload, foreign bytes preserved.
+Это локальные результаты; внешние body/fixture boundaries SIMULATED.
+
+Дополнительный actual source read-only Caddy adapt /dev/stdin exit0 подтвердил candidate
+и parsed delta только upstream, без reload. Попытка native Compose render на нынешнем
+source отказала: там нет .env, а existing base не равен текущему release base. Поэтому
+реальный future cold merge/deploy НЕ подтверждён. Для него сначала нужны полный release
+bundle, подготовленный закрытый env по REPRODUCE и отдельное окно/gates. Текущий warm
+body Compose/.env не использует и контейнер не пересоздаёт; новых MinIO/test containers нет.
+
+sOriginal — read-only HEALTH clone: меняются только lock_path/directory/control_path/
+control_sha для proxy scope; original callback spec/journal не переписываются.
+Перед бизнесом нужна fresh canonical revalidate по исходному exact runtime_binding,
+не этому clone. Raw audit относится к named fixed commands; canonical internal helpers
+stdout-only/15s limitation сохранено. Это согласованный reviewer в R1 bounded scope,
+не полная raw transcript всех leaf calls. Fresh preflight/root GO, применение и новый
+strict guard baseline всё ещё НЕ исполнены. Source/helper mutation за объявленным
+scope запрещена; Cloud/DNS/live charges не разрешаются.
+
+EXPECTED_CODE_TARGETS:
+- deploy/source-proxy.Caddyfile
+- deploy/source-proxy.compose.yml
+- docs/REPRODUCE.md
