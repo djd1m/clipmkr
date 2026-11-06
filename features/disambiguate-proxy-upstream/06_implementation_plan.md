@@ -63,6 +63,45 @@ Private originating `proxy-upstream-review/report.private.md` (ACCEPTED_WITH_LIM
 
 Private allowlist до кода: canonical `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/run.private.py` SHA b0c142aaac4bc7f43a687f4de1b575b4d602c54fcbcc073c0c1688457e1e84b4; caller `/root/.config/clipmkr/ui-recovery-cloud-20261105/paid-media-only/paid-media-only.private.mjs` SHA fc5083de57c3d213101ae34d09ef9025a981be0bf2baad571584dacefe833b34; новый `/root/.config/clipmkr/payment-delivery-20261106/proxy-upstream-author/proxy-upstream-binding.private.py` отсутствует/PENDING. Historical `/root/.config/clipmkr/payment-delivery-20261106/scenarios/decline/run.private.py` тот же b0c142… не переписывать; root synchronizes future runnable copies только при отдельном CJM допуске. Native probe ababad30d66c6d878623e54478308e943bfb1182c06b934487d38465511a67e0 и preparer c814a400eafc528c796bb9cf564e0ce9cae46166921929ee8053a6acb4a09c90 неизменны. В runner меняются только proxy selected-name predicates/disk pin; WRITER_HASHES, callback/upstream, exact release/image/TEST/shop/store/target/credits_v1/global-off/windows/correlation/ledger checks byte-identical. Caller — только runner pin; новый callerSHA/self-pin invoke сверяется root, обход запрещён. Old bytes сохраняются exact history до edit, полный public+private diff входит в review.
 
+## Фактическая привязка локального кода перед первым QE — 06.11.2026
+
+Ниже root фиксирует окончательные bytes после авторской подготовки, а не новое разрешение
+runtime. Предыдущая private allowlist описывает состояние ДО кода; PENDING там исторический.
+Требования/OpenSpec и функциональный scope не изменены. Заявления прежнего planning review
+не распространяются автоматически на новые bindings: независимое code/QE ещё PENDING.
+Все private файлы остаются вне Git; их hashes включены сюда, чтобы native measured plan
+связывал текущую приватную реализацию, которую нельзя обходить только public targets.
+
+| Источник | SHA-256 |
+|---|---|
+| `/tmp/clipmkr-disambiguate-proxy-upstream-20261106/deploy/source-proxy.Caddyfile` | `cdefca96ac35bf1c293f39d6f5282232ccb3bf0c9f649688698a437715a6a023` |
+| `/tmp/clipmkr-disambiguate-proxy-upstream-20261106/deploy/source-proxy.compose.yml` | `54c204b6ee898a4451d16658a3f9d26155cada7a8a726b8aeb1f44ff7c9102ab` |
+| `/tmp/clipmkr-disambiguate-proxy-upstream-20261106/docs/REPRODUCE.md` | `8715e015f27fc66eacce160ebb0c83213db97a6e1f7b1b1eceba37213ddcb872` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/run.private.py` | `f15ce1e17ec83226eaa59bce153866a09a5077310391bc143bf04d736baed01e` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/paid-media-only/paid-media-only.private.mjs` | `5eaeaaf189c1fc77dbbce6d0d382d175bd7594d72166a37ba156210a34ad7ae7` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-upstream-codeauthor/proxy-upstream-binding.private.py` | `d13c9ebd429a7f913aaedaadac4e7c8c92c2fa8206dad9f5ecd4e194de89bd19` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/root-proxy-command.private.py` | `3413c0a6d42e6b8f75cd2d31a417e433e126b3aa357dcdc97512ffd29396bbdc` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/fixture.private.py` | `1a73bb227673dbbc622b5873f62f5a98c61b94be9e140c4fdc21135c8923db35` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/input-contract.private.md` | `85da77fa5df38efa66a0b000136ef055d7789a85435dfce79d78259255ebaa59` |
+| `/root/.config/clipmkr/payment-delivery-20261106/proxy-runtime-commands/runbook.private.md` | `64efe042c99a54f676624f1044825d4fed861c3e0fb8aae88b37225942df3243` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/collect-cutover-readonly.private.mjs` | `39b849cf573f76caf24a70f71b154c709c5bf0330b43f617c4ed8f5fe4577690` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/apply-route.private.py` | `db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087` |
+| `/root/.config/clipmkr/ui-recovery-cloud-20261105/payment-cjm/launch-route.private.py` | `b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892` |
+
+Root прочитал реальные author evidence: validator45 + mutants16 + fd8 + instruction16,
+proxy-rate9/9; proposed body19/19, paired old RED/new GREEN content-drift. Это локальные
+результаты, не actual Caddy/network/provider proof. Последняя prose-правка README не меняла
+ни один из23 code blocks. Исторические reports/failed findings сохраняются.
+
+Одноразовый body использует sOriginal как read-only HEALTH clone: изменяются только
+lock_path/directory/control_path/control_sha для proxy scope, original callback spec/journal
+не переписываются. Это не canonical callback revalidation; перед бизнесом она обязательна
+по исходному exact runtime_binding. Full pins и collector39b зафиксированы в body.
+Root трактует «все stdout/stderr/exit» пункта5 как named Caddy/wget commands; canonical
+internal Runtime.command stdout-only/15s ограничение явно сохранено. Независимый reviewer
+ещё должен оценить соответствие — root interpretation не является independent approval.
+Fresh preflight/root GO, реальное применение и новый strict guard baseline НЕ исполнены.
+
 EXPECTED_CODE_TARGETS:
 - deploy/source-proxy.Caddyfile
 - deploy/source-proxy.compose.yml
