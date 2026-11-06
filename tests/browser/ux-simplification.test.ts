@@ -33,6 +33,7 @@ const assertApprovedScene=(page:Page, options:{scene:string;width:number;theme:s
 const cache=mkdtempSync(join(tmpdir(),'clipmkr-ux-qa-'));
 let vite:ViteDevServer,origin:string;
 beforeAll(async()=>{
+  console.info('UX evidence directory:',qaEvidence);
   execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','color=c=gray:s=180x320:r=24:d=3','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','-y',join(cache,'qa.mp4')]);
   const entry='\0ux-entry',nav='\0ux-nav',link='\0ux-link';
   vite=await createServer({configFile:false,root:process.cwd(),cacheDir:join(cache,'vite'),esbuild:{jsx:'automatic'},optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime','zod','@noble/hashes/sha2.js'],exclude:['next/navigation','next/link']},
@@ -48,7 +49,7 @@ beforeAll(async()=>{
         const types={detail:VideoDetail,upload:VideoUploader,partner:PartnerPanel,owner:BloggerAdmin,upgrade:UpgradeScreen};const root=createRoot(document.getElementById('root'));function Mounted(){React.useEffect(()=>{window.uiMounted=true},[]);return null;}
         window.mountUI=(kind,props)=>root.render(React.createElement(React.Fragment,null,
           React.createElement(WorkspacePreferenceSync,{initialTheme:'dark',initialLayout:'workspace'}),
-          React.createElement(WorkspaceHeader,{owner:false,balanceLabel:'120 кредитов',initialTheme:'dark',initialLayout:'workspace'}),
+          React.createElement(WorkspaceHeader,{owner:kind==='owner',balanceLabel:kind==='owner'?'Без лимитов':'120 кредитов',initialTheme:'dark',initialLayout:'workspace'}),
           React.createElement('main',{className:'container'},React.createElement('div',{className:kind==='partner'?'workspace-partner-page':undefined},React.createElement(types[kind],props))),
           React.createElement(WorkspaceSettings,{initialTheme:'dark',initialLayout:'workspace'}),React.createElement(Mounted)));
         window.ready=true;`;},
@@ -200,7 +201,42 @@ for(const [name,engine] of Object.entries({chromium,webkit}))describe(`UX compon
   it('approved owner report shows four metrics then explicit multi-code details',()=>run(async page=>{
     const totals={registrations:7,active_users:5,paying_users:3,payments:4,revenue_minor:299000,commission_estimate_minor:null};
     await page.route('**/api/owner/bloggers*',r=>r.fulfill({json:{data:{month:'2026-11',bloggers:[{account_id:A,email:'qa@test.invalid',commission_percent:null,counters:totals,codes:[1,2,3].map(i=>({id:`qa-${i}`,code:`campaign-${i}`,status:'active',counters:totals}))}]}}}));await mount(page,'owner',{});await page.getByRole('button',{name:'Отчёт за месяц →'}).click();await poll(()=>page.getByText('qa@test.invalid',{exact:true}).isVisible()).toBe(true);
-    expect(await page.locator('.owner-report .partner-counters:visible > div').count()).toBe(4);expect(await page.getByRole('heading',{name:'Ссылка: campaign-1',exact:true}).isVisible()).toBe(false);await page.getByText('По ссылкам и подробности',{exact:true}).click();expect(await page.getByRole('heading',{name:'Ссылка: campaign-1',exact:true}).isVisible()).toBe(true);expect(await page.locator('.owner-report').textContent()).toContain('автоматических выплат нет');
+    expect(await page.locator('.owner-report .partner-counters:visible > div').count()).toBe(4);expect(await page.getByRole('heading',{name:'Ссылка: campaign-1',exact:true}).isVisible()).toBe(false);await page.getByText('По ссылкам и подробности',{exact:true}).click();expect(await page.getByRole('heading',{name:'Ссылка: campaign-1',exact:true}).isVisible()).toBe(true);expect(await page.locator('.owner-report').textContent()).toContain('автоматических выплат нет');expect(await page.locator('.owner-report details .partner-counters > div').first().evaluate(n=>({radius:getComputedStyle(n).borderTopLeftRadius,weight:getComputedStyle(n.querySelector('dt')!).fontWeight}))).toEqual({radius:'12px',weight:'700'});
+  }));
+  it('owner report matches approved same-state composition',()=>run(async page=>{
+    const totals={registrations:7,active_users:5,paying_users:3,payments:4,revenue_minor:299000,commission_estimate_minor:null};
+    await page.route('**/api/owner/bloggers*',r=>r.fulfill({json:{data:{month:'2026-11',bloggers:[{account_id:A,email:'qa@test.invalid',commission_percent:null,counters:totals,codes:[1,2,3].map(i=>({id:`qa-${i}`,code:`campaign-${i}`,status:'active',counters:totals}))}]}}}));await mount(page,'owner',{});await page.getByRole('button',{name:'Отчёт за месяц →'}).click();await poll(()=>page.getByText('qa@test.invalid',{exact:true}).isVisible()).toBe(true);
+    const failures:string[]=[];const artifactDir=join(qaEvidence,'owner-report-scenes',name);
+    for(const width of [390,1440])for(const theme of ['dark','light'])for(const layout of ['workspace','studio']){
+      await page.setViewportSize({width,height:1000});await preferences(page,theme,layout);
+      try{await compareApprovedScene(page,{scene:'owner-report',width,theme,layout,artifactDir});}catch(error){failures.push(`${width}/${theme}/${layout}: ${String(error)}`);}
+      expect((await textZoomRule(page)).filter((row:{severity:string})=>row.severity==='error')).toEqual([]);
+    }
+    expect(failures).toEqual([]);
+  }));
+  it('owner report oracle rejects inline assignment and restores the exact DOM',()=>run(async page=>{
+    const totals={registrations:7,active_users:5,paying_users:3,payments:4,revenue_minor:299000,commission_estimate_minor:null};
+    await page.route('**/api/owner/bloggers*',r=>r.fulfill({json:{data:{month:'2026-11',bloggers:[{account_id:A,email:'qa@test.invalid',commission_percent:null,counters:totals,codes:[1,2,3].map(i=>({id:`qa-${i}`,code:`campaign-${i}`,status:'active',counters:totals}))}]}}}));await mount(page,'owner',{});await page.getByRole('button',{name:'Отчёт за месяц →'}).click();await poll(()=>page.getByText('qa@test.invalid',{exact:true}).isVisible()).toBe(true);
+    await page.setViewportSize({width:1440,height:1000});await preferences(page,'light','studio');
+    const artifactDir=join(qaEvidence,'owner-report-scenes',name);
+    const settings={scene:'owner-report',width:1440,theme:'light',layout:'studio',artifactDir};
+    const before=await page.locator('.blogger-admin').innerHTML();let baseline:string[]=[];
+    try{await compareApprovedScene(page,settings);}catch{baseline=JSON.parse(readFileSync(join(artifactDir,'owner-report-normal-light-studio-1440-comparison.json'),'utf8')).violations;}
+    expect(baseline).toEqual([]);const faults=[];
+    for(const fault of ['inline-assignment','hidden-critical','bad-layout']){
+      await page.locator('.owner-report').evaluate((root,fault)=>{
+        if(fault==='inline-assignment'){const field=document.createElement('input');field.id='blogger-email';field.dataset.oracleFault=fault;root.append(field);}
+        if(fault==='hidden-critical')Array.from(root.querySelectorAll('article > p')).find(n=>n.textContent?.includes('автоматических выплат нет'))!.setAttribute('hidden','');
+        if(fault==='bad-layout')root.querySelector('form')!.setAttribute('style','display:block');
+      },fault);
+      const named=fault==='inline-assignment'?'assignment DOM absent':fault==='hidden-critical'?'critical consequence visible outside details':'approved month control composition';
+      await expect(compareApprovedScene(page,{...settings,state:'negative-'+fault})).rejects.toThrow(named);
+      const observed=JSON.parse(readFileSync(join(artifactDir,`owner-report-negative-${fault}-light-studio-1440-comparison.json`),'utf8'));
+      await page.locator('.owner-report').evaluate(root=>{root.querySelector('[data-oracle-fault]')?.remove();root.querySelector('article > p[hidden]')?.removeAttribute('hidden');root.querySelector('form')?.removeAttribute('style');});
+      expect(await page.locator('.blogger-admin').innerHTML()).toBe(before);await compareApprovedScene(page,{...settings,state:'restored-'+fault});
+      faults.push({fault,detected:observed.violations.includes(named),restoredDOMExact:true});
+    }
+    writeFileSync(join(artifactDir,'fault-record.json'),JSON.stringify({faults,baselineViolations:baseline,applicationSourceMutated:false},null,2),{mode:0o600});
   }));
   it('stats_personal_card_exact_scene',()=>run(async page=>{await stats(page);for(const width of [320,390,1440])for(const theme of ['dark','light'])for(const layout of ['workspace','studio']){await page.setViewportSize({width,height:900});await preferences(page,theme,layout);expect(await page.locator('.personal-link-card').isVisible()).toBe(true);await assertApprovedScene(page,{scene:'stats',width,theme,layout});}}));
   it('stats loading error empty and blocked keep personal scene without ensure',()=>run(async page=>{

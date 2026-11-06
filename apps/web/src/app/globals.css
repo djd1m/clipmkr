@@ -384,6 +384,15 @@ html:has(.workspace-shell), :root[data-theme=light]:has(.workspace-shell), body:
 .workspace-shell .blogger-admin input { width:100%; }
 .workspace-shell .blogger-admin input[type=checkbox] { width:auto; }
 .workspace-shell .owner-report-link { margin:1rem 0; }
+.workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters { gap:0; }
+.workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters > div { border:0; border-radius:0; background:transparent; margin:0; }
+.workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters dt { font-weight:400; }
+.workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters dd { font-size:2rem; }
+.workspace-shell .blogger-admin > button:first-child { border:0; background:transparent; padding-inline:0; justify-content:flex-start; color:var(--green); font-weight:500; }
+.workspace-shell .owner-report > form { display:flex; gap:.7rem; align-items:flex-end; max-width:43rem; }
+.workspace-shell .owner-report > form label { display:block; flex:1; min-width:0; font-size:.875rem; }
+.workspace-shell .owner-report > form input[type=month] { display:block; margin:.4rem 0 0; padding:.65rem .75rem; }
+.workspace-shell .owner-report > article > h2 { font-size:1.25rem; line-height:1.3; font-weight:650; letter-spacing:normal; }
 .workspace-shell .workspace-plans { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-block:1px solid var(--line); }
 .workspace-shell .workspace-package { display:flex; flex-direction:column; min-width:0; padding:1.5rem 1.3rem; background:transparent; }
 .workspace-shell .workspace-package:first-child { padding-left:0; }
@@ -405,12 +414,18 @@ html:has(.workspace-shell), :root[data-theme=light]:has(.workspace-shell), body:
 :root[data-workspace-layout=studio] .workspace-shell .workspace-clip-list > p { display:none; }
 :root[data-workspace-layout=studio] .workspace-shell .workspace-clip-list button { flex:1 1 12rem; }
 @media(max-width:850px) {
+  .workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters dd { font-size:1.7rem; }
   .workspace-shell .workspace-upload { gap:2rem; grid-template-columns:minmax(0,1.35fr) minmax(12rem,.75fr); }
   .workspace-shell .workspace-result-regions { grid-template-columns:1fr; }
   .workspace-shell .workspace-clip-list { border-left:0; border-top:1px solid var(--line); padding:1rem 0 0; }
   .workspace-shell .workspace-account-page .account-grid { gap:2rem; }
 }
 @media(max-width:600px) {
+  .workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters > div { padding:1rem .5rem 1rem 0; }
+  .workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters > div:nth-child(n+3) { border-top:1px solid var(--line); }
+  .workspace-shell :is(.partner-statistics,.owner-report > article) > .partner-counters dd { font-size:1.8rem; }
+  .workspace-shell .owner-report > form { display:block; }
+  .workspace-shell .owner-report > form button { width:100%; margin-top:.8rem; }
   .workspace-shell { margin-top:1rem; padding:0 1.1rem 4rem; }
   .workspace-shell .container { padding-top:1.9rem; }
   .workspace-shell .workspace-head { gap:.2rem 1rem; padding-bottom:.5rem; }

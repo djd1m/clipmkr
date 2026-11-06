@@ -1,3 +1,23 @@
+# Owner report / stats app fix — CODE_READY_FOR_REVIEW
+
+Новый prospective ROOT GO прочитан до app edits; same complete62520chars literal context прочитан в текущем user prompt, план9ff050…/HTMLa85b… unchanged. Root archive предыдущего BLOCKED07: history/owner-report-proof/07, он не меняется. Разрешены6listedpaths, минимум reuse в existing BloggerAdmin + scoped globals и existing UX/helper. Новых state owners/requests/contracts/deps нет.
+
+Stats source inference подтверждён прямым actualRED qe-20261106T004443Z-d7363ba8:2engine failures approved stats primary metric surface/fontroles. Owner previous full75PASS/2FAIL retained separately. Исправление Back передh1, month form row/mobile, flat scoped primary metrics/font roles; legacy/nested/account selectors не меняются. Critical existing financial definitions/no payout сохраняются открыто. После sourcefix старый wDQ build historical; ready=false до новой actual production build.
+
+## Исторические записи до текущего app fix
+
+# Owner report comparison / T9-TRACE-01 — BLOCKED_OWNER_REPORT_PRODUCT_DRIFT
+
+Актуальный разрешённый batch: только UX test и existing comparison helper. Полный literal context прочитан в текущем user prompt; actual canonical recall прочитан. Originating report прочитан полностью последовательными частями; plan9ff050…/HTMLa85b… прежние. Root archive предыдущих07/08/09 — history/fleet-r1/manifest.json, архив не меняется.
+
+Oracle RED на старой ветке: qe-20261106T003022Z-95dbcaaf,2/2 fail — owner-report ошибочно fallback→result/card undefined/176. После добавления настоящей reference report scene исполнилась16-state matrix и обнаружились конкретные app composition/style differences. Это не переименование старого proofgap в productdefect без пробы: paired actual/approved screenshots и computed DOM/CSS измерения сохранены R/ui-author/owner-report-repair. Приложение/CSS не меняются.
+
+Focused final qe-20261106T003425Z-b91b989a:2negative controls PASS,2positive matrix tests FAIL (по одному наengine),73skipped поfilter. Strict exactDOM restoration сохраняется; screenshot caret mutation исправлена в helper, closed-details измерение исправлено по native ancestor. Положительный comparison RED на report order/desktop month topology/primary metric surfaces/font roles. Reflow и closed details проходят. Full UX безfilteredskip/observer выполняется на неизменном buildwDQ3dyU30GkdLVZffQCHK.
+
+Typecheck initial failed на implicitany callback в test; corrected explicit type. Final typecheck/lint exit0. Старые111/20/2 не повторялись. Более подробное воспроизведение/минимальная root scope потребность: R/ui-author/owner-report-repair/finding.private.md. CODE_READY пока не заявляется.
+
+## Исторический авторский handoff до текущего batch (не текущий PASS)
+
 # QE-R1 corrective implementation — CODE_READY_FOR_REVIEW
 
 Прежние07 artifacts сохранены побайтно history/qe-r1/07. Авторская сессия gpt-6.1-sol high продолжается без агентов. Актуальный literal62520chars прочитан полностью в user message; три независимых отчёта затем прочитаны по отдельности без усечения, private native repro source прочитан. Старый49/49 относится к предыдущей ревизии и не закрывает шесть условий.
@@ -79,3 +99,32 @@ TASK10–13 реализованы. Full UX73/73 PASS, exit0, /root/.config/clip
 ## Anti-drift и ограничения
 
 ApprovedHTML a85b… неизменён, новые contracts/pkg/API/DB/env/provider/worker не вводились. Node HMAC/sessionSecret pattern переиспользован из existing upgrade SSR owner, callback feedback — по existing music pattern. Единственные owners CtaFields draft/RPC/GuestPacks/media сохранены; same-account refresh стабилен, смена account remounts весь нужный client subtree. Auth/server guards и14readonly owners побайтно прежние. Все62previous native host inputs оценены в qe-r1-host-input-assessment.json; delta9 includes coordinator06 плюс8author paths. Никакого native author receipt/reviewer verification/08/.fa-state/Git/production/Cloud изменения автор не делал. Source frozen; root должен перевязать независимые reviews на текущие39hashes. Live/publishedCJМ/manual/partial recovery и pagination gap сохраняются.
+
+
+## Terminal текущего batch
+
+Full UX безfilters/observer:75PASS/2FAIL/0SKIP (77tests), exit1, /root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T003518Z-ec3c75bc. Падают только2новых positive owner comparison tests; исходные73 и2negative controls PASS. Typecheck/lint/parse/diffcheck exit0. App153hashes и old production buildwDQ3dyU30GkdLVZffQCHK unchanged; никакой новой сборки. Изменены только2разрешённых source/test paths и author07. Текущий CODE_READY_FOR_REVIEW НЕ заявлен: actual drift требует root app/CSS admission. Точный delta/hashes/raw/limits — owner-report-comparison.json. Root09 наблюдался изменённым другим процессом, автор его не правил. Root archive history/fleet-r1 и native receipts не изменены.
+
+
+Focused12/12 PASS qe-20261106T004720Z-9ec09053. Owner16 states/3negative controls perengine and nested legacy style pass; stats normal+loading/error/blocked/empty pass with direct style proof. Первый10PASS/2FAIL послеappfix был WebKit serialized font28.799999 vs Chromium28.8 из shared cache; cache keyed engine, без numeric normalization/tolerance change. New build и relevant regressions запускаются на stable bytes; full native only after actual build.
+
+
+First actual new buildPTeabNyfZJX7RVr1p6-Fr + full77/77PASS qe-20261106T005120Z-cd9e1555 preserved as pre-alignment historical. Screenshot inspection found month baseline/identity/monthLabel omissions; strengthened same oracle actual2RED qe-20261106T005752Z-5c150070. Scoped font correction passed; next batch8PASS/4FAIL qe-20261106T005907Z-b23aef75 isolated exact -16px input bottom margin vs approved0, because old :not selector specificity. Final selector scoped input[type=month] removes oldmargin; no tolerance changed. New CSS classes removed in favor of existing DOM hierarchy. Pending owner4 GREEN/new final build/full77.
+
+
+## Финальный terminal
+
+New actual final production build `3BcaqHtdrkW2fAp0Y8tMU`, exit0. Full UX77/77PASS,0skip/0fail: /root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T010340Z-bb62d91f. Final owner8/8, workspace12/12, local handlers4/4, typecheck/lint/parse/diffcheck exit0. All153apphashes match;151unrelated app +14READONLY unchanged. Currentdelta4of6allowed; allbaseline24of25WRITE cap respected. No new CSS classes/state/API/deps; existing selectors/state/refs reused. Fullcommands/raw failures/matrix/screenshots/currentpatch — owner-report-app-fix.json. Older BLOCKED07 remains root archive history/owner-report-proof/07. Root alone closes native review/rebinds on final39.
+
+## Actual current family trace delta
+
+| Family | Current evidence | Boundary |
+|---|---|---|
+| 15 statistics | Full77 normal24 + other status matrices, primary metric surface/font exact perengine; readonly/base identity and nativeA/B reexecuted | All-time/current server semantics preserved, no provider claim |
+| 16 assignment | New real HTTP/PG owner8 + full77 hidden validation/back/draft/focus | No auth/limit/rate/reason logic changes |
+| 17 owner report | New exact16normal scenes,6semantic faults + text200, reading order/month alignment/primary cells/fonts/back warnings; positive allGREEN | Same-state comparison not full screenshot pixel equality |
+| 20 account/preferences | Full77 native data/read failure/account switch; workspace12/local4 | No account source edit |
+| Other17families | Current full77 where named; previous preserved contracts/111/20/2/48 qualified by unchanged owners and narrow CSS exclusion | Historical counts not called rerun; original pagination/live/manual/partial gaps retained |
+
+
+Confirmed lesson pinnedteach/recall complete: teach:fff0bf8c1839c8cc, canonical/home/clipmkr/.dz --no-mirror. CLI warned empty-substitution-hole on literal .partner-statistics; exact from-file text compared with actual recalled first pattern, full literal matches. No assumed save/lookup. Raw logs in R/ui-author/owner-report-app-fix.

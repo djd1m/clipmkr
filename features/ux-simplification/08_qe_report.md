@@ -1,4 +1,4 @@
-# Проверка реализации упрощённого UI — Step8 закрыт
+# Проверка реализации упрощённого UI — история и текущая ревизия
 
 05.11.2026. Исторический первый статус: Step8 ещё не закрыт. Актуальный результат и границы приведены ниже. Предыдущая авторская проверка передачи HTML сохранена без изменения в [history/design-handoff/08_qe_report.md](history/design-handoff/08_qe_report.md), SHA-256 `5b6fa89707469cf9dcb827fa17ddcf4342d06a286941eec2f054a3843aaea6b4`. Она не была независимым продуктовым QE и не используется как его замена.
 
@@ -87,3 +87,27 @@ Raw evidence хранится закрыто в каталоге текущей 
 Поддерживаемая команда записала реальный code и qe checkpoint (обе exit0). Повторный native evaluate после записи qe снова **closed/exit0**, с checkpointClosure digest `aa5e529db3e37e380ede3249dace1cebb0527c71ffdb1682f0320cd84fa98a02`. Буквенная/численная оценка отсутствовала у reviewer и записана null, не выдумана.
 
 Отдельный `dz guard check --op publish --json` вернул exit0/**warn**, не PASS: soft agents-md-policy-sync (10 отсутствующих anchors), несколько generic проверок NOT ESTABLISHED и отсутствие audit store в worktree. Force не применён, AGENTS/CLAUDE ради прохождения не переписаны. Настоящее feature-specific native closure подтверждено отдельно; общий guard не заменяет Step9 или опубликованную приёмку.
+
+
+## Третья ревизия: сравнение owner report с согласованным HTML
+
+После первого Step9 добавлена уже требуемая FR-7/AM-8 проверка: она воспроизвела расхождения композиции и типографики owner report и основных метрик. Предыдущие RED (75 PASS / 2 FAIL и отдельный alignment failure) сохранены, их результаты не переименованы в успешные. Исправлены четыре допущенных пути: BloggerAdmin.tsx, globals.css, UX browser test и существующий presentation helper. Требования, ADR, canonical план `9ff050853d8cca7d7dfa8b6b55fa8ad04f7f0674766189e2a4eb2b90a963c66f`, approved HTML `a85b3f073a335871e421ea2079269fa19c71f42a263d7b0bd17ae30469c50e68` и 14 READONLY inputs неизменны. Новых зависимостей/API/БД/worker изменений нет.
+
+На итоговом build `3BcaqHtdrkW2fAp0Y8tMU` фактически выполнены: полный UX **77/77**, owner cabinet **8/8**, workspace **12/12**; typecheck, lint и build — exit0. Числа 111 unit / 20 auto-link / 2 checkout / 48 billing относятся к ранее измеренным прогонам и повторно не приписываются этой сборке. Для локальных helpers прочитан JSON с 4 PASS, но пустой stdout не используется как самостоятельный execution receipt.
+
+Owner report сопоставлен с утверждённой композицией в 16 сочетаниях ширины/темы/компоновки/движка; статистика — в 24 normal scenes. Шесть served-DOM negative controls (три смысловые подмены × два движка) обнаружены; после точного восстановления DOM clean comparison снова прошёл. Проверка не объявляется полной визуальной идентичностью, WCAG-сертификацией или измеренной line/branch coverage.
+
+Подготовлен настоящий native R3 snapshot `aff607f78828e6880976f272ea2db25c09e0c4c55cc1ac64b25593bf3b8cd8e1`, nonce `2399e8b6-aa2e-4ff8-b2df-811a2dedb8b1`, cycle `3dad672c-7cfe-4524-bea8-0d4e2bacf35e`. Выполняется собственная перепроверка трёх originating reviewers с сохранением исходных условий и полной историей. Старый R2 closed — исторический факт, а не автоматически перенесённый допуск. Итог native evaluate и второй Step9 будут записаны по фактическим результатам.
+
+
+### Фактическое закрытие R3
+
+Настоящий native evaluate завершился **closed / exit0**, rounds3, unresolved0/reasons0 на revision `aff607f78828e6880976f272ea2db25c09e0c4c55cc1ac64b25593bf3b8cd8e1`. Достигнут потолок трёх циклов; новый цикл/сброс истории не выполнялся. Все три originating reviewers собственноручно подтвердили исходные условия на текущей ревизии и полную delta4, включая affected неизменный PartnerPanel; исходные формулировки сохранены.
+
+| Роль | Собственный вердикт | SHA-256 текущего отчёта |
+|---|---|---|
+| qe-primary | CLEAN |321f4c13631b4fe269190e206579ff8753266dc2bbde7cfeb6a78e601307b7f4|
+| qe-security | CLEAN |9a476227c5da3550be9a6a5c0ec4581b0dc4b4f8942df108519d457db0e9fbf8|
+| qe-architecture | CLEAN |3733e90e54c9c558d167658800a227195f9ffe151bf619e714a915d233d38f5d|
+
+Сопоставлены все64 manifest inputs,153 app hashes и14 READONLY; изменены только два app файла и два test/helper относительно R2,151 прочий app input неизменен. Дополнительное уточнение исторического RED: alignment прогон содержал4FAIL (две matrix и две baseline проверки), а не2. Нынешний допуск относится к source реализации UI; второй Step9 и опубликованные сценарии ещё выполняются. Письменная ручная приёмка владельца не подменяется автоматикой.

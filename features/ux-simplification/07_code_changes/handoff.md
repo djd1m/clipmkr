@@ -1,33 +1,28 @@
-# Передача QE-R1 координатору
+# Owner report / primary stats — авторский handoff
 
-Статус: **CODE_READY_FOR_REVIEW**. TASK10–13 завершены в той же author-session gpt-6.1-sol high; авторские6conditions RED→GREEN, независимый originating recheck ещё нужен. Старые07 сохранены byte-for-byte `history/qe-r1/07`, никаких native receipts/08/.fa-state записей автор не создавал.
+Статус: **CODE_READY_FOR_REVIEW**. Existing FR7/AM8/TASK4/TASK6 исправлены по unchanged approvedHTMLa85b…/plan9ff050… после prospectiveROOTGO. Independent originating/native cycle3/Step9 recheck ещё выполняет root; это не QE closure.
 
-Исправлены четыре дефекта: guest focus после visible commit; видимый CTA pending/failure/success вне всех закрываемых панелей; стабильный opaque HMAC/account reset на dashboard/partner/account SSR roots; сброс account-specific consent/state при native RSC account switch. CtaFields сохраняет единственный draft/RPC owner, callback optional и совместим с прямыми React mocks. Серверные auth/API/цены/лимиты и READONLY14 не менялись.
+Минимальный reusefix: Back до единственногоh1; month form desktoprow/mobilecolumn, правильный baseline без старого16px input margin; approved identity/monthLabel/metric font roles; primary counters flat/transparent без rounded cards. Правила только direct primary dl в standalone `.partner-statistics` и owner article. Nested legacy/account secondary counters не переоформлялись; nested12px/bold700 regression проверена настоящим браузером. Новых CSS classes/modules/stores/routes/APIs/deps нет. Existing BloggerAdmin state/refs/handlers/backfocus/draft/business requests/server permissions/limits/rates/month/money сохранены; financial/no-payout warnings видны, false historical-partial claim не копировался.
 
-Новая production `npm run build` exit0: `wDQ3dyU30GkdLVZffQCHK`, `/tmp/ux-qer1-build.log`;153apphashes проверены после tests. Full UX **73/73**, unit/progress **111/111**, auto-link **20/20**, checkout Next **2/2**. Нет unique aggregate: suites пересекаются. Typecheck/lint/diff-check exit0. Все actual commands/raw pointers/fail history — `author-test-results.json`, все6 IDs/21семейств/gaps — `change_manifest.md`.
+Final production build: **`3BcaqHtdrkW2fAp0Y8tMU`**, actual `npm run build` exit0, `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/build-final.private.log`. Все153apphashes/39inputs совпали после tests,151unrelatedapp и14readonly unchanged. First272CSS/publicentrybytes exact. Older wDQ/PTeab builds historical.
 
-Native tests используют actual Next production build, existing PG/session cookies и настоящий AppRouter.refresh в том же документе, B real Flight/email/HTTP data. Late A200 реально доставлен после B, старые A данные/copy не возвращаются; обычный nonpersonal и blogger summary сохранены. A same-account refresh сохраняет consent/draft; B deletion details открываются снова, checkbox unchecked/delete disabled/SignOut node new. Account.delete/DELETE/provider jobs0; delete не нажимался. Focus assertions выполняются до fill. CTA8 hide/outcome variants perengine сохраняют input identity/draft и ровно1mutation.
+Final actual: **UX77/77**, owner8/8, workspace12/12, helper4/4; typecheck/lint/parse/diffcheck exit0. Full UX безfilteredskip/observer, native Next именно на новом build,0provider jobs/account.delete assertions сохраняются. 111/auto-link20/checkout2/billing48 не повторялись — scope-qualified reuse с rationale в author-test-results. Не суммировать overlapping suites.
 
-| Condition | Авторский результат |
-|---|---|
-| UXQE-P1-FOCUS | TASK-10: RED→GREEN, независимая перепроверка pending |
-| QA-ARCH-01 | TASK-10: RED→GREEN, независимая перепроверка pending |
-| UXQE-P2-CTA-FEEDBACK | TASK-11: RED→GREEN, независимая перепроверка pending |
-| QA-ARCH-02 | TASK-11: RED→GREEN, независимая перепроверка pending |
-| QE-SEC-001 | TASK-12: RED→GREEN, независимая перепроверка pending |
-| QE-SEC-002 | TASK-13: RED→GREEN, независимая перепроверка pending |
+Матрицы: owner16 =390/1440×dark/light×workspace/studio×Chromium/WebKit; stats normal24=320/390/1440×themes/layouts×engines плюс loading/error/blocked/empty behaviour. Каждый normal scene сравнивает approved и actual computed order/geometry/tokens/roles; stats exact metric surface/font proof. Owner faults inlineassignment/hiddencritical/badlayout по обоимengines ломают тот же helper и восстанавливают exactDOM. Perengine expected cache устраняет строковую разницу28.8px/28.799999px; tolerance/assertions не ослаблены. Artifact dirs используют portable tmp browser harness, затем privately copied; no hardcoded root requirement для запуска tests.
 
-Точный corrective delta8paths/hashes — ниже; полный implementation diff24из25WRITE paths,39measurement hashes и14baseline comparisons — `source-scope-audit.json`, `code-freeze-ready.json`;153apphashes/buildmarker — `final-build-ready.json`. All62previoushost inputs independently compared в `qe-r1-host-input-assessment.json` (coordinator06 отмечен отдельно).
+Точные4changed paths текущего batch:
 
-- `apps/web/src/app/dashboard/page.tsx` — `34ff6fecc63fd5a79cddd523092b606a21b670c7896e3ec39f6404dd451051cc`
-- `apps/web/src/app/videos/[videoId]/VideoDetail.tsx` — `481d136d27303600296b0db5654fa28957a21d42725ce8c1ab5340a376a21c10`
-- `apps/web/src/app/clips/GuestPacks.tsx` — `2668aedfd3693ae2308f0cad50634be53fb07d826928d1276272ccf7b8db8e97`
-- `apps/web/src/app/dashboard/account/page.tsx` — `c8f6e4501b0225d7048cf8e5ee34ea1c1b398b4decc3f88aa2b320d7a4fdbc2a`
-- `apps/web/src/app/dashboard/partner/page.tsx` — `a3f05966b681fcb1aa85816f92512220e4ae5e73e48d12fcc6f8418985af0bb7`
-- `tests/browser/ux-simplification.test.ts` — `fc604c564dc70cd355ae5db50a6d0d98478c5e60a85535cc60d1a529161f1b66`
-- `tests/progress-screen.test.ts` — `250bb1c77ee984178ea05d1d41ca630a96fb52a9d0dd234566ecd6bf70978018`
-- `apps/web/src/app/videos/CtaFields.tsx` — `ac9887cfb0153566ec03ad102fcf4e5a4060d6ebc1213b8bf81f15ebe400e39b`
+- `apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx` — SHA256 `7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5`
+- `apps/web/src/app/globals.css` — SHA256 `0c455006502817f37e19371e047717efe7f7e7b1237f4c665882caf30b080df5`
+- `tests/browser/ux-simplification.test.ts` — SHA256 `5d787d03d7de502580bde10f7a87623706e9d6c0b7f7b8447420fcde135e8c30`
+- `scripts/workspace-presentation-local.mjs` — SHA256 `f1f4bb46e42ec6a1d415278ddabb34ea1d44eb21c62848f30f32f4e327491840`
 
-Полный codepatch: `/tmp/clipmkr-ux-qer1-complete-code.patch`, SHA256 `c5541190747c37ef330230a6085d730575fe2fc08383c20cbfb08b16d27b2d13`, 272830bytes; включает3новых admitted code files. QA PNG восстановлены только собственные generated paths после private archive, no git restore/stage; before-copy limitation28top-level описана `/tmp/clipmkr-qer1-auto-link-artifacts/top-level-restoration.json`.
+`tests/browser/blogger-cabinet.test.ts` и `scripts/check-workspace-presentation.test.mjs` не менялись: copy migration не понадобилась. Current fullimplementation24WRITE paths vs originalbase, внутри25cap.
 
-Billing48 на этом repair не повторялся: ClipCard/Upgrade/prices/backend/payment seam unchanged, previous raw evidence сохранён в archive; native checkout2 и directCTA39 повторены. Provider/published clipmkr.ru CJM, owner manual, integrated partial recovery и полный local pagination matrix не доказаны. Геометрия/palette/order/disclosure — bounded oracle, не полное pixel equality/WCAG. Нет commits/push/deploy/Cloud/customer data. Финальный независимый formal repair closure выполняет координатор и originating reviewers.
+Current codepatch: `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/current-code-delta.patch`, SHA256 `fc1cbe14cacac0c42fcf7f3c43cd2c7de3d13f8f0a4980257e30611918713f81`, 29716bytes (vsHEAD `aeb103500baf4c97476fd3b7e2e346905818e872`). Raw commands/failures/limits — `owner-report-app-fix.json`;39hashes — `code-freeze-ready.json`;153hash/buildmarker — `final-build-ready.json`. Private paired screenshots/comparisonJSON/fault records — `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-owner-scenes`, `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-scenes`, `/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-matrix-summary.private.json`.
+
+Сохранены meaningfulRED: owner beforefix75/2 в root archive, direct stats2RED передCSS, stricter month/identity probe2RED и16px specificity4FAIL; raw pointers в manifest. Промежуточные10/2 font serialization и PTeab77PASS не названы finalPASS. Owner8 PNG только свои12perrun архивированы и удалены как новые QA files (before0); assets/course/demo/lesson не трогались.
+
+Никаких Git mutations/commits/push, .fa-state/06/08/09/исторических receipts/nativeprepare/evaluate/deploy/Cloud/DNS/customer data operations. Автор не создаёт reviewer verification. Root архивы сохранены. Live publishedCJM/realTEST/provider/owner manual/partial backend и прежний pagination gap остаются отдельными ограничениями; full pixelperfect/WCAG не заявляются.
+
+Подтверждённый lesson после finalGREEN: `teach:fff0bf8c1839c8cc`, pinned canonical teach --no-mirror и actual recall; literal checked exact despite heuristic warning. Logs — ownprivate `teach.private.log`/`recall-after.private.log`.

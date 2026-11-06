@@ -48,7 +48,7 @@
     "apps/web/src/app/dashboard/PartnerPanel.tsx": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
     "apps/web/src/app/dashboard/ProInterest.tsx": "18ad9c8eec45d5314ce6d2e93005990d4420b43e8ef224911e45ef82686dc6f0",
     "apps/web/src/app/dashboard/account/page.tsx": "c8f6e4501b0225d7048cf8e5ee34ea1c1b398b4decc3f88aa2b320d7a4fdbc2a",
-    "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33",
+    "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
     "apps/web/src/app/dashboard/bloggers/page.tsx": "2c047e9c7a2528a7d546f16159224c0899d9c6a03633b8cdfb22baadf4dc4504",
     "apps/web/src/app/dashboard/error.tsx": "281527ccf7fae2e488ded4e745e59db9f6eca3e3c7d1133b972a0b4f2ad03dcc",
     "apps/web/src/app/dashboard/layout.tsx": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
@@ -58,7 +58,7 @@
     "apps/web/src/app/dashboard/videos/[videoId]/page.tsx": "a4036b5c994e9548c2e9a6c7f2a64caa96b1848030405ff129b38bd2c82bec6e",
     "apps/web/src/app/forgot/page.tsx": "42fef88dfcad75cab474129cb39953ce923f095f228f4564ce5fa3a6160b1a87",
     "apps/web/src/app/g/[guest_code]/route.ts": "302b0d1e5ef73887c53c52f7f31a26b6a027174fc00da8389cea807f16d36d7f",
-    "apps/web/src/app/globals.css": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9",
+    "apps/web/src/app/globals.css": "0c455006502817f37e19371e047717efe7f7e7b1237f4c665882caf30b080df5",
     "apps/web/src/app/health/route.ts": "771ba27a0af728b9a0a0e6c2561245b8e7ab57b487f3d887c1667082de580eb5",
     "apps/web/src/app/layout.tsx": "694752504b0bfc42c8cab5baaab43b525ff8b8eed0ec691ef7b1c55ab966bb39",
     "apps/web/src/app/legal/LegalDocument.tsx": "efdb9578c3985ff795b677193e9f54bd10d9e80e47aa5e94ca58a27c57014447",
@@ -157,7 +157,7 @@
     "apps/web/src/server/video.ts": "3a533a0339722f8d90e985108877a24621e0b1d070ae0648602457135378862c",
     "apps/web/src/server/watchdog.ts": "654ec86dd88a33db30f1be7a836adc22f92b8d03e4f69af8ef9e4493c4f390a2"
   },
-  "buildId": "wDQ3dyU30GkdLVZffQCHK",
+  "buildId": "3BcaqHtdrkW2fAp0Y8tMU",
   "buildCommand": {
     "argv": [
       "npm",
@@ -165,8 +165,9 @@
       "build"
     ],
     "exitCode": 0,
-    "finishedAt": "2026-11-05T23:28:17.452294+00:00"
+    "exitObservedAt": "2026-11-06T01:03:40.032404+00:00",
+    "finishedAt": "2026-11-06T01:02:19.620154+00:00"
   },
-  "buildLog": "/tmp/ux-qer1-build.log",
-  "testStatus": "Author fullUX73 PASS; independent originating recheck pending"
+  "buildLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/build-final.private.log",
+  "testStatus": "Final full77PASS, owner8/workspace12/helper4PASS; independent source recheck pending"
 }

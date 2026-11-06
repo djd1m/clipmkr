@@ -1,0 +1,145 @@
+{
+  "kind": "Author measured scope/hash assessment; NOT native receipt",
+  "at": "2026-11-05T23:44:47.293199+00:00",
+  "baseRef": "741174677ab6bf87f7d5b7fa1c90f4026d24253c",
+  "plannedWriteScope": 25,
+  "nativeMeasurementInputs": 39,
+  "actualChangedCodeCount": 24,
+  "actualChangedCodeTargets": [
+    "apps/web/src/app/globals.css",
+    "apps/web/src/app/WorkspaceHeader.tsx",
+    "apps/web/src/app/WorkspaceSettings.tsx",
+    "apps/web/src/app/dashboard/page.tsx",
+    "apps/web/src/app/dashboard/LimitsPanel.tsx",
+    "apps/web/src/app/dashboard/PartnerPanel.tsx",
+    "apps/web/src/app/upload/Uploader.tsx",
+    "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+    "apps/web/src/app/clips/ClipCard.tsx",
+    "apps/web/src/app/clips/ClipMusicChoice.tsx",
+    "apps/web/src/app/clips/GuestPacks.tsx",
+    "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+    "apps/web/src/app/dashboard/account/page.tsx",
+    "apps/web/src/app/dashboard/partner/page.tsx",
+    "tests/workspace-presentation.test.ts",
+    "tests/clip-card.test.ts",
+    "tests/browser/blogger-cabinet.test.ts",
+    "tests/browser/ux-simplification.test.ts",
+    "scripts/check-workspace-presentation.test.mjs",
+    "scripts/workspace-presentation-local.mjs",
+    "tests/progress-screen.test.ts",
+    "tests/browser/blogger-auto-link.test.ts",
+    "tests/browser/billing.test.ts",
+    "apps/web/src/app/videos/CtaFields.tsx"
+  ],
+  "repairChangedTargets": [
+    "apps/web/src/app/dashboard/page.tsx",
+    "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+    "apps/web/src/app/clips/GuestPacks.tsx",
+    "apps/web/src/app/dashboard/account/page.tsx",
+    "apps/web/src/app/dashboard/partner/page.tsx",
+    "tests/browser/ux-simplification.test.ts",
+    "tests/progress-screen.test.ts",
+    "apps/web/src/app/videos/CtaFields.tsx"
+  ],
+  "reusedUnchangedWriteTargets": [
+    "apps/web/src/app/upgrade/UpgradeScreen.tsx"
+  ],
+  "readonlyInputs": [
+    {
+      "path": "apps/web/src/app/videos/VideoList.tsx",
+      "baselineSha256": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+      "sha256": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/page-account.ts",
+      "baselineSha256": "f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713",
+      "sha256": "f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/dashboard-summary.ts",
+      "baselineSha256": "e0bd9e06e8171b6a22e3c3877bd4c2bd9f95aa809ba18ba2b0070762a8d60085",
+      "sha256": "e0bd9e06e8171b6a22e3c3877bd4c2bd9f95aa809ba18ba2b0070762a8d60085",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/support/page-state.ts",
+      "baselineSha256": "b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145",
+      "sha256": "b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "baselineSha256": "1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb",
+      "sha256": "1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/runtime.ts",
+      "baselineSha256": "7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb",
+      "sha256": "7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "baselineSha256": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "sha256": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "baselineSha256": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b",
+      "sha256": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/limits.ts",
+      "baselineSha256": "ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20",
+      "sha256": "ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "packages/db/src/blogger-policy.ts",
+      "baselineSha256": "2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e",
+      "sha256": "2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/lib/upload-resume.ts",
+      "baselineSha256": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864",
+      "sha256": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/layout.tsx",
+      "baselineSha256": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+      "sha256": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/AccountDeletion.tsx",
+      "baselineSha256": "913096a7a43e7656b3be6b8b937b35b0b7a4531cc54c3d1c8455e8e790f966fd",
+      "sha256": "913096a7a43e7656b3be6b8b937b35b0b7a4531cc54c3d1c8455e8e790f966fd",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/app/support/SignOut.tsx",
+      "baselineSha256": "54b3397981e916a3eda571e7b937dc2f6cd1afb44fcc358f7fb2e318ff9d0436",
+      "sha256": "54b3397981e916a3eda571e7b937dc2f6cd1afb44fcc358f7fb2e318ff9d0436",
+      "matchesOriginalBase": true
+    }
+  ],
+  "approvedHTMLSha256": "a85b3f073a335871e421ea2079269fa19c71f42a263d7b0bd17ae30469c50e68",
+  "authorCodeDiff": {
+    "path": "/tmp/clipmkr-ux-qer1-complete-code.patch",
+    "sha256": "c5541190747c37ef330230a6085d730575fe2fc08383c20cbfb08b16d27b2d13",
+    "bytes": 272830,
+    "includesUntrackedAdmittedCode": true
+  },
+  "appBuildHashCount": 153,
+  "appHashesMatchFinalBuild": true,
+  "previousHostAssessment": "qe-r1-host-input-assessment.json: all62 prior measured sources/dependencies compared; changed06 coordinator-owned",
+  "excludedCoordinatorOwnedChanges": "FR/ADR/OpenSpec/gates/plan/.fa-state/08 and historical docs",
+  "generatedQA": "Only own harness screenshots archived/restored; /tmp/clipmkr-qer1-auto-link-artifacts; top-level before-copy limitation documented"
+}

@@ -1,6 +1,6 @@
 {
   "status": "CODE_READY_FOR_REVIEW",
-  "at": "2026-11-05T23:44:47.293199+00:00",
+  "at": "2026-11-06T01:10:26.616946+00:00",
   "author": "gpt-6.1-sol high (назначение пользователя)",
   "baseRef": "741174677ab6bf87f7d5b7fa1c90f4026d24253c",
   "plannedWriteScope": 25,
@@ -8,7 +8,7 @@
   "targets": [
     {
       "path": "apps/web/src/app/globals.css",
-      "sha256": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9",
+      "sha256": "0c455006502817f37e19371e047717efe7f7e7b1237f4c665882caf30b080df5",
       "access": "WRITE"
     },
     {
@@ -68,7 +68,7 @@
     },
     {
       "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
-      "sha256": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33",
+      "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
       "access": "WRITE"
     },
     {
@@ -103,7 +103,7 @@
     },
     {
       "path": "tests/browser/ux-simplification.test.ts",
-      "sha256": "fc604c564dc70cd355ae5db50a6d0d98478c5e60a85535cc60d1a529161f1b66",
+      "sha256": "5d787d03d7de502580bde10f7a87623706e9d6c0b7f7b8447420fcde135e8c30",
       "access": "WRITE"
     },
     {
@@ -113,7 +113,7 @@
     },
     {
       "path": "scripts/workspace-presentation-local.mjs",
-      "sha256": "b67e71077a332cf2543dcae006b9bc915126fcf4edd4e23a985bba6aec1aeeca",
+      "sha256": "f1f4bb46e42ec6a1d415278ddabb34ea1d44eb21c62848f30f32f4e327491840",
       "access": "WRITE"
     },
     {
@@ -203,18 +203,15 @@
     }
   ],
   "buildStatus": {
-    "buildId": "wDQ3dyU30GkdLVZffQCHK",
-    "exitCode": 0,
-    "log": "/tmp/ux-qer1-build.log"
+    "buildId": "3BcaqHtdrkW2fAp0Y8tMU",
+    "exitCode": 0
   },
   "testStatus": {
-    "fullUX": {
-      "passed": 73,
-      "failed": 0,
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T233943Z-2e497c33"
-    },
-    "independentReview": "PENDING_ORIGINATING_RECHECK",
-    "livePublishedCJM": "NOT_ESTABLISHED"
+    "fullUX": "77PASS/0FAIL/0SKIP",
+    "owner": "8PASS",
+    "workspace": "12PASS",
+    "localHandlers": "4PASS",
+    "independentReview": "ROOT_ORIGINATING_RECHECK_PENDING"
   },
   "repairChangedTargets": [
     "apps/web/src/app/dashboard/page.tsx",
@@ -225,5 +222,27 @@
     "tests/browser/ux-simplification.test.ts",
     "tests/progress-screen.test.ts",
     "apps/web/src/app/videos/CtaFields.tsx"
+  ],
+  "currentDelta": [
+    {
+      "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+      "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
+      "beforeSHA256": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33"
+    },
+    {
+      "path": "apps/web/src/app/globals.css",
+      "sha256": "0c455006502817f37e19371e047717efe7f7e7b1237f4c665882caf30b080df5",
+      "beforeSHA256": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9"
+    },
+    {
+      "path": "tests/browser/ux-simplification.test.ts",
+      "sha256": "5d787d03d7de502580bde10f7a87623706e9d6c0b7f7b8447420fcde135e8c30",
+      "beforeSHA256": "1cd3bb3a94acb2219dc662388560ec87197f5da7d59aede6bdbfa3726a2fe4d5"
+    },
+    {
+      "path": "scripts/workspace-presentation-local.mjs",
+      "sha256": "f1f4bb46e42ec6a1d415278ddabb34ea1d44eb21c62848f30f32f4e327491840",
+      "beforeSHA256": "0c75ea8ff062f5b05e971d00d82bbe55f003c0cf51cd30ec7c9cd100051ae5b0"
+    }
   ]
 }

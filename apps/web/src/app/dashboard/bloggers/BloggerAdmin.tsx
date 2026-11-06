@@ -73,6 +73,7 @@ export default function BloggerAdmin() {
     finally { setBusy(false); }
   }
   return <section className="stack blogger-admin" aria-labelledby="bloggers-title">
+    {view === 'report' && <button type="button" className="secondary" disabled={busy} onClick={() => { changedView.current = true; setView('assignment'); }}>← К управлению блогерами</button>}
     <h1 id="bloggers-title" ref={reportHeading} tabIndex={-1}>{view === 'report' ? 'Отчёт за месяц' : 'Блогеры'}</h1>
     {view === 'assignment' ? <>
     <p>Найдите существующий аккаунт, чтобы назначить блогером. Обычные пользователи: до 90 минут. Блогеры: до 120 минут, если не назначен индивидуальный лимит. Баланс и квоты действуют отдельно.</p>
@@ -111,19 +112,18 @@ export default function BloggerAdmin() {
       {report?.bloggers.length === 0 && <p>Блогеры ещё не назначены.</p>}
     </section>
     </> : <>
-    <button type="button" className="secondary" disabled={busy} onClick={() => { changedView.current = true; setView('assignment'); }}>← К управлению блогерами</button>
     <section className="partner-panel owner-report">
-      <h2>Статистика за месяц</h2>
       <form onSubmit={event => { event.preventDefault(); setBusy(true); setNotice(''); void loadReport(month).catch(error => setNotice(error.message)).finally(() => setBusy(false)); }}>
-        <label htmlFor="blogger-month">Месяц по Москве</label>
-        <input id="blogger-month" type="month" required value={month} onChange={event => setMonth(event.target.value)} />
+        <label htmlFor="blogger-month">Месяц по Москве
+          <input id="blogger-month" type="month" required value={month} onChange={event => setMonth(event.target.value)} />
+        </label>
         <button disabled={busy}>Показать статистику</button>
       </form>
       <p>Активные пользователи — люди с готовой записью и хотя бы одним клипом за месяц. Выручка — подтверждённые оплаты пакетов до комиссий провайдера.</p>
       <p>Вознаграждение — предварительная оценка по текущей ставке с округлением вниз до копейки. Это не задолженность к выплате; автоматических выплат нет.</p>
       {report && <><p>Отчёт: {report.month}, Москва.</p>{report.bloggers.length === 0 && <p>Блогеры ещё не назначены.</p>}
         {report.bloggers.map(item => <article key={item.account_id} className="partner-panel">
-          <h3>{item.email}</h3><p>Ставка: {item.commission_percent === null ? 'не назначена' : `${item.commission_percent}%`}</p>
+          <h2>{item.email}</h2><p>Ставка: {item.commission_percent === null ? 'не назначена' : `${item.commission_percent}%`}</p>
           <Counters value={item.counters} primary />
           <p>Предварительное вознаграждение: {item.counters.commission_estimate_minor === null ? 'ставка не назначена, не рассчитывается' : money(item.counters.commission_estimate_minor)}. Это не задолженность; автоматических выплат нет.</p>
           <details><summary>По ссылкам и подробности</summary><p>Платежи: {item.counters.payments}</p>

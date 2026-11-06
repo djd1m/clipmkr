@@ -159,7 +159,87 @@ async function verifyCatalogComponent(page, { layout, theme, firstScreen }, obse
 // Динамические данные не сравниваются с демонстрационными числами макета.
 const approvedMeasurements = new Map();
 export async function assertApprovedScene(page, { scene, width, theme, layout, state = 'normal', artifactDir = '/tmp/clipmkr-ux-author-qa/scenes' }) {
-  const key = JSON.stringify([scene,width,theme,layout,state]);
+  if (scene === 'owner-report') {
+    const {readFile,mkdir,writeFile}=await import('node:fs/promises');
+    const {createHash}=await import('node:crypto');
+    const html=await readFile('docs/design/2026-11-05-ux-simplification.html','utf8');
+    assert.equal(createHash('sha256').update(html).digest('hex'),'a85b3f073a335871e421ea2079269fa19c71f42a263d7b0bd17ae30469c50e68','immutable approved HTML');
+    await mkdir(artifactDir,{recursive:true,mode:0o700});
+    const stem=`${artifactDir}/${scene}-${state}-${theme}-${layout}-${width}`;
+    const measure=reference=>{
+      const root=document.querySelector(reference?'#main':'.blogger-admin');
+      const heading=root.querySelector('h1'), back=[...root.querySelectorAll('button')].find(n=>n.textContent.startsWith('←'));
+      const form=root.querySelector(reference?'#report-month':'.owner-report > form');
+      const row=root.querySelector(reference?':scope > section.section':'.owner-report > article');
+      const metrics=row?.querySelector(':scope > dl'), details=row?.querySelector(':scope > details');
+      const consequence=reference?row?.querySelector(':scope > .quiet'):[...row?.querySelectorAll(':scope > p')??[]].find(n=>n.textContent.includes('автоматических выплат нет'));
+      const input=form?.querySelector('input'), submit=form?.querySelector('button');
+      const visible=n=>{if(!n||!n.getClientRects().length||getComputedStyle(n).visibility==='hidden'||n.closest('[hidden]'))return false;const closed=n.closest('details:not([open])');return !closed||!!closed.querySelector(':scope > summary')?.contains(n);};
+      const rect=n=>{const r=n?.getBoundingClientRect();return r?{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom}:null;};
+      const font=n=>{if(!n)return null;const c=getComputedStyle(n);return {size:parseFloat(c.fontSize),weight:c.fontWeight,family:c.fontFamily.split(',')[0].replaceAll('"',''),color:c.color};};
+      const roles={back,heading,month:form,identity:row?.querySelector('h2,h3'),metrics,consequence,details};
+      const readingOrder=Object.entries(roles).filter(([,n])=>n).sort((a,b)=>a[1].compareDocumentPosition(b[1])&Node.DOCUMENT_POSITION_FOLLOWING?-1:1).map(([role])=>role);
+      const critical=[...root.querySelectorAll('h1,h2,h3,p,dt,dd,label,button,summary')].filter(visible);
+      const clipped=critical.filter(n=>{const c=getComputedStyle(n);return (c.overflow==='hidden'||c.overflowY==='hidden'||c.maxHeight!=='none')&&n.scrollHeight>n.clientHeight+1;}).map(n=>n.textContent);
+      return {readingOrder,root:rect(root),metrics:rect(metrics),monthBottomOffset:input&&submit?rect(input).bottom-rect(submit).bottom:null,monthFlow:input&&submit&&rect(submit).x>=rect(input).right-2?'row':'column',
+        metricRoles:[...metrics?.querySelectorAll(':scope > div > dt')??[]].map(n=>/Регистрации/.test(n.textContent)?'registrations':/Пользовались/.test(n.textContent)?'active':/Плат/.test(n.textContent)?'payers':/Выручка/.test(n.textContent)?'revenue':n.textContent),
+        metricColumns:metrics?getComputedStyle(metrics).gridTemplateColumns.split(' ').length:0,
+        metricSurface:metrics?(()=>{const c=getComputedStyle(metrics.firstElementChild);return {border:c.borderTopWidth,radius:c.borderTopLeftRadius,background:c.backgroundColor};})():null,
+        rowCount:root.querySelectorAll(reference?':scope > section.section':'.owner-report > article').length,
+        assignment:root.querySelectorAll('#blogger-email,#owner-search,#owner-assign,.assignment-form,.assignment-list').length,
+        detailsClosed:!!details&&!details.open,detailBodyVisible:visible(details?.querySelector('p,section')),backVisible:visible(back),warningVisible:visible(consequence),
+        warningOutsideDisclosure:!!consequence&&!consequence.closest('details'),warningText:consequence?.textContent??'',
+        monthVisible:visible(input)&&visible(submit),clipped,overflow:document.documentElement.scrollWidth>innerWidth+1,
+        boxes:Object.fromEntries(Object.entries(roles).map(([role,n])=>[role,rect(n)])),
+        fonts:{heading:font(heading),identity:font(roles.identity),monthLabel:font(form?.querySelector('label')),metricLabel:font(metrics?.querySelector('dt')),metricValue:font(metrics?.querySelector('dd')),summary:font(details?.querySelector('summary')),back:font(back)},
+        tokens:Object.fromEntries(['--workspace-accent','--workspace-paper','--workspace-ink','--workspace-muted','--workspace-line'].map(k=>[k,getComputedStyle(root).getPropertyValue(k).trim()]))};
+    };
+    const reference=await page.context().newPage();let expected;
+    try {
+      await reference.setViewportSize({width,height:1000});await reference.setContent(html);
+      await reference.locator('#demo-role').selectOption('owner');
+      await reference.locator('#demo-screen').selectOption('owners');
+      await reference.locator('#demo-theme').selectOption(theme);await reference.locator('#demo-layout').selectOption(layout);
+      await reference.getByRole('button',{name:'Отчёт за месяц →',exact:true}).click();
+      expected=await reference.evaluate(measure,true);
+      assert.equal(expected.rowCount,1,'approved nonempty owner row');assert.equal(expected.detailsClosed,true,'approved details initially closed');
+      assert.deepEqual(expected.metricRoles,['registrations','active','payers','revenue'],'approved primary metric roles');
+      await reference.screenshot({path:`${stem}-approved.png`,fullPage:true,caret:'initial'});
+    } finally {await reference.close();}
+    await page.evaluate(()=>window.scrollTo(0,0));
+    const actual=await page.evaluate(measure,false),violations=[];
+    const check=(ok,message)=>{if(!ok)violations.push(message);};
+    check(actual.assignment===0,'assignment DOM absent');check(actual.rowCount>0,'nonempty blogger row');
+    check(JSON.stringify(actual.readingOrder)===JSON.stringify(expected.readingOrder),'approved report reading order');
+    check(JSON.stringify(actual.metricRoles)===JSON.stringify(expected.metricRoles),'four primary metrics in approved order');
+    check(actual.metricColumns===expected.metricColumns,'approved primary metric columns');
+    check(JSON.stringify(actual.metricSurface)===JSON.stringify(expected.metricSurface),'approved primary metric surface');
+    check(actual.monthFlow===expected.monthFlow,'approved month control composition');
+    if(expected.monthFlow==='row')check(Math.abs(actual.monthBottomOffset-expected.monthBottomOffset)<=2,'approved month control baseline alignment');
+    check(Math.abs(actual.root.width-expected.root.width)<=2,'approved report width');
+    check(Math.abs(actual.metrics.width-expected.metrics.width)<=2,'approved metric width');
+    check(actual.detailsClosed&&!actual.detailBodyVisible,'details closed with hidden secondary body');
+    check(actual.backVisible&&actual.monthVisible,'back and month controls visible');
+    check(actual.warningVisible&&actual.warningOutsideDisclosure,'critical consequence visible outside details');
+    check(/не задолженность|не является задолженностью/.test(actual.warningText)&&/автоматическ/.test(actual.warningText),'existing financial consequence retained');
+    check(!actual.overflow&&actual.clipped.length===0,'report reflow and critical text not clipped');
+    check(JSON.stringify(actual.tokens)===JSON.stringify(expected.tokens),'approved report palette tokens');
+    for(const role of Object.keys(expected.fonts)){
+      const a=actual.fonts[role],e=expected.fonts[role];
+      check(a&&e&&Math.abs(a.size-e.size)<=.1&&a.family===e.family&&a.color===e.color&&a.weight===e.weight,`approved ${role} font role`);
+    }
+    await page.screenshot({path:`${stem}-actual.png`,fullPage:true,caret:'initial'});
+    await writeFile(`${stem}-comparison.json`,JSON.stringify({scene,state,width,theme,layout,expected,actual,violations},null,2),{mode:0o600});
+    assert.deepEqual(violations,[],`approved owner report comparison: ${violations.join('; ')}`);
+    return;
+  }
+  const primaryMetrics=node=>node?[...node.children].map(cell=>{
+    const surface=getComputedStyle(cell),dt=getComputedStyle(cell.querySelector('dt')),dd=getComputedStyle(cell.querySelector('dd'));
+    return {border:surface.borderTopWidth,radius:surface.borderTopLeftRadius,background:surface.backgroundColor,padding:surface.padding,marginBottom:surface.marginBottom,label:{size:dt.fontSize,weight:dt.fontWeight,color:dt.color},value:{size:dd.fontSize,weight:dd.fontWeight,color:dd.color}};
+  }):null;
+  const engine=page.context().browser()?.browserType().name()??'unknown';
+  if(scene==='stats')artifactDir+=`/${engine}`;
+  const key = JSON.stringify([engine,scene,width,theme,layout,state]);
   let approved = approvedMeasurements.get(key);
   if (!approved) {
     const reference = await page.context().newPage();
@@ -178,6 +258,7 @@ export async function assertApprovedScene(page, { scene, width, theme, layout, s
           shell:box('.shell').width, card:scene==='stats'?box('.referral').width:scene==='account'?box('.account-grid > section').width:box('.fake-player').width,
           columns:scene==='stats'||scene==='account'?getComputedStyle(document.querySelector(scene==='stats'?'.stats':'.account-grid')).gridTemplateColumns.split(' ').length:null };
       },scene);
+      if(scene==='stats'){approved.metrics=await reference.locator('.stats').evaluate(primaryMetrics);const {mkdir}=await import('node:fs/promises');await mkdir(artifactDir,{recursive:true,mode:0o700});await reference.screenshot({path:`${artifactDir}/${scene}-${state}-${theme}-${layout}-${width}-approved.png`,fullPage:true,caret:'initial'});}
       approvedMeasurements.set(key,approved);
     } finally { await reference.close(); }
   }
@@ -194,13 +275,15 @@ export async function assertApprovedScene(page, { scene, width, theme, layout, s
       personal:visible(personal), columns:document.querySelector(scene==='account'?'.account-grid':'.partner-counters')?getComputedStyle(document.querySelector(scene==='account'?'.account-grid':'.partner-counters')).gridTemplateColumns.split(' ').length:null,
       overflow:document.documentElement.scrollWidth>innerWidth+1 };
   },scene);
+  const metrics=page.locator('.partner-statistics > .partner-counters');
+  if(scene==='stats')actual.metrics=await metrics.count()?await metrics.evaluate(primaryMetrics):null;
   const {mkdir}=await import('node:fs/promises');await mkdir(artifactDir,{recursive:true,mode:0o700});
   await page.screenshot({path:`${artifactDir}/${scene}-${state}-${theme}-${layout}-${width}.png`,fullPage:true});
   assert.equal(actual.accent,approved.accent,'approved green accent');
   assert.ok(Math.abs(actual.shell-approved.shell)<=2,'approved shell geometry');
   assert.ok(Math.abs(actual.card-approved.card)<=2,`approved ${scene} card geometry: ${actual.card}/${approved.card}`);
   assert.equal(actual.overflow,false,'horizontal overflow');assert.equal(actual.clipped,false,'critical text clipping');
-  if(scene==='stats'){assert.equal(actual.personal,true,'standalone personal card');if(state==='normal'||state==='link-blocked')assert.equal(actual.columns,approved.columns,'stats columns');else assert.equal(actual.columns,null,'no invented counters before successful read');}
+  if(scene==='stats'){const {writeFile}=await import('node:fs/promises');await writeFile(`${artifactDir}/${scene}-${state}-${theme}-${layout}-${width}-comparison.json`,JSON.stringify({scene,state,width,theme,layout,expected:approved,actual},null,2),{mode:0o600});assert.deepEqual(actual.metrics,(state==='normal'||state==='link-blocked')?approved.metrics:null,'approved stats primary metric surface/font roles');assert.equal(actual.personal,true,'standalone personal card');if(state==='normal'||state==='link-blocked')assert.equal(actual.columns,approved.columns,'stats columns');else assert.equal(actual.columns,null,'no invented counters before successful read');}
   else if(scene==='account')assert.equal(actual.columns,approved.columns,'account columns');
   else {assert.ok(actual.count>0);assert.equal(actual.allClips,true,'all roster entries including fourth remain visible');}
 }

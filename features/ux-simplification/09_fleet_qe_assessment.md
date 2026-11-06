@@ -27,3 +27,12 @@ NOT ESTABLISHED до всех четырёх отчётов. Опубликов�
 - integration: terminal exit 0; модель gpt-6-astra xhigh, сессия `01a1ae2b-e611-7752-a7af-ca8889bfb31c`. SHA отчёта `dd1bc033dd5363b05ad0a8aa696bdc5b7e6fc4595b7f9ba12acc7a96e4c280a3`. READY_FOR_SOURCE_PUBLICATION в области этой роли; это не общий допуск.
 
 Regression пока выполняется. Отчёты и полные evidence закрыто сохранены; tokens/cost не известны. Обнаруженный пробел исправляется в уже допущенных UX/helper targets без изменения требований, макета, API или БД. Проспективное уточнение плана и настоящие gates выполняются до тестовых изменений; здесь их прохождение ещё не заявляется. После исправления необходима собственная перепроверка originating traceability reviewer и актуальная привязка остальных ролей.
+
+
+## Четыре роли завершены; исправление существующей приёмки
+
+Regression: terminal exit0, READY_FOR_SOURCE_PUBLICATION в области роли; новых blocking regressions0, SHA отчёта `ed7b6cc83def04711ec1840f57f3e1895d187692a5c624c51d7523a6eea71455`. Общий verdict первого флота — **NEEDS_REMEDIATION**, один T9-TRACE-01; три READY не отменяют отсутствующую обязательную проверку.
+
+После чтения точного finding установлено: сравнение owner report уже требуется FR-7/AM-8/TASK-6; необходимые UX/helper paths уже WRITE. Поэтому новый функциональный scope, TASK-14, изменение canonical06 и новый макет не вводятся. Неприменённый частный черновик расширения сохранён только как история рассуждения. Существующий exact plan `9ff050…` и его настоящий checkpoint действуют. Перед исправлением повторены relevant recall, K2 PASS/exit0 (0 failures/warnings/skips), target admission/exit0 и complete literal coder context `bc59dec884569156dd646a2d010d46b1af7f050201e468487ef945bebbd61f14`;62520 символов переданы тому же автору gpt-6.1-sol high. Пока разрешён только ремонт существующих UX/helper проверок, не application/CSS/API/DB.
+
+Все прежние07/08/09 сохранены в `history/fleet-r1/manifest.json`. Тест прежнего helper дал meaningful RED: owner-report ошибочно попадал в ветку result. Это подтверждает отсутствие нужного oracle, не дефект приложения. GREEN и собственная focused verification после исправления ещё выполняются. Step8 R2 сохраняется как реальная история; финальный gate после изменённых test bytes требует новой настоящей привязки, прежний closed не переносится автоматически.

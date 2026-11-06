@@ -1,58 +1,44 @@
 {
-  "kind": "Author actual execution; NOT native author/reviewer receipt",
-  "at": "2026-11-05T23:44:47.293199+00:00",
+  "kind": "Author real source/tests evidence; NOT native QE/Step9/reviewer receipt",
   "status": "CODE_READY_FOR_REVIEW",
-  "finalBuildId": "wDQ3dyU30GkdLVZffQCHK",
-  "sourceHashesMatchFinalBuild": true,
-  "codeReviewInputs": 39,
-  "readonlyUnchangedCount": 14,
-  "conditions": [
+  "at": "2026-11-06T01:10:26.616946+00:00",
+  "requestedAuthor": "gpt-6.1-sol high, continuing own author conversation, no subagents/new session",
+  "condition": "existing FR7/AM8/TASK4/TASK6; owner report drift + directly reproduced stats primary surface drift",
+  "buildId": "3BcaqHtdrkW2fAp0Y8tMU",
+  "app153HashesMatch": true,
+  "unrelatedAppUnchangedCount": 151,
+  "nativeMeasurementInputs": 39,
+  "readonly14BaselineMatch": true,
+  "actualTotalChangedWriteTargetsVsOriginalBase": 24,
+  "currentDelta": [
     {
-      "id": "UXQE-P1-FOCUS",
-      "task": "TASK-10",
-      "assertions": "qe_r1_guest_focus_initial_before_fill / reopen_before_fill",
-      "authorStatus": "RED_TO_GREEN",
-      "independentStatus": "PENDING_ORIGINATING_RECHECK"
+      "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+      "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
+      "beforeSHA256": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33"
     },
     {
-      "id": "QA-ARCH-01",
-      "task": "TASK-10",
-      "assertions": "Same initial/reopen before-fill; poll no focus steal",
-      "authorStatus": "RED_TO_GREEN",
-      "independentStatus": "PENDING_ORIGINATING_RECHECK"
+      "path": "apps/web/src/app/globals.css",
+      "sha256": "0c455006502817f37e19371e047717efe7f7e7b1237f4c665882caf30b080df5",
+      "beforeSHA256": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9"
     },
     {
-      "id": "UXQE-P2-CTA-FEEDBACK",
-      "task": "TASK-11",
-      "assertions": "qe_r1_cta_feedback details/close/share/select x failure/success; exactly one request and same input",
-      "authorStatus": "RED_TO_GREEN",
-      "independentStatus": "PENDING_ORIGINATING_RECHECK"
+      "path": "tests/browser/ux-simplification.test.ts",
+      "sha256": "5d787d03d7de502580bde10f7a87623706e9d6c0b7f7b8447420fcde135e8c30",
+      "beforeSHA256": "1cd3bb3a94acb2219dc662388560ec87197f5da7d59aede6bdbfa3726a2fe4d5"
     },
     {
-      "id": "QA-ARCH-02",
-      "task": "TASK-11",
-      "assertions": "Same CTA feedback cases; direct CTA39 compatibility and Progress29",
-      "authorStatus": "RED_TO_GREEN",
-      "independentStatus": "PENDING_ORIGINATING_RECHECK"
-    },
-    {
-      "id": "QE-SEC-001",
-      "task": "TASK-12",
-      "assertions": "qe_r1_native_account_scope_statistics_late_A / summary / ordinary; real B RSC and actual lateA HTTP200",
-      "authorStatus": "RED_TO_GREEN",
-      "independentStatus": "PENDING_ORIGINATING_RECHECK"
-    },
-    {
-      "id": "QE-SEC-002",
-      "task": "TASK-13",
-      "assertions": "qe_r1_native_account_deletion_consent_resets_without_delete; B email/unchecked/disabled/oldSignOut disconnected; zero DELETE",
-      "authorStatus": "RED_TO_GREEN",
-      "independentStatus": "PENDING_ORIGINATING_RECHECK"
+      "path": "scripts/workspace-presentation-local.mjs",
+      "sha256": "f1f4bb46e42ec6a1d415278ddabb34ea1d44eb21c62848f30f32f4e327491840",
+      "beforeSHA256": "0c75ea8ff062f5b05e971d00d82bbe55f003c0cf51cd30ec7c9cd100051ae5b0"
     }
+  ],
+  "unchangedAllowedPaths": [
+    "scripts/check-workspace-presentation.test.mjs",
+    "tests/browser/blogger-cabinet.test.ts"
   ],
   "commands": [
     {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232101Z-f90b3473",
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T004443Z-d7363ba8",
       "exitCode": 1,
       "command": [
         "npx",
@@ -62,18 +48,18 @@
         "vitest.browser.config.ts",
         "tests/browser/ux-simplification.test.ts",
         "-t",
-        "qe_r1"
+        "stats_personal_card_exact_scene"
       ],
-      "wrapperLog": "/tmp/ux-qer1-red.log",
-      "scope": "Original app: focus/CTA meaningful20 RED; native setup fixture failure not security RED",
-      "observedSummary": [
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/stats-red.private.log",
+      "scope": "Direct actual stats primary surface/font RED before app changes",
+      "summary": [
         "Test Files  1 failed (1)",
-        "Tests  20 failed | 53 skipped (73)",
-        "Duration  36.80s (transform 461ms, setup 0ms, collect 1.30s, tests 35.18s, environment 0ms, prepare 88ms)"
+        "Tests  2 failed | 75 skipped (77)",
+        "Duration  4.02s (transform 457ms, setup 0ms, collect 1.23s, tests 2.51s, environment 0ms, prepare 78ms)"
       ]
     },
     {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232218Z-06148b87",
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T004548Z-fa8484f8",
       "exitCode": 1,
       "command": [
         "npx",
@@ -83,18 +69,18 @@
         "vitest.browser.config.ts",
         "tests/browser/ux-simplification.test.ts",
         "-t",
-        "qe_r1_native"
+        "owner_report_approved|approved owner report shows|owner report matches|owner report oracle rejects|stats_personal_card_exact_scene|stats loading error"
       ],
-      "wrapperLog": "/tmp/ux-qer1-native-red.log",
-      "scope": "Original app: native4 meaningful RED; actual B server data, stale A DOM/consent",
-      "observedSummary": [
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/focused.private.log",
+      "scope": "Historical10PASS/2WebKit font serialization FAIL; shared engine cache corrected, no tolerance change",
+      "summary": [
         "Test Files  1 failed (1)",
-        "Tests  4 failed | 69 skipped (73)",
-        "Duration  37.68s (transform 404ms, setup 0ms, collect 1.14s, tests 36.24s, environment 0ms, prepare 72ms)"
+        "Tests  2 failed | 10 passed | 65 skipped (77)",
+        "Duration  52.96s (transform 431ms, setup 0ms, collect 1.24s, tests 51.44s, environment 0ms, prepare 72ms)"
       ]
     },
     {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232415Z-32188a81",
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T004720Z-9ec09053",
       "exitCode": 0,
       "command": [
         "npx",
@@ -104,18 +90,79 @@
         "vitest.browser.config.ts",
         "tests/browser/ux-simplification.test.ts",
         "-t",
-        "qe_r1_guest|qe_r1_cta"
+        "owner_report_approved|approved owner report shows|owner report matches|owner report oracle rejects|stats_personal_card_exact_scene|stats loading error"
       ],
-      "wrapperLog": "/tmp/ux-qer1-component-green.log",
-      "scope": "Focused focus/CTA20 PASS; remaining selectors intentionally not selected",
-      "observedSummary": [
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/focused-final.private.log",
+      "scope": "12PASS before alignment refinement",
+      "summary": [
         "Test Files  1 passed (1)",
-        "Tests  20 passed | 53 skipped (73)",
-        "Duration  51.99s (transform 468ms, setup 0ms, collect 1.24s, tests 50.45s, environment 0ms, prepare 82ms)"
+        "Tests  12 passed | 65 skipped (77)",
+        "Duration  83.94s (transform 484ms, setup 0ms, collect 1.29s, tests 82.36s, environment 0ms, prepare 74ms)"
       ]
     },
     {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T233916Z-de2854ca",
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T005120Z-cd9e1555",
+      "exitCode": 0,
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/ux-simplification.test.ts"
+      ],
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/full-ux.private.log",
+      "scope": "Historical PTeab build77PASS before stricter month/identity probe",
+      "summary": [
+        "Test Files  1 passed (1)",
+        "Tests  77 passed (77)",
+        "Duration  367.03s (transform 466ms, setup 0ms, collect 1.31s, tests 365.42s, environment 0ms, prepare 80ms)"
+      ]
+    },
+    {
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T005752Z-5c150070",
+      "exitCode": 1,
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/ux-simplification.test.ts",
+        "-t",
+        "owner report matches approved"
+      ],
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/alignment-red.private.log",
+      "scope": "Meaningful owner control baseline/identity/monthLabel RED",
+      "summary": [
+        "Test Files  1 failed (1)",
+        "Tests  2 failed | 75 skipped (77)",
+        "Duration  16.18s (transform 446ms, setup 0ms, collect 1.21s, tests 14.66s, environment 0ms, prepare 80ms)"
+      ]
+    },
+    {
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T005907Z-b23aef75",
+      "exitCode": 1,
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/ux-simplification.test.ts",
+        "-t",
+        "owner_report_approved|approved owner report shows|owner report matches|owner report oracle rejects|stats_personal_card_exact_scene|stats loading error"
+      ],
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/focused-alignment-green.private.log",
+      "scope": "Historical8PASS/4FAIL; old input :not specificity retained16px bottommargin",
+      "summary": [
+        "Test Files  1 failed (1)",
+        "Tests  4 failed | 8 passed | 65 skipped (77)",
+        "Duration  77.22s (transform 509ms, setup 0ms, collect 1.35s, tests 75.57s, environment 0ms, prepare 76ms)"
+      ]
+    },
+    {
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T010040Z-ff91203f",
       "exitCode": 0,
       "command": [
         "npx",
@@ -125,77 +172,54 @@
         "vitest.browser.config.ts",
         "tests/browser/ux-simplification.test.ts",
         "-t",
-        "qe_r1_native"
+        "owner report matches|owner report oracle rejects"
       ],
-      "wrapperLog": "/tmp/ux-qer1-native-green2.log",
-      "scope": "Native4 PASS; both engines inside each case; actual delayed A200 delivered",
-      "observedSummary": [
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/alignment-final-green.private.log",
+      "scope": "Final owner4PASS,16normal states and6semantic faults",
+      "summary": [
         "Test Files  1 passed (1)",
-        "Tests  4 passed | 69 skipped (73)",
-        "Duration  14.44s (transform 477ms, setup 0ms, collect 1.28s, tests 12.86s, environment 0ms, prepare 75ms)"
+        "Tests  4 passed | 73 skipped (77)",
+        "Duration  26.96s (transform 452ms, setup 0ms, collect 1.22s, tests 25.42s, environment 0ms, prepare 84ms)"
       ]
     },
     {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T233648Z-d0e58661",
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T010129Z-0842a063",
+      "exitCode": 0,
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.browser.config.ts",
+        "tests/browser/blogger-cabinet.test.ts"
+      ],
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/owner8-final.private.log",
+      "scope": "Final owner real HTTP/PG8PASS; source harness unchanged",
+      "summary": [
+        "Test Files  1 passed (1)",
+        "Tests  8 passed (8)",
+        "Duration  25.17s (transform 463ms, setup 0ms, collect 1.49s, tests 23.34s, environment 0ms, prepare 89ms)"
+      ]
+    },
+    {
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T010131Z-f1c3eb69",
       "exitCode": 0,
       "command": [
         "npm",
         "test",
         "--",
-        "tests/clip-cta.test.ts",
-        "tests/clip-card.test.ts",
-        "tests/clip-music-choice.test.ts",
-        "tests/progress-screen.test.ts",
         "tests/workspace-presentation.test.ts"
       ],
-      "wrapperLog": "/tmp/ux-qer1-unit-progress-green.log",
-      "scope": "111 PASS: CTA39/Card17/Music14/Progress29/Workspace12",
-      "observedSummary": [
-        "Test Files  5 passed (5)",
-        "Tests  111 passed (111)",
-        "Duration  74.92s (transform 1.31s, setup 0ms, collect 3.78s, tests 69.77s, environment 1ms, prepare 405ms)"
-      ]
-    },
-    {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232818Z-a4369a7a",
-      "exitCode": 0,
-      "command": [
-        "npx",
-        "vitest",
-        "run",
-        "--config",
-        "vitest.browser.config.ts",
-        "tests/browser/per-account-test-checkout-next.test.ts"
-      ],
-      "wrapperLog": "/tmp/ux-qer1-checkout.log",
-      "scope": "Native checkout2 PASS with existing fake TEST provider, not live CJM",
-      "observedSummary": [
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/workspace-final.private.log",
+      "scope": "Final workspace12PASS; not whole111 rerun",
+      "summary": [
         "Test Files  1 passed (1)",
-        "Tests  2 passed (2)",
-        "Duration  10.40s (transform 356ms, setup 0ms, collect 1.09s, tests 9.02s, environment 0ms, prepare 88ms)"
+        "Tests  12 passed (12)",
+        "Duration  12.25s (transform 367ms, setup 0ms, collect 935ms, tests 10.98s, environment 0ms, prepare 83ms)"
       ]
     },
     {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232923Z-a0d50715",
-      "exitCode": 0,
-      "command": [
-        "npx",
-        "vitest",
-        "run",
-        "--config",
-        "vitest.browser.config.ts",
-        "tests/browser/blogger-auto-link.test.ts"
-      ],
-      "wrapperLog": "/tmp/ux-qer1-auto-link.log",
-      "scope": "Plain auto-link20 PASS real HTTP/PG, no observer",
-      "observedSummary": [
-        "Test Files  1 passed (1)",
-        "Tests  20 passed (20)",
-        "Duration  72.17s (transform 697ms, setup 0ms, collect 1.83s, tests 70.03s, environment 0ms, prepare 75ms)"
-      ]
-    },
-    {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T233943Z-2e497c33",
+      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261106T010340Z-bb62d91f",
       "exitCode": 0,
       "command": [
         "npx",
@@ -205,77 +229,48 @@
         "vitest.browser.config.ts",
         "tests/browser/ux-simplification.test.ts"
       ],
-      "wrapperLog": "/tmp/ux-qer1-full-final.log",
-      "scope": "Final full73 PASS; all AM1..10 + current repair regressions; native production build backed",
-      "observedSummary": [
+      "wrapperLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/full-final.private.log",
+      "scope": "Final complete77PASS, no filtered skip/observer, native new production build",
+      "summary": [
         "Test Files  1 passed (1)",
-        "Tests  73 passed (73)",
-        "Duration  297.53s (transform 486ms, setup 0ms, collect 1.29s, tests 295.93s, environment 0ms, prepare 77ms)"
-      ]
-    },
-    {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232621Z-f2ca78c1",
-      "exitCode": 1,
-      "command": [
-        "npm",
-        "test",
-        "--",
-        "tests/clip-cta.test.ts",
-        "tests/clip-card.test.ts",
-        "tests/clip-music-choice.test.ts",
-        "tests/progress-screen.test.ts",
-        "tests/workspace-presentation.test.ts",
-        "tests/account-erasure.test.ts"
-      ],
-      "wrapperLog": "/tmp/ux-qer1-unit-progress.log",
-      "scope": "Historical109PASS/2FAIL: obsolete hidden status locator",
-      "observedSummary": [
-        "Test Files  1 failed | 4 passed (5)",
-        "Tests  2 failed | 109 passed (111)",
-        "Duration  103.22s (transform 1.24s, setup 0ms, collect 3.75s, tests 97.07s, environment 2ms, prepare 414ms)"
-      ]
-    },
-    {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T232817Z-950dfad6",
-      "exitCode": 1,
-      "command": [
-        "npx",
-        "vitest",
-        "run",
-        "--config",
-        "vitest.browser.config.ts",
-        "tests/browser/ux-simplification.test.ts"
-      ],
-      "wrapperLog": "/tmp/ux-qer1-full.log",
-      "scope": "Historical72PASS/1FAIL: native deletion harness timeout",
-      "observedSummary": [
-        "Test Files  1 failed (1)",
-        "Tests  1 failed | 72 passed (73)",
-        "Duration  361.50s (transform 473ms, setup 0ms, collect 1.29s, tests 358.92s, environment 0ms, prepare 82ms)"
-      ]
-    },
-    {
-      "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/qe-20261105T233647Z-6a25fba0",
-      "exitCode": 1,
-      "command": [
-        "npx",
-        "vitest",
-        "run",
-        "--config",
-        "vitest.browser.config.ts",
-        "tests/browser/ux-simplification.test.ts",
-        "-t",
-        "qe_r1_native"
-      ],
-      "wrapperLog": "/tmp/ux-qer1-native-green.log",
-      "scope": "Historical2PASS/2FAIL: failed textual harness edit void.text and held Request identity wait",
-      "observedSummary": [
-        "Test Files  1 failed (1)",
-        "Tests  2 failed | 2 passed | 69 skipped (73)",
-        "Duration  71.73s (transform 469ms, setup 0ms, collect 1.34s, tests 69.10s, environment 0ms, prepare 77ms)"
+        "Tests  77 passed (77)",
+        "Duration  362.52s (transform 514ms, setup 0ms, collect 1.36s, tests 360.86s, environment 0ms, prepare 86ms)"
       ]
     }
   ],
+  "localHelper": {
+    "argv": [
+      "node",
+      "scripts/check-workspace-presentation.test.mjs",
+      "--local-handlers",
+      "--out",
+      "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/local-handlers-final"
+    ],
+    "exitCode": 0,
+    "results": [
+      {
+        "engine": "chromium",
+        "denied": "throw",
+        "outcome": "passed"
+      },
+      {
+        "engine": "chromium",
+        "denied": "silent",
+        "outcome": "passed"
+      },
+      {
+        "engine": "webkit",
+        "denied": "throw",
+        "outcome": "passed"
+      },
+      {
+        "engine": "webkit",
+        "denied": "silent",
+        "outcome": "passed"
+      }
+    ],
+    "log": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/helper-local-final.private.log"
+  },
   "static": [
     {
       "argv": [
@@ -284,7 +279,7 @@
         "typecheck"
       ],
       "exitCode": 0,
-      "log": "/tmp/ux-qer1-final-typecheck2.log"
+      "log": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/typecheck-terminal.private.log"
     },
     {
       "argv": [
@@ -293,16 +288,15 @@
         "lint"
       ],
       "exitCode": 0,
-      "log": "/tmp/ux-qer1-final-lint2.log"
+      "log": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/lint-terminal.private.log"
     },
     {
       "argv": [
-        "npm",
-        "run",
-        "build"
+        "node",
+        "--check",
+        "scripts/workspace-presentation-local.mjs"
       ],
-      "exitCode": 0,
-      "finishedAt": "2026-11-05T23:28:17.452294+00:00"
+      "exitCode": 0
     },
     {
       "argv": [
@@ -313,22 +307,64 @@
       "exitCode": 0
     }
   ],
-  "historicalEvidence": "history/qe-r1/07/author-test-results.json: previous49 and other preserve suites; not current repair PASS",
-  "impactReuse": {
-    "billing48": "Not rerun in QE-R1; ClipCard/Upgrade/prices/checkout/backend unchanged from old measured host. Native checkout2 and direct CTA39 rerun. Prior48 raw pointer preserved in archive.",
-    "otherBackendProvider": "No new provider jobs; unchanged backend/auth/config/schema owners compared to original base and all62 prior host inputs."
+  "buildCommand": {
+    "argv": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exitCode": 0,
+    "exitObservedAt": "2026-11-06T01:03:40.032404+00:00",
+    "finishedAt": "2026-11-06T01:02:19.620154+00:00"
   },
-  "artifacts": "/tmp/clipmkr-qer1-auto-link-artifacts/{restoration,top-level-restoration}.json",
+  "buildLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/build-final.private.log",
+  "matrix": {
+    "ownerRows": 16,
+    "statsNormalRows": 24,
+    "statsAllMeasuredRows": 72,
+    "negativeFaults": 6,
+    "evidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-matrix-summary.private.json",
+    "pictures": [
+      "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-owner-scenes",
+      "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-scenes"
+    ]
+  },
+  "reuse": {
+    "111": "Not rerun. Actual repeat only workspace12; CTA/Card/music/progress source owners unchanged, new CSS selectors exclude these surfaces; current fullUX covers lifecycle again.",
+    "autoLink20": "Not rerun. PartnerPanel/summary/legacy protocol unchanged; new CSS matches standalone .partner-statistics direct primary dl only; full current normal/error/blocked/base barrier/native A/B tests rerun.",
+    "checkout2": "Not rerun. Upgrade/checkout/capability/auth sources and pricing contracts unchanged; new scoped owner/statistics rules cannot match package/card/checkout surfaces; fullUX checkout visibility and native route guards rerun.",
+    "billing48": "Historical impact-qualified reuse, no new provider/payment jobs."
+  },
+  "preserve": {
+    "CSSFirst272Exact": true,
+    "publicEntryCSSExact": true,
+    "legacyNestedCounters": "Actual browser assertion retains rounded12px/bold700 nested counters; new primary direct-child selectors exclude legacy/account detail counters",
+    "stateHandlersBusiness": "Existing BloggerAdmin state/refs/request/load/save/authorization semantics retained; same controls, no harness copy migration",
+    "money": "Actual report.month/server data/minor amounts and visible existing financial/no-payout definitions preserved; no historical partials claim copied"
+  },
+  "patch": {
+    "path": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/current-code-delta.patch",
+    "sha256": "fc1cbe14cacac0c42fcf7f3c43cd2c7de3d13f8f0a4980257e30611918713f81",
+    "bytes": 29716,
+    "againstHEAD": "aeb103500baf4c97476fd3b7e2e346905818e872",
+    "scope": "current four source/test/helper paths; includes prior owner proof oracle delta in same paths"
+  },
+  "protectedHashEvidence": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/final-protected-check.private.json",
+  "QAImages": "Two owner8 runs private before/after archives; each12own newly generated PNG removed after archival; no tracked assets restoration/Git mutation",
+  "limits": [
+    "Independent originating reviewer/native cycle3/Step9 closure is root-owned and pending on new source bindings.",
+    "Local same-state DOM/computed styles/geometry/order matrix is not full pixel-perfect/WCAG certification.",
+    "Published clipmkr.ru E2E/owner manual/live S3/provider/real TEST checkout not executed by author.",
+    "Backend partial recovery/no-double-charge/STT contract separate OPEN; no backend change here.",
+    "Original list-pagination runtime matrix gap remains explicit.",
+    "Superseded wDQ/PTeab build outputs and failed/partial runs are historical, not final source PASS."
+  ],
   "learning": {
-    "teachId": "teach:69ae5755beeb49c1",
-    "teachLog": "/tmp/ux-qer1-teach.log",
-    "recallLog": "/tmp/ux-qer1-recall-after.log"
-  },
-  "gaps": [
-    "Independent originating reviewer closure pending; author does not write native receipts/08.",
-    "Published clipmkr.ru E2E, owner manual and live S3/provider/payment CJM not established by these fixtures.",
-    "Integrated partial retry contract separately BLOCKED.",
-    "Full local list-pagination matrix not executed; visual checks bounded geometry/palette/order/disclosure, not full pixel equality/WCAG compliance.",
-    "CI complete repository/backend-provider job matrix not rerun; focused relevant current-source commands above, unchanged contracts impact reused."
-  ]
+    "teachId": "teach:fff0bf8c1839c8cc",
+    "canonicalStore": "/home/clipmkr/.dz",
+    "teachLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/teach.private.log",
+    "recallLog": "/root/.config/clipmkr/ui-recovery-cloud-20261105/ui-author/owner-report-app-fix/recall-after.private.log",
+    "storedLiteralVerifiedExact": true,
+    "warning": "CLI empty-substitution-hole heuristic flagged literal .partner-statistics; --from-file literal compared exactly with actual recall, no shell substitution occurred"
+  }
 }
