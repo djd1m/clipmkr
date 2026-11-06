@@ -1,3 +1,49 @@
+# Originating focused verification — phase-aware caller-held seam
+
+**Собственный вердикт: clean для QT-01–QT-06 на текущем design snapshot.** QT-06 исправлен в фазовом дизайне и плане проверок; QT-01–QT-05 сохранены. Это продолжение той же сессии `qcsd-testability`, не новая независимость против себя, не verdict других ролей и не closure общего gate. Requested `gpt-6.1-terra xhigh`; serving identity/effort **NOT_ATTESTED**.
+
+Host revision `93f6d757b7a6158e7cfc727010ec13f4f79b6ac8c75ec77296788c7a2fb50567`, nonce `24a6f6b8-379b-4c8c-9ebd-72ec1c96a29c`: независимо пересчитан digest manifest, сверены все измеряемые bytes и 12 исторических conditions. Прочитанный actual author handoff совпадает с author receipt; его SHA-256 `052a5cd8820adcda787cb952667c9d601f957af5ab5c8b03b586308bfbc648f3`. Соседний source-hashes manifest прочитан и его after hashes для четырёх документов и unchanged 01/OpenSpec сверены с текущими файлами. Текущие 02 `bcb327ea166e6ef4f6be3e16c15b376c57368ebd4d7d553d646bf7fe0e2e9ceb`, ADR `369896ecf8b1fc952a19cdff4331345927d84c617a6358112e69cf1b3e696321`, 05 `0b75467880812060293c6a7e2b78b971037f73585fde5d97daa29068c6b1856d`, 06 `5024478dfbc4ca1755f84e9ae7565c80c2f5866be48486aeeec464fb643b1847`; 02/06 и OpenSpec проверены отдельно, host напрямую их не измеряет. 02 совпадает с reuse binding в 05. Candidate code и immutable-source freeze этой pass не измерялись.
+
+**QT-06.** 05:132,167 и 183 теперь задают один controller→route acquisition, передачу exact held route FD через adapter/revalidation/derived boundary и непрерывное владение до callback/reply/positive cleanup; recursive open/flock, handoff и relocking callback writer запрещены. Если actual callback требует такой writer, предусмотрен STOP/NOT ESTABLISHED. 06 AM-13:148 задаёт отдельный actual captured recovered-follow-up positive с revalidate, durable consume и одним разрешённым SIMULATED callback без нового checkout, внешний observer FD/dev/inode/ownership и contention второго процесса, а также wrong-FD/replay/expiry и reacquire/handoff mutations. Тем самым снято прежнее противоречие в документах; поведение кода и существующего callback остаётся непроверенным.
+
+**QT-01.** 05D1/D2 и AM-13 сохраняют B1, locks и непрерывную фазовую границу: initial direct terminal создаёт свои closure→live L→witness; pending own action не требует ещё не созданный witness; active reconcile имеет только typed metadata effects и полный cutover; новый ordinary/session требует обе closure и reader resync/fresh GO/fullgate. Unknown/partial или terminal-looking state после crash не разрешает реконструкцию. AM-13 задаёт отдельные direct/pending/post-recovery positives, contender, phase/expiry и kill negatives. Actual inventory, FD/kill и callback compatibility пока не доказаны.
+
+**QT-02.** Exact account/browser key/provider/shop/TEST/SKU/amount и pending read-only URL/form guards сохранены; direct terminal не открывает URL. Known-target pending не становится no_pending, whole history/delivery и canonical event/24h требования сохраняются; unknown STOP. Actual history и provider не проверялись.
+
+**QT-03.** 05E1/AM-4/12 сохраняют independent syscall/page/server order, durable evidence до browser response, one POST/no fallback и будущие реальные native/session/browser positives. Прямой terminal branch не создаёт browser action; тесты не выполнялись.
+
+**QT-04.** 05A0/A2/F и AM-10 сохраняют inferred против observed provenance, разные keys, отдельные current authority/ticket/replay guards и cross-clock positive/independent negatives; actual clock/causal evidence не установлено. Фазовый admission не подменяется caller boolean.
+
+**QT-05.** 05F/AM-9 сохраняют direct P-terminal с истёкшими historical ticket/GO при creation в тогдашнем окне и действующими current metadata/source authority; три отдельных window/expiry negatives и no action/failed origin checks остаются проектными требованиями.
+
+Author assessment и structural delta рассмотрены самостоятельно; новых серьёзных собственных design-условий в ограниченном scope не выявлено. `implementationVerified:true` в собственной записи означает только проверку исправленных **ideation design artifacts** на этой revision. QCSQ-03 и остальные чужие conditions проверяют их originating reviewers. Candidate partial edits сохранены после graceful interruption и не являются approved handoff; все шесть code QE findings KCQE-01…06 остаются OPEN. Ни код, тесты, runtime, сеть, Git, DB, provider, gates или фактическая совместимость callback не проверялись; реальные clock/history/delivery NOT ESTABLISHED, unknown → STOP.
+
+---
+
+# Originating focused verification — caller-held business seam
+
+**Собственный вердикт: conditional.** Проект D2/AM-13 формулирует caller-held boundary и будущую проверку её эквивалентности, но обнаружено новое условие **QT-06 HIGH**: противоречивые указания о route lock для recovered action. QT-01–QT-05 сохраняются и проверены только как дизайн. Это не verdict других ролей и не closure gate. Та же сессия `qcsd-testability`, family `owner-exception`; requested `gpt-6.1-terra xhigh`, serving identity/effort **NOT_ATTESTED**.
+
+Проверен host revision `54242ac1bdc6fe600e1b6d3aa7b6092e130026447c53b3d92e4800a36e84c222`, nonce `5522911f-ea1f-4e65-89c5-5bd128c78861`: пересчитан digest manifest и совпали измеряемые файлы. Actual author handoff совпадает с author receipt; соседний manifest прочитан, hashes четырёх design-документов и неизменённых 01/OpenSpec независимо совпали с его after. 02 `a09f4703f7b94309e82ebbf3b7919ddc8352da53581b722e0708b189ed6f053e` совпадает с привязкой 05; ADR `9a176ec5a6edeaf75a50f6043ff56273fa38a4f6f1012e7dc41a5a3cd34c1883`, 05 `7acfc84cd5d280bcfc59e9fa53dcd3bd224587d56ced6af6a21aa7ad415e9f75`, 06 `602b0cf96eb244a82c88f12552e3093de8d7bec138174656e115824badfd1563`. 02/06 и OpenSpec измерены отдельно, не напрямую host manifest. Actual immutable donor db0 перечитан и совпадает с pinned SHA `db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087`; candidate source и его runtime не проверялись.
+
+## QT-06 — HIGH, structural: recovered action и повторный route lock
+
+05:132 требует, чтобы при recovered action adapter «повторно получает route lock», но 05D2:167 требует непрерывно удерживать исходный controller+route locks через callback/reply и прямо запрещает handoff/reopen/reacquire; 05:173 включает follow-up в effectful paths. Эти положения не определяют единого порядка именно для recovered action. Переоткрытие donor route внутри уже удерживаемого критического участка может попасть в тот же self-contention: прочитанный db0:550–553 открывает отдельный FD и вызывает `flock(LOCK_EX|LOCK_NB)`. Наблюдения runtime или дефекта реализации нет. Альтернативное толкование — новый вход до захвата caller-held FD — проектом в данном переходе явно не определено.
+
+**Условие:** согласовать 05D и D2 для pending recovered action: явно указать вход/владельца и время однократного захвата двух locks, передачу и проверку той же held route FD, повторную canonical revalidation без повторного open/flock или отпускания, все pre/post authority и cleanup guards. Добавить отдельный различающий actual captured bridge/adapter recovered-follow-up positive с реально удерживаемыми FD, revalidation и одним разрешённым simulated callback, а также конкурирующий процесс и проверку непрерывного владения до callback/reply; reacquire/handoff, неверный FD или guard removal ломает конкретный test, unknown/replay даёт STOP. Positive не заменять ordinary/session/reconcile controls и не объявлять внешний provider настоящим TEST.
+
+## Проверенные условия и границы
+
+- **QT-01:** D1/B1 и AM-13 сохраняют joint closure и отказ при unknown; donor body явно производная копия с pinned SHA, canonical guards/primitives и без утверждения, что original operator исполняется под занятым route. AM-13 задаёт equivalence original вне caller-held route против derivative под обоими locks, single-cause guard mutations и late/kill/concurrency tests. Для отдельного recovered action остаётся QT-06.
+- **QT-02:** exact account/key/provider/shop/TEST/SKU/amount, read-only evidence и pending URL/form остаются в 05A/A1; direct expired branch не открывает форму, unknown history/delivery STOP.
+- **QT-03:** 05E1/AM-4 и AM-12 сохраняют независимое наблюдение fsync/readback до browser response, один POST/no retry и actual native/session/browser positives. Fixtures и TEST provider не запускались.
+- **QT-04:** A0/A2/F и AM-5/10 сохраняют inferred201 без выдуманного wire response/time, разные keys, counterfactual ticket/source/windows и causal/clock controls; реальный clock proof NOT ESTABLISHED.
+- **QT-05:** AM-9/10 сохраняют direct terminal historical-expired positive и три отдельные ошибки current/historical authority; no action и failed origin остаются обязательными.
+
+Structural author assessment проверен; новое QT-06 расширяет отмеченный автором риск копии/пропуска границы конкретным противоречием. Семантика `implementationVerified:true` для старых собственных условий и delta — только independently verified исправленные **ideation design artifacts**, без утверждения об испытаниях; QT-06 остаётся без verification. Candidate edits сохранены, frozen или approved данным отчётом не считаются. KCQE-01…06 OPEN, реальные clocks/history/delivery NOT ESTABLISHED; code, tests, runtime, сеть, Git, DB, provider и gates не запускались и не проверялись.
+
+---
+
 # Originating focused verification — clarification и reader resync
 
 **Собственный вердикт: clean для QT-01–QT-05 на указанном design snapshot.** Это продолжение той же сессии `qcsd-testability`, не повторное независимое ревью самого себя и не общий verdict других ролей или gate. Requested `gpt-6.1-terra xhigh`; serving identity/effort **NOT_ATTESTED**.
