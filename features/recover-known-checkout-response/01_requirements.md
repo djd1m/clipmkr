@@ -32,14 +32,16 @@ FR6 (supporting QA contract, не новый user-facing scope): distinct `admin
 
 NFR: документыRU, secrets/private IDs/provider URL вне Git; минимум готовых existing blocks; никакого нового daemon/runtime/container.
 
+Packaging05T/06TASK-8: только testcase extraction,6private+3public; TS lint≤500/private<700, exact parity. FR1–FR6/AM-1…20/14design/9KCQE и round budget unchanged; K1 новых имён NOT_ESTABLISHED.
+
 ## Переиспользование
 Канонические captured executor/launcher и reviewed bridge, существующие browser/native guard/cleanup и read-only BOTH-store collector — владельцы invariants. Не копировать financial dispatcher/ledger в новый framework. Подробный inventory и обязательный выбор альтернатив — архитектор до code.
 
-## Ledger revision
-PRIVATE PROPOSED, не approved W ledger: OpenSpec `openspec/changes/recover-known-checkout-response/proposal.md`, SHA-256 `fd033c4d5b969874aa86ce1bce297ade3f23a40e6554a6c5febe7e593059313f`; `openspec/changes/recover-known-checkout-response/specs/payment-qa-recovery/spec.md`, SHA-256 `fc2f004b8f6af4d89fd592a54627fedfc853db1ac8cd5d5a82d550bb82ee6557`. Hashes измерены по actual private proposed bytes текущего integrated bundle. Actual adoption/checkpoints/QCSD/K1/K2 и code review выполняются отдельно в том же feature.
+## Ledger revision3 — supporting QA packaging
+PRIVATE PROPOSED, не approved W ledger: OpenSpec `openspec/changes/recover-known-checkout-response/proposal.md`, SHA-256 `1de2dc5686ac06e7c17594987402483abdb1a07f6d9dd794935c4d0ef5720892`; `openspec/changes/recover-known-checkout-response/specs/payment-qa-recovery/spec.md`, SHA-256 `1d857604a1f6386d7703cc71363cef02159f17d34054945e6e70953b58c1608d`. Hashes измерены по actual private proposed bytes текущего integrated bundle. Actual adoption/checkpoints/QCSD/K1/K2 и code review выполняются отдельно в том же feature.
 
 ## Planning-only authorization и предел доказательства
-Все FR1–FR5 recovery predicates действуют для своих existing modes; FR6 — явная supporting QA requirements delta, не их silent fallback. Root delegated TEST authority покрывает draft выбора; дальнейшие gate/implementation/execution permissions отдельны. Завершённый codeQE2 на sourceSet prefix afc6/native revision a9905f80a820bff04bb2124d8b25f231ba77f9cf83c351555eae3acafae35275 не принимал код и не оценивает этот новый draft.12 design conditions и6 KCQE сохраняют meanings/lineage; никаких closures здесь.
+Все FR1–FR5 recovery predicates действуют для своих existing modes; FR6 — явная supporting QA requirements delta, не их silent fallback. Root delegated TEST authority покрывает draft выбора; дальнейшие gate/implementation/execution permissions отдельны. Завершённый codeQE2 на sourceSet prefix afc6/native revision a9905f80a820bff04bb2124d8b25f231ba77f9cf83c351555eae3acafae35275 не принимал код и не оценивает этот новый draft.14 design conditions и9 KCQE сохраняют meanings/lineage; никаких closures здесь.
 
 ## Открытые решения
 Минимальный безопасный recovery переход и его provenance, способ pre-navigation body capture, crash/partial record strategy выбираются в ADR; source code/runtime до настоящих gates не разрешены этим документом.

@@ -285,3 +285,17 @@ QT-01…QT-06 verification относится только к сохраннос
 QT-01…QT-08 сохранены буквально и проверены как design на revision `7303311b2a6d4408c9826127c632ee24fd5120016c7fe9d216659a86080473b9`; новых серьёзных условий в этой дельте не выявлено. Все семь base/candidate/current документов сверены; 06 измерен отдельно SHA-256 `aa3c0a511497f2cf51d4c5803b7e8912f060351c88f6b3bd339dd336c8f70364`, поскольку отсутствует в native manifest. Сохранённый context complete: 96741/98304 bytes; K2 C8 WARN/C4 SKIP/C9 только byte-identical.
 
 `implementationVerified:true` означает проверенный IDEATION design и обязательные будущие confirmations, не тесты или принятый код. KCQE-04…09 OPEN/NO-GO, rounds2/3, QE3 не открыт; authority/head/clock/history/capacity и actual-source behavior не установлены. Reviewer не запускал code/tests/runtime/network/DB/provider/Git/native/checkpoints. Requested gpt-6.1-terra xhigh; serving NOT_ATTESTED.
+
+
+## Originating test-only packaging, structural IDEATION
+
+**Clean для проверенной design-дельты.** Семь current документов сравнены с сохранённой базой и candidate; QT-01…QT-08 сохранены буквально, существующие Chrome/FD/process и различающие positive/negative controls остаются обязательными. План 06 отдельно измерен SHA-256 `96eb5f286d4f0bdf1417628a5e99a3f669f18d076bc7da678736fe1ff637a3c9`: native ideation manifest его не включает. Сохранённый ed810 chunk статически совпадает с заявленными 210 строками и SHA; helper ещё не создан, поэтому whole rendered-byte parity, 17 titles/assertion/matrix parity, lint и operational rerun остаются будущими проверками.
+
+Approved S installation и project K1 нового basename/export ещё pending; K2/scoped admission не наследуются. Private-candidate context complete: 97348/98304 bytes, запас 956, не actual-W gate. `implementationVerified:true` означает проверенный IDEATION design, не код или tests. KCQE-04…09 OPEN/NO-GO, rounds2/3, QE3 не открыт; runtime/provider и реальные clocks/history не проверялись. Requested gpt-6.1-terra xhigh; serving NOT_ATTESTED.
+
+
+## Originating testability: уточнение packaging scope
+
+**Clean для узкой document design-дельты.** 05T и TASK-8 ограничивают byte/assertion parity и отсутствие новых production edits/testcase bodies упаковочным проходом; TASK-9/10 сохраняют actual verification AM-14…20/9KCQE и разрешённые scoped fixes по фактическим findings. QT-01…QT-08 сохранены дословно; QCSQ-04 остаётся условием qcsd-quality.
+
+Current 05 SHA-256 `9289ac0dc92ed1156b6946f374f8472135d88e88b5a61909a65586e9be5f7a3e`; 06 отдельно прочитан SHA-256 `77f827795c5ca5aebd030694cab94537a17c34fe7c882a7abd52d645a54e33b2` и не входит в native ideation manifest. Private capacity receipt complete 97688/98304 bytes — только прочитанный preflight, не actual-W gate. Scanner owner exception/install и K1 остаются pending. `implementationVerified:true` относится только к design; code/tests/runtime не запускались. KCQE-04…09 OPEN/NO-GO, rounds2/3, QE3 не открыт. Serving NOT_ATTESTED.

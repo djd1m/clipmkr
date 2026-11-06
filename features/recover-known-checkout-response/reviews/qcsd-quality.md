@@ -180,3 +180,24 @@ D08 удаляет фразу об отсутствии AQE runtime из literal
 **CLEAN только для structural design QCSQ-01/02/03**, revision `7303311b2a6d4408c9826127c632ee24fd5120016c7fe9d216659a86080473b9`, nonce `14d2e660-3a6d-4ad2-b0a0-0d367afc56b1`; serving NOT_ATTESTED. Прочитан literal author, проверены все семь base/proposed/current документов и зависимые границы B1/closure/witness, raw snapshot до первого persist и phase admission. Whole P→T→separate GO→Authority→once binding сохраняет контекст без hash cycle; live-own deadline-only negative и directed mutant описаны как будущие проверки. QT-07/08 проверяются их собственной ролью. Нового серьёзного quality condition в этом delta не обнаружено.
 
 Synthetic JSON/hash receipt подтверждает только конструкцию; actual issuer/head, clock/history и capacity не установлены. Новые actual-source tests и mutants NOT_RUN; CODE QE 04–09 остаются NO-GO. Отдельно измеренный 06: SHA-256 `aa3c0a511497f2cf51d4c5803b7e8912f060351c88f6b3bd339dd336c8f70364`, 70009 bytes, вне host manifest.
+
+
+### Test-only packaging — quality design review
+
+**CONDITIONAL, новый QCSQ-04 (HIGH)**; revision `915573967ebcb2811e862ea85d04d369e54f45b6e8043d247f22088c77f1c11e`, nonce `79fdb394-464e-411a-a735-6b985d530e15`. В 06 TASK-8 указано «TASK-9 сверяется по ed810, без новых production edits», но TASK-9 предписывает изменения adapter/bridge/run. Exact ed810 parity и отсутствие новых testcase bodies также нужно ограничить упаковочным этапом, сохранив проверку AM-14–20 и возможность рассмотрения действительных code findings через существующие scope/gates. Разъяснение намерения root не меняет текущий нормативный текст.
+
+QCSQ-01/02/03 сохранены и независимо проверены на уровне дизайна: B1/closures/witness, исходные снимки до persist и фазовые допуски остаются в документах. Семь actual файлов измерены; 06 вне host manifest, его SHA-256 `96eb5f286d4f0bdf1417628a5e99a3f669f18d076bc7da678736fe1ff637a3c9`. 05T — предложение, тесты/код/runtime/gates здесь не запускались; CODE QE 04–09 остаются NO-GO. Полный перечень SHA и условие QCSQ-04 — в private quality report/receipt. Serving NOT_ATTESTED.
+
+
+#### QCSQ-04: исправление scope receipt
+
+Root actual evaluate вернул exit 3 / NOT_ESTABLISHED, `condition-scope-unmeasured:QCSQ-04`: исходный scope включал 06, которого нет в ideation manifest. Исходный receipt, полное condition и failed proof сохранены приватно до исправления. Подтверждённый manifest измеряет 05; его раздел T содержит тот же контракт packaging/parity и ссылается на TASK-8/10. Поэтому **только scope** новой ещё не admitted QCSQ-04 исправлен на `features/recover-known-checkout-response/05_architecture.md`; ID, owner, severity, classification, полное requirement и evidence неизменны. Все 14 исходных host conditions не менялись.
+
+Это не closure: устранение по-прежнему должно исправить и план 06; originating reviewer отдельно прочитает и физически измерит его actual bytes при последующей focused verification, поскольку native manifest 06 не измеряет. Предыдущая запись не прошла gate. Тесты/код/новая evaluation не выполнялись.
+
+
+### QCSQ-04 — focused design verification
+
+**CLEAN только structural design**, revision `da38b4a8a68ed63b99db11254e821a0d8bb796c18decaf861753db8e36f790b4`, nonce `c0ffa061-57a2-4910-9824-65f7cf5f83f6`. В 05T и 06 TASK-8/9/10 exact ed810 parity и запрет новых edits ограничены packaging pass; последующая проверка AM-14–20/9KCQE и scoped remediation по фактическим findings сохраняются. Ed810 не считается independently accepted; отсутствие допуска означает STOP. Все четыре QCSQ conditions сохранены без изменения.
+
+05 SHA-256 `9289ac0dc92ed1156b6946f374f8472135d88e88b5a61909a65586e9be5f7a3e`; 06 отдельно прочитан и измерен: `77f827795c5ca5aebd030694cab94537a17c34fe7c882a7abd52d645a54e33b2`, он вне native ideation manifest. Тесты/код/gates не запускались; K1/installation NOT_ESTABLISHED, CODE QE 04–09 остаётся NO-GO. Serving NOT_ATTESTED.
