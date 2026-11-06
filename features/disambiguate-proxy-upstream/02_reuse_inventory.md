@@ -3,7 +3,7 @@
 | Существующий блок | Факт/роль | Решение |
 |---|---|---|
 | `proxy/Caddyfile` SHA10e57… | portable `web:3000`, existing headers/trusted_proxies/transport360s/60s | сохранить; site overlay — exact производная с одной заменой, тестом защищён от drift |
-| `docker-compose.yml` | `${N5_COMPOSE_PROJECT:-n5-clipmaker}`, ro single-file Caddyfile bind | без изменения/env/recreate; фиксированное имя не навязывается custom project |
+| `docker-compose.yml` | `${N5_COMPOSE_PROJECT:-n5-clipmaker}`, ro single-file Caddyfile bind | base без изменения; native source-only `deploy/source-proxy.compose.yml` явно меняет только будущий cold mount, current runtime без env/recreate; fixedname не навязывается custom project |
 | `tests/proxy-rate.test.ts`, `apps/web/src/server/ip.ts` | XFF trusted hops/negative missing chain | существующие targeted regressions; owner app source не менять |
 | Private `payment-cjm/run.private.py` | maintained validate_proxy_binding, полный shared-network inventory, exactdisk/rawloaded checks, baseline/correlation consumption | изменить только disk SHA/exactupstream/selected-name predicate и hosts matching; остальные guards/financial sections сохранить |
 | Private `paid-media-only/paid-media-only.private.mjs` | hash-bound caller runner | только новый reviewed run hash; остальные media/session/cleanup guards прежние |

@@ -25,3 +25,14 @@
 #### Scenario: Уже существует принятая callback operation record
 - **WHEN** на диске сохранён известный healthy_unconfirmed/applied=false marker с точным binding и отдельным actual apply receipt
 - **THEN** marker не стирается и не объявляется неизвестной операцией только по флагу; перед бизнес-действием требуется свежая canonical revalidate, а unknown/incomplete proxy operation блокирует новую запись
+
+### Requirement: Source-site выбор повторяем и ограничен площадкой
+Source-site SHALL явно использовать native `deploy/source-proxy.compose.yml` вместе с base Compose для будущего холодного развёртывания; portable base и Cloud overlays сохраняются. Текущий warm transition SHALL сохранять прежний mount/inode/container/PID.
+
+#### Scenario: Чужая площадка либо повтор
+- **WHEN** effective project/site не source n5-clipmaker либо bytes/bind неизвестны
+- **THEN** source deployment отказывает до up/write/reload; совпадающий проверенный candidate/config/binding даёт no-op без изменения
+
+#### Scenario: Следующее обычное source развёртывание
+- **WHEN** разрешено отдельное будущее cold deployment
+- **THEN** инструкция использует оба Compose файла и reviewed source artifact, не возвращая portable web upstream в source-site
