@@ -1,38 +1,38 @@
-# Финальная проверка UI — Step9
+# Итоговая проверка упрощённого интерфейса — Step9
 
-Статус: выполняется. Step8 действительно closed/exit0, revision53c76705ddbff5ed55a5d709fe64aecfed791ae640ba51b6e38f08f0a89ace7a, rounds2. Полнота требований, риски, интеграции и регрессии проверяются четырьмя отдельными fresh docs-first сессиями gpt-6-astra xhigh по pinned протоколам и shared coverage analysis. Из-за ограничения одновременных агентов и уже выполняющегося отдельного платёжного блока запуск идёт доступными партиями; одновременность четырёх ролей не заявляется. AQE runtime не установлен.
+06.11.2026. **COMPLETE в области исходников UI; допуск к публикации на clipmkr.ru.** Опубликованные пользовательские сценарии, TEST-платёж и ручная приёмка выполняются после выкладки и этим вердиктом не объявляются завершёнными. Cloud.ru и DNS не изменяются.
 
-## Трассировка требований
-Ожидается собственный terminal отчёт.
+Автор — gpt-6.1-sol high. Четыре независимые роли запущены gpt-6-astra xhigh: первоначальные новые сессии сначала получили согласованные документы; исправления проверены теми же originating sessions. Повторная собственная verification не называется новой blind-сессией. Применены pinned feature-adr/QE protocols без AQE runtime. Ограничение одновременно работающих агентов соблюдалось партиями.
 
-## Риски
-Ожидается собственный terminal отчёт.
+## Точные входы и результат
 
-## Интеграции
-Ожидается собственный terminal отчёт.
+Native Step8 действительно **closed / exit0**, rounds3, unresolved0, revision `aff607f78828e6880976f272ea2db25c09e0c4c55cc1ac64b25593bf3b8cd8e1`. Plan SHA `9ff050853d8cca7d7dfa8b6b55fa8ad04f7f0674766189e2a4eb2b90a963c66f`, approved HTML `a85b3f073a335871e421ea2079269fa19c71f42a263d7b0bd17ae30469c50e68` неизменны. Current source/build inputs64/153 и14 READONLY сверены независимо. Actual R2→R3 delta4: BloggerAdmin, scoped globals.css, UX test, существующий presentation helper. API/auth/DB/migrations/provider/worker/env/package не менялись.
 
-## Регрессии и покрытие
-Ожидается собственный terminal отчёт. Измеренная line/branch coverage не подменяется числом успешных сценариев.
+Итоговый локальный build `3BcaqHtdrkW2fAp0Y8tMU`: полный UX77/77, owner8/8, workspace12/12, actual raw exit0. Ранее измеренные111 unit/20 auto-link/2 checkout/48 billing используются с impact-анализом, не объявляются новыми прогонами этой сборки.
 
-## Итог и границы
-NOT ESTABLISHED до всех четырёх отчётов. Опубликованный provider CJM/TEST платёж и ручная приёмка остаются отдельными последующими проверками; Cloud/DNS не меняются.
+| Роль | Собственный итог UI source | SHA-256 текущего отчёта |
+|---|---|---|
+| traceability | READY_FOR_SOURCE_PUBLICATION | `8ee58fff17c5ab72a6e5a76cea038de25961bfa100fb594296feef64310eca72` |
+| risk | READY_FOR_SOURCE_PUBLICATION | `2c3d3cae966ff0ce5d2741393fef4370947cf25366b06e683c68fa4bc82908a3` |
+| integration | READY_FOR_SOURCE_PUBLICATION | `7dbd33204ddad28a19dc3a203614779514076cabc21a25db3158242fe0432adf` |
+| regression | READY_FOR_SOURCE_PUBLICATION | `d4c13d2925b5032b1712b5ae971e4f5d7ab71c65d6dd758be37a90dd4ffc7add` |
 
+## Найденные пробелы и собственная перепроверка
 
-## Фактические первые результаты
+Первый fleet завершился NEEDS_REMEDIATION: T9-TRACE-01, отсутствовало уже требуемое FR-7/AM-8 прямое сравнение owner report с approved HTML. Три других READY этот пробел не отменяли. Прежние07/08/09 сохранены в history/fleet-r1; все первые private отчёты сохранены. При добавлении настоящего сравнения воспроизведено реальное расхождение UI; выполнен минимальный ремонт в существующих WRITE targets без новых требований/макетов. RED75PASS/2FAIL и отдельный alignment4FAIL сохранены.
 
-Общая публикация пока не допущена: найден один обязательный пробел T9-TRACE-01. В `owner_report_approved_screen` проверены самостоятельный отчёт, возврат, черновик и фокус; четыре показателя и раскрытие подробностей также покрыты. Но отсутствует требуемое прямое сравнение с approved HTML для 390/1440 × обе темы × обе компоновки. Это разрыв FR-7 / AM-8, а не воспроизведённый дефект UI.
+Во втором и финальном полном fleet originating traceability собственноручно закрыл T9-TRACE-01:16 owner и24 normal stats comparisons,6 semantic faults, exact DOM restoration; integration/risk/regression подтвердили полный delta и предел reuse. Новая actor-session iteration не создавалась. Два собственных отчёта первоначально не сохранились из-за ошибочно read-only resume; EROFS и stdout сохранены, параметры launcher исправлены, те же сессии сохранили подготовленные отчёты без повторного аудита.
 
-- traceability: terminal exit 0; модель gpt-6-astra xhigh, сессия `01a1ae29-7b49-7931-ab8c-155ef3733c5e`. SHA отчёта `f81f213076258fa7fbe9d0751111cc0d75a368c8aa1fc98d292412943a34f143`. NEEDS_REMEDIATION: T9-TRACE-01.
-- risk: terminal exit 0; модель gpt-6-astra xhigh, сессия `01a1ae2a-e153-7760-aeb4-d24240d57396`. SHA отчёта `acd867ecd206de3f1bf4d443b2885d04d81e6bc3a81919e98b9e999252f00a85`. READY_FOR_SOURCE_PUBLICATION в области этой роли; это не общий допуск.
-- integration: terminal exit 0; модель gpt-6-astra xhigh, сессия `01a1ae2b-e611-7752-a7af-ca8889bfb31c`. SHA отчёта `dd1bc033dd5363b05ad0a8aa696bdc5b7e6fc4595b7f9ba12acc7a96e4c280a3`. READY_FOR_SOURCE_PUBLICATION в области этой роли; это не общий допуск.
+В дополнительной, отдельно порученной проверке инструмента выкладки integration обнаружил INTEG-DEPLOY-01/HIGH: отказ observer до apply мог попасть в mutating rollback. Это не дефект UI source, но он блокировал применение дополнительного guard. Старый отчёт с NEEDS_REMEDIATION не переписан. Исправлен только private wrapper; исходный рассмотренный оператор45f2f111… не менялся. Observer теперь выполняется до locked()/applied=True, с literal SHA и captured stdin bytes.
 
-Regression пока выполняется. Отчёты и полные evidence закрыто сохранены; tokens/cost не известны. Обнаруженный пробел исправляется в уже допущенных UX/helper targets без изменения требований, макета, API или БД. Проспективное уточнение плана и настоящие gates выполняются до тестовых изменений; здесь их прохождение ещё не заявляется. После исправления необходима собственная перепроверка originating traceability reviewer и актуальная привязка остальных ролей.
+Originating integration отдельно подтвердил собственное условие INTEG-DEPLOY-01: **VERIFIED**. Это узкая operational verification, не третий полный Step9 и не новая native ревизия UI. Собственный offline прогон исходного apply/rollback AST: старый wrapper воспроизвёл лишний automatic rollback; пять отрицательных исходов нового guard дают0 replacement/rollback; после действительно начатого fixture apply rollback сохранён. Self-test exit0. Реальные SSH/Docker/DB/S3 в этом reviewer-прогоне не выполнялись. SHA дополнительного отчёта `d4acf70bfacc48c5b25eb40cdb960daec19b6ec951017ae296bb472875bc8e13`.
 
+## Трассировка, риски и ограничения
 
-## Четыре роли завершены; исправление существующей приёмки
+FR1/21 семейство: каждый surface имеет change/preserve/regression mapping; source reading не выдан за новый browser PASS. FR2/3: upload guard, ambiguous status, contextual More, сохранение mounted music/CTA/player и текущие focus/feedback assertions. FR4: самостоятельные account/stats/report, account-bound generation/consent, роли и прежние server guards. FR6/7: neutral/green token scope, theme/layout persistence, owner/report approved composition и значимые отрицательные контроли. Backend деньги/лимиты90/120/индивидуальный и финансовые правила переиспользованы без кода изменений.
 
-Regression: terminal exit0, READY_FOR_SOURCE_PUBLICATION в области роли; новых blocking regressions0, SHA отчёта `ed7b6cc83def04711ec1840f57f3e1895d187692a5c624c51d7523a6eea71455`. Общий verdict первого флота — **NEEDS_REMEDIATION**, один T9-TRACE-01; три READY не отменяют отсутствующую обязательную проверку.
+Line/branch/function coverage, WCAG compliance, p95, physical Windows Chrome, стоимость — NOT ESTABLISHED; числа успешных сценариев не заменяют эти измерения. Empty helper stdout не используется как самостоятельная execution receipt4PASS. Owner normal comparison390/1440 и assignment/zoom проверки имеют разные границы; полная визуальная идентичность не заявляется.
 
-После чтения точного finding установлено: сравнение owner report уже требуется FR-7/AM-8/TASK-6; необходимые UX/helper paths уже WRITE. Поэтому новый функциональный scope, TASK-14, изменение canonical06 и новый макет не вводятся. Неприменённый частный черновик расширения сохранён только как история рассуждения. Существующий exact plan `9ff050…` и его настоящий checkpoint действуют. Перед исправлением повторены relevant recall, K2 PASS/exit0 (0 failures/warnings/skips), target admission/exit0 и complete literal coder context `bc59dec884569156dd646a2d010d46b1af7f050201e468487ef945bebbd61f14`;62520 символов переданы тому же автору gpt-6.1-sol high. Пока разрешён только ремонт существующих UX/helper проверок, не application/CSS/API/DB.
+Наблюдатель upload остаётся observation-only: recent DB/completed S3 parts позволяют отказать, старые timestamps не доказывают отсутствия незавершённого PUT; атомарного freeze нет. Перед replacement выполняется свежая фактическая проверка. Данные не переносятся и не очищаются; только existing web image, backup+реальное восстановление в собственной scratch-БД и отдельная post-deploy проверка сохранности.
 
-Все прежние07/08/09 сохранены в `history/fleet-r1/manifest.json`. Тест прежнего helper дал meaningful RED: owner-report ошибочно попадал в ветку result. Это подтверждает отсутствие нужного oracle, не дефект приложения. GREEN и собственная focused verification после исправления ещё выполняются. Step8 R2 сохраняется как реальная история; финальный gate после изменённых test bytes требует новой настоящей привязки, прежний closed не переносится автоматически.
+До итоговой приёмки поставки нужны опубликованный native upload→processing→Play→Chrome Download, три роли, настоящий TEST checkout/право использования и инструкция владельцу. Короткий155s smoke не доказывает90/120мин. Исторический TEST ledger debt, partial/S3 recovery и прежние отдельные backend gaps не закрыты этой UI-фичей. Письменная приёмка владельца нужна перед будущим переносом на Cloud.ru.
