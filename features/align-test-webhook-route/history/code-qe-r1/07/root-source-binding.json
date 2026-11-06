@@ -1,0 +1,17 @@
+{
+  "kind": "root-terminal-capture-not-review-verdict",
+  "at": "2026-11-06T00:51:02.769675+00:00",
+  "actualPrivateSources": {
+    "payment-cjm/apply-route.private.py": "9606862536090907faa760cd8d5ddd47edba0fcb6111c084315741f178c721f7",
+    "payment-cjm/launch-route.private.py": "b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892"
+  },
+  "terminalEvidence": {
+    "execution.private.json": "26f3ee0852559c44c9281a7aef19f49b019956f72c73f2b215abd7165083fad0",
+    "events.private.jsonl": "c21f26c174fd024dccb4f2de727466457d33f90c21c3922d32118b5aa5cb983f",
+    "final-checks.raw.json": "386cd8d3bf05da33184c78041bc5bdb6f8f2f34c87962035521656af5b470c1d",
+    "fixture-execution.raw.jsonl": "6e6810cd382a465add02337f78887db547f36c0171f3a340abe0d7932fb5527b",
+    "mutation-execution.raw.json": "fe2b136a7a9d4171fc252447566e161b0ebf7701eaf13a9fb63ccda5dd212d11"
+  },
+  "authorManifestPhase": "Captured by author before its CLI terminal; rolling events/execution have later bytes and are separately bound here",
+  "noSourceChangesDuringCapture": true
+}

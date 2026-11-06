@@ -1,0 +1,6 @@
+	handle /api/webhooks/yookassa-test {
+		rewrite * /api/webhooks/yookassa
+		reverse_proxy n5-clipmaker-proxy-1:80 {
+ header_up X-Forwarded-For "{http.request.remote.host}, {http.request.local.host}"
+ }
+	}

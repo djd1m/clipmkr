@@ -1,0 +1,34 @@
+# QCSD testability: исходная роль, повторная проверка дизайна R2
+
+05.11.2026. **Собственный verdict: clean на уровне дизайна**, все три моих исходных условия проверены в текущих документах; новых самостоятельных условий не выявлено. Это не общий verdict QCSD, не разрешение code/apply, не успешная проверка executor, сети, провайдера или платежа. Продолжена та же независимая originating-сессия; запрошенная модель `gpt-6.1-terra xhigh`, её фактический model ID/effort этой сессией независимо не удостоверяются. Первичный [отчёт](qcsd-testability.md) и точные condition objects сохраняются как история.
+
+## Результат по исходным условиям
+
+- **TST-01 — исправление дизайна подтверждено.** [Архитектура §O1–O4](../05_architecture.md:26) задаёт durable backup и `incomplete` до записи, same-inode held fd, цикл short writes, truncate/fsync/readback, запрет признавать успешным частичный процесс, проверку pending marker после kill и точный rollback либо STOP/incident при неподтверждённом recovery. [План AM-5 и fixture gate](../06_implementation_plan.md:53) требуют реальные temp fd/inode, положительный short write, отказы write/truncate/fsync, SIGKILL, порядок validate/reload, итоговые bytes и inode; отдельная модель состояний не заменяет проверку реального исполнителя. Это проверка наличия достаточного контракта, сами negative fixtures ещё не выполнялись.
+- **TST-02 — исправление дизайна подтверждено.** [Архитектура §E](../05_architecture.md:68) требует независимый source review будущего self-contained executor и launcher, SHA-reviewed bytes, захват и выполнение этих же immutable bytes, изоляцию импортов, binding remote payload и отказ до writes при несовпадении. [AM-6](../06_implementation_plan.md:75) различает подмену до и после capture и требует actual same-path fixtures. Реальный source, exact SHA и его review ещё отсутствуют; задача apply не допускается до этих фактических gate. Риск компрометации самого Python/runtime явно не выдан за исключённый.
+- **TST-03 — исправление дизайна подтверждено.** [Архитектура §C](../05_architecture.md:143) связывает approved account и exact intent с TEST provider payment, ingress, native main event/payment, `payment_ref`, единственным grant и fresh-session rights, а также отделяет paid entitlement и фактический job/debit/allocation. [AM-7](../06_implementation_plan.md:77) отвергает несвязанные grants, неверные store/payment/account, выдачу relay за provider duplicate и pending за cancel. Не подтверждённый фактической повторной доставкой duplicate и недоступные terminal fail/cancel остаются NOT VERIFIED, а не фиктивной приёмкой.
+
+## Проверка author assessment и зависимостей
+
+Прочитал actual author object: structural delta и его новая оценка residual risks согласуются с прочитанными текущими 00/01/02/ADR/03.5/05/06 и OpenSpec применительно к моим условиям. Авторский `addressed` — заявление о rework; приведённые выше выводы получены собственной проверкой текстов. Structural `deltaVerification.implementationVerified=true` означает только проверку исправленных ADR/архитектуры и phase artifacts на этой ревизии, не код или тесты.
+
+O1 отделяет проверяемый контроль обычных cooperating writers/reloads и bounded window от непредотвратимого host/Caddy crash. В пределах данного обратимого operational scope считаю сочетание проверки контроля, durable backup/marker, сохранённого независимого от TLS SSH recovery и STOP/incident достаточным **как проект mitigation**, при явном остаточном риске чтения partial bytes после crash и общего downtime до ручного восстановления. Наличие `unless-stopped` без watch само по себе не доказывает текущего конкурентного writer; неизвестный или активный конфликт по-прежнему блокирует apply. Это не заявление о фактической доступности SSH или принятии владельцем конкретного outage.
+
+По P/C автор сохранил отдельные решение о маршруте и gate нового CJM: неоднозначный owner/store или незаклассифицированный inflight — STOP; однозначный historical TEST debt не становится новым платёжным успехом и требует отдельного root решения и фактического результата canonical reconciliation до нового CJM. Для legacy проверяются event time либо надёжный upper bound и 24-часовая policy от события; возраст intent не служит такой границей. Новые refund/replay требуют проверки владельца store. Публичная policy не доказывает конкретный ACK либо отсутствие всех будущих повторов. Эти контракты достаточны для моих условий на design phase; полнота и подлинность фактического inventory и безопасный способ reconciliation подлежат отдельному preflight.
+
+Файл `R/callback-plan-repair/ROOT_READONLY_FACTS.private.md` прочитан как данные координатора, не как моё независимое runtime измерение. Заявленные три старых main `created` и provider outcomes (два canceled, один TEST succeeded при пустом main ledger), terminal legacy и возраст строк не доказывают reconciliation, exact event time, отсутствие inflight или owner. Идентификаторы и частная конфигурация не раскрываются. Ни один из этих фактов не является доказательством успешного нового checkout.
+
+## Привязка и ограничения
+
+Host R2: phase `ideation`, nonce `ab2d0e3f-2ac4-4c77-a283-9f10528764f2`, revision `9ed383d54b27a251ef6d56db8009baf7e36249b06ccb887134f4ea8cf649c635`. Пересчитанные SHA-256 четырёх manifest файлов совпали с host:
+
+| Файл | SHA-256 |
+|---|---|
+| `00_complexity_assessment.md` | `1992d64456de6394b79cca9756dbeba5fb0dfb6372796a1adc21ce5263e45afd` |
+| `01_requirements.md` | `d5e9a6105267d7df541566469d49e8e07c268b10f926794c5ab4c06131518a03` |
+| `03_adr/001-align-test-callback-upstream.md` | `afdc9910ab6c5cc2e0f4fcebcfaced4395ca469bf68591e5c90738c001844467` |
+| `05_architecture.md` | `73a875a0c0807c5adcf519164f6fe0869c2648938a061bc3cf109283c88838c8` |
+
+Дополнительно прочитаны, но не входят в host manifest: `02_reuse_inventory.md` SHA `ff2aaea7f77ce17e010a44bee1b976f564f9531255d38c816e85878f0f543b2b`; `03.5_ideation_report.md` SHA `306859332d85e6ff1a12c8399ff86cf9a58cdb09c2581cf06ee2120e8bf3dec2`; `06_implementation_plan.md` SHA `259578cf6320f60c85bd791d97039f892cce55a16815912e94cdfe173743abbd`; OpenSpec proposal SHA `9e8503ffe9457372e92b4a32f4a20c78a6dfb8b5527960d1bb7de45d4d12e2cc`, spec SHA `392b589b5651f5d78ab26ac808e9c8e4f5b517fa0e1ab80321888b0d26305cb6`; private root facts SHA `384a767d3926e00fbfe97c8311a271c48126a62a8781a61be02aaa269d7fa725`.
+
+Actual executor, its source review/fixture tests, Caddy validate/reload/recovery, real health, SSH, DB, provider, payment and UI E2E **NOT RUN** в этой проверке. Обязательны будущие actual executor SHA/source review и same-path fixtures, актуальный code/QE и code/spec anti-drift, runtime control/health/identity/BOTH-store preflight, TEST isolation и честная настоящая CJM evidence. Один `clean` дизайн-отзыв или fixture не закрывает эти gates. Native prepare/evaluate, Git, агенты и runtime не запускались; чужие роли и host не изменялись.

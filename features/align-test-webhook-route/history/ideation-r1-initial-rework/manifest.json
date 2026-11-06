@@ -1,0 +1,54 @@
+{
+  "kind": "initial-author-rework-before-prospective-root-facts-correction",
+  "fa_state_copied": false,
+  "documents": [
+    {
+      "path": "features/align-test-webhook-route/00_complexity_assessment.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/00_complexity_assessment.md",
+      "bytes": 4882,
+      "sha256": "1992d64456de6394b79cca9756dbeba5fb0dfb6372796a1adc21ce5263e45afd"
+    },
+    {
+      "path": "features/align-test-webhook-route/01_requirements.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/01_requirements.md",
+      "bytes": 6204,
+      "sha256": "d5e9a6105267d7df541566469d49e8e07c268b10f926794c5ab4c06131518a03"
+    },
+    {
+      "path": "features/align-test-webhook-route/02_reuse_inventory.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/02_reuse_inventory.md",
+      "bytes": 5807,
+      "sha256": "ff2aaea7f77ce17e010a44bee1b976f564f9531255d38c816e85878f0f543b2b"
+    },
+    {
+      "path": "features/align-test-webhook-route/03.5_ideation_report.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/03.5_ideation_report.md",
+      "bytes": 14933,
+      "sha256": "72a60ee8534ee91ae0a9e1d95d67ca9f96313d4312f4ef070134e9a1b141c2f6"
+    },
+    {
+      "path": "features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/03_adr/001-align-test-callback-upstream.md",
+      "bytes": 9275,
+      "sha256": "d4cdae0f19cdda6ff328569e2f08b6514d1952afbce5998a85757df8f79e5e60"
+    },
+    {
+      "path": "features/align-test-webhook-route/05_architecture.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/05_architecture.md",
+      "bytes": 34533,
+      "sha256": "759883d5c5c4fb4b394793b7d99e59e192cf192c12f369ff59696f11016bb0ca"
+    },
+    {
+      "path": "features/align-test-webhook-route/06_implementation_plan.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/06_implementation_plan.md",
+      "bytes": 18342,
+      "sha256": "8bc3662e69cd82072f227592402eeb2fe15907aaf9b9e6d1ef5a7722e4bad3c9"
+    },
+    {
+      "path": "features/align-test-webhook-route/planning-status.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1-initial-rework/planning-status.md",
+      "bytes": 6640,
+      "sha256": "516fe45cdaeacede09e7a0b104b5e6b08249bb780206caa5886ace96b74cec63"
+    }
+  ]
+}

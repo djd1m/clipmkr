@@ -1,0 +1,186 @@
+{
+  "status": "CODE_READY_FOR_REVIEW",
+  "at": "2026-11-06T02:33:27.375523+00:00",
+  "stage": "author-repair-r3",
+  "requested_author": "gpt-6.1-sol high",
+  "served_model": null,
+  "runtime_go": false,
+  "formal_closure": "PENDING_ORIGINATING_REVIEW",
+  "native_actions": "NOT_RUN; existing ceiling/history preserved",
+  "source_sha256": "976223c60ee9b175d7592db4faed81e5cd58a4d23e973d1ab173b35c6c0e626e",
+  "launcher_sha256": "b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892",
+  "remote_payload_sha256": "976223c60ee9b175d7592db4faed81e5cd58a4d23e973d1ab173b35c6c0e626e",
+  "test_sha256": "8463703701e53efbfe17a534cff4ef91d543a44291f38aa31cf05c70e21bb0a5",
+  "base_fixture_sha256": "e88d7e58308ff7eb6cd272c84279773eb34f0af4d6d3adf1bd45090b1b15bd7e",
+  "composite_program_sha256": "da884857c82d6627b279882a26ee8f4e349db8d466ae0baa7bdd8ab8cad8ede1",
+  "extension_sha256": "0e4980e501b388ea274e120ecc5656b8fd20de0289c2e4b5b174bd0d48b44e1e",
+  "source_delta_sha256": "7746c469f33f1506d3bfb6c3d2ed6bda8a56e45ebc31c433f7b9f002f68ceaeb",
+  "repo_handoff_sha256": "f0c2a6dc6be28243d672d637852dd7ac906f85890c6893be086ced6d50feeba1",
+  "result_path": "/root/.config/clipmkr/ui-recovery-cloud-20261105/callback-code-author/repair-r3/repair-r3-result.private.md",
+  "result_sha256": "7472ba0afd81a10d1a4eaa58556043999301d79bf2a4dcb182744546216b3d5a",
+  "archive_manifest_sha256": "5551bbda89eaf0b1007abc2ae0357c46304dc38c473d148d516f302e9b26a60c",
+  "conditions": {
+    "QE-PRIMARY-01": {
+      "author_status": "OFFLINE_REPAIR_GREEN; NOT INDEPENDENTLY_CLOSED",
+      "evidence": [
+        "red-delta.raw.json",
+        "green-delta.raw.json"
+      ],
+      "checks": [
+        "final bytes/inode after H/control",
+        "same/fresh/final-marker-kill",
+        "direct fork/capture",
+        "success after prior failure"
+      ]
+    },
+    "QESEC-R2-01": {
+      "author_status": "OFFLINE_REPAIR_GREEN; NOT INDEPENDENTLY_CLOSED",
+      "evidence": [
+        "red-delta.raw.json",
+        "green-delta.raw.json"
+      ],
+      "checks": [
+        "same-namespace health/bytes/Uncontrolled/binding refusal -> business0",
+        "no extra writes/reload on failure"
+      ]
+    }
+  },
+  "checks": {
+    "operational_tests_pass": 30,
+    "portable_related_tests_pass": 58,
+    "skips": 0,
+    "guard_mutants_red": 13,
+    "legacy_exact_source_groups_green": 10,
+    "invalid_profiles_rejected": 7,
+    "lint_exit": 0,
+    "typecheck_exit": 0
+  },
+  "protected_inputs": {
+    "AGENTS.md": {
+      "before": "870d72ea5a78624c45ff3f0afaf9cc72facc6c4f8ddaa1e2a6d163265e92b3ca",
+      "after": "870d72ea5a78624c45ff3f0afaf9cc72facc6c4f8ddaa1e2a6d163265e92b3ca",
+      "unchanged": true
+    },
+    "CLAUDE.md": {
+      "before": "1f0fbd7865088dd2454a201025b5d9ce3fda4bb37732b26df023e54e4631fbc1",
+      "after": "1f0fbd7865088dd2454a201025b5d9ce3fda4bb37732b26df023e54e4631fbc1",
+      "unchanged": true
+    },
+    "docs/model-matrix.md": {
+      "before": "e78af9664347226c0c30427d5a7aad58de753d3c5d91bb98a2f0357b0fe26e94",
+      "after": "e78af9664347226c0c30427d5a7aad58de753d3c5d91bb98a2f0357b0fe26e94",
+      "unchanged": true
+    },
+    "docs/review-policy.md": {
+      "before": "625437b5b0fdc3c418fb88929efdc7069ad7247dc41e80a987237ba1801e2775",
+      "after": "625437b5b0fdc3c418fb88929efdc7069ad7247dc41e80a987237ba1801e2775",
+      "unchanged": true
+    },
+    "docs/acceptance/core-cjm.md": {
+      "before": "57959d202a7b92f7ce1b0a2b06255435422e0012b28d53f2d1d176912f62be5a",
+      "after": "57959d202a7b92f7ce1b0a2b06255435422e0012b28d53f2d1d176912f62be5a",
+      "unchanged": true
+    },
+    "features/align-test-webhook-route/01_requirements.md": {
+      "before": "b856cccb4b677de5bd8bbd479fad3682a4c8209d21ec8c9210b258ab33053350",
+      "after": "b856cccb4b677de5bd8bbd479fad3682a4c8209d21ec8c9210b258ab33053350",
+      "unchanged": true
+    },
+    "features/align-test-webhook-route/03.5_ideation_report.md": {
+      "before": "210196cdc62cd6adb6dae13b9debdc63beadb5fda75cb54d45c50ca7f1445773",
+      "after": "210196cdc62cd6adb6dae13b9debdc63beadb5fda75cb54d45c50ca7f1445773",
+      "unchanged": true
+    },
+    "features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md": {
+      "before": "d928de80700fd14ded42a8840998bb61ef1a829f83f1d0abb7ef3b8df613f8b5",
+      "after": "d928de80700fd14ded42a8840998bb61ef1a829f83f1d0abb7ef3b8df613f8b5",
+      "unchanged": true
+    },
+    "features/align-test-webhook-route/05_architecture.md": {
+      "before": "059622566fe8e50c1df1c2950f51fe6a0758a39d71dd3959c6c7114e92e25416",
+      "after": "059622566fe8e50c1df1c2950f51fe6a0758a39d71dd3959c6c7114e92e25416",
+      "unchanged": true
+    },
+    "features/align-test-webhook-route/06_implementation_plan.md": {
+      "before": "5bae02e15285f83d29ab706ed8578c12fc7d703f6dd27735117310c609b5c819",
+      "after": "5bae02e15285f83d29ab706ed8578c12fc7d703f6dd27735117310c609b5c819",
+      "unchanged": true
+    },
+    "openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md": {
+      "before": "392b589b5651f5d78ab26ac808e9c8e4f5b517fa0e1ab80321888b0d26305cb6",
+      "after": "392b589b5651f5d78ab26ac808e9c8e4f5b517fa0e1ab80321888b0d26305cb6",
+      "unchanged": true
+    },
+    "openspec/changes/align-test-webhook-route/proposal.md": {
+      "before": "9e8503ffe9457372e92b4a32f4a20c78a6dfb8b5527960d1bb7de45d4d12e2cc",
+      "after": "9e8503ffe9457372e92b4a32f4a20c78a6dfb8b5527960d1bb7de45d4d12e2cc",
+      "unchanged": true
+    },
+    "apps/web/src/server/billing-handler.ts": {
+      "before": "2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0",
+      "after": "2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0",
+      "unchanged": true
+    },
+    "apps/web/src/server/ip.ts": {
+      "before": "af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301",
+      "after": "af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301",
+      "unchanged": true
+    },
+    "packages/shared/src/config.ts": {
+      "before": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "after": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "unchanged": true
+    },
+    "deploy/test-webhook-route.caddy": {
+      "before": "878af1f6cf54cef3d675b6a0d3c3182051e45405e9dd557a22dc12d770198655",
+      "after": "878af1f6cf54cef3d675b6a0d3c3182051e45405e9dd557a22dc12d770198655",
+      "unchanged": true
+    },
+    "features/align-test-webhook-route/07_code_changes/root-source-binding.json": {
+      "before": "9dc6334d84ebad7393a95764f9a8bd89e8865311c11e6df58d61966e2d644df0",
+      "after": "9dc6334d84ebad7393a95764f9a8bd89e8865311c11e6df58d61966e2d644df0",
+      "unchanged": true
+    }
+  },
+  "evidence": {
+    "anti-drift.private.json": "47501fab3e20fdc32061ea6f5acdfe916a677554bdcd715c464f5342bd101104",
+    "captured-operational-program.private.py": "da884857c82d6627b279882a26ee8f4e349db8d466ae0baa7bdd8ab8cad8ede1",
+    "check-profile-gate.private.py": "6c68974e0f025f7ee7e35eb3237fd5045d6431fabda3d97dedf50eb15363e839",
+    "deny-implicit-private.cjs": "44b7abb7cd1d7b2c160a78ed55ed6ccdd152693989f10bb8b9e4c2aa53ef0f65",
+    "final-checks.raw.json": "82de02eb921ca16313af38b58dcca376ad1d890a8893cd16a98b1091e6d47f11",
+    "green-delta.raw.json": "279e9960aff4e998f43345b60033fa87f991b732687a9c8b34a38f26a6de3736",
+    "missing-config.profile.private.json": "5c991c15a14b217ba5e7b90e5e553c952ba20cdaa16a29b8db485b8d4d05a65c",
+    "missing-output.profile.private.json": "b560032c9633bea034d226675842ff30b8f21614f242ac9b383e25c8cfbe71a4",
+    "missing-source.profile.private.json": "b051887e3c5be5e8b893edbfab387955777b3146179e1194dcf87ed063c9cff9",
+    "mutation-execution.raw.json": "1b27726c0d63cb75ddeeff95f239aa9aa6a7a4130411bdbed6dead4738a39bfe",
+    "operational-fixtures.private.py": "e88d7e58308ff7eb6cd272c84279773eb34f0af4d6d3adf1bd45090b1b15bd7e",
+    "operational-profile.private.json": "d0231558d57b38cc9dadc872b9a8417c1dc505d0ad663b9e7cd8d5bc93d58bd8",
+    "output/fixture-execution.raw.jsonl": "25253ac16f2e873993c61e8529430291de2e2ac6aa3741f2453d0ef9594d84b4",
+    "profile-gate.raw.json": "fa7b8220014f9d9f19d28921540e108bdd2a0b7510447f9a23262f647a2982b5",
+    "protected-inputs.private.json": "6833bf128a9db5870c1f42b254387bbacbc56ba4c8fa1b43586ba5960e055081",
+    "red-delta.raw.json": "1c9c0a934217d4557df83b0d88bfcb8005b17790931b823c51e61767df91fea8",
+    "regressions.private.py": "0e4980e501b388ea274e120ecc5656b8fd20de0289c2e4b5b174bd0d48b44e1e",
+    "repair-r3-result.private.md": "7472ba0afd81a10d1a4eaa58556043999301d79bf2a4dcb182744546216b3d5a",
+    "run-delta.private.py": "df2b72fc1b1a1dd67d1d9feaa26446e4b2dd4ca3292606d38c1ea91ff1ee84e4",
+    "run-final-checks.private.py": "063866522cb91d01c7d83d879ad19f0b86e4d340e68d369497c80da210b6a737",
+    "run-mutations.private.py": "98cc92df680e990574dc2dec581c5970549c70603a8e3c37b5d6c5c90257d949",
+    "run-operational.private.py": "abf7a0b18e6df69775cdee8c25cc703c60eaf2f4c5c9733b1d95086eac53504f",
+    "source-delta.private.diff": "7746c469f33f1506d3bfb6c3d2ed6bda8a56e45ebc31c433f7b9f002f68ceaeb",
+    "substituted-source.private.py": "0e856d08374780969dbe79cc7e129cbce8b9a82fddd1f817277a794941869f04",
+    "validation-before-explicit-fork.raw.json": "6f064894180807a4bc1bf2c47b78f56d8d7b4cf076a695e265ca796c5b8cd9cb",
+    "wrong-binding.profile.private.json": "4b2ddd6141f2c2668e261fad252f405c78295c0eeebc5a4a3ed28bec052e83f9",
+    "wrong-source-bytes.profile.private.json": "da73fafebe10c032290a62e2940cea164c26502a8a70b4bc724b1772dce104fe"
+  },
+  "metrics": {
+    "tokens": null,
+    "cost_usd": null,
+    "reason": "Stage usage unavailable; cumulative resumed-session counters not used"
+  },
+  "limitations": [
+    "external adapters SIMULATED",
+    "only owned temporary filesystem/process effects",
+    "no actual runtime health or Caddy/SSH/provider/DB/session/payment/job",
+    "native evaluate/begin-repair and independent closure remain coordinator/reviewers",
+    "manual crash-recovery/downtime residual unchanged"
+  ]
+}
