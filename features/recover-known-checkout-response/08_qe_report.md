@@ -145,3 +145,12 @@ Originating reviewer `gpt-6-astra xhigh` действительно заверш
 Автор завершился terminal exit0 со статусом STOP_CONTRACT, addressed=[]. Это завершение отчёта об остановке, исправлений нет. Root после terminal физически проверил private6, original8, public2, profile, auth2, Chrome и protected paid helper: sourceSet `afc6ad8fce14a70946cf2509c59a3907f931c08caad740b5ddf1a0a309d7147f` неизменён. Readback SHA-256 `084041ea8b60314d477b97cf05e1465005d571ebafc9f598589515cb2f33cefd`. Native CODE history остаётся sequence7, rounds2/ceiling3, прежние9 условий сохранены; QE3 не открыт. Из репозиторных артефактов автор обновил только честный07 с сохранением предыдущего отчёта как истории.
 
 Требуется отдельное originating решение о конечных immutable slot descriptors и once-bound fresh context перед конкретным действием. Этот candidate ещё не является новым CODE GO. Структурные K2/OpenSpec и design closure не доказали исполнимость будущего positive; далее проверяется именно этот переход. Оплата, оплаченная нарезка и три роли остаются не приняты, runtime STOP.
+
+
+## Текущая проверка ticket-slot contract, 06.11.2026
+
+Originating quality/risk завершили design review текущей revision `9d2aab0f` без новых собственных серьёзных условий. Testability вернул **NO-GO**: QT-07 требует точного ациклического порядка GO → whole context → ticket и независимого связывания head; QT-08 — отдельного deadline-only rebind negative и направленного mutant. Это новые замечания к контракту, не результаты исполнения кода.
+
+Фактический installed ideation evaluate вернул exit3 `not-established`, причина `condition-scope-unmeasured:QT-07`: новые reviewer scopes ссылались на план, который ideation manifest не измеряет. Это не closure и не успешная регистрация новых условий. Исходные own отчёт/receipt сохранены; корректность привязки исправляет сам originating reviewer, содержательные замечания остаются открытыми. Архитектурное уточнение подготавливается отдельно; все прежние условия и CODE QE2 NO-GO сохранены. Шесть исправлений кода ещё не внесены, QE3 и runtime не запущены. Следующий переход возможен только после реальной проверки уточнения и поддержанных gates.
+
+После originating исправления только malformed scope новых условий поддержанный prepare импортировал QT-07/QT-08: в lineage теперь14 условий, прежние12 сохранены. Повторный actual evaluate дал exit1 unresolved ровно QT-07/QT-08. Первоначальный exit3 и прежний receipt сохранены; closure отсутствует.
