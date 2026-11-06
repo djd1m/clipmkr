@@ -1,3 +1,36 @@
+## 06.11.2026 — ограниченная попытка repair после QE2: STOP до изменения sources
+
+Текущий local CODEGO и entry gates действительны: target admission и builder дали exit0. Шесть private sources, public test/manifest и operational profile остались на исходном afc6. Новый runtime/helper/module не создан. Сохранены read-only raw snapshots baseline и bounded RED observations; это не implementation PASS и не новый native cycle.
+
+На actual afc6 повторены независимые сценарии KCQE-04…09: late final durability разрешает следующий callback; global provider/owner и event contradictions принимаются; lock loss допускает operation persist; wrong phase достигает actual native session branch на SIMULATED PG/config; whole collector output не проходит actual inventory. KCQE-05 — сохранённый пробел project coverage. KCQE-01…03 имеют только прежнюю independent verification на afc6, нового closure нет.
+
+**Конкретный contract blocker:** D1a.2/4 фиксирует whole ordinary tickets, включая Digest полного open context, в одном immutable lifetime roster до effects. D2a/AM-17 одновременно требуют legitimate второго нового case после actual reconcile и fresh baseline/GO. Бounded actual-source feasibility probe с точной восьмиполевой ticket schema показал:
+
+| Вариант второго open | Actual outcome |
+|---|---|
+| Context, зафиксированный до первого open/reconcile | `checkout GO/baseline time`, callback0 |
+| Actual fresh context после reconcile с прежним ticket digest | `RECOVERY_ORDINARY_TICKET`, callback0 |
+| Новый digest для actual fresh context | Positive control, callback1; frozen ticket/roster изменён |
+
+Все времена в этом probe — actual local samples; будущий baseline/GO/history не выдумывался. Внешние financial facts/transport — SIMULATED; выполнялись actual adapter/bridge/canonical primitives на собственных files/FD. Противоречие нельзя исправить implementation fallback, обновлением immutable roster, исключением fresh fields из whole context или fake future timestamps без нового нормативного решения root. Узкое направление решения: отделить конечные immutable slot identities/лимиты от once-bound current context digest под independently bound fresh GO/head; это предложение для originating review, здесь не реализовано.
+
+| Trace | Текущий статус этой попытки |
+|---|---|
+| FR1 | Existing capture corpus не изменён; нового Chrome/operational acceptance не заявлено |
+| FR2–FR5, KCQE-04…09 | RED replay, исправления не применены |
+| FR6, AM-14…16 | NOT IMPLEMENTED; D1a lifecycle prerequisite заблокирован |
+| AM-1…13 | Existing sources/assertions сохранены; новые verification/closure не заявлены |
+| AM-17 | Full-legitimate-positive заблокирован immutable roster/fresh context conflict |
+| AM-18 | RED global ownership/event/collector cases сохранены; GREEN отсутствует |
+| AM-19 | RED held-scope/phase/case cases сохранены; GREEN отсутствует |
+| AM-20 | Refactor/parity migration не начинались, старые assertions не удалены; completeness остаётся unresolved |
+
+Private author packet `code-qe2-structural-repair` содержит actual RED logs, closed-ticket feasibility observations, unchanged-byte readback и настоящий six-field author assessment. Addressed в этой попытке пуст; все9 meanings/native history и12 design meanings сохранены. Native QE3 не запускался. Реальные A0/history/actors/provider prerequisites остаются NOT_ESTABLISHED; runtime STOP. Serving identity NOT_ATTESTED.
+
+Ниже сохранён исторический отчёт предыдущего admitted afc6 набора; его прежние claims не являются результатом этой попытки или новой independent verification.
+
+---
+
 # Реализация инструмента восстановления известной тестовой оплаты
 
 Дата: 06.11.2026. Статус: исправления после первого независимого QE подготовлены для повторной проверки. **KCQE-01…06 остаются открыты до собственного подтверждения проверяющего. Runtime допуска и полного платёжного E2E нет.**
