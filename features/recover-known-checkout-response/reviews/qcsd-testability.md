@@ -1,3 +1,19 @@
+# Originating minimal focused verification R3 — qcsd-testability
+
+**Собственный вердикт: clean для QT-01–QT-04 на текущем design snapshot.** Это независимая focused проверка сохранённых условий и ограниченной дельты, не общий вердикт других reviewers и не closure gate. Запрошена `gpt-6.1-terra xhigh`; фактические serving identity и reasoning **NOT_ATTESTED**. Та же отдельная сессия, family `owner-exception`.
+
+Host revision `7b8c4a01ced5e85656ee293c1fda07e6d2c53dfee7ad07c032e37fa34635dfbd`, nonce `f1c5ce0e-b234-426f-a719-e76772b3d443`: перечитаны host, receipt и фактический `design-format-fix/author-handoff.private.json`; author в receipt совпадает с handoff. Пересчитан SHA manifest и проверены digest всех его файлов. Host сохраняет все семь исходных условий; мои четыре объекта не переопределены.
+
+Проверка дельты по собственным ранее измеренным bytes, без Git: ADR сейчас `97bf727cde78c38edacaa945596c75afbb46f3adb46de011538335556beadf7d`; обратная замена единственного `## Decision` на `## Решение` даёт прежний `aeef46dcf060700b5dfba03628e8a85a4ddd9d7d91e0d951626278ffde443dd7`. 05 сохраняет `740cf7eb6cc110fbf5311c545004f943e55109c46794010c8ec08c6f1aef5745`. 06 сейчас `6981be036c09127e942080e150f523c53a0be11d85b6719dd3691d5de1efcf00`; ровно две обратные замены нового пути public manifest на прежний дают ранее измеренный `34ab4d3369c18021440a3a838b3571337c6463d7b9a00b762662353e4670614e`. Упоминание baseline `d246d81` и исходы gate/context переданы заданием и автором, самостоятельно Git или gates не запускались. 06 не входит прямо в этот ideation manifest; его хеш проверен отдельно.
+
+Заголовок ADR — форматное изменение. Перенос public manifest в `tests/fixtures/recover-known-checkout-response.bindings.json` сохраняет его назначение и два публичных target, но меняет точный путь планируемого артефакта и contract допуска. Поэтому, в отличие от авторского `wording`, классифицирую совокупную дельту **structural** и проверяю затронутые фазовые artifacts с соответствующей силой. Точечный поиск в текущих 00/01/02/ADR/05/06 и exact OpenSpec не обнаружил прежнего пути; новый указан в таблице targets и EXPECTED_CODE_TARGETS 06. Шесть planned private outputs и разделение public manifest / отдельной проверки private actual bytes не изменились.
+
+QT-01 сохраняет B1 fence, проверку старого 812 до operate, inventory и future crash/lock checks; QT-02 — fixed read-only exact-key/provider source, TEST form и STOP при неизвестности без выдуманного TTL; QT-03 — независимый syscall/page/server порядок, one POST и no fallback с различающими mutations; QT-04 — отдельные positive controls и provenance/current authority/replay/window cases. Их архитектурные требования неизменны по SHA 05, а named AM-1/3/4/5 и необходимые требования 06 сохраняются после точного обратного преобразования. Дополнительных серьёзных design-рисков в ограниченном scope не выявлено.
+
+`implementationVerified:true` в собственной записи означает исключительно независимую проверку design ADR, архитектуры и фазовых документов на этой ideation revision, согласно установленной схеме. Полнота реально разрешённых entrypoints, actual private-byte admission, Chrome/FD/process tests, provider и TEST E2E остаются будущими проверками. Реализация, сеть, runtime, Git и gates в этой сессии R3 не выполнялись; данная запись не удостоверяет фактическую модель или работоспособность кода.
+
+---
+
 # Originating focused verification R1 — qcsd-testability
 
 **Собственный вердикт: clean для исправлений дизайна QT-01–QT-04 на указанной revision.** Все четыре исходных условия независимо проверены по исправленным фазовым артефактам. Это не общий вердикт всех reviewers и не closure ideation gate. Исходный отчёт R0 ниже сохранён как исторический: его NO-GO относится к предыдущему snapshot.

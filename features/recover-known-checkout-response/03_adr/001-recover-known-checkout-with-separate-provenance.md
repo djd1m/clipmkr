@@ -20,7 +20,7 @@
 | C. Повтор checkout с тем же browser key | Использует штатный idempotency path | Второй POST запрещён FR1; прошлый body не доказан, риск несовпадения key/window остаётся |
 | D. Generic recovery framework/новый coordinator | Может обслуживать будущие сценарии | Новый lifecycle/authority/namespace; несоразмерен одному missing recovery case и D4 |
 
-## Решение
+## Decision
 Выбран A. Новый private `recover-known-checkout.private.py` принимает captured canonical namespace db0 через b9 launcher и exact origin proof; ничего не monkey-patch. Derivative bridge вызывает его только для binding известного failed attempt, ограниченного follow-up и terminal metadata reconciliation. Новые формы находятся в том же original bridge journal, а не в новом namespace. `used[original_open_ticket].state=consumed_unknown` и исходный `completed=false` никогда не становятся success.
 
 Перед recovery тот же journal получает permanent `binding.recovery_protocol` с version/source-set/origin-binding digest; исходные `binding.runtime/execution` сохраняются побайтно в canonical JSON и в create-only snapshot. Actual old812 сравнивает **весь** binding с `{runtime,execution}` до `operate` и потому отказывает после additive fence. Новый bridge понимает обе формы только для одноразовой миграции; после fence обратный переход запрещён. Изменение формы journal binding — явная migration, не переписывание original executor SHA. Все business actions идут через этот bridge; inventory конкретных разрешённых entrypoints и tests их отказов —05B. Произвольное исполнение root собственного Python не входит в эту границу доверия.

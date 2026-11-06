@@ -25,7 +25,7 @@ Candidate private root `K=/root/.config/clipmkr/recover-known-checkout-response-
 | CREATE | `/root/.config/clipmkr/recover-known-checkout-response-20261106/recovery-fixtures.private.py` | Actual captured adapter/bridge через real temp files/FD/processes; внешние adapters SIMULATED |
 | CREATE | `/root/.config/clipmkr/recover-known-checkout-response-20261106/capture-fixtures.private.mjs` | Actual candidate browser capture с native Chrome/localHTTP/fsync, synthetic data only |
 | CREATE | `tests/recover-known-checkout-response.test.ts` | Public binding/fixture runner; required operational profile, no missing-profile PASS |
-| CREATE | `features/recover-known-checkout-response/07_code_changes/private-source-bindings.json` | Measured SHA/path aliases/immutable dependency roster; без private IDs/URL/секретов |
+| CREATE | `tests/fixtures/recover-known-checkout-response.bindings.json` | Measured SHA/path aliases/immutable dependency roster; без private IDs/URL/секретов |
 
 READONLY: семь canonical sources02 (db0/b9/f15/ababad/39b/812/c12); original case launch transport witness SHA1f2350 из05B; `tests/test-webhook-route.test.ts`, app billing/auth/payments/db owners, включая рассмотренный maintained donor `apps/web/src/server/payments/yookassa.ts`. Literal paid-media targets отсутствуют: canonical f15 неизменен, его dependent5eae pin не обновляется. Ни перенос sources, ни добавление другого исполняемого helper не входят в scope; изменение таблицы требует plan/source admission до записи.
 
@@ -107,4 +107,4 @@ Gate states: requirements approval — root records; ADR proposed; QCSD R1 unres
 
 EXPECTED_CODE_TARGETS:
 - tests/recover-known-checkout-response.test.ts
-- features/recover-known-checkout-response/07_code_changes/private-source-bindings.json
+- tests/fixtures/recover-known-checkout-response.bindings.json
