@@ -1,7 +1,9 @@
 # Требования: восстановление известного TEST checkout
 
 ## Наблюдение
-HTTP201 и original browser request сохранены; helper завершился1 до intentId/redirect URL. Read-only SQL exact account+browser key и provider GET подтвердили одно TEST pending намерение,0payment/event. Own temporary session действительно revoked, bridge failed callback/STOP1 сохранён. Причина live exception masked; собственный Chrome/localHTTP/fsync probe20/20 воспроизвёл Network.getResponseBody при immediate navigation. Это доказательство класса harness race, не наблюдение точной live exception.
+HTTP201 выведен из pinned c12 control flow: case.request сохраняется только после r.status()===201. Это не wire capture; request — parsed postDataJSON projection, exact response_at отсутствует. Helper завершился1 до intentId/redirect URL; original failed case сохранён. Read-only exact account/browser key и provider GET подтвердили одно TEST pending намерение и0payment/event; own-session revoke и failed callback/STOP1 сохранены в исходных receipts. Local Chrome/fsync probe20/20 подтверждает класс race, не точную masked live exception.
+
+Clarification после codeQE cycle1: KCQE-01…06 открыты. Candidate controller bound [authentic case.checkoutClickAt, bridge-completion.completedAt] не является установленным clock/source/causal proof. Corrected observation даёт одного approved owner из четырёх main rows; TEST/shop/amount/order correlation всех четырёх не является ownership/history GO. Initial applied inventory совпадает с original runtime-spec.inventory; later manifest законно иной. Это техническое уточнение evidence прежних FR, не изменение user scope. OpenSpec hashes/bytes остаются прежними.
 
 Обновление06.11.2026,11:08:37Z: свежая read-only сверка exact original target показала provider `canceled/paid=false`, reason `expired_on_confirmation`, без confirmation URL; DB intent всё ещё `created`. Это последующее состояние той же попытки, не новая покупка и не успешный decline/cancel тест. Данная сверка не читала payment/events/grants и не заменяет fresh whole BOTH-store inventory перед reconcile. Original operation остаётся `incomplete_pending`, original open — `consumed_unknown`.
 
