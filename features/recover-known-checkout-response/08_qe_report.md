@@ -1,6 +1,6 @@
 # Независимое QE восстановления известной тестовой оплаты
 
-Дата: 06.11.2026. **Первый цикл: NO-GO, D. Допуска к runtime нет.** Это отчёт о локальном инструменте проверки; приёмка оплаты, клипов и трёх кабинетов ещё не завершена.
+Дата: 06.11.2026. **Второй цикл: NO-GO, D. Открыты KCQE-04…09; допуска к runtime нет. История первого цикла сохранена.** Это отчёт о локальном инструменте проверки; приёмка оплаты, клипов и трёх кабинетов ещё не завершена.
 
 ## Фактическая проверка
 
@@ -93,3 +93,28 @@ Design review фактически закрыто12: revision `93f6d757b7a6158e7
 Поддерживаемый native `prepare` обновил незасвидетельствованный snapshot: actual exit0 prepared, sequence6, revision `a9905f80a820bff04bb2124d8b25f231ba77f9cf83c351555eae3acafae35275`, nonce `d693203a-8cd4-48ac-850b-d35d19046c5d`. Это тот же открытый второй цикл, без сброса history или расходования разрешения старого callback QE4. Originating Astra CLI фактически возобновлён на этих байтах; новый verdict ещё не получен.
 
 Actual code checkpoint записан поддерживаемой командой с измеряемым `07_code_changes.md`, exit0. Первый вызов без `--artifact` был отказан «stage code declared no artifact to witness» и не объявлялся успехом; исправлен аргумент вызова, не authority. Checkpoint фиксирует завершение локальной реализации и передачу, не принятие QE/runtime. Урок остановки writer сохранён как `teach:f0c7a1e4625098a0`; actual recall0 вернул дословный текст.
+
+
+## Итог второго независимого code QE
+
+Originating reviewer `gpt-6-astra xhigh` действительно завершился exit0 и записал собственный entry атомарно под lock. Это завершение проверки, не приёмка. Root прочитал отчёт и command/receipt readback, перепроверил неизменность source-set `afc6ad8fce14a70946cf2509c59a3907f931c08caad740b5ddf1a0a309d7147f`, public/native manifest, literal author и шесть прежних условий. SHA независимого отчёта: `e3db1d33d9cce96198afb1b7612bb629f8832c0ee018eedb85ae98617b90bd22`.
+
+Настоящий native evaluate: **exit1, unresolved**, rounds2/ceiling3, sequence7, eventDigest `3b2b52b087fa7f8866e0190ef0c70a644c3f9ea5c25504f6cdf0885d854ed98e`. Условия01…03 имеют собственные подтверждения текущей revision;04…06 не подтверждены,07…09 импортированы как новые HIGH. История не сбрасывалась. Отдельное старое разрешение callback QE4 к этому feature не применяется.
+
+| Finding | Результат на этой ревизии | Подтверждённый смысл |
+|---|---|---|
+| KCQE-01 | verified | Настоящий SIGKILL/partial сохраняет evidence и блокирует повтор |
+| KCQE-02 | verified | Предыдущие consumed/response/cleanup unknown блокируют другой ticket; late promotion отдельно04 |
+| KCQE-03 | verified offline | Chronology, inferred201 и bounded clock witnesses различаются корректно; реальные historical clocks не доказаны |
+| KCQE-04 | unresolved, HIGH | Поздний final fsync оставляет terminal-looking state и разрешает следующий callback |
+| KCQE-05 | unresolved, HIGH | Существенно улучшенный корпус ещё не содержит всех различающих regression controls AM8/AM13 |
+| KCQE-06 | unresolved, HIGH | Противоречивые raw historical event bindings и cross-store provider/owner collision принимаются |
+| KCQE-07 | new, HIGH | Потеря controller/route lock обнаруживается после запрещённой operation persist; B0 other unknown останавливает слишком поздно |
+| KCQE-08 | new, HIGH | Неверные ordinary phase/case достигают actual native session/callback |
+| KCQE-09 | new, HIGH | Whole collector теряет обязательные payment fields, нарушает coverage observation contract и locked bounded reads |
+
+Независимый operational Vitest17/17 exit0,107,95с; собственные fault/contract/clock/ownership/ordinary probes выявили перечисленные нарушения на тех же байтах. Реальные Chrome/HTTP/FD/flock/fsync/SIGKILL; внешние PG/config/provider/transport — SIMULATED. Первоначальный собственный observer reviewer ошибся в числе snapshot файлов и дал exit1; corrected v2 дал exit0. Это не finding и не mutation kill. Scoped static/TypeScript/syntax0, не полный project build/typecheck.
+
+Три исправления приняты только на текущих байтах; общий ADR Confirmation остаётся FAIL. Code/spec anti-drift: FR1 локально подтверждён, FR2…5/AM8/AM13 не полностью выполнены; приложение/UI/DB/Cloud не менялись. Новых реальных TEST checkout или runtime recovery не было. Исторические clocks и actual retained history/delivery остаются отдельными prerequisites.
+
+Следующий блок: в том же feature уточнить минимальный план исправления04…09 и proposed FR6, сохранить все9 code conditions и12 design conditions, пройти originating design verification и настоящие K1/K2/checkpoints до кода. Будущий третий code QE требует нового actual author delta, frozen bytes и supported begin-repair; никакого автоматического четвёртого цикла или выдуманного closure.
