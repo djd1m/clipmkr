@@ -15,32 +15,45 @@ export function revealGuestForm(section: Pick<HTMLElement, 'scrollIntoView'> | n
   field?.focus({ preventScroll: true });
 }
 
-export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselect }: {
-  videoId: string; clips: ClipScreen[]; initialPacks: GuestPackSummary[]; consentHash: string; preselect?: GuestPreselect | null;
+export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselect, onClose }: {
+  videoId: string; clips: ClipScreen[]; initialPacks: GuestPackSummary[]; consentHash: string; preselect?: GuestPreselect | null; onClose?: () => void;
 }) {
+  const [visible, setVisible] = useState(!onClose), [focusNonce, setFocusNonce] = useState(0);
+  const focused = useRef(0);
   const [packs, setPacks] = useState(initialPacks), [selected, setSelected] = useState<string[]>([]);
+  const [name, setName] = useState(''), [consent, setConsent] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false), [message, setMessage] = useState('');
+  const sending = useRef(false);
+  const eligible = clips.filter(c => c.available).map(c => c.clip_id);
+  const payloadKey = JSON.stringify([videoId, name, [...selected].sort(), [...selected].filter(id => eligible.includes(id)).sort(), consentHash, GUEST_CONSENT_VERSION]);
+  const confirmed = consent === payloadKey;
+  useEffect(() => { setConsent(null); setSelected(old => old.filter(id => eligible.includes(id))); }, [videoId, consentHash, selected.filter(id => eligible.includes(id)).sort().join('|')]);
   const sectionRef = useRef<HTMLElement>(null), nameRef = useRef<HTMLInputElement>(null), disclosureRef = useRef<HTMLDetailsElement>(null), handled = useRef(0);
   useEffect(() => {
     // Polling replaces `clips` every 5 s; the nonce guard keeps one press = one scroll.
-    if (!preselect || preselect.nonce === handled.current) return;
-    handled.current = preselect.nonce;
+    if (busy || !preselect || preselect.nonce === handled.current) return;
+    handled.current = preselect.nonce; setVisible(true); setFocusNonce(preselect.nonce);
     const selectable = clips.filter(c => c.available).map(c => c.clip_id);
-    setSelected(old => addGuestPreselect(old, preselect.clip_id, selectable));
+    setSelected(old => addGuestPreselect(old, preselect.clip_id, selectable)); setConsent(null);
     if (disclosureRef.current) disclosureRef.current.open = true;
+  }, [preselect, clips, busy]);
+  useEffect(() => {
+    // The section must be visible in the committed DOM before focusing its field.
+    if (!visible || busy || !focusNonce || focused.current === focusNonce) return;
+    focused.current = focusNonce;
     revealGuestForm(sectionRef.current, nameRef.current, typeof window === 'undefined' ? undefined : window.matchMedia?.bind(window));
-  }, [preselect, clips]);
-  const [name, setName] = useState(''), [consent, setConsent] = useState(false);
-  const [busy, setBusy] = useState(false), [message, setMessage] = useState('');
+  }, [visible, focusNonce, busy]);
   const update = (p: GuestPackSummary) => setPacks(old => [{ ...p, url: new URL(p.url, window.location.origin).href }, ...old.filter(v => v.guest_pack_id !== p.guest_pack_id)]);
   async function action(work: () => Promise<void>) {
-    setBusy(true); setMessage('');
+    if (sending.current) return; sending.current = true; setBusy(true); setMessage('');
     try { await work(); } catch (error) { setMessage(error instanceof Error ? error.message : 'Не удалось выполнить действие'); }
-    finally { setBusy(false); }
+    finally { sending.current = false; setBusy(false); }
   }
   async function create() {
+    if (!confirmed || !name.trim() || !selected.length || selected.some(id => !eligible.includes(id))) return;
     const pack = await rpc<GuestPackSummary>('guest.create', { video_id: videoId, clip_ids: selected, guest_name: name,
-      consent_confirmed: consent, consent_version: GUEST_CONSENT_VERSION, consent_text_hash: consentHash }, true);
-    update(pack); setSelected([]); setConsent(false);
+      consent_confirmed: confirmed, consent_version: GUEST_CONSENT_VERSION, consent_text_hash: consentHash }, true);
+    update(pack); setName(''); setSelected([]); setConsent(null);
     setMessage('Пакет создан. Нажмите «Отправить гостю», чтобы включить ссылку на 14 дней.');
   }
   async function send(pack: GuestPackSummary) {
@@ -49,20 +62,20 @@ export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselec
     try { await navigator.clipboard.writeText(new URL(sent.url, window.location.origin).href); setMessage('Ссылка скопирована. Отправьте её гостю.'); }
     catch { setMessage('Ссылка включена. Скопируйте её из поля пакета и отправьте гостю.'); }
   }
-  return <section ref={sectionRef} aria-labelledby="guest-title" style={{ marginTop: 32 }}>
-    <details ref={disclosureRef} className="guest-disclosure"><summary id="guest-title">Клипы для гостя</summary><p>Отметьте моменты с участием гостя. Разрешение на публикацию нужно получить заранее.</p>
+  return <section ref={sectionRef} aria-labelledby="guest-title" className="guest-context" hidden={!visible}>
+    <details ref={disclosureRef} className="guest-disclosure"><summary id="guest-title">Клипы для гостя</summary>
+    {onClose && <button type="button" className="secondary guest-close" disabled={busy} onClick={() => { if(disclosureRef.current) disclosureRef.current.open = false; setVisible(false); onClose(); }}>Закрыть</button>}<p>Отметьте моменты с участием гостя. Разрешение на публикацию нужно получить заранее.</p>
     <form onSubmit={event => { event.preventDefault(); void action(create); }}>
       <fieldset disabled={busy} style={{ border: 0, padding: 0, minWidth: 0 }}>
-        <label>Имя гостя <input ref={nameRef} value={name} maxLength={100} required onChange={e => setName(e.target.value)} /></label>
+        <label>Имя гостя <input ref={nameRef} value={name} maxLength={100} required onChange={e => { setName(e.target.value); setConsent(null); }} /></label>
         {clips.filter(c => c.available).map(c => <label key={c.clip_id} className="check">
-          <input type="checkbox" checked={selected.includes(c.clip_id)} onChange={e => setSelected(old => e.target.checked ? [...old, c.clip_id] : old.filter(id => id !== c.clip_id))} /> {c.title}
+          <input type="checkbox" checked={selected.includes(c.clip_id)} onChange={e => { setSelected(old => e.target.checked ? [...old, c.clip_id] : old.filter(id => id !== c.clip_id)); setConsent(null); }} /> {c.title}
         </label>)}
         {!clips.some(c => c.available) && <p>Для пакета нужны готовые клипы с действующим сроком хранения.</p>}
-        <label className="check"><input type="checkbox" checked={consent} required onChange={e => setConsent(e.target.checked)} /> {GUEST_CONSENT_TEXT}</label>
-        <button disabled={!consent || !selected.length || !name.trim()}>Создать пакет</button>
+        <label className="check"><input type="checkbox" checked={confirmed} required onChange={e => setConsent(e.target.checked ? payloadKey : null)} /> {GUEST_CONSENT_TEXT}</label>
+        <button disabled={!confirmed || !selected.length || !name.trim() || selected.some(id => !eligible.includes(id))}>Создать пакет</button>
       </fieldset>
     </form>
-    {message && <p role="status">{message}</p>}
     {packs.map(pack => <article key={pack.guest_pack_id} className="guest-pack">
       <h3>{pack.guest_name}</h3>
       <p>{pack.revoked_at ? 'Пакет отозван' : pack.expires_at ? `Ссылка действует до ${new Date(pack.expires_at).toLocaleString('ru-RU')}` : 'Ещё не отправлен. Ссылка закрыта.'}</p>
@@ -77,5 +90,5 @@ export function GuestPacks({ videoId, clips, initialPacks, consentHash, preselec
         })}>Отозвать пакет</button>
       </>}
     </article>)}
-  </details></section>;
+  </details>{message && <p role="status">{message}</p>}</section>;
 }

@@ -23,22 +23,26 @@ import { tmpdir } from 'node:os';
 import type { ViteDevServer } from 'vite';
 import type { Page } from 'playwright';
 import type { ClipScreen } from '../apps/web/src/lib/screen-contract';
-const now = new Date('2026-09-22T12:00:00Z');
-const id = '00000000-0000-4000-8000-000000000001';
+const now = new Date('2026-09-22T12:00:00Z'), id = '00000000-0000-4000-8000-000000000001';
 export const video: VideoRow = { id, status: 'rendering', created_at: now, updated_at: now, finished_at: null,
-  duration_seconds: '600', stage_progress: 40, clips_done: 1, clips_total: 2, failure_reason: null,
-  object_key: 'source', actual_bytes: '100', plan: 'free', wait_reason: null };
+  duration_seconds: '600', stage_progress: 40, clips_done: 1, clips_total: 2, failure_reason: null, object_key: 'source', actual_bytes: '100', plan: 'free', wait_reason: null };
 const clip: ClipRow = { id, index: 1, start_seconds: '2', end_seconds: '25', title: 'Сильный момент', status: 'done',
-  watermarked: true, object_key: 'file', expires_at: null, score: 60, score_hook: 20, score_completeness: 20, score_length: 20,
-  explain_hook: 'Вопрос с первых слов', explain_completeness: 'Есть законченный ответ', explain_length: 'Нет лишних слов' };
+  watermarked: true, object_key: 'file', expires_at: null, score: 60, score_hook: 20, score_completeness: 20, score_length: 20, explain_hook: 'Вопрос с первых слов', explain_completeness: 'Есть законченный ответ', explain_length: 'Нет лишних слов' };
 const markup = (row: VideoRow) => renderToStaticMarkup(createElement(ProgressPanel, { video: presentVideo(row, now) }));
 describe('экран прогресса и оценки', () => {
   it('три состояния различимы в HTML и тексте', () => {
-    const running = markup(video), success = markup({ ...video, status: 'done' }), failed = markup({ ...video, status: 'failed', failure_reason: 'render_failed' });
+    const running = markup(video), success = markup({ ...video, status: 'done', clips_done: 4, clips_total: 4 }), failed = markup({ ...video, status: 'failed', failure_reason: 'render_failed' });
     expect(running).toContain('data-state="running"'); expect(running).toContain('Выполняется');
     expect(success).toContain('data-state="success"'); expect(success).toContain('Клипы готовы');
     expect(failed).toContain('data-state="failure"'); expect(failed).toContain('Обработка не завершена');
     expect(failed).toContain('Повторить'); expect(failed).not.toContain('<progress');
+  });
+  it('частичный результат 3/4 сохраняет готовые клипы без выдуманного retry', () => {
+    const partial = presentVideo({ ...video, status: 'done', clips_done: 3, clips_total: 4 }, now);
+    const html = renderToStaticMarkup(createElement(ProgressPanel, { video: partial }));
+    expect(partial.next_action).toBe(null); expect(html).not.toContain('success compact');
+    expect(html).toContain('Обработка завершена: проверьте доступные клипы'); expect(html).not.toContain('Повторить');
+    expect(presentClip(clip, video, now).available).toBe(true);
   });
   it('молчание после пяти минут не показывается как идёт', () => {
     const stale = { ...video, updated_at: new Date(now.getTime() - 300001) };
@@ -136,9 +140,9 @@ describe('лента стадий экрана записи', () => {
     expect(html).toContain('Обработка перестала отвечать.'); expect(html).toContain('Повторить');
   });
   it('лента: готово — одна строка «Клипы готовы · N из M»', () => {
-    const html = markup({ ...video, status: 'done', clips_done: 3, clips_total: 4 });
+    const html = markup({ ...video, status: 'done', clips_done: 4, clips_total: 4 });
     expect(html).not.toContain('<ol'); expect(html).not.toContain('<progress'); expect(html).not.toContain('<h2');
-    expect(text(html)).toContain('Клипы готовы · 3 из 4'); expect(html).toContain('status-panel success compact');
+    expect(text(html)).toContain('Клипы готовы · 4 из 4'); expect(html).toContain('status-panel success compact');
   });
   it('лента: SQL берёт стадию последней попытки без пересборок', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [{ ...video, status: 'failed', failure_reason: 'stalled', last_stage: 'select', last_stage_status: 'failed' }] });
@@ -199,7 +203,6 @@ describe('tRPC read contract', () => {
     expect(query.mock.calls[0]?.[1]).toEqual(['owner', id]);
   });
 });
-
 it('чтения 120/мин отдельно от 30 мутаций', async () => {
   const counts = new Map<string, number>();
   const redis = { status: 'ready', eval: vi.fn(async (_script, _count, key: string) => {
@@ -217,7 +220,6 @@ it('скачивание: UTF-8 имя в подписанном Content-Disposi
     expect(url.searchParams.get('X-Amz-Expires')).toBe('900');
   } finally { client.destroy(); }
 });
-
 it('файл открывается сразу, даже если запись события не отвечает', () => {
   const anchor = { href: '', download: '', rel: '', click: vi.fn(), remove: vi.fn() };
   const analytics = vi.spyOn(rpcClient, 'rpc').mockImplementation(() => new Promise(() => {}));
@@ -228,14 +230,12 @@ it('файл открывается сразу, даже если запись �
     expect(anchor.click.mock.invocationCallOrder[0]).toBeLessThan(analytics.mock.invocationCallOrder[0]!);
   } finally { vi.unstubAllGlobals(); analytics.mockRestore(); }
 });
-
 it('actual clip duration is numeric in screen and used by ClipCard; null falls back', () => {
   const screen = presentClip({ ...clip, duration_seconds: '20.12' }, video, now);
   expect(screen.duration_seconds).toBe(20.12);
   expect(renderToStaticMarkup(createElement(ClipCard, { clip: screen }))).toContain('20.1');
   expect(renderToStaticMarkup(createElement(ClipCard, { clip: { ...screen, duration_seconds: null } }))).toContain('23.0');
 });
-
 it('uploading_is_never_stale_processing', () => {
   for (const age of [0,300001,86400000]) {
     const current=presentVideo({...video,status:'uploading',stage_progress:99,updated_at:new Date(now.getTime()-age)},now);
@@ -255,13 +255,11 @@ it('uploading_row_has_no_detail_link', async () => {
 it('other_processing_staleness_is_unchanged',()=>{
   for(const status of ['queued','transcribing','rendering'] as const) expect(presentVideo({...video,status,updated_at:new Date(now.getTime()-300001)},now).no_response).toBe(true);
 });
-
 it('local_uploading_staleness_keeps_projection_neutral',async()=>{
-  // Inspect the actual parent-to-panel projection: the uploading panel's early return
-  // otherwise masks an incorrect no_response value in rendered HTML.
+  // Inspect parent projection: the uploading early return otherwise masks incorrect no_response in HTML.
   vi.resetModules();
   vi.doMock('react',async()=>({...await vi.importActual<typeof import('react')>('react'),
-    useEffect:()=>{},useState:(initial:unknown)=>[typeof initial==='function'?initial():initial,vi.fn()]}));
+    useEffect:()=>{},useRef:(initial:unknown)=>({current:initial}),useState:(initial:unknown)=>[typeof initial==='function'?initial():initial,vi.fn()]}));
   vi.doMock('next/navigation',()=>({useRouter:()=>({push:vi.fn(),refresh:vi.fn()})}));
   const clock=vi.spyOn(Date,'now');
   try{
@@ -284,8 +282,6 @@ it('local_uploading_staleness_keeps_projection_neutral',async()=>{
     }
   }finally{clock.mockRestore();vi.doUnmock('react');vi.doUnmock('next/navigation');vi.resetModules();}
 });
-
-
 describe('согласованная композиция результата', () => {
   it('карточка сохраняет реальный video и предоставляет явный просмотр с selection identity', () => {
     const current = presentClip(clip, video, now);
@@ -293,14 +289,13 @@ describe('согласованная композиция результата',
     expect(html).toContain(`data-clip-id="${current.clip_id}"`);
     expect(html).toContain('data-selected="true"');
     expect(html).toContain(`src="/api/clips/${id}/file?v=1"`);
-    expect(html).toContain('Просмотр');
+    expect(html).toMatch(/<video[^>]*controls=""[^>]*playsInline=""/i);
     expect((html.match(/<video/g) ?? [])).toHaveLength(1);
     expect(html).not.toContain('autoplay');
-    expect(html).toContain('Оценка и настройки клипа');
+    expect(html).toContain('<summary>Ещё</summary>');
+    expect(html).toContain('Поделиться'); expect(html).toContain('Изменить оформление');
   });
 });
-// Настоящие mounted React/video/native details; RPC и файл контролируются loopback fixture.
-// Это проверка lifecycle, а не доказательство Next/provider/published acceptance.
 describe('выбранный player и гостевая форма в настоящем браузере', () => {
   let server: ViteDevServer, origin: string, cache: string;
   const fixtureClips: ClipScreen[] = Array.from({ length: 4 }, (_, index) => ({
@@ -441,6 +436,8 @@ describe('выбранный player и гостевая форма в насто
       const cta = page.locator('details.cta-disclosure'), ctaForm = cta.locator('form');
       expect(await cta.count()).toBe(1); expect(await cta.getAttribute('open')).toBeNull();
       expect(await ctaForm.count()).toBe(1); expect(await ctaForm.isVisible()).toBe(false);
+      await page.locator('.clip-card').nth(1).locator('.clip-secondary > summary').click();
+      await page.getByRole('button', { name: 'Изменить оформление', exact: true }).click();
       await cta.locator('summary').click();
       await cta.getByLabel('Что сделать зрителю в конце').selectOption('open_link');
       const ctaInput = cta.getByLabel('Ссылка (https://…)'); await ctaInput.fill('https://example.org/episode');
@@ -449,7 +446,8 @@ describe('выбранный player и гостевая форма в насто
       const disclosure = page.locator('.guest-disclosure');
       expect(await disclosure.getAttribute('open')).toBeNull();
       expect(await page.getByLabel('Имя гостя').count()).toBe(1);
-      await page.locator('.clip-card').nth(1).getByRole('button', { name: 'Отправить клип гостю' }).click();
+      await page.getByRole('button', { name: 'Поделиться', exact: true }).click();
+      await page.locator('.clip-context:not([hidden])').getByRole('button', { name: 'Отправить клип гостю' }).click();
       await expect.poll(() => disclosure.getAttribute('open')).not.toBeNull();
       await page.getByLabel('Имя гостя').fill('Ирина');
       await page.locator('.guest-disclosure input[type="checkbox"][required]').check();
@@ -476,8 +474,10 @@ describe('выбранный player и гостевая форма в насто
       expect(await ctaInput.evaluate(el => el.isConnected && el === Reflect.get(window, 'ctaInput'))).toBe(true);
       expect(await ctaInput.inputValue()).toBe('https://example.org/episode');
       expect(await cta.getByLabel('Что сделать зрителю в конце').inputValue()).toBe('open_link'); expect(mutations).toEqual([]);
+      await page.getByRole('button', { name: 'Изменить оформление', exact: true }).click();
       await cta.locator('summary').click(); await cta.getByRole('button', { name: 'Сохранить призыв', exact: true }).click();
-      await expect.poll(() => cta.getByRole('status').textContent()).toContain('Сохранено. Кнопка уже на страницах клипов.');
+      await cta.locator('summary').click(); const feedback = page.locator('[data-cta-feedback][role=status]');
+      await expect.poll(() => feedback.textContent()).toBe('Сохранено. Кнопка уже на страницах клипов.'); expect(await feedback.isVisible()).toBe(true);
       expect(mutations).toEqual([{ method: 'video.setCta', body: { video_id: id, cta_kind: 'open_link', cta_url: 'https://example.org/episode' } }]);
       const beforeUnavailable = polls;
       offered = offered.map((item, index) => index === 1 ? { ...item, available: false } : item);

@@ -1,0 +1,392 @@
+{
+  "kind": "Author source/dependency comparison, NOT native receipt",
+  "oldHostRevision": "0c807d4d6102de9be726e5b437aa8fc2e839ae5269b6e0407d5cb50b7ff03f3e",
+  "previousHostInputCount": 62,
+  "changedFromOldHost": [
+    "apps/web/src/app/clips/GuestPacks.tsx",
+    "apps/web/src/app/dashboard/account/page.tsx",
+    "apps/web/src/app/dashboard/page.tsx",
+    "apps/web/src/app/dashboard/partner/page.tsx",
+    "apps/web/src/app/videos/CtaFields.tsx",
+    "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+    "features/ux-simplification/06_implementation_plan.md",
+    "tests/browser/ux-simplification.test.ts",
+    "tests/progress-screen.test.ts"
+  ],
+  "inputs": [
+    {
+      "path": "apps/web/src/app/WorkspaceHeader.tsx",
+      "previousMeasuredDigest": "21c5c74479a57f5494836536b4df83853ca87492fd6933c5965b2e56d41719b6",
+      "currentDigest": "21c5c74479a57f5494836536b4df83853ca87492fd6933c5965b2e56d41719b6",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/WorkspaceSettings.tsx",
+      "previousMeasuredDigest": "c2ea03030300039fd99a6ccc08ae2ebdf48b47a74bf70bb0e7d72b67c39e890e",
+      "currentDigest": "c2ea03030300039fd99a6ccc08ae2ebdf48b47a74bf70bb0e7d72b67c39e890e",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "previousMeasuredDigest": "9d94e2ac18b135ce1e17a6a0d3b31bbf0a897ee650a94916d993b7a4b703d4e5",
+      "currentDigest": "9d94e2ac18b135ce1e17a6a0d3b31bbf0a897ee650a94916d993b7a4b703d4e5",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipMusicChoice.tsx",
+      "previousMeasuredDigest": "6255b32c320366535ac0446567a9bd36e53a16b806429c58c2f0ce65dcd3c729",
+      "currentDigest": "6255b32c320366535ac0446567a9bd36e53a16b806429c58c2f0ce65dcd3c729",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/clips/GuestPacks.tsx",
+      "previousMeasuredDigest": "5de30a17bac8df10c594718d9c853957bdea2d8a880cf13331a924a57d31e0ab",
+      "currentDigest": "2668aedfd3693ae2308f0cad50634be53fb07d826928d1276272ccf7b8db8e97",
+      "unchanged": false
+    },
+    {
+      "path": "apps/web/src/app/dashboard/LimitsPanel.tsx",
+      "previousMeasuredDigest": "d138661598c00be04cc9b8620d5eab2aa28c5b2315e2c278b7116448a3c39d48",
+      "currentDigest": "d138661598c00be04cc9b8620d5eab2aa28c5b2315e2c278b7116448a3c39d48",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+      "previousMeasuredDigest": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+      "currentDigest": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/account/page.tsx",
+      "previousMeasuredDigest": "0c07889bbf78e8ef41f87054afe18c500aaba1f2af2bf6ed382806165d086642",
+      "currentDigest": "c8f6e4501b0225d7048cf8e5ee34ea1c1b398b4decc3f88aa2b320d7a4fdbc2a",
+      "unchanged": false
+    },
+    {
+      "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+      "previousMeasuredDigest": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33",
+      "currentDigest": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/layout.tsx",
+      "previousMeasuredDigest": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+      "currentDigest": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/page.tsx",
+      "previousMeasuredDigest": "5199ccb27f4db35d488bd3f61c7d32c7c9ee92d75d063b348e6fbd68fb253e89",
+      "currentDigest": "34ff6fecc63fd5a79cddd523092b606a21b670c7896e3ec39f6404dd451051cc",
+      "unchanged": false
+    },
+    {
+      "path": "apps/web/src/app/dashboard/partner/page.tsx",
+      "previousMeasuredDigest": "1c49e7ce3c9d95eb3662e6fd895169b26a809ea0196778ee65100f63b49d27fb",
+      "currentDigest": "a3f05966b681fcb1aa85816f92512220e4ae5e73e48d12fcc6f8418985af0bb7",
+      "unchanged": false
+    },
+    {
+      "path": "apps/web/src/app/globals.css",
+      "previousMeasuredDigest": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9",
+      "currentDigest": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/upgrade/UpgradeScreen.tsx",
+      "previousMeasuredDigest": "7f221ab699c033a57069d9eeef4c73101d3a1ec9d578547fc697e57b64cd064b",
+      "currentDigest": "7f221ab699c033a57069d9eeef4c73101d3a1ec9d578547fc697e57b64cd064b",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/upload/Uploader.tsx",
+      "previousMeasuredDigest": "0fe093d40de2f829b36755690a234c2ac112d7a8b8d1b49a383aa68079f08722",
+      "currentDigest": "0fe093d40de2f829b36755690a234c2ac112d7a8b8d1b49a383aa68079f08722",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/videos/CtaFields.tsx",
+      "previousMeasuredDigest": "d90cb1cae74de04389cd6c8d13ad7bdc1c5c1862d468ac5144b46e15103a7870",
+      "currentDigest": "ac9887cfb0153566ec03ad102fcf4e5a4060d6ebc1213b8bf81f15ebe400e39b",
+      "unchanged": false
+    },
+    {
+      "path": "apps/web/src/app/videos/VideoList.tsx",
+      "previousMeasuredDigest": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+      "currentDigest": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "previousMeasuredDigest": "bebffd0139c75d7a2fe5afc4ebf96c0a6f62b6f90a46e78e38a1782332ce11b5",
+      "currentDigest": "481d136d27303600296b0db5654fa28957a21d42725ce8c1ab5340a376a21c10",
+      "unchanged": false
+    },
+    {
+      "path": "apps/web/src/lib/upload-resume.ts",
+      "previousMeasuredDigest": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864",
+      "currentDigest": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/server/dashboard-summary.ts",
+      "previousMeasuredDigest": "e0bd9e06e8171b6a22e3c3877bd4c2bd9f95aa809ba18ba2b0070762a8d60085",
+      "currentDigest": "e0bd9e06e8171b6a22e3c3877bd4c2bd9f95aa809ba18ba2b0070762a8d60085",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/server/limits.ts",
+      "previousMeasuredDigest": "ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20",
+      "currentDigest": "ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/server/page-account.ts",
+      "previousMeasuredDigest": "f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713",
+      "currentDigest": "f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/server/runtime.ts",
+      "previousMeasuredDigest": "7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb",
+      "currentDigest": "7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "previousMeasuredDigest": "1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb",
+      "currentDigest": "1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb",
+      "unchanged": true
+    },
+    {
+      "path": "apps/web/src/server/support/page-state.ts",
+      "previousMeasuredDigest": "b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145",
+      "currentDigest": "b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145",
+      "unchanged": true
+    },
+    {
+      "path": "docs/incidents/2026-11-05-s3-stream-measurement.md",
+      "previousMeasuredDigest": "97386372d36283be2d70b9cd0970781e21d9bb053fd5359d1cac939522dc0f9b",
+      "currentDigest": "97386372d36283be2d70b9cd0970781e21d9bb053fd5359d1cac939522dc0f9b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/2026-11-05-ui-recovery-cloud-delivery.md",
+      "previousMeasuredDigest": "85bc8d88169bf85eb94347f34039a46d8e0c47005a967b6099e8ec9dda28cb48",
+      "currentDigest": "85bc8d88169bf85eb94347f34039a46d8e0c47005a967b6099e8ec9dda28cb48",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/README.md",
+      "previousMeasuredDigest": "bef406e226e856c539944844ff67230911ddae9346a27a6c68673acfd6b5aa40",
+      "currentDigest": "bef406e226e856c539944844ff67230911ddae9346a27a6c68673acfd6b5aa40",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/alfa-bank.md",
+      "previousMeasuredDigest": "b0c6748a74141391576d51a480b86a9b71ee4fd64378b381bfc10df907a9fa1d",
+      "currentDigest": "b0c6748a74141391576d51a480b86a9b71ee4fd64378b381bfc10df907a9fa1d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/clipmkr-mapping.md",
+      "previousMeasuredDigest": "7e895a47e84580f3a8d3a2bfb0557bd91ce4ed47c35c48921d32cef2b3a0a507",
+      "currentDigest": "7e895a47e84580f3a8d3a2bfb0557bd91ce4ed47c35c48921d32cef2b3a0a507",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/patterns.md",
+      "previousMeasuredDigest": "4f9d4d741d991c24f9bdafe211fdf9646fb785a2e3a8d9e85fa111e5023bdf3f",
+      "currentDigest": "4f9d4d741d991c24f9bdafe211fdf9646fb785a2e3a8d9e85fa111e5023bdf3f",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/review-status.md",
+      "previousMeasuredDigest": "f8e265e03e79568af3243de8fccbf66363a17bf999b9b348b314076a02d904eb",
+      "currentDigest": "f8e265e03e79568af3243de8fccbf66363a17bf999b9b348b314076a02d904eb",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/reviews/independent-review.md",
+      "previousMeasuredDigest": "8a0e09be0046e832588e25df17621bcfb9e0a9bc6beb994fd2fa8a0f7a290db0",
+      "currentDigest": "8a0e09be0046e832588e25df17621bcfb9e0a9bc6beb994fd2fa8a0f7a290db0",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/reviews/recheck-r2.md",
+      "previousMeasuredDigest": "f04cbb5b9afdaf6e5edc3acd2b4454459f358d0280451533371d2e0133f28630",
+      "currentDigest": "f04cbb5b9afdaf6e5edc3acd2b4454459f358d0280451533371d2e0133f28630",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/sources.md",
+      "previousMeasuredDigest": "0b43b80e87c523d863fda423c6535977ad275a716a0cca1fd58935cc7065446b",
+      "currentDigest": "0b43b80e87c523d863fda423c6535977ad275a716a0cca1fd58935cc7065446b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/t-bank.md",
+      "previousMeasuredDigest": "351517b9496ecfa37a3fe94f1b2a959b018ac0eb009a83221d5e2bd0267eea45",
+      "currentDigest": "351517b9496ecfa37a3fe94f1b2a959b018ac0eb009a83221d5e2bd0267eea45",
+      "unchanged": true
+    },
+    {
+      "path": "docs/research/mobile-banking-ux/validation.md",
+      "previousMeasuredDigest": "5be9abc07b221277a2c948a9231c4ce54ff3ef7c61a499e10a3fcc39ebeed119",
+      "currentDigest": "5be9abc07b221277a2c948a9231c4ce54ff3ef7c61a499e10a3fcc39ebeed119",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/00_complexity_assessment.md",
+      "previousMeasuredDigest": "42869bc54a9215823f3b3c0fbc8ec3dfec5facbba7c703a986950dc3af8f2cb5",
+      "currentDigest": "42869bc54a9215823f3b3c0fbc8ec3dfec5facbba7c703a986950dc3af8f2cb5",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/01_requirements.md",
+      "previousMeasuredDigest": "5d3f411fc341cf35972b95b2637402d9f9ef47c901a293771a657753295ac9e8",
+      "currentDigest": "5d3f411fc341cf35972b95b2637402d9f9ef47c901a293771a657753295ac9e8",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/03.5_ideation_report.md",
+      "previousMeasuredDigest": "08805c97570779beb7d0d9c88a0600d06c3cdcf88b89ff22ff2e373433eb4f86",
+      "currentDigest": "08805c97570779beb7d0d9c88a0600d06c3cdcf88b89ff22ff2e373433eb4f86",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/03_adr/001-place-context-in-existing-pages.md",
+      "previousMeasuredDigest": "7117a7d86abea7675ea6368942b6fbf280b95b0adfa39a29b4d0d626472f84f5",
+      "currentDigest": "7117a7d86abea7675ea6368942b6fbf280b95b0adfa39a29b4d0d626472f84f5",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/03_adr/002-preserve-state-with-stable-owners.md",
+      "previousMeasuredDigest": "ae6b3dee8146673c1279f6300a11ef9d5d4c823877a8f90d7e2ed9479a672496",
+      "currentDigest": "ae6b3dee8146673c1279f6300a11ef9d5d4c823877a8f90d7e2ed9479a672496",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/03_adr/003-scope-styles-to-existing-surfaces.md",
+      "previousMeasuredDigest": "00887a0662be6065f026bc08896808f00f5fd7358611e0cc711de7aae8beb67e",
+      "currentDigest": "00887a0662be6065f026bc08896808f00f5fd7358611e0cc711de7aae8beb67e",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/04_domain_model.md",
+      "previousMeasuredDigest": "18eacad03c1a37d5390b5628a12eb7c8602372cead595b3eb487049b80d9d45a",
+      "currentDigest": "18eacad03c1a37d5390b5628a12eb7c8602372cead595b3eb487049b80d9d45a",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/05_architecture.md",
+      "previousMeasuredDigest": "ad0ceaf1373fb7f4a89a831a3c28687bc00167bca6c6f9c23939cbbbe6c29b69",
+      "currentDigest": "ad0ceaf1373fb7f4a89a831a3c28687bc00167bca6c6f9c23939cbbbe6c29b69",
+      "unchanged": true
+    },
+    {
+      "path": "features/ux-simplification/06_implementation_plan.md",
+      "previousMeasuredDigest": "c5255046bad2813a26a18536e3532b263b040ec400220719e442ea9e66f304e7",
+      "currentDigest": "9ff050853d8cca7d7dfa8b6b55fa8ad04f7f0674766189e2a4eb2b90a963c66f",
+      "unchanged": false
+    },
+    {
+      "path": "openspec/changes/cloud-data-consolidation/proposal.md",
+      "previousMeasuredDigest": "833949873106f8cbc5706b09f2cf0b76fa3b85216cda7bc3b28ca9da10e0ec7a",
+      "currentDigest": "833949873106f8cbc5706b09f2cf0b76fa3b85216cda7bc3b28ca9da10e0ec7a",
+      "unchanged": true
+    },
+    {
+      "path": "openspec/changes/cloud-data-consolidation/specs/data-consolidation/spec.md",
+      "previousMeasuredDigest": "5df4827ad6c04cd1fea424eafdc0da3192b270bd5cb7000b315b8c5625cad1dd",
+      "currentDigest": "5df4827ad6c04cd1fea424eafdc0da3192b270bd5cb7000b315b8c5625cad1dd",
+      "unchanged": true
+    },
+    {
+      "path": "openspec/changes/cloud-data-consolidation/tasks.md",
+      "previousMeasuredDigest": "0c9c884bfbb655350629126950b58fc18be4195ec3ca41fcb14c17d843680f72",
+      "currentDigest": "0c9c884bfbb655350629126950b58fc18be4195ec3ca41fcb14c17d843680f72",
+      "unchanged": true
+    },
+    {
+      "path": "openspec/changes/ux-simplification/specs/progressive-disclosure/spec.md",
+      "previousMeasuredDigest": "e9e60e85adc4001d55dfaa2692e58f0bca95c6d03f5f18aca8aebc117b97ffb5",
+      "currentDigest": "e9e60e85adc4001d55dfaa2692e58f0bca95c6d03f5f18aca8aebc117b97ffb5",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db/src/blogger-policy.ts",
+      "previousMeasuredDigest": "2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e",
+      "currentDigest": "2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "previousMeasuredDigest": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b",
+      "currentDigest": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b",
+      "unchanged": true
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "previousMeasuredDigest": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "currentDigest": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/check-workspace-presentation.test.mjs",
+      "previousMeasuredDigest": "7421b26ed0855f8051e7566f6b934c6c956b5aef6a7a4cd718f67c34acce7ace",
+      "currentDigest": "7421b26ed0855f8051e7566f6b934c6c956b5aef6a7a4cd718f67c34acce7ace",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/workspace-presentation-local.mjs",
+      "previousMeasuredDigest": "b67e71077a332cf2543dcae006b9bc915126fcf4edd4e23a985bba6aec1aeeca",
+      "currentDigest": "b67e71077a332cf2543dcae006b9bc915126fcf4edd4e23a985bba6aec1aeeca",
+      "unchanged": true
+    },
+    {
+      "path": "tests/browser/billing.test.ts",
+      "previousMeasuredDigest": "ce28bf52f338c0d9b1676eb8c2db30f7ffc0eb03eb1b103bd1527531e1010275",
+      "currentDigest": "ce28bf52f338c0d9b1676eb8c2db30f7ffc0eb03eb1b103bd1527531e1010275",
+      "unchanged": true
+    },
+    {
+      "path": "tests/browser/blogger-auto-link.test.ts",
+      "previousMeasuredDigest": "f9ee7989e6a8bd0475ba11e7e1ee1c93a30580f704a55d7ea59b81298a227348",
+      "currentDigest": "f9ee7989e6a8bd0475ba11e7e1ee1c93a30580f704a55d7ea59b81298a227348",
+      "unchanged": true
+    },
+    {
+      "path": "tests/browser/blogger-cabinet.test.ts",
+      "previousMeasuredDigest": "35b50c21119e39937f8cd653327964537d19618cae9ebd47669779a3fe930737",
+      "currentDigest": "35b50c21119e39937f8cd653327964537d19618cae9ebd47669779a3fe930737",
+      "unchanged": true
+    },
+    {
+      "path": "tests/browser/ux-simplification.test.ts",
+      "previousMeasuredDigest": "e6e42f57236ff984a43db1ddcbd80eaefb85fadc81755449d989cf7759e18b8c",
+      "currentDigest": "fc604c564dc70cd355ae5db50a6d0d98478c5e60a85535cc60d1a529161f1b66",
+      "unchanged": false
+    },
+    {
+      "path": "tests/clip-card.test.ts",
+      "previousMeasuredDigest": "6c0f65cc9f616234603f28c6f1dd8590abae5813022418ed76ccf548bbf5f821",
+      "currentDigest": "6c0f65cc9f616234603f28c6f1dd8590abae5813022418ed76ccf548bbf5f821",
+      "unchanged": true
+    },
+    {
+      "path": "tests/progress-screen.test.ts",
+      "previousMeasuredDigest": "a92522ec34ad90689221fea6439057cc893dee1efd9ab77b1813080d1457f563",
+      "currentDigest": "250bb1c77ee984178ea05d1d41ca630a96fb52a9d0dd234566ecd6bf70978018",
+      "unchanged": false
+    },
+    {
+      "path": "tests/workspace-presentation.test.ts",
+      "previousMeasuredDigest": "c7bab70d1f62a47ea5fd943c1aa03df7df63ac87c1a7fbcbe9c004d234e86ea3",
+      "currentDigest": "c7bab70d1f62a47ea5fd943c1aa03df7df63ac87c1a7fbcbe9c004d234e86ea3",
+      "unchanged": true
+    }
+  ],
+  "interpretation": "Current06 scope changed by coordinator; implementation/tests changed only admitted TASK10–13; unchanged dependencies reused, no claim of complete provider CJM.",
+  "at": "2026-11-05T23:44:47.293199+00:00"
+}

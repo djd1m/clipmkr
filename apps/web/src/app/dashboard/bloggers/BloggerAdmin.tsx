@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { bloggerReport, getBloggerPolicy } from '@clipmaker/db';
 import { moscowDay } from '@clipmaker/shared/upload';
 
@@ -12,17 +12,20 @@ async function request<T>(url: string, body?: object): Promise<T> {
   if (!response.ok) throw new Error(result.error?.message ?? 'Не удалось выполнить запрос');
   return result.data as T;
 }
-function Counters({ value }: { value: Report['bloggers'][number]['counters'] }) {
+function Counters({ value, primary = false }: { primary?: boolean; value: Report['bloggers'][number]['counters'] }) {
   return <dl className="partner-counters">
     <div><dt>Регистрации</dt><dd>{value.registrations}</dd></div>
     <div><dt>Пользовались продуктом</dt><dd>{value.active_users}</dd></div>
     <div><dt>Платили</dt><dd>{value.paying_users}</dd></div>
-    <div><dt>Платежи</dt><dd>{value.payments}</dd></div>
+    {!primary && <div><dt>Платежи</dt><dd>{value.payments}</dd></div>}
     <div><dt>Выручка пакетов</dt><dd>{money(value.revenue_minor)}</dd></div>
-    <div><dt>Предварительное вознаграждение</dt><dd>{value.commission_estimate_minor === null ? 'Ставка не назначена' : money(value.commission_estimate_minor)}</dd></div>
+    {!primary && <div><dt>Предварительное вознаграждение</dt><dd>{value.commission_estimate_minor === null ? 'Ставка не назначена' : money(value.commission_estimate_minor)}</dd></div>}
   </dl>;
 }
 export default function BloggerAdmin() {
+  const [view, setView] = useState<'assignment' | 'report'>('assignment');
+  const reportTrigger = useRef<HTMLButtonElement>(null), reportHeading = useRef<HTMLHeadingElement>(null), changedView = useRef(false);
+  useEffect(() => { if (changedView.current) (view === 'report' ? reportHeading.current : reportTrigger.current)?.focus(); }, [view]);
   const [month, setMonth] = useState(() => moscowDay(new Date()).slice(0, 7));
   const [report, setReport] = useState<Report | null>(null);
   const [policy, setPolicy] = useState<Policy | null>(null);
@@ -38,11 +41,11 @@ export default function BloggerAdmin() {
     setReport(data);
   }
   useEffect(() => { void loadReport(moscowDay(new Date()).slice(0, 7)).catch(error => setNotice(error.message)); }, []);
-  async function find(event: FormEvent) {
+  async function find(event: FormEvent, lookup = email) {
     event.preventDefault(); setBusy(true); setNotice(''); setPolicy(null);
     try {
-      const found = await request<{ email: string; policy: Policy }>(`/api/owner/bloggers?email=${encodeURIComponent(email)}`);
-      setPolicy(found.policy); setBlogger(found.policy.is_blogger);
+      const found = await request<{ email: string; policy: Policy }>(`/api/owner/bloggers?email=${encodeURIComponent(lookup)}`);
+      setEmail(found.email); setPolicy(found.policy); setBlogger(found.policy.is_blogger);
       setMinutes(found.policy.blogger_source_limit_seconds === null ? '' : String(found.policy.blogger_source_limit_seconds / 60));
       setRate(found.policy.blogger_commission_percent === null ? '' : String(found.policy.blogger_commission_percent));
       setReason(''); setNotice(`Аккаунт найден: ${found.email}`);
@@ -51,6 +54,9 @@ export default function BloggerAdmin() {
   }
   async function save(event: FormEvent) {
     event.preventDefault(); if (!policy) return;
+    if (minutes !== '' && (!Number.isInteger(Number(minutes)) || Number(minutes) < 2 || Number(minutes) > 1440)) {
+      const field = document.getElementById('blogger-minutes'); field?.closest('details')?.setAttribute('open', ''); field?.focus(); setNotice('Укажите целый лимит от 2 до 1440 минут или оставьте поле пустым.'); return;
+    }
     setBusy(true); setNotice('');
     try {
       const updated = await request<Policy>('/api/owner/bloggers', {
@@ -66,9 +72,11 @@ export default function BloggerAdmin() {
     } catch (error) { setNotice(error instanceof Error ? error.message : 'Настройки не сохранены'); }
     finally { setBusy(false); }
   }
-  return <section className="stack" aria-labelledby="bloggers-title">
-    <h1 id="bloggers-title" style={{ fontSize: 'clamp(2rem, 1.8rem + .4vw, 3.375rem)' }}>Блогеры и рекомендации</h1>
-    <p>Обычные пользователи: до 90 минут. Блогеры: до 120 минут, если не назначен индивидуальный лимит. Баланс и квоты действуют отдельно.</p>
+  return <section className="stack blogger-admin" aria-labelledby="bloggers-title">
+    <h1 id="bloggers-title" ref={reportHeading} tabIndex={-1}>{view === 'report' ? 'Отчёт за месяц' : 'Блогеры'}</h1>
+    {view === 'assignment' ? <>
+    <p>Найдите существующий аккаунт, чтобы назначить блогером. Обычные пользователи: до 90 минут. Блогеры: до 120 минут, если не назначен индивидуальный лимит. Баланс и квоты действуют отдельно.</p>
+    <button ref={reportTrigger} className="secondary owner-report-link" disabled={busy} onClick={() => { changedView.current = true; setView('report'); }}>Отчёт за месяц →</button>
     <section className="partner-panel">
       <h2>Настройки блогера</h2>
       <form onSubmit={find}>
@@ -76,10 +84,15 @@ export default function BloggerAdmin() {
         <input id="blogger-email" type="email" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} />
         <button disabled={busy}>Найти аккаунт</button>
       </form>
-      {policy && <form onSubmit={save} style={{ marginBlockStart: 'var(--space-6)' }}>
+      {policy && <form className="assignment-form" onSubmit={save} onInvalidCapture={event => {
+        const field = event.target as HTMLInputElement; field.closest('details')?.setAttribute('open', ''); field.focus();
+      }}>
+        <h2>Назначение блогером</h2>
+        <p className="owner-policy-summary">{blogger ? `Блогер · лимит записи ${minutes || '120'} минут${minutes ? ' (индивидуальный)' : ' (стандартный)'}` : 'Обычный пользователь · лимит записи 90 минут'}. {rate ? `Ставка ${rate}%: предварительная оценка, не выплата.` : 'Ставка не назначена; оценка вознаграждения не рассчитывается.'}</p>
         <label style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', minHeight: '2.75rem' }}>
           <input type="checkbox" checked={blogger} onChange={event => setBlogger(event.target.checked)} /> Блогер, распространяющий продукт
         </label>
+        <details><summary>Дополнительные настройки</summary><div>
         <label htmlFor="blogger-minutes">Индивидуальный лимит, минут</label>
         <input id="blogger-minutes" type="number" min={2} max={1440} step={1} value={minutes} onChange={event => setMinutes(event.target.value)} aria-describedby="blogger-minutes-help" />
         <p id="blogger-minutes-help">Пустое поле: 120 минут для блогера. Для обычного аккаунта действует 90 минут. Изменения применяются к новым записям.</p>
@@ -87,13 +100,19 @@ export default function BloggerAdmin() {
         <select id="blogger-rate" value={rate} onChange={event => setRate(event.target.value)}>
           <option value="">Не назначена</option><option value="20">20%</option><option value="30">30%</option>
         </select>
+        </div></details>
         <label htmlFor="blogger-reason">Причина изменения</label>
         <input id="blogger-reason" required minLength={3} maxLength={300} value={reason} onChange={event => setReason(event.target.value)} />
-        <button disabled={busy}>Сохранить настройки</button>
+        <button disabled={busy}>Сохранить настройки</button><button type="button" className="secondary" disabled={busy} onClick={() => setPolicy(null)}>Отмена</button>
       </form>}
     </section>
-    <p role="status" aria-live="polite">{notice}</p>
-    <section className="partner-panel">
+    <section className="assignment-list"><h2>Назначенные блогеры</h2>
+      {report?.bloggers.map(item => <button type="button" className="workspace-record secondary" key={item.account_id} disabled={busy} onClick={event => { void find(event, item.email); }}><span>{item.email}</span><span>Изменить →</span></button>)}
+      {report?.bloggers.length === 0 && <p>Блогеры ещё не назначены.</p>}
+    </section>
+    </> : <>
+    <button type="button" className="secondary" disabled={busy} onClick={() => { changedView.current = true; setView('assignment'); }}>← К управлению блогерами</button>
+    <section className="partner-panel owner-report">
       <h2>Статистика за месяц</h2>
       <form onSubmit={event => { event.preventDefault(); setBusy(true); setNotice(''); void loadReport(month).catch(error => setNotice(error.message)).finally(() => setBusy(false)); }}>
         <label htmlFor="blogger-month">Месяц по Москве</label>
@@ -105,11 +124,16 @@ export default function BloggerAdmin() {
       {report && <><p>Отчёт: {report.month}, Москва.</p>{report.bloggers.length === 0 && <p>Блогеры ещё не назначены.</p>}
         {report.bloggers.map(item => <article key={item.account_id} className="partner-panel">
           <h3>{item.email}</h3><p>Ставка: {item.commission_percent === null ? 'не назначена' : `${item.commission_percent}%`}</p>
-          <Counters value={item.counters} />
+          <Counters value={item.counters} primary />
+          <p>Предварительное вознаграждение: {item.counters.commission_estimate_minor === null ? 'ставка не назначена, не рассчитывается' : money(item.counters.commission_estimate_minor)}. Это не задолженность; автоматических выплат нет.</p>
+          <details><summary>По ссылкам и подробности</summary><p>Платежи: {item.counters.payments}</p>
           {item.codes.length === 0 && <p>Блогер ещё не создал ссылку в своём кабинете.</p>}
           {item.codes.map(code => <section key={code.id}><h4>Ссылка: {code.code}</h4><p>{code.status === 'active' ? 'Активна' : 'Заблокирована'}</p><Counters value={code.counters} /></section>)}
+          </details>
         </article>)}
       </>}
     </section>
+    </>}
+    <p role="status" aria-live="polite">{notice}</p>
   </section>;
 }

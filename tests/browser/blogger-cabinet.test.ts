@@ -48,9 +48,9 @@ describe.skipIf(!databaseUrl || !redisUrl)('Кабинет блогеров: н�
       server: { host: '127.0.0.1', port: 0 },
       plugins: [{ name: 'blogger-cabinet-http-fixture', enforce: 'pre',
         resolveId(id) { if (id === entry) return entry; },
-        load(id) { if (id === entry) return `import {createElement} from 'react'; import {hydrateRoot} from 'react-dom/client';
+        load(id) { if (id === entry) return `import {createElement,useEffect,Fragment} from 'react'; import {hydrateRoot} from 'react-dom/client';
           import BloggerAdmin from '/apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx';
-          hydrateRoot(document.getElementById('root'),createElement(BloggerAdmin));`; },
+          function Ready(){useEffect(()=>{window.ownerReady=true},[]);return null;} hydrateRoot(document.getElementById('root'),createElement(Fragment,null,createElement(BloggerAdmin),createElement(Ready)));`; },
         configureServer(vite) {
           vite.middlewares.use('/api/owner/bloggers', async (req, res) => {
             try {
@@ -75,7 +75,7 @@ describe.skipIf(!databaseUrl || !redisUrl)('Кабинет блогеров: н�
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.end(await vite.transformIndexHtml('/fixture.html', `<!doctype html><html lang="ru" data-theme="dark"><head>
               <title>КлипМейкер — кабинет блогеров</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-              <link rel="stylesheet" href="/apps/web/src/app/globals.css"></head><body><main class="container"><div id="root">${markup}</div></main>
+              <link rel="stylesheet" href="/apps/web/src/app/globals.css"></head><body><div class="workspace-shell"><main class="container"><div id="root">${markup}</div></main></div>
               <script type="module" src="/@id/__x00__blogger-cabinet-entry"></script></body></html>`));
           });
         },
@@ -101,21 +101,25 @@ describe.skipIf(!databaseUrl || !redisUrl)('Кабинет блогеров: н�
     it('владелец находит аккаунт, назначает лимит и видит сохранённые настройки после перезагрузки', async () => {
       const context = await session(browser, ownerToken); const page = await context.newPage();
       try {
-        await page.goto(`${origin}/fixture.html`);
+        await page.goto(`${origin}/fixture.html`); await page.waitForFunction(() => Reflect.get(window, 'ownerReady') === true);
+        await page.getByRole('button', { name: 'Отчёт за месяц →' }).click();
         await expect.poll(() => page.getByText(/^Отчёт:/).count()).toBe(1);
+        await page.getByRole('button', { name: '← К управлению блогерами' }).click();
         await page.getByLabel('Email зарегистрированного аккаунта').fill(email);
         await page.getByRole('button', { name: 'Найти аккаунт' }).click();
         await expect.poll(() => page.getByRole('status').textContent()).toContain('Аккаунт найден');
         await page.getByLabel('Блогер, распространяющий продукт').check();
+        await page.getByText('Дополнительные настройки', { exact: true }).click();
         await page.getByLabel('Индивидуальный лимит, минут').fill('150');
         await page.getByLabel('Ставка вознаграждения').selectOption('30');
         await page.getByLabel('Причина изменения').fill('Индивидуальная договорённость');
         await page.getByRole('button', { name: 'Сохранить настройки' }).click();
         await expect.poll(() => page.getByRole('status').textContent()).toContain('Лимит новых записей: 150 минут');
-        await page.reload();
+        await page.reload(); await page.waitForFunction(() => Reflect.get(window, 'ownerReady') === true);
         await page.getByLabel('Email зарегистрированного аккаунта').fill(email);
         await page.getByRole('button', { name: 'Найти аккаунт' }).click();
         await expect.poll(() => page.getByLabel('Индивидуальный лимит, минут').inputValue()).toBe('150');
+        await page.getByText('Дополнительные настройки', { exact: true }).click();
         expect(await page.getByLabel('Ставка вознаграждения').inputValue()).toBe('30');
         await page.getByLabel('Причина изменения').focus(); await page.keyboard.press('Tab');
         expect(await page.getByRole('button', { name: 'Сохранить настройки' }).evaluate(el => el === document.activeElement)).toBe(true);
@@ -133,11 +137,14 @@ describe.skipIf(!databaseUrl || !redisUrl)('Кабинет блогеров: н�
     it('сохранение остаётся успешным при сбое обновления отчёта', async () => {
       const context = await session(browser, ownerToken); const page = await context.newPage();
       try {
-        await page.goto(`${origin}/fixture.html`);
+        await page.goto(`${origin}/fixture.html`); await page.waitForFunction(() => Reflect.get(window, 'ownerReady') === true);
+        await page.getByRole('button', { name: 'Отчёт за месяц →' }).click();
         await expect.poll(() => page.getByText(/^Отчёт:/).count()).toBe(1);
+        await page.getByRole('button', { name: '← К управлению блогерами' }).click();
         await page.getByLabel('Email зарегистрированного аккаунта').fill(email);
         await page.getByRole('button', { name: 'Найти аккаунт' }).click();
         await expect.poll(() => page.getByRole('status').textContent()).toContain('Аккаунт найден');
+        await page.getByText('Дополнительные настройки', { exact: true }).click();
         await page.getByLabel('Индивидуальный лимит, минут').fill('160');
         await page.getByLabel('Причина изменения').fill('Проверка сбоя обновления статистики');
         // Только зависимость обновления отчёта возвращает 503; POST и запись audit настоящие.
@@ -149,6 +156,31 @@ describe.skipIf(!databaseUrl || !redisUrl)('Кабинет блогеров: н�
         await expect.poll(() => page.getByRole('status').textContent()).toContain('Не удалось обновить статистику');
         expect((await pool.query('SELECT blogger_source_limit_seconds FROM account WHERE email=$1', [email])).rows[0].blogger_source_limit_seconds).toBe(9600);
         expect((await pool.query("SELECT count(*)::int n FROM operator_action WHERE reason LIKE '%Проверка сбоя обновления статистики%'")).rows[0].n).toBeGreaterThan(0);
+      } finally { await context.close(); }
+    });
+    it('hidden_policy_invalid / owner_report_approved_screen', async () => {
+      const context = await session(browser, ownerToken); const page = await context.newPage(); let posts = 0;
+      page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/api/owner/bloggers')) posts++; });
+      try {
+        await page.goto(`${origin}/fixture.html`); await page.waitForFunction(() => Reflect.get(window, 'ownerReady') === true);
+        await page.getByLabel('Email зарегистрированного аккаунта').fill(email); await page.getByRole('button', { name: 'Найти аккаунт' }).click();
+        await expect.poll(() => page.getByRole('status').textContent()).toContain('Аккаунт найден');
+        await page.getByLabel('Причина изменения').fill('Явный сброс индивидуального лимита');
+        for (const invalid of ['1', '1441', '2.5']) {
+          const details = page.locator('details').filter({ has: page.getByLabel('Индивидуальный лимит, минут') });
+          if (!await details.evaluate((node: HTMLDetailsElement) => node.open)) await details.locator('summary').click();
+          await page.getByLabel('Индивидуальный лимит, минут').fill(invalid); await details.locator('summary').click();
+          await page.getByRole('button', { name: 'Сохранить настройки' }).click();
+          expect(await details.evaluate((node: HTMLDetailsElement) => node.open)).toBe(true);
+          expect(await page.getByLabel('Индивидуальный лимит, минут').evaluate(node => node === document.activeElement)).toBe(true); expect(posts).toBe(0);
+        }
+        await page.getByRole('button', { name: 'Отчёт за месяц →' }).click(); expect(await page.locator('#blogger-email').count()).toBe(0);
+        await page.getByRole('button', { name: '← К управлению блогерами' }).click();
+        expect(await page.getByLabel('Индивидуальный лимит, минут').inputValue()).toBe('2.5');
+        await page.getByText('Дополнительные настройки', { exact: true }).click(); await page.getByLabel('Индивидуальный лимит, минут').fill('');
+        await page.getByRole('button', { name: 'Сохранить настройки' }).click(); await expect.poll(() => posts).toBe(1);
+        await expect.poll(() => page.getByRole('status').textContent()).toContain('Настройки сохранены');
+        expect((await pool.query('SELECT blogger_source_limit_seconds FROM account WHERE email=$1', [email])).rows[0].blogger_source_limit_seconds).toBe(null);
       } finally { await context.close(); }
     });
     it('отказывает гостю, обычному пользователю, блогеру и чужому Origin', async () => {

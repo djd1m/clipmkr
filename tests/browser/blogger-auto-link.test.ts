@@ -42,10 +42,11 @@ describe.skipIf(!databaseUrl || !redisUrl)('Личная ссылка: React →
     auth = new AuthService(new PgAuthStore(pool), secret);
     const aliases = Object.fromEntries(['upload','enums','cta','tariff','music-catalog'].map(name => [`@clipmaker/shared/${name}`, resolve(`packages/shared/src/${name}.ts`)]));
     server = await createServer({ configFile: false, root: process.cwd(), cacheDir: `/tmp/${schema}-vite`, esbuild: { jsx: 'automatic' },
-      optimizeDeps: { include: ['react','react-dom/client','react/jsx-runtime'], exclude: ['next/navigation'] }, resolve: { alias: aliases },
+      optimizeDeps: { include: ['react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime'], exclude: ['next/navigation','next/link'] }, resolve: { alias: aliases },
       server: { host: '127.0.0.1', port: 0, watch: { ignored: ['**/.next/**','**/dist/**'] } },
-      plugins: [{ name: 'personal-link-http', enforce: 'pre', resolveId(id) { if (id === entry || id === 'next/navigation') return id; },
+      plugins: [{ name: 'personal-link-http', enforce: 'pre', resolveId(id) { if (id === entry || id === 'next/navigation') return id; if(id === 'next/link') return '\0personal-link-anchor'; },
         load(id) {
+          if (id === '\0personal-link-anchor') return `import React from 'react';export default function Link(props){return React.createElement('a',props);}`;
           if (id === 'next/navigation') return 'export const useRouter=()=>({push(){},refresh(){}});';
           if (id === entry) return `import {createElement as h} from 'react';import {hydrateRoot} from 'react-dom/client';
             import {PartnerPanel} from '/apps/web/src/app/dashboard/PartnerPanel.tsx';

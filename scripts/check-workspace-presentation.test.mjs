@@ -476,9 +476,12 @@ try {
   if (!out) throw unavailable('нужен приватный --out');
   await mkdir(out, { recursive: true, mode: 0o700 }); await chmod(out, 0o700);
   const phase = value('--catalog-phase'), component = value('--catalog-component'), reports = value('--catalog-verify-reports');
-  if ([args.includes('--local-handlers'), !!component, !!reports].filter(Boolean).length > 1) throw unavailable('выберите один local/component/aggregation mode');
+  if ([args.includes('--local-handlers'), args.includes('--approved-components'), !!component, !!reports].filter(Boolean).length > 1) throw unavailable('выберите один local/component/aggregation mode');
   if (phase !== undefined && !['on', 'off'].includes(phase)) throw unavailable('catalog-phase должно быть on|off');
-  if (args.includes('--local-handlers')) await runLocalWorkspaceChecks(out, { denyPreferences, observed, settingsKeyboard });
+  if (args.includes('--approved-components')) {
+    execFileSync(process.execPath,[resolve('node_modules/vitest/vitest.mjs'),'run','--config','vitest.browser.config.ts','tests/browser/ux-simplification.test.ts','-t','UX components'],{stdio:'inherit',env:process.env});
+    await writeFile(resolve(out,'approved-component-scope.json'),JSON.stringify({scope:'actual React controls and frozen HTML geometry, Chromium/WebKit; native Next, live CJM and owner acceptance are separate',outcome:'component-passed'}),{mode:0o600});
+  } else if (args.includes('--local-handlers')) await runLocalWorkspaceChecks(out, { denyPreferences, observed, settingsKeyboard });
   else if (reports) await verifyCatalogReports(reports.split(','), out);
   else if (component) {
     if (component !== 'no-dates') throw unavailable('catalog-component должно быть no-dates');

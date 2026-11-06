@@ -1,6 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createServer, type Server } from 'node:http';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createServer as createViteServer, type ViteDevServer } from 'vite';
 import { createElement, Fragment, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { chromium, webkit, type Browser, type Page } from 'playwright';
@@ -44,7 +47,8 @@ function page(theme: 'dark' | 'light', screen: string) {
 }
 const SCREEN_NAMES = ['upgrade', 'upgrade-paid', 'card-on', 'card-off', ...Object.keys(RETURN_STATES).map(s => `return-${s}`)];
 let server: Server;
-let base: string;
+let base: string, cardBase: string, cardServer: ViteDevServer;
+const cardCache=mkdtempSync(join(tmpdir(),'clipmkr-billing-card-'));
 beforeAll(async () => {
   try { await preflight(['chromium', 'webkit']); }
   catch (error) { throw new Error(`НЕ ВЫПОЛНЕНО: ${String(error)}`); }
@@ -58,8 +62,18 @@ beforeAll(async () => {
   const address = server.address();
   if (!address || typeof address === 'string') throw new Error('Нет loopback порта');
   base = `http://127.0.0.1:${address.port}`;
+  const entry='\0billing-mounted-card';
+  cardServer=await createViteServer({configFile:false,root:process.cwd(),cacheDir:cardCache,esbuild:{jsx:'automatic'},
+    optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime']},
+    resolve:{alias:Object.fromEntries(['enums','cta','tariff','music-catalog'].map(name=>[`@clipmaker/shared/${name}`,resolve(`packages/shared/src/${name}.ts`)]))},
+    server:{host:'127.0.0.1',port:0,watch:null},plugins:[{name:'billing-real-card',
+      resolveId(id){if(id===entry)return entry;},
+      load(id){if(id===entry)return `import React from 'react';import {createRoot} from 'react-dom/client';import {ClipCard} from '/apps/web/src/app/clips/ClipCard.tsx';function Ready(){React.useEffect(()=>{window.cardReady=true},[]);return null;}createRoot(document.getElementById('root')).render(React.createElement(React.Fragment,null,React.createElement(ClipCard,{clip:window.qaClip,paymentsOn:window.qaPaymentsOn}),React.createElement(Ready)));`;},
+      configureServer(vite){vite.middlewares.use('/card.html',async(req,res)=>{const enabled=new URL(req.url??'','http://fixture.invalid').searchParams.get('on')==='1';res.setHeader('content-type','text/html; charset=utf-8');res.end(await vite.transformIndexHtml('/card.html',`<!doctype html><html lang="ru" data-theme="dark"><head><title>QA ClipCard capability</title><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/apps/web/src/app/globals.css"></head><body><div class="workspace-shell"><main class="container"><div id="root"></div></main></div><script>window.qaClip=${JSON.stringify(clip)};window.qaPaymentsOn=${enabled};</script><script type="module" src="/@id/__x00__billing-mounted-card"></script></body></html>`));});}
+    }]});
+  await cardServer.listen();const cardAddress=cardServer.httpServer?.address();if(!cardAddress||typeof cardAddress==='string')throw Error('No mounted card port');cardBase=`http://127.0.0.1:${cardAddress.port}`;
 });
-afterAll(async () => { if (server) await new Promise<void>((resolve, reject) => server.close(e => e ? reject(e) : resolve())); });
+afterAll(async () => { await cardServer?.close();rmSync(cardCache,{recursive:true,force:true});if (server) await new Promise<void>((resolve, reject) => server.close(e => e ? reject(e) : resolve())); });
 const errors = (found: { severity: string; rule: string; message: string; selector?: string }[]) =>
   found.filter(f => f.severity === 'error').map(f => `${f.rule} ${f.selector ?? ''}: ${f.message}`);
 
@@ -71,6 +85,15 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) describe(`э�
     const context = await browser.newContext({ viewport, isMobile: viewport.width < 600, hasTouch: viewport.width < 600 });
     try { const p = await context.newPage(); await p.goto(`${base}/${file}.html`); await run(p); }
     finally { await context.close(); }
+  }
+  async function openCard(enabled: boolean, run: (page: Page) => Promise<void>) {
+    const context=await browser.newContext({viewport:{width:360,height:740}}),p=await context.newPage();let mutations=0;const errors:string[]=[];
+    p.on('request',request=>{if(request.method()==='POST')mutations++;});p.on('pageerror',error=>errors.push(error.message));
+    try {await p.goto(`${cardBase}/card.html?on=${enabled?'1':'0'}`);await p.waitForFunction(()=>Reflect.get(window,'cardReady')===true);
+      expect(await p.getByRole('link',{name:'Оформить Pro'}).isVisible()).toBe(false);
+      await p.locator('.clip-secondary > summary').click();await p.getByRole('button',{name:'Изменить оформление',exact:true}).click();
+      await expect.poll(()=>p.getByRole('button',{name:'Применить музыку',exact:true}).isVisible()).toBe(true);await run(p);expect(mutations).toBe(0);expect(errors).toEqual([]);
+    } finally {await context.close();}
   }
   for (const screen of SCREEN_NAMES) for (const theme of ['dark', 'light'] as const) {
     it(`${screen} ${theme} 320: без горизонтального скролла, цели 44, axe без отказов`, () => open(`${theme}-${screen}`, { width: 320, height: 640 }, async p => {
@@ -88,13 +111,13 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) describe(`э�
     expect(new Set(seen).size).toBe(6);
   });
   it('карточка: при включённой оплате — видимая ссылка «Оформить Pro» на /upgrade, при выключенной — прежняя кнопка интереса', async () => {
-    await open('dark-card-on', { width: 360, height: 740 }, async p => {
+    await openCard(true, async p => {
       const link = p.getByRole('link', { name: 'Оформить Pro' });
       expect(await link.getAttribute('href')).toBe('/upgrade?from=clip_card');
       expect(await link.isVisible()).toBe(true);
       expect(await p.getByRole('button', { name: 'Нужен тариф побольше' }).count()).toBe(0);
     });
-    await open('dark-card-off', { width: 360, height: 740 }, async p => {
+    await openCard(false, async p => {
       expect(await p.getByRole('button', { name: 'Нужен тариф побольше' }).count()).toBe(1);
       expect(await p.locator('a[href^="/upgrade"]').count()).toBe(0);
     });

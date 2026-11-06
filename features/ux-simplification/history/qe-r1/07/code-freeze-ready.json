@@ -1,0 +1,203 @@
+{
+  "status": "CODE_READY_FOR_REVIEW",
+  "testStatus": "Author final UX49/49, auto-link20/20, billing48/48, static exit0; independent formal QE pending",
+  "at": "2026-11-05T22:51:06.481135+00:00",
+  "author": "gpt-6.1-sol high (назначение пользователя)",
+  "baseRef": "741174677ab6bf87f7d5b7fa1c90f4026d24253c",
+  "targets": [
+    {
+      "path": "apps/web/src/app/globals.css",
+      "sha256": "ac4c3f4d090c8be31a5cff9e8187df4bc581c6510eaca7b5b8a641dcd1282fc9",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/WorkspaceHeader.tsx",
+      "sha256": "21c5c74479a57f5494836536b4df83853ca87492fd6933c5965b2e56d41719b6",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/WorkspaceSettings.tsx",
+      "sha256": "c2ea03030300039fd99a6ccc08ae2ebdf48b47a74bf70bb0e7d72b67c39e890e",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/page.tsx",
+      "sha256": "5199ccb27f4db35d488bd3f61c7d32c7c9ee92d75d063b348e6fbd68fb253e89",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/LimitsPanel.tsx",
+      "sha256": "d138661598c00be04cc9b8620d5eab2aa28c5b2315e2c278b7116448a3c39d48",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+      "sha256": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/upload/Uploader.tsx",
+      "sha256": "0fe093d40de2f829b36755690a234c2ac112d7a8b8d1b49a383aa68079f08722",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/videos/VideoList.tsx",
+      "sha256": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "sha256": "bebffd0139c75d7a2fe5afc4ebf96c0a6f62b6f90a46e78e38a1782332ce11b5",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "sha256": "9d94e2ac18b135ce1e17a6a0d3b31bbf0a897ee650a94916d993b7a4b703d4e5",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipMusicChoice.tsx",
+      "sha256": "6255b32c320366535ac0446567a9bd36e53a16b806429c58c2f0ce65dcd3c729",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/clips/GuestPacks.tsx",
+      "sha256": "5de30a17bac8df10c594718d9c853957bdea2d8a880cf13331a924a57d31e0ab",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+      "sha256": "c8b4b8ce64b79cb4f611a6829968da2901995b709e86b57fbd7318fe2c9a6b33",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/upgrade/UpgradeScreen.tsx",
+      "sha256": "7f221ab699c033a57069d9eeef4c73101d3a1ec9d578547fc697e57b64cd064b",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/account/page.tsx",
+      "sha256": "0c07889bbf78e8ef41f87054afe18c500aaba1f2af2bf6ed382806165d086642",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/partner/page.tsx",
+      "sha256": "1c49e7ce3c9d95eb3662e6fd895169b26a809ea0196778ee65100f63b49d27fb",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/workspace-presentation.test.ts",
+      "sha256": "c7bab70d1f62a47ea5fd943c1aa03df7df63ac87c1a7fbcbe9c004d234e86ea3",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/clip-card.test.ts",
+      "sha256": "6c0f65cc9f616234603f28c6f1dd8590abae5813022418ed76ccf548bbf5f821",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/browser/blogger-cabinet.test.ts",
+      "sha256": "35b50c21119e39937f8cd653327964537d19618cae9ebd47669779a3fe930737",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/browser/ux-simplification.test.ts",
+      "sha256": "e6e42f57236ff984a43db1ddcbd80eaefb85fadc81755449d989cf7759e18b8c",
+      "access": "WRITE"
+    },
+    {
+      "path": "scripts/check-workspace-presentation.test.mjs",
+      "sha256": "7421b26ed0855f8051e7566f6b934c6c956b5aef6a7a4cd718f67c34acce7ace",
+      "access": "WRITE"
+    },
+    {
+      "path": "scripts/workspace-presentation-local.mjs",
+      "sha256": "b67e71077a332cf2543dcae006b9bc915126fcf4edd4e23a985bba6aec1aeeca",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/progress-screen.test.ts",
+      "sha256": "a92522ec34ad90689221fea6439057cc893dee1efd9ab77b1813080d1457f563",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/browser/blogger-auto-link.test.ts",
+      "sha256": "f9ee7989e6a8bd0475ba11e7e1ee1c93a30580f704a55d7ea59b81298a227348",
+      "access": "WRITE"
+    },
+    {
+      "path": "tests/browser/billing.test.ts",
+      "sha256": "ce28bf52f338c0d9b1676eb8c2db30f7ffc0eb03eb1b103bd1527531e1010275",
+      "access": "WRITE"
+    },
+    {
+      "path": "apps/web/src/server/page-account.ts",
+      "sha256": "f2ad4a67d8fea549e39bcf3f30be779f5420405a9503d1fe45606343f30e1713",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/server/dashboard-summary.ts",
+      "sha256": "e0bd9e06e8171b6a22e3c3877bd4c2bd9f95aa809ba18ba2b0070762a8d60085",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/server/support/page-state.ts",
+      "sha256": "b66c66ce900b4a3b3c1e8ae60cbeff30b1fbe5cf986e9d60415096ddf7208145",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "sha256": "1c63cc174fff8a23e9088b4209f2ad40d1d1ee575be71b59a4c6a4a485d9dbcb",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/server/runtime.ts",
+      "sha256": "7fb83c668529c90d2543492658647e30942458de989fa7ed823d98ce8c690bfb",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "sha256": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "sha256": "c47ac457bacde684c4fcdc3fb7801a3b47520128f0e9df42132d69dcb0984f7b",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/server/limits.ts",
+      "sha256": "ae7a0353d5e59d5d91dd85c46906225ed8a81fcae5a879c0410b3d313a7dfe20",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "packages/db/src/blogger-policy.ts",
+      "sha256": "2e2a052642cc24bc08cfb43c7fa2508a11fd0182e99c72d97d6dd5dcf73ce10e",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/app/videos/CtaFields.tsx",
+      "sha256": "d90cb1cae74de04389cd6c8d13ad7bdc1c5c1862d468ac5144b46e15103a7870",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/lib/upload-resume.ts",
+      "sha256": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864",
+      "access": "READ_ONLY"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/layout.tsx",
+      "sha256": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+      "access": "READ_ONLY"
+    }
+  ],
+  "buildStatus": "exit0; see final-build-ready.json",
+  "limitations": [
+    "Промежуточные browser failures остаются до стабильного прогона.",
+    "Независимое ревью, runtime E2E, live CJM и ручная приёмка отдельно.",
+    "Cloud/production/deploy/commit/push не выполнялись."
+  ],
+  "revision": "STEP7 author CODE_READY_FOR_REVIEW; source frozen native prepare by coordinator; final build n0mVfHFrUQZdCnxGPTX_A; see author-test-results.json",
+  "plannedWriteScope": 25,
+  "readonlyReviewInputs": 12
+}

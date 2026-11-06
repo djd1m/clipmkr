@@ -63,7 +63,7 @@ describe('ClipCard markup', () => {
   it('three actions with full accessible names; short visible texts', () => {
     const html = card({ onSendToGuest: vi.fn() });
     expect(html).toContain('class="clip-actions" role="group" aria-label="Действия с клипом"');
-    for (const [label, text] of [['Скачать клип', '↓ Скачать'], ['Ссылка на клип — скопировать', 'Ссылка'], ['Отправить клип гостю', 'Гостю']] as const) {
+    for (const [label, text] of [['Скачать клип', '↓ Скачать'], ['Ссылка на клип — скопировать', 'Копировать ссылку на превью'], ['Отправить клип гостю', 'Отправить гостю']] as const) {
       expect(button(html, label), label).not.toBe('');
       expect(html).toMatch(new RegExp(`aria-label="${label}"[^>]*>\\s*${text}</button>`));
     }
@@ -75,18 +75,14 @@ describe('ClipCard markup', () => {
     expect(button(renderToStaticMarkup(createElement(ClipCard, { clip: pending, onSendToGuest: vi.fn() })), 'Отправить клип гостю')).toContain('disabled=""');
     expect(button(card({ onSendToGuest: vi.fn() }), 'Отправить клип гостю')).not.toContain('disabled');
   });
-  it('the card never creates a guest pack; the form marks the clip through addGuestPreselect only on a new nonce', () => {
-    const cardSource = readFileSync('apps/web/src/app/clips/ClipCard.tsx', 'utf8');
-    expect(cardSource).not.toContain('guest.create');
-    expect(cardSource).toContain('onClick={() => onSendToGuest?.(clip.clip_id)}');
-    const form = readFileSync('apps/web/src/app/clips/GuestPacks.tsx', 'utf8');
-    const effect = /useEffect\(\(\) => \{([\s\S]*?)\}, \[preselect, clips\]\);/.exec(form)?.[1] ?? '';
-    expect(effect).toContain('addGuestPreselect(old, preselect.clip_id, selectable)');
-    expect(effect).toContain('preselect.nonce === handled.current');
-    expect(effect).not.toMatch(/rpc|guest\.create|create\(/);
-    const detail = readFileSync('apps/web/src/app/videos/[videoId]/VideoDetail.tsx', 'utf8');
-    expect(detail).toContain('const sendToGuest = consentHash ?');
-    expect(detail).toContain('preselect={guestPreselect}');
+  it('one guest owner and contextual secondary actions in the approved composition', () => {
+    const html = renderToStaticMarkup(createElement(VideoDetail, { videoId: id, initialVideo: {
+      video_id:id,status:'done',created_at:now.toISOString(),updated_at:now.toISOString(),duration_seconds:300,user_state:'успех',stage_label:'Готово',stage_progress:100,clips_done:1,clips_total:1,no_response:false,failure_reason:null,next_action:null,retry_after:null,poll_after_seconds:5,cta_kind:'none',cta_url:null,failed_stage:null,
+    }, initialClips:[ready],consentHash:'qa-consent' }));
+    expect((html.match(/id="guest-title"/g)??[]).length).toBe(1);
+    expect((html.match(/id="cta-heading"/g)??[]).length).toBe(1);
+    expect(html).toContain('<summary>Ещё</summary>');
+    expect(html).not.toContain('class="clip-secondary" open');
   });
   it('score plate only with a score, aria-hidden; the readable score stays in the text', () => {
     const html = card();
@@ -103,14 +99,14 @@ describe('ClipCard markup', () => {
     expect(details).toContain('<summary>Почему такая оценка</summary>');
     for (const text of ['Вопрос с первых слов', 'Есть законченный ответ', 'Нет лишних слов', 'Цепкость · 29/33']) expect(details).toContain(text);
   });
-  it('partial render keeps its warning and puts available actions before preview', () => {
+  it('partial render keeps its warning and stable player before actions', () => {
     const video: VideoScreen = { video_id: id, status: 'done', created_at: now.toISOString(), updated_at: now.toISOString(), duration_seconds: 300,
       user_state: 'успех', stage_label: 'Готово', stage_progress: 100, clips_done: 2, clips_total: 3, no_response: false,
       failure_reason: null, next_action: null, retry_after: null, poll_after_seconds: 5, cta_kind: 'none', cta_url: null, failed_stage: null };
     const html = renderToStaticMarkup(createElement(VideoDetail, { videoId: id, initialVideo: video, initialClips: [ready], consentHash: 'synthetic-consent' }));
     const warning = html.indexOf('Часть клипов не удалось собрать. Готовые клипы доступны для скачивания.');
     const actions = html.indexOf('class="clip-actions"'), preview = html.indexOf('class="clip-preview"');
-    expect(warning).toBeGreaterThanOrEqual(0); expect(actions).toBeGreaterThan(warning); expect(preview).toBeGreaterThan(actions);
+    expect(warning).toBeGreaterThanOrEqual(0); expect(preview).toBeGreaterThan(warning); expect(actions).toBeGreaterThan(preview);
     expect(button(html, 'Скачать клип')).not.toContain('disabled');
     expect((html.match(/aria-label="Скачать клип"/g) ?? []).length).toBe(1);
     const complete = renderToStaticMarkup(createElement(VideoDetail, { videoId: id, initialVideo: { ...video, clips_done: 3 }, initialClips: [ready] }));
@@ -120,7 +116,7 @@ describe('ClipCard markup', () => {
   it('order: frame → actions → title → score → retention/music → Pro', () => {
     const html = card({ onSendToGuest: vi.fn() });
     const at = (s: string) => { const i = html.indexOf(s); expect(i, s).toBeGreaterThanOrEqual(0); return i; };
-    const order = ['<video', 'score-badge', 'clip-actions', '<h3>', 'Оценка 85 из 99', 'Музыка клипа', 'Интерес к тарифу'].map(at);
+    const order = ['<h3>', '<video', 'score-badge', 'clip-actions', 'Оценка 85 из 99', 'Музыка клипа', 'Интерес к тарифу'].map(at);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 });

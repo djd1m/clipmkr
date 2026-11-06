@@ -17,7 +17,7 @@ export function LimitsPanel({ remaining }: { remaining: RemainingLimits }) {
     <dl className="workspace-limit-summary"><div><dt>{credits && !remaining.owner_unlimited ? 'Доступно кредитов' : 'Доступно'}</dt><dd>{remaining.owner_unlimited ? 'Без лимитов' : credits ? `${credit(credits.available_seconds)} кредитов` : `${remaining.minutes} мин сегодня`}</dd></div>
       <div><dt>Лимит файла</dt><dd>{remaining.max_source_seconds === undefined ? 'Уточняется' : `${Math.floor(remaining.max_source_seconds / 60)} минут`}</dd></div></dl>
     <p>Баланс и длительность одной записи — разные ограничения.</p>
-    {!remaining.owner_unlimited && <a className="button secondary" href="/upgrade?from=partner_dashboard">Выбрать пакет</a>}
+    <a className="button secondary" href="/upgrade?from=partner_dashboard">Пакеты кредитов</a>
     <details className="workspace-quota-details"><summary>Подробности баланса и квот</summary>
       {remaining.owner_unlimited ? <><p>Загрузки, минуты обработки, выделения и пересборки — без дневных лимитов и списания кредитов.</p>
         <p>Доступны возможности Pro. Сохраняются ограничения размера и длительности файла, очередь обработки и доступность сервиса.</p></> : <>

@@ -154,3 +154,53 @@ async function verifyCatalogComponent(page, { layout, theme, firstScreen }, obse
   }
   assert.deepEqual((await textZoomRule(page)).filter(row => row.severity === 'error'), []);
 }
+
+// Сравнение настоящего компонента с frozen HTML при одинаковых viewport/theme/layout.
+// Динамические данные не сравниваются с демонстрационными числами макета.
+const approvedMeasurements = new Map();
+export async function assertApprovedScene(page, { scene, width, theme, layout, state = 'normal', artifactDir = '/tmp/clipmkr-ux-author-qa/scenes' }) {
+  const key = JSON.stringify([scene,width,theme,layout,state]);
+  let approved = approvedMeasurements.get(key);
+  if (!approved) {
+    const reference = await page.context().newPage();
+    try {
+      await reference.setViewportSize({width,height:1000});
+      const {readFile} = await import('node:fs/promises');
+      await reference.setContent(await readFile('docs/design/2026-11-05-ux-simplification.html','utf8'));
+      await reference.locator('#demo-role').selectOption('blogger');
+      if(state!=='normal')await reference.locator('#demo-state').selectOption(state);
+      await reference.locator('#demo-screen').selectOption(scene === 'stats' ? 'stats' : scene === 'account' ? 'settings' : 'result');
+      await reference.locator('#demo-theme').selectOption(theme);
+      await reference.locator('#demo-layout').selectOption(layout);
+      approved = await reference.evaluate(scene => {
+        const box = selector => document.querySelector(selector).getBoundingClientRect();
+        return { accent:getComputedStyle(document.documentElement).getPropertyValue('--workspace-accent').trim(),
+          shell:box('.shell').width, card:scene==='stats'?box('.referral').width:scene==='account'?box('.account-grid > section').width:box('.fake-player').width,
+          columns:scene==='stats'||scene==='account'?getComputedStyle(document.querySelector(scene==='stats'?'.stats':'.account-grid')).gridTemplateColumns.split(' ').length:null };
+      },scene);
+      approvedMeasurements.set(key,approved);
+    } finally { await reference.close(); }
+  }
+  const actual = await page.evaluate(scene => {
+    const root=document.querySelector('.workspace-shell'), box=root.getBoundingClientRect();
+    const css=getComputedStyle(root), selected=document.querySelector('.clip-card[data-selected=true]'), personal=document.querySelector('.personal-link-card');
+    const list=[...document.querySelectorAll('[data-select-clip]')];
+    const visible=node=>!!node&&!!node.getClientRects().length&&getComputedStyle(node).visibility!=='hidden';
+    const fields=[...root.querySelectorAll('p,button,summary,textarea')].filter(visible);
+    return { accent:css.getPropertyValue('--workspace-accent').trim(), shell:box.width,
+      card:(scene==='stats'?personal?.parentElement:scene==='account'?document.querySelector('.account-grid > section'):selected?.querySelector('.clip-preview'))?.getBoundingClientRect().width,
+      allClips:list.every(visible), count:list.length,
+      clipped:fields.some(node=>getComputedStyle(node).overflow==='hidden'&&node.scrollHeight>node.clientHeight+1),
+      personal:visible(personal), columns:document.querySelector(scene==='account'?'.account-grid':'.partner-counters')?getComputedStyle(document.querySelector(scene==='account'?'.account-grid':'.partner-counters')).gridTemplateColumns.split(' ').length:null,
+      overflow:document.documentElement.scrollWidth>innerWidth+1 };
+  },scene);
+  const {mkdir}=await import('node:fs/promises');await mkdir(artifactDir,{recursive:true,mode:0o700});
+  await page.screenshot({path:`${artifactDir}/${scene}-${state}-${theme}-${layout}-${width}.png`,fullPage:true});
+  assert.equal(actual.accent,approved.accent,'approved green accent');
+  assert.ok(Math.abs(actual.shell-approved.shell)<=2,'approved shell geometry');
+  assert.ok(Math.abs(actual.card-approved.card)<=2,`approved ${scene} card geometry: ${actual.card}/${approved.card}`);
+  assert.equal(actual.overflow,false,'horizontal overflow');assert.equal(actual.clipped,false,'critical text clipping');
+  if(scene==='stats'){assert.equal(actual.personal,true,'standalone personal card');if(state==='normal'||state==='link-blocked')assert.equal(actual.columns,approved.columns,'stats columns');else assert.equal(actual.columns,null,'no invented counters before successful read');}
+  else if(scene==='account')assert.equal(actual.columns,approved.columns,'account columns');
+  else {assert.ok(actual.count>0);assert.equal(actual.allClips,true,'all roster entries including fourth remain visible');}
+}

@@ -26,31 +26,32 @@ export function ctaSavedMessage(kind: CtaKind, rerendering: number): string {
   const page = kind === 'none' ? 'Призыв убран со страниц клипов.' : 'Сохранено. Кнопка уже на страницах клипов.';
   return rerendering > 0 ? `${page} Пересобираем клипов: ${rerendering} — в видео изменение появится после сборки.` : page;
 }
-export function VideoCtaForm({ videoId, initialKind, initialUrl }: { videoId: string; initialKind: CtaKind; initialUrl: string | null }) {
+export function VideoCtaForm({ videoId, initialKind, initialUrl, onFeedback }: { videoId: string; initialKind: CtaKind; initialUrl: string | null; onFeedback?: (feedback: { state: 'pending' | 'success' | 'failure'; message: string } | null) => void }) {
   const [kind, setKind] = useState<CtaKind>(initialKind), [url, setUrl] = useState(initialUrl ?? '');
   const [saved, setSaved] = useState({ kind: initialKind, url: initialUrl ?? '' });
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('');
   const changed = kind !== saved.kind || (kind !== 'none' && url.trim() !== saved.url);
   async function save() {
     const problem = ctaProblem(kind, url);
-    if (problem) { setError(problem); setMessage(''); return; }
-    setBusy(true); setError(''); setMessage('');
+    if (problem) { setError(problem); setMessage(''); onFeedback?.({ state: 'failure', message: problem }); return; }
+    setBusy(true); setError(''); setMessage(''); onFeedback?.({ state: 'pending', message: 'Сохраняем призыв…' });
     try {
       const result = await rpc<{ cta_kind: CtaKind; cta_url: string | null; rerendering?: number }>('video.setCta',
         { video_id: videoId, cta_kind: kind, cta_url: kind === 'none' ? null : url.trim() }, true);
       setKind(result.cta_kind); setUrl(result.cta_url ?? ''); setSaved({ kind: result.cta_kind, url: result.cta_url ?? '' });
-      setMessage(ctaSavedMessage(result.cta_kind, result.rerendering ?? 0));
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Не удалось сохранить призыв'); }
+      const message = ctaSavedMessage(result.cta_kind, result.rerendering ?? 0);
+      setMessage(message); onFeedback?.({ state: 'success', message });
+    } catch (cause) { const message = cause instanceof Error ? cause.message : 'Не удалось сохранить призыв'; setError(message); onFeedback?.({ state: 'failure', message }); }
     finally { setBusy(false); }
   }
   return <section className="cta-panel" aria-labelledby="cta-heading"><h2 id="cta-heading">Призыв в конце</h2>
     <p className="muted">Главная кнопка на странице клипа по короткой ссылке и короткая надпись в последние 2,5 с видео, над адресом.
       Смена вида пересобирает все готовые клипы записи — по одной пересборке на клип из суточного лимита; смена только ссылки — без пересборки.</p>
     <form onSubmit={event => { event.preventDefault(); void save(); }}>
-      <CtaFields id="video-cta" kind={kind} url={url} disabled={busy} onKind={next => { setKind(next); setError(''); setMessage(''); }}
-        onUrl={next => { setUrl(next); setError(''); setMessage(''); }} />
+      <CtaFields id="video-cta" kind={kind} url={url} disabled={busy} onKind={next => { setKind(next); setError(''); setMessage(''); onFeedback?.(null); }}
+        onUrl={next => { setUrl(next); setError(''); setMessage(''); onFeedback?.(null); }} />
       <button type="submit" disabled={busy || !changed}>{busy ? 'Сохраняем…' : 'Сохранить призыв'}</button>
     </form>
-    {message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}
+    {!onFeedback && <>{message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}</>}
   </section>;
 }

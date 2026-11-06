@@ -1,0 +1,98 @@
+{
+  "kind": "author scope audit; not native receipt",
+  "baseRef": "741174677ab6bf87f7d5b7fa1c90f4026d24253c",
+  "plannedWriteScope": 25,
+  "actualChangedCodeTargets": [
+    "apps/web/src/app/globals.css",
+    "apps/web/src/app/WorkspaceHeader.tsx",
+    "apps/web/src/app/WorkspaceSettings.tsx",
+    "apps/web/src/app/dashboard/page.tsx",
+    "apps/web/src/app/dashboard/LimitsPanel.tsx",
+    "apps/web/src/app/dashboard/PartnerPanel.tsx",
+    "apps/web/src/app/upload/Uploader.tsx",
+    "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+    "apps/web/src/app/clips/ClipCard.tsx",
+    "apps/web/src/app/clips/ClipMusicChoice.tsx",
+    "apps/web/src/app/clips/GuestPacks.tsx",
+    "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+    "apps/web/src/app/dashboard/account/page.tsx",
+    "apps/web/src/app/dashboard/partner/page.tsx",
+    "tests/workspace-presentation.test.ts",
+    "tests/clip-card.test.ts",
+    "tests/browser/blogger-cabinet.test.ts",
+    "tests/browser/ux-simplification.test.ts",
+    "scripts/check-workspace-presentation.test.mjs",
+    "scripts/workspace-presentation-local.mjs",
+    "tests/progress-screen.test.ts",
+    "tests/browser/blogger-auto-link.test.ts",
+    "tests/browser/billing.test.ts"
+  ],
+  "actualChangedCodeCount": 23,
+  "reusedUnchangedWriteTargets": [
+    "apps/web/src/app/videos/VideoList.tsx",
+    "apps/web/src/app/upgrade/UpgradeScreen.tsx"
+  ],
+  "readonlyInputs": [
+    {
+      "path": "apps/web/src/server/page-account.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/dashboard-summary.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/support/page-state.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/runtime.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/server/limits.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "packages/db/src/blogger-policy.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/app/videos/CtaFields.tsx",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/lib/upload-resume.ts",
+      "matchesOriginalBase": true
+    },
+    {
+      "path": "apps/web/src/app/dashboard/layout.tsx",
+      "matchesOriginalBase": true
+    }
+  ],
+  "approvedHTMLSha256": "a85b3f073a335871e421ea2079269fa19c71f42a263d7b0bd17ae30469c50e68",
+  "authorCodeDiff": {
+    "path": "/tmp/clipmkr-ux-author-final-code.patch",
+    "sha256": "fad2c2fba0f08e76ab437d0a0d086afdefa20b267c6ce35a3cfc7a691622c7a6",
+    "bytes": 254687,
+    "includesNewUntrackedCodePaths": [
+      "apps/web/src/app/dashboard/account/page.tsx",
+      "apps/web/src/app/dashboard/partner/page.tsx",
+      "tests/browser/ux-simplification.test.ts"
+    ]
+  },
+  "excludedCoordinatorOwnedChanges": "feature gates/plan/bindings/.fa-state/08 and historical docs",
+  "excludedGeneratedQA": "QA PNG restoration belongs to coordinator"
+}
