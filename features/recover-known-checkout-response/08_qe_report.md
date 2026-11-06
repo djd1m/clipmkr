@@ -84,3 +84,12 @@ Design review фактически закрыто12: revision `93f6d757b7a6158e7
 
 
 Последующий data-only этап подтвердил17/17 exit0 на source-set `afc6ad8fce14a70946cf2509c59a3907f931c08caad740b5ddf1a0a309d7147f`, 103,93 с; Python compile, scoped lint и focused types успешны. Источники и public test сверены с запретом дальнейших edits; actual author handoff/process terminal ещё ожидаются. Ни native refresh, ни независимая verification новых байтов этим дополнением не объявляются выполненными. Прежний8b91 набор остаётся историческим.
+
+
+### Фактическое возобновление QE на окончательных байтах
+
+Автор data-only передачи завершился exit0. Root после terminal заново физически сверил source-set `afc6ad8fce14a70946cf2509c59a3907f931c08caad740b5ddf1a0a309d7147f` и15 запрещённых к записи source/private/public-test файлов, public manifest,2read-only auth, Chrome и paid helper; неизменность подтверждена. Настоящий author object с шестью полями получен от Sol и перенесён буквально; root не писал независимых verifications и сохранил шесть условий reviewer.
+
+Поддерживаемый native `prepare` обновил незасвидетельствованный snapshot: actual exit0 prepared, sequence6, revision `a9905f80a820bff04bb2124d8b25f231ba77f9cf83c351555eae3acafae35275`, nonce `d693203a-8cd4-48ac-850b-d35d19046c5d`. Это тот же открытый второй цикл, без сброса history или расходования разрешения старого callback QE4. Originating Astra CLI фактически возобновлён на этих байтах; новый verdict ещё не получен.
+
+Actual code checkpoint записан поддерживаемой командой с измеряемым `07_code_changes.md`, exit0. Первый вызов без `--artifact` был отказан «stage code declared no artifact to witness» и не объявлялся успехом; исправлен аргумент вызова, не authority. Checkpoint фиксирует завершение локальной реализации и передачу, не принятие QE/runtime. Урок остановки writer сохранён как `teach:f0c7a1e4625098a0`; actual recall0 вернул дословный текст.
