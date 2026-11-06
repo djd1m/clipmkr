@@ -1,0 +1,17 @@
+{
+  "status": "AUTHOR_PROPOSAL_FOR_OWNER_REVIEW",
+  "sourceSHA": "db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087",
+  "testSHA": "4292d6eb2e5fd726ddb999f0e40a0b542d76503b1e998f30b7ce092682bcee16",
+  "proof": {
+    "red_cases": 8,
+    "green_targeted_cases": 10,
+    "operational_tests": 40,
+    "portable_tests": 2,
+    "mutants_red": 14,
+    "legacy_positive_groups": 10,
+    "skips": 0
+  },
+  "independentReview": "NOT AUTHORIZED/RUN",
+  "ownerApproval": "NOT GIVEN",
+  "runtime": "NOT RUN"
+}

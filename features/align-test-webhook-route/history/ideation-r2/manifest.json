@@ -1,0 +1,120 @@
+{
+  "kind": "exact-R2-before-author-R3",
+  "current_documents_count": 12,
+  "supporting_history_count": 4,
+  "fa_state_copied": false,
+  "documents": [
+    {
+      "path": "features/align-test-webhook-route/00_complexity_assessment.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/00_complexity_assessment.md",
+      "sha256": "1992d64456de6394b79cca9756dbeba5fb0dfb6372796a1adc21ce5263e45afd",
+      "bytes": 4882,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/01_requirements.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/01_requirements.md",
+      "sha256": "d5e9a6105267d7df541566469d49e8e07c268b10f926794c5ab4c06131518a03",
+      "bytes": 6204,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/02_reuse_inventory.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/02_reuse_inventory.md",
+      "sha256": "ff2aaea7f77ce17e010a44bee1b976f564f9531255d38c816e85878f0f543b2b",
+      "bytes": 5807,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/03.5_ideation_report.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/03.5_ideation_report.md",
+      "sha256": "306859332d85e6ff1a12c8399ff86cf9a58cdb09c2581cf06ee2120e8bf3dec2",
+      "bytes": 17286,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md",
+      "sha256": "afdc9910ab6c5cc2e0f4fcebcfaced4395ca469bf68591e5c90738c001844467",
+      "bytes": 10616,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/05_architecture.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/05_architecture.md",
+      "sha256": "73a875a0c0807c5adcf519164f6fe0869c2648938a061bc3cf109283c88838c8",
+      "bytes": 45821,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/06_implementation_plan.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/06_implementation_plan.md",
+      "sha256": "259578cf6320f60c85bd791d97039f892cce55a16815912e94cdfe173743abbd",
+      "bytes": 21867,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-quality-r2.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/reviews/qcsd-quality-r2.md",
+      "sha256": "eaeb79d2e05f7f77cecbbe0c10f56f658ca58e911e5189af39135fe0302dea29",
+      "bytes": 10151,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-risk-r2.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/reviews/qcsd-risk-r2.md",
+      "sha256": "e86609ed8fd290ff867980e632866bb9c07cbce2dfebc52e83e9b3d33b2c2466",
+      "bytes": 11036,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-testability-r2.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/reviews/qcsd-testability-r2.md",
+      "sha256": "ed6e5873bc0ef6c7118707a015776adab57a92ca227d2bec31121c1d9f89208c",
+      "bytes": 9634,
+      "group": "current12"
+    },
+    {
+      "path": "openspec/changes/align-test-webhook-route/proposal.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/openspec/changes/align-test-webhook-route/proposal.md",
+      "sha256": "9e8503ffe9457372e92b4a32f4a20c78a6dfb8b5527960d1bb7de45d4d12e2cc",
+      "bytes": 1451,
+      "group": "current12"
+    },
+    {
+      "path": "openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md",
+      "sha256": "392b589b5651f5d78ab26ac808e9c8e4f5b517fa0e1ab80321888b0d26305cb6",
+      "bytes": 4293,
+      "group": "current12"
+    },
+    {
+      "path": "features/align-test-webhook-route/planning-status.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/planning-status.md",
+      "sha256": "095422317ed196e665aa467deeb183c82713efa5e09e7c411a7416b194e77492",
+      "bytes": 8461,
+      "group": "supporting_history"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-quality.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/reviews/qcsd-quality.md",
+      "sha256": "b43485517ecf0026779165a042dbf0163107009ace5df28254a65788cf06339c",
+      "bytes": 14823,
+      "group": "supporting_history"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-risk.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/reviews/qcsd-risk.md",
+      "sha256": "51491c85235748d9808e50bf384833b3ab1828fc6acfaa6e524fd8b55150845a",
+      "bytes": 15911,
+      "group": "supporting_history"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-testability.md",
+      "snapshot": "features/align-test-webhook-route/history/ideation-r2/features/align-test-webhook-route/reviews/qcsd-testability.md",
+      "sha256": "fa1d633a418efc740e8599820daa3e2123521d85ac8ac85ea987a1d8115336c1",
+      "bytes": 16768,
+      "group": "supporting_history"
+    }
+  ]
+}

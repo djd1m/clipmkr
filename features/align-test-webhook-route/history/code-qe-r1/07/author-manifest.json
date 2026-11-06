@@ -1,0 +1,86 @@
+{
+  "status": "CODE_READY_FOR_REVIEW",
+  "at": "2026-11-06T00:45:07.583135+00:00",
+  "author_requested": "gpt-6.1-sol high",
+  "review": "NOT_RUN",
+  "runtime_go": false,
+  "runtime_apply": false,
+  "network_provider_db_calls": 0,
+  "inputs": {
+    "AGENTS.md": "870d72ea5a78624c45ff3f0afaf9cc72facc6c4f8ddaa1e2a6d163265e92b3ca",
+    "CLAUDE.md": "1f0fbd7865088dd2454a201025b5d9ce3fda4bb37732b26df023e54e4631fbc1",
+    "docs/model-matrix.md": "e78af9664347226c0c30427d5a7aad58de753d3c5d91bb98a2f0357b0fe26e94",
+    "docs/review-policy.md": "625437b5b0fdc3c418fb88929efdc7069ad7247dc41e80a987237ba1801e2775",
+    "docs/acceptance/core-cjm.md": "57959d202a7b92f7ce1b0a2b06255435422e0012b28d53f2d1d176912f62be5a",
+    "features/align-test-webhook-route/01_requirements.md": "b856cccb4b677de5bd8bbd479fad3682a4c8209d21ec8c9210b258ab33053350",
+    "features/align-test-webhook-route/02_reuse_inventory.md": "ff2aaea7f77ce17e010a44bee1b976f564f9531255d38c816e85878f0f543b2b",
+    "features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md": "d928de80700fd14ded42a8840998bb61ef1a829f83f1d0abb7ef3b8df613f8b5",
+    "features/align-test-webhook-route/05_architecture.md": "059622566fe8e50c1df1c2950f51fe6a0758a39d71dd3959c6c7114e92e25416",
+    "features/align-test-webhook-route/06_implementation_plan.md": "a3cb6c87e5b28d8e8cbb45b44e5da2dd10c968195e4c1563daac6f5a15894c03",
+    "openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md": "392b589b5651f5d78ab26ac808e9c8e4f5b517fa0e1ab80321888b0d26305cb6",
+    "openspec/changes/align-test-webhook-route/proposal.md": "9e8503ffe9457372e92b4a32f4a20c78a6dfb8b5527960d1bb7de45d4d12e2cc"
+  },
+  "readonly_owners": {
+    "apps/web/src/server/billing-handler.ts": "2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0",
+    "apps/web/src/server/ip.ts": "af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301",
+    "packages/shared/src/config.ts": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f"
+  },
+  "outputs": {
+    "deploy/test-webhook-route.caddy": "878af1f6cf54cef3d675b6a0d3c3182051e45405e9dd557a22dc12d770198655",
+    "tests/test-webhook-route.test.ts": "d1ea335923718666f207dd0b090c65d3ad8dc2ba8178eb3a5ec842b596f75e2d",
+    "features/align-test-webhook-route/07_code_changes.md": "ed325c209e5bbe6b5acabe435a6694fffe507452830e8438cfdfd4ac411dcc0f"
+  },
+  "private_bindings": {
+    "payment-cjm/apply-route.private.py": "9606862536090907faa760cd8d5ddd47edba0fcb6111c084315741f178c721f7",
+    "payment-cjm/launch-route.private.py": "b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892",
+    "payment-cjm/native-edge-routing.private.txt": "4fccb901ce4825e921518bc0112b672bdbd4cccacb1f53e6d800cbf5f707b0c2",
+    "payment-cjm/native-edge-candidate.private.txt": "93967c31704f6468ffd3bff5a88730b77a1048e4056d1075b227c1cf427b6c08",
+    "payment-cjm/native-proxy-routing.private.txt": "10e57a5d335922317fcf99fe2f330f64fb9a45288a0173bf906d6a16d9571e94",
+    "payment-cjm/route-r3-design-plan-checkpoints.private.json": "5e596d3ae72dbe2f53b537974c9b0ef76e86edfbb5e63ec9ca122a98896a74cb"
+  },
+  "evidence": {
+    "callback-code-author/OPERATING-CONTRACT.private.md": "07567759e56450d943ea2d9bc46985a948275cf08c1afd8e4829d352f9a919e1",
+    "callback-code-author/events.private.jsonl": "81a51a7b343e79807753db3775dae93dd4142f41392f8786591561260f06e791",
+    "callback-code-author/execution.private.json": "66e801690cc934153f272e9cebd3501bb051aab2fc497d67a1424b4ad02b746f",
+    "callback-code-author/final-checks.raw.json": "386cd8d3bf05da33184c78041bc5bdb6f8f2f34c87962035521656af5b470c1d",
+    "callback-code-author/fixture-driver.private.py": "0e81c3b24afc1316d1411c5ca4c04261607f1939cf33104a8401936c306733a9",
+    "callback-code-author/fixture-execution.raw.jsonl": "6e6810cd382a465add02337f78887db547f36c0171f3a340abe0d7932fb5527b",
+    "callback-code-author/launch.private.py": "11e8e199e1a75b69bb1dd313fa8daed9b705d565aa9276b49b266c81afc2c4a5",
+    "callback-code-author/mutation-execution.raw.json": "fe2b136a7a9d4171fc252447566e161b0ebf7701eaf13a9fb63ccda5dd212d11",
+    "callback-code-author/prompt.private.md": "2351eb0104b66543a692b6a71a62d75fe6d10cd74766302921abcd51f71e400a",
+    "callback-code-author/run-final-checks.private.py": "ad34ed924336876426092623afd07915f89474e64449347c8872f0d5ec024430",
+    "callback-code-author/run-mutations.private.py": "0d4565f0bc67650cae645a934e151c5d2cbfd30b66289ade4cdd7afea5a35664"
+  },
+  "test_summary": {
+    "vitest_files": 4,
+    "vitest_tests": 67,
+    "skips": 0,
+    "new_target_tests": 11,
+    "mutations_red": 10,
+    "exact_source_green_groups": 10,
+    "lint_exit": 0,
+    "typecheck_exit": 0
+  },
+  "actual_runtime": {
+    "node": "22.23.4",
+    "python": "3.12.3",
+    "vitest": "3.2.7",
+    "target_host": "NOT_ESTABLISHED"
+  },
+  "supplied_coder_context": "4689212d21b27161fd5121013b103ed9cdd921e0cdb00d0b03e106ed689aebe1",
+  "remotePayloadSHA": "9606862536090907faa760cd8d5ddd47edba0fcb6111c084315741f178c721f7",
+  "metrics": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "cost_usd": null,
+    "reason": "API/session usage counters unavailable to author"
+  },
+  "limitations": [
+    "external adapters SIMULATED",
+    "independent review and native QE pending root",
+    "target Caddy/SSH/health and BOTH-store/provider inventory NOT_ESTABLISHED",
+    "no full-suite/build/DB/runtime/UI acceptance",
+    "historical debt DEFERRED_UNRESOLVED",
+    "manual SSH crash recovery/downtime residual"
+  ]
+}

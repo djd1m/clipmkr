@@ -1,0 +1,78 @@
+{
+  "kind": "exact-before-author-rework",
+  "fa_state_copied": false,
+  "documents": [
+    {
+      "path": "features/align-test-webhook-route/00_complexity_assessment.md",
+      "sha256": "bd97ab735116c5bec9d0c4b6a828cf5664d48fb4bd076cb0a784441869c3bf22",
+      "bytes": 3954,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/00_complexity_assessment.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/01_requirements.md",
+      "sha256": "376ffdaac81134f21c6cc344f87eb6efb57004c65738a2f5e31a9dc20a249bb4",
+      "bytes": 4890,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/01_requirements.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/02_reuse_inventory.md",
+      "sha256": "bd85eb42fa8ed131dba30a8a58cbfa4df83dc39a339ffe01e5f7ccdb556c0ae3",
+      "bytes": 4433,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/02_reuse_inventory.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md",
+      "sha256": "d39b9887fc50febb7c38dc07bb9e20c87e255b1484f4c847e78597cdc5d95d3a",
+      "bytes": 7692,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/03_adr/001-align-test-callback-upstream.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/05_architecture.md",
+      "sha256": "8e82292a823252246e8c9d2f79bed009f5cde10d4f397710ab8b97eccbc4fcbe",
+      "bytes": 3028,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/05_architecture.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/06_implementation_plan.md",
+      "sha256": "f1d8d2c9d054dfbe561b902532dfc2824b4e09c6950acf0d0c76656fe50e015f",
+      "bytes": 11574,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/06_implementation_plan.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/planning-status.md",
+      "sha256": "7ddfb75757ae310473d59651201f6d31b8818cc7aca1ce5dbcb2e47e9f3a4747",
+      "bytes": 1953,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/planning-status.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-quality.md",
+      "sha256": "b43485517ecf0026779165a042dbf0163107009ace5df28254a65788cf06339c",
+      "bytes": 14823,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/reviews/qcsd-quality.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-risk.md",
+      "sha256": "51491c85235748d9808e50bf384833b3ab1828fc6acfaa6e524fd8b55150845a",
+      "bytes": 15911,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/reviews/qcsd-risk.md"
+    },
+    {
+      "path": "features/align-test-webhook-route/reviews/qcsd-testability.md",
+      "sha256": "fa1d633a418efc740e8599820daa3e2123521d85ac8ac85ea987a1d8115336c1",
+      "bytes": 16768,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/features/align-test-webhook-route/reviews/qcsd-testability.md"
+    },
+    {
+      "path": "openspec/changes/align-test-webhook-route/proposal.md",
+      "sha256": "9e8503ffe9457372e92b4a32f4a20c78a6dfb8b5527960d1bb7de45d4d12e2cc",
+      "bytes": 1451,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/openspec/changes/align-test-webhook-route/proposal.md"
+    },
+    {
+      "path": "openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md",
+      "sha256": "392b589b5651f5d78ab26ac808e9c8e4f5b517fa0e1ab80321888b0d26305cb6",
+      "bytes": 4293,
+      "snapshot": "features/align-test-webhook-route/history/ideation-r1/openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md"
+    }
+  ]
+}

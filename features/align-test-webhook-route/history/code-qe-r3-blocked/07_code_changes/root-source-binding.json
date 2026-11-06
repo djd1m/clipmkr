@@ -1,0 +1,20 @@
+{
+  "stage": "R3 actual author terminal source binding before independent own-review",
+  "previousPlanSHA256": "5bae02e15285f83d29ab706ed8578c12fc7d703f6dd27735117310c609b5c819",
+  "currentPlanSHA256": "cdaccd71fd018ca1ae8a1535ad2395b9585c803c9a7d51f7a7d2a25399c45006",
+  "sourceSHA256": "976223c60ee9b175d7592db4faed81e5cd58a4d23e973d1ab173b35c6c0e626e",
+  "payloadSHA256": "976223c60ee9b175d7592db4faed81e5cd58a4d23e973d1ab173b35c6c0e626e",
+  "launcherSHA256": "b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892",
+  "testSHA256": "8463703701e53efbfe17a534cff4ef91d543a44291f38aa31cf05c70e21bb0a5",
+  "compositeProgramSHA256": "da884857c82d6627b279882a26ee8f4e349db8d466ae0baa7bdd8ab8cad8ede1",
+  "regressionExtensionSHA256": "0e4980e501b388ea274e120ecc5656b8fd20de0289c2e4b5b174bd0d48b44e1e",
+  "finalCommands": {
+    "path": "callback-code-author/repair-r3/final-checks.raw.json",
+    "sha256": "82de02eb921ca16313af38b58dcca376ad1d890a8893cd16a98b1091e6d47f11",
+    "commands": 9,
+    "allExit0": true
+  },
+  "independentReview": "PENDING",
+  "runtime": "NOT RUN",
+  "requirementsOrWriteScopeChanged": false
+}

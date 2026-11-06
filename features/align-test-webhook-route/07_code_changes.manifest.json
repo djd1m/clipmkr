@@ -1,0 +1,34 @@
+{
+  "status": "CANDIDATE_ONLY_OWNER_BOUND_CONTINUATION_NOT_GIVEN",
+  "sourceSHA256": "db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087",
+  "payloadSHA256": "db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087",
+  "launcherSHA256": "b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892",
+  "testSHA256": "4292d6eb2e5fd726ddb999f0e40a0b542d76503b1e998f30b7ce092682bcee16",
+  "programSHA256": "377873df7e248088ff910e413e05806f46a9f931a1e660e37577a918f47fbc98",
+  "sourceDiffSHA256": "ee18887fa722d32a466656341932ca192047b8fefb4b0c59655534685f63719e",
+  "testDiffSHA256": "59ebf669afa054a301befcfb82253b53985f229d616ec99c2f29221e8a8ef3b9",
+  "authorProof": {
+    "red_cases": 8,
+    "green_targeted_cases": 10,
+    "operational_tests": 40,
+    "portable_tests": 2,
+    "mutants_red": 14,
+    "legacy_positive_groups": 10,
+    "skips": 0
+  },
+  "ownerApproval": false,
+  "independentReview4": "NOT AUTHORIZED/RUN",
+  "nativePredecessor": {
+    "revision": "9a1a55689ca064034778e15b6302f4efea6e1782bb4174cbb87a6cd0cfb60119",
+    "journalId": "4568510f-841d-40c2-af6a-b84526212aae",
+    "sequence": 7,
+    "eventDigest": "d030de03c1d68eeeee2db52723ff3d57722415e9bf387c341e4220c23db685d5",
+    "cycleId": "0814e0cc-fc21-43bc-874e-b1da02050eae",
+    "rounds": 3,
+    "stopReason": "native-fixed-ceiling-reached"
+  },
+  "requirementsOrWriteScopeChanged": false,
+  "runtimeApply": "NOT RUN",
+  "historicalAuthorManifest": "history/code-qe-r1/07_code_changes.manifest.json",
+  "note": "Current candidate, not independent approval. Source full bytes/private inputs stay outside Git."
+}

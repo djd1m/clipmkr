@@ -8,7 +8,7 @@ Task kind: bugfix
 
 | Измерение | Балл | Основание |
 |---|---:|---|
-| Файлы | 2 | 2 будущих implementation targets и 8 основных planning/ledger файлов; при расширении пересчитать |
+| Файлы | 2 | 2 будущих WRITE implementation targets, 3 неизменных READ-ONLY binding inputs, 9 основных planning/ledger файлов с новым03.5; history/reports — evidence, при расширении scope пересчитать |
 | Домены | 2 | Edge routing и существующий billing callback; API/DB модели не меняются |
 | Интеграции | 1 | 0 новых: Caddy, основной proxy и ЮKassa уже используются |
 | Breaking | 2 | Контракт URL сохраняется; фактический владелец обработки callback меняется |
@@ -31,4 +31,6 @@ Task kind: bugfix
 
 Первый recall под default Node завершился exit0 с ошибкой ABI SQLite и пустым fallback; это не успешное чтение store. Повтор под `/tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin/node`, pinned npm CLI из `/tmp/clipmkr-public-entry-20261105`, `--project /home/clipmkr --json --limit 3` вернул 3 прочитанные записи. Применён teach:b9ca1b2cc77e0c4e: использовать установленный проектный patched gate, не объявлять tooling несовместимым без проверки. Две UI-записи не перенесены в требования callback.
 
-Решение владельца об автономных шагах1–4 основного блока передано координатором; отдельное human approval этих bytes отсутствует. Здесь не выданы approval/checkpoint receipts. Requirements/ADR draft не разрешают runtime apply; Step3.5 независимые QCSD-роли пока NOT RUN. 05/06 — предварительная подготовка для review, не закрытие зависимых этапов. Код/runtime/UI/legacy data не изменены.
+Решение владельца об автономных шагах1–4 TEST CJM основного блока передано координатором; здесь не выданы approval/checkpoint receipts. Requirements/ADR draft не разрешают runtime apply. Originating QCSD R1: три fresh docs-first Terra xhigh роли завершены (terminal0 по root), evaluate revision `e217b4276558585c1a18650ef9393ee7fa226d12dad54f3aab46fcc4ce7a9ebb` вернул unresolved7. Текущий rework описан в03.5; все семь условий OPEN до own-review R2. 05/06 — авторская проработка, не закрытие зависимых этапов. Код/runtime/UI/legacy data не изменены.
+
+M10 сохраняется: один upstream, прежние два repo WRITE targets, ноль новых API/env/network/DB моделей/служб. Durable private operation record, backup, lock и self-contained executor — ограниченный способ применения/восстановления existing file, не новая инфраструктурная платформа. O/E/H/P/C в05 уточняют A1, A2, A3, A4, A5; новых Acid-токенов не требуется. Незавершённые платежи и uncontrolled reload могут оставить apply BLOCKED без расширения scope.

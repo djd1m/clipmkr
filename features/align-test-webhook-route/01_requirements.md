@@ -1,6 +1,6 @@
 # Требования: TEST callback в основной контур
 
-05.11.2026. Draft отдельного операционного плана. Авторитетная дельта: `openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md`; SHA ниже вычисляется после записи. Proposal: `openspec/changes/align-test-webhook-route/proposal.md`. Это не полная копия specification и не успешный payment receipt.
+06.11.2026. Авторский bounded R3 по RISK-03 отдельного операционного плана. Авторитетная дельта: `openspec/changes/align-test-webhook-route/specs/test-webhook-route/spec.md`; точные SHA ниже. Proposal: `openspec/changes/align-test-webhook-route/proposal.md`. Это не полная копия specification и не успешный payment receipt.
 
 ## Участники и источник
 
@@ -25,7 +25,17 @@ Read-only источники приватны: `callback-identity-readonly.priva
 
 ## Lessons и открытые gates
 
-Recall teach:b9ca1b2cc77e0c4e применён к pinned project helpers. Остальные 2 результата UI-specific и не задают требования. Независимые QCSD quality/risk/testability, conditional security (external payment callback), формальные checkpoints, K1/K2, implementation, runtime validate/reload/rollback rehearsal и независимый QE ещё не выполнены. Coordinator фиксирует действительное делегированное решение; этот planner не создаёт подтверждения владельца.
+Исторический recall teach:b9ca1b2cc77e0c4e применён к pinned project helpers. Остальные 2 результата UI-specific и не задают требования. Originating R2 own-review выполнен всеми тремя ролями; actual helper evaluate exit1, revision `9ed383d54b27a251ef6d56db8009baf7e36249b06ccb887134f4ea8cf649c635`, unresolved только RISK-03. Это надлежащий originating результат, не прежний not-established. R3 author correction не закрывает это условие и не переносит старые verifications на новые bytes автоматически. Для M модуль03.5 требует три core-роли; security perspective содержится в risk report, это не отдельный security run. Исторический K1 free и K2 для прежнего SHA описаны в02/history; актуальные structural gates не заменяют formal checkpoints, implementation, actual executor review/fixtures и code/runtime QE. Coordinator фиксирует действительное делегированное решение; этот planner не создаёт подтверждения владельца.
+
+## Решение о requirement delta
+
+RISK-03 подтвердил permission drift: прежний дизайн допускал historical canonical reconciliation, хотя OpenSpec разрешает только штатные записи утверждённого TEST CJM. R3 **удаляет** это действие и зависимость, не расширяет spec/authorization. FR-1/FR-2/FR-3/NFR-1 и точные spec/proposal bytes остаются прежними. O/E/H crash/write/executor/health контракты не ослабляются.
+
+В этой feature historical TEST debt — только read-only inventory/classification и отдельный deferred backlog/протокол05§P3; он **не resolved**. Никаких old-intent grant/payment_event/payment updates, relay/POST, отмены через mutating status GET, чужих account writes или cleanup/migration. Техническое решение root в этой feature не снимает нормативный запрет. Дальнейшая работа с долгом потребует отдельного scope/полномочий/gates вне этой feature, они здесь не создаются.
+
+New-CJM root GO возможен после полного свежего BOTH-store inventory, known event-time/доказанной upper-bound classification, отсутствия активных/неопределённых relevant payments/inflight, route health и нового baseline sole approved target. Классифицированный старый terminal debt с истёкшим relevant event window не требует grant до нового CJM. QA-оператор создаёт checkout лишь после GO/baseline для sole approved target; дальнейшие business requests/controlled relay допускаются только для exact нового intent, возвращённого этим checkout. Old или nonapproved intent → STOP **до POST/relay/иного способного писать запроса**. Native обычный provider traffic и app handler этой фичей не меняются.
+
+Anti-drift: AM-8 в06 проверяет negative old-approved/pre-GO и nonapproved intent с нулём business calls и positive control нового approved intent после GO/baseline, в прежнем future test path. История, root facts и снимки не являются новой authorization; отсутствие historical mutation не объявляется решением старого долга.
 
 ## Ревизии нормативных входов
 
