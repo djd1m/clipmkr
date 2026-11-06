@@ -276,3 +276,12 @@ Host revision `63d7ad13677e529e78440c600dcedb81ea142e5917f42f46dedc5ee0e152c318`
 Все семь physical base/candidate/current документов сравнены, 12 host condition objects сохранены буквально. Proposed once-bound descriptor не пополняет roster и сохраняет unknown при expiry во время записи; новые behavioral checks не выполнены. Native manifest текущей revision `9d2aab0fcaa676dc3db41e2b3e4ec317019c87dabf69de016fddb14752085184` не включает 02/06/OpenSpec. Прочитанный полный context — 96108/98304 bytes; root K2/OpenSpec/target результаты являются сохранёнными document receipts, не reviewer-run tests.
 
 QT-01…QT-06 verification относится только к сохранности IDEATION design; deltaVerification=false из-за QT-07/08. KCQE-04…09 остаются OPEN/NO-GO, rounds2/3, QE3 не открыт; code, tests, runtime и provider не проверялись. Requested gpt-6.1-terra xhigh, serving NOT_ATTESTED.
+
+
+## Originating QT-07/08 structural verification
+
+**Clean для проверенной design-дельты.** В 05D1a.2 уточнён ациклический порядок whole P16 (`go` — boolean) → T8 → отдельный OrdinaryGO/GOJoin с independently authorized head → Authority → once binding. После actual reconcile предписаны будущий actual-source positive и отдельные GO/context/head negatives. Для QT-08 заданы live-own deadline-only negative, конкретный отказ и directed normalization mutant; replay/expiry/parser не считаются kill. Pure JSON/hash receipt подтверждает только synthetic byte DAG, а не actual source/authority/платёж.
+
+QT-01…QT-08 сохранены буквально и проверены как design на revision `7303311b2a6d4408c9826127c632ee24fd5120016c7fe9d216659a86080473b9`; новых серьёзных условий в этой дельте не выявлено. Все семь base/candidate/current документов сверены; 06 измерен отдельно SHA-256 `aa3c0a511497f2cf51d4c5803b7e8912f060351c88f6b3bd339dd336c8f70364`, поскольку отсутствует в native manifest. Сохранённый context complete: 96741/98304 bytes; K2 C8 WARN/C4 SKIP/C9 только byte-identical.
+
+`implementationVerified:true` означает проверенный IDEATION design и обязательные будущие confirmations, не тесты или принятый код. KCQE-04…09 OPEN/NO-GO, rounds2/3, QE3 не открыт; authority/head/clock/history/capacity и actual-source behavior не установлены. Reviewer не запускал code/tests/runtime/network/DB/provider/Git/native/checkpoints. Requested gpt-6.1-terra xhigh; serving NOT_ATTESTED.

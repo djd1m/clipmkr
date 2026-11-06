@@ -59,6 +59,11 @@ Recovery MUST сохранять global-off/sole approved TEST target, source id
 - **WHEN** рассматривается следующий effect
 - **THEN** STOP до effect; no callback, no history deletion/truncation/namespace reset; unknown rollback authority или размерная bound не подменяются inferred proof. Full legitimate sequence с сохранением всех immutable snapshots MUST оставаться положительным контролем существующего public test по06AM-17
 
+#### Scenario: Конечные ordinary slots и свежий ticket
+- **GIVEN** заранее immutable finite descriptor roster, completed prior reconcile, independently bound fresh GO/head и whole fresh context
+- **WHEN** unused exact ordinary descriptor проходит exact whole P→full T→separate OrdinaryGO/head→Authority→once binding в existing used[id] вместе с durable consumed_unknown до startup persist/session/callback по05D1a.2; P.go boolean, полный GO не вложен в P, arbitrary context exclusions запрещены
+- **THEN** этот admission может выполнить ровно одно разрешённое действие; binding/ticket/history неизменны, descriptor roster/N/generation/head не reset/replenish. Old ticket+new context, rebind/replay/reuse, foreign head, changed descriptor/new slot, exhaustion/late binding MUST STOP до следующих effects. Pending/recovered и historical original bindings MUST оставаться прежними; весь context сохраняется. Отдельный otherwise-valid deadline-only T′ после consume внутри live own invocation MUST дать RECOVERY_ORDINARY_DEADLINE_REBIND/0следующих effects при unchanged binding; targeted normalization mutant MUST нарушить этот oracle (05D1a.2/06AM-17)
+
 #### Scenario: Guard цепочка и case binding
 - **GIVEN** потерян controller/route lock после blocking boundary, B0 содержит non-origin unknown, ticket phase неверна либо follow-up case отличается от current active case
 - **WHEN** existing entry собирается сохранить operation или создать session/callback
