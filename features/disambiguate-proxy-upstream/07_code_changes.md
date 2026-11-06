@@ -20,3 +20,5 @@ held fd/backup/flock/fsync реальны на own tempfiles, внешние г�
 Применение body/genuine runtime GO и новый baseline остаются закрытыми до независимого
 review/fresh preflight. Callback QE4 не переоткрывается; original spec/journal сохраняются.
 Не выполнялись новые checkout/session/job/relay, app deploy, Cloud/DNS, реальные списания.
+
+После R1 подготовлены две ограниченные коррекции: DOC02 relative Git object path с16 дополнительными real-layout probes; QE-PROXY-01 failure-phase + partial-byte guard,30-case actual-body local corpus. Root readback-prefix probe теперь GREEN0/0. Старые19/24-case reports сохранены как история. Independent originating recheck остаётся обязательным, runtime/financial E2E этим не подтверждены. Полные текущие hashes — в measured06.

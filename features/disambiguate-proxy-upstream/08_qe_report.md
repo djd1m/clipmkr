@@ -1,3 +1,36 @@
+# QE R2: локальная реализация проверена, runtime отдельно
+
+Actual native evaluate exit0: **CLOSED**,2 witnessed cycles, unresolved[].
+Revision `70604af795cd8aaa57280f56735e5e6b18ca5c84bb998817cb884d0fa06917c4`,
+nonce `e61344bf-4f54-4b6c-9799-16c345e2512d`, sequence4,
+eventDigest `56e2f845c743584f6d712a782b828d253dc44117e2b13d1a626730d93769fa72`.
+
+[Точный originating recheck](reviews/originating-qe-r2.md) скопирован побайтно
+из independently produced report; SHAe4730fcb9adaf5ff7eab8dbfeb8eba57c41f3c12b347980312375cc4988b813b.
+Requested gpt-6-astra xhigh, прежняя requirements-first session; serving NOT_ATTESTED.
+Исходное QE-PROXY-01 сохранено буквально и получило собственную verification на
+текущей revision; новая source history не заменяла старые conditions/receipts.
+
+Primary QE pass: **CLEAN в локальном scope**. Precision QE: не настроен для этого S.
+Combined Step-8: local implementation verified, actual runtime/financial acceptance
+**NOT_RUN**. Code/spec anti-drift: прежний FR3/A4/DIR03 выполнен без ослабления;
+остальные требования/OpenSpec и protected canonical dependencies неизменны.
+
+Independently повторены30 body cases,12 paired old/prefix/current readback cases,
+3 strict exception/capture controls и32 instruction/layout cases. Реальные FD/Git/
+flock/fsync на собственных temp fixtures; Docker/HTTP/provider/DB SIMULATED. Source
+Caddy adapter root фактически разобрал candidate без reload; parsed delta только
+upstream. Future cold merge не принят: нынешняя source base/env не prepared release.
+
+Доставка допускается лишь после fresh source identity/network/BOTH-store/no-active
+preflight, actual root GO и исполнения exact reviewed body4a667829…46b1. Fresh callback
+canonical revalidate перед бизнесом остаётся обязательным. Никаких новых checkout/
+сессий/paid jobs, Cloud/DNS/livecharges этим QE не выполнено и не разрешено.
+
+Ниже сохранён первый unresolved протокол как история, не текущий итог.
+
+---
+
 # Первый QE: требуется исправление
 
 Native cycle1 действительно выполнен: revision

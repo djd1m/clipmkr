@@ -182,6 +182,82 @@ docker compose --project-directory . --env-file .env --profile test --profile ed
 
 ---
 
+### Исходный source-site: отдельный proxy overlay (06.11.2026)
+
+Для исходного сайта `clipmkr.ru` на `test-apps-server.com` используется пара
+`docker-compose.yml` + `deploy/source-proxy.compose.yml`. Override заменяет только bind
+`/etc/caddy/Caddyfile` на `deploy/source-proxy.Caddyfile:ro`; Compose объединяет volumes по target.
+**Во всех последующих обычных source-deploy командах** этого документа (config, build,
+run, exec, ps, logs и особенно каждый `up` при обновлении из §5) перед подкомандой добавляйте
+`-f docker-compose.yml -f deploy/source-proxy.compose.yml`. Для source-site используется только
+`--profile edge` и фактически настроенный Cloud S3; приёмка выполняется на реальном S3.
+Приведённые ниже legacy-команды с `--profile test` и MinIO относятся к историческому
+изолированному контуру, а не к source-deploy или его приёмке. На source-site не запускайте
+MinIO и дополнительные test-контейнеры. Запуск исходного сайта без второго
+`-f` возвращает portable `web` и запрещён. Для другого окружения/custom `N5_COMPOSE_PROJECT`
+остаются обычные команды ниже с базовым `proxy/Caddyfile`; Cloud использует свои overlays.
+Source override к ним не добавляется.
+
+Этот раздел описывает **будущий cold deploy в отдельно разрешённое окно**, допускающее
+смену bind и recreate proxy. Текущий warm transition сюда не входит: его фактический старый
+single-file bind сохраняется, root отдельно выполняет reviewed same-inode операцию после GO.
+Приведённые команды не являются разрешением на runtime, сборку или развёртывание приложения.
+
+До любого Compose-вызова для source-site выполняйте в Bash проверки host и физического cwd.
+`.env` — существующий приватный source env, его содержимое и полный rendered config не печатать.
+Effective project проверяется по результату Compose, включая `.env` и shell precedence,
+а не только по переменной shell. Любой отказ означает STOP до `up`.
+Canonical portable base читается read-only из `git show HEAD:./proxy/Caddyfile` с закреплённым
+SHA: working-tree `proxy/Caddyfile` является также текущим mounted source и после warm
+same-inode transition может содержать ровно reviewed candidate. Guard допускает в этом
+пути только exact canonical base либо exact candidate; любые другие bytes — STOP.
+Восстанавливать base через `git restore`, rename или перезапись live bind для прохождения
+guard нельзя. При будущем cold deploy override передаст mount файлу `deploy/source-proxy.Caddyfile`.
+
+```bash
+set -eu
+set -o pipefail
+test "$(hostname)" = test-apps-server.com
+test "$(pwd -P)" = /home/dz-projects-2026/2026-AUG-PU-Projects/2026-AUG-PU-Projects/projects/05-podcast-clips-opus
+python3 - <<'PY'
+import hashlib
+import subprocess
+from pathlib import Path
+base = subprocess.check_output(['git', 'show', 'HEAD:./proxy/Caddyfile'])
+candidate = Path('deploy/source-proxy.Caddyfile').read_bytes()
+assert hashlib.sha256(base).hexdigest() == '10e57a5d335922317fcf99fe2f330f64fb9a45288a0173bf906d6a16d9571e94'
+assert base.count(b'reverse_proxy web:3000') == 1
+assert candidate == base.replace(b'reverse_proxy web:3000', b'reverse_proxy n5-clipmaker-web-1:3000')
+assert hashlib.sha256(candidate).hexdigest() == 'cdefca96ac35bf1c293f39d6f5282232ccb3bf0c9f649688698a437715a6a023'
+mounted = Path('proxy/Caddyfile').read_bytes()
+assert mounted in (base, candidate)
+# Все длины записи/truncate/restore — len(captured_bytes), не длина Unicode-строки.
+PY
+docker compose --project-directory . --env-file .env --profile edge -f docker-compose.yml -f deploy/source-proxy.compose.yml config --format json | python3 -c 'import json,sys,pathlib; c=json.load(sys.stdin); v=[v for v in c["services"]["proxy"]["volumes"] if v["target"]=="/etc/caddy/Caddyfile"]; assert c["name"]=="n5-clipmaker"; assert len(v)==1 and v[0]["type"]=="bind" and v[0].get("read_only") is True and pathlib.Path(v[0]["source"]).resolve()==pathlib.Path("deploy/source-proxy.Caddyfile").resolve()'
+```
+
+Перед следующим блоком root проверяет fresh admitted operation/identity, полный inventory
+всех сетей proxy, единственный selected-name candidate `n5-clipmaker-web-1` у approved main,
+actual mount/config bytes и deployed service config. Неизвестные bytes, чужой project/site,
+неполные bindings — STOP, их нельзя перезаписывать. Допустимо только известное исходное
+состояние или reviewed candidate. Если candidate bytes, rendered config, фактический mount,
+deployed service config уже совпадают и loaded JSON == adapted JSON, результат **no-op**:
+следующий блок не выполнять, write/reload не вызывать. Одного совпадения файла недостаточно.
+
+Только для необходимого изменения в отдельно допущенном cold deployment, после всех проверок
+выше, в той же Bash-сессии и каталоге:
+
+```bash
+docker compose --project-directory . --env-file .env --profile edge -f docker-compose.yml -f deploy/source-proxy.compose.yml up -d --no-build
+```
+
+Base имеет 1476 UTF-8 bytes (1065 символов), candidate — 1491 bytes; эти размеры — наблюдения,
+не константы для записи. Единственная разница — `web:3000` → `n5-clipmaker-web-1:3000`;
+headers, trusted proxies и transport timeouts сохранены. При изменении base hashes/diff
+должны отказать: overlay требует нового согласованного review. Actual Caddy validate/adapt,
+loaded config, DNS uniqueness и XFF проверяются отдельно на source host; локальный config
+и offline tests этого не доказывают. После отката к `web` платёжный CJM остаётся STOP.
+
 ## 4. Сборка и тесты — до всякого запуска
 
 Для текущего полного `N5_ACCEPTANCE=1` использовать физический Git checkout
