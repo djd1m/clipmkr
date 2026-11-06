@@ -1,3 +1,25 @@
+# Итог исправления и повторного QE
+
+06.11.2026. **Опубликовано на [clipmkr.ru](https://clipmkr.ru/), browser smoke PASS.**
+
+- Ревизия приложения `11a90aec9d26be56849ac06c9f12a98001739a28`; образ `sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6`.
+- Глобальное предупреждение убрано с публичных страниц. Контекст сохранён у каждого purchase CTA, в dedicated статистике блогера/владельца и внутри legacy раздела партнёрской программы.
+- Авторский focused прогон:63/63 PASS, typecheck/lint/OpenSpec/diff-check PASS. Originating independent Astra R2:42/42 PASS, собственные отрицательные мутации и проверка типов; первоначальный HIGH QE-TEST-001 независимо закрыт. Установленный Plain convergence вернул exit0/closed/unresolved=[] на revision `87ef4cf96dfe9c3248f86116ff356af606e7a80f012058beaac5460ed6dde51f`; поддерживаемый QE checkpoint реально выполнен.
+- Настоящий опубликованный Chromium:24 сценария,0 ошибок;390/1440 × light/dark × workspace/studio для анонимного посетителя, обычного клиента и блогера. Проверены главная, вход с клавиатуры, account badge, три CTA-предупреждения, dedicated статистика, legacy раскрытие с клавиатуры и повторное открытие страницы. Переполнения по горизонтали нет.48 основных снимков и отдельный сфокусированный legacy-снимок остаются приватными; секреты/сессии в Git не помещены.
+- Обновлён только web-контейнер; другие6 контейнеров, окружение и mounts сохранены. Полная резервная копия реально восстановлена на существующем локальном PG16 для сверки; все проверяемые таблицы совпали с snapshot, changedTables=[]. Рабочая БД не восстанавливалась. Откат не потребовался; старый образ сохранён.
+
+## Границы доказательства и anti-drift
+
+FR-1 подтверждён actual root SSR и опубликованными landing/login; FR-2 — rendered JSX TEST/non-test и тремя карточками опубликованного каталога; FR-3 — server JSX обеих ролей/legacy с отрицательными mode guards, браузером блогера и legacy клиента; FR-4 — unchanged auth/financial/config исходники, проверки badge/denied guards и deployment/data preservation. OpenSpec exact ledger SHA `029052958d2e42d38774d6863387eb61cb73572bd7803da0133b4aa362f61ba7` совпадает с requirements-revision.json. Runtime writes ограничены5 JSX-файлами;2 существующих теста обновлены, PartnerPanel.tsx READ-ONLY. Новых зависимостей нет.
+
+Новая owner браузерная сессия не создавалась: owner-screen проверен независимым actual server JSX/guard, не новым опубликованным owner browser E2E. Режимы non-test/off проверены локальными fixtures, рабочие настройки магазина не переключались. Физический Chrome Windows, screen reader и полное WCAG не проверялись. Новых покупок/загрузок не создавали; приёмка оплат и старый callback QE ceiling этим исправлением не закрыты. Cloud.ru/DNS не менялись. Исторические отказы, включая пропущенный ранний ideation convergence и его поздний S/ADR отказ, ниже сохранены; полный исторический pipeline PASS не заявляется.
+
+[Ручная проверка](manual-acceptance.md) · [независимый отчёт](reviews/independent-qe.md).
+
+---
+
+## История авторских и независимых проверок
+
 # Авторская проверка: контекст TEST
 
 Статус: author verification завершена; независимое final QE и опубликованный smoke ожидаются.
