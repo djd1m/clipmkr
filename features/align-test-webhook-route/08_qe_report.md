@@ -1,53 +1,44 @@
-# QE выравнивания TEST callback
+# QE: TEST callback route — код проверен, runtime ещё не исполнен
 
-06.11.2026. **Допуск отсутствует; маршрут не применён.** Это отдельная служебная фича проверки оплаты. Публикация упрощённого UI на clipmkr.ru уже выполнена в другой фиче и этим отчётом не отменяется.
+06.11.2026. Complexity M10, scope WRITE2 + READ-ONLY3. Приложение/БД/окружение не меняются этой поставкой: один TEST alias должен указывать на существующий proxy основного приложения, сохраняя rewrite и X-Forwarded-For. Требования и hashes OpenSpec — в01; ADR/03.5/05 неизменны. Исторические кандидатные pending-строки06 намеренно сохранены в pinned input; текущее решение владельца и статус описаны в09 и этом отчёте.
 
-## Реальный процесс и история
+## Фактически исполненный gate
 
-Требования/OpenSpec, ADR и архитектура приняты через feature-adr. Настоящий design/QCSD R3 завершён с закрытием исходных условий; до кода выполнены K1/K2, сверка ожидаемых targets и поддерживаемые checkpoints. Отдельный private executor привязан SHA к06; проверяется реальный код, а не наличие файла.
+После трёх неуспешных обычных циклов владелец разрешил ровно один дополнительный для точного09305c и predecessor из09. Supported begin-continuation exit0; три originating собственные проверки завершились clean. Проектный `dz qe-rounds --source native --action evaluate` фактически вернул **exit0, verdict closed, rounds4, unresolved=[]**.
 
-Код писал `gpt-6.1-sol high`; originating code/QE в отдельных первоначальных контекстах выполняют primary/security/architecture `gpt-6-astra xhigh`. Продолжения собственных проверок не называются новыми слепыми сессиями. Назначенные модели/effort известны из запуска; фактическая serving-аттестация и стоимость отсутствуют и не выдумываются.
+- revision: `09305c199a2dee9aae2e4316eed951898b9dd9346673a49a443d86fa1cf74487`
+- nonce: `59c26dbc-7f3b-4b32-9edb-03c6e4717e95`
+- cycle: `d601889c-a7af-4ee9-ab41-3c594c850995`
+- journal: `4568510f-841d-40c2-af6a-b84526212aae`
+- sequence9; eventDigest: `aa8b78e02b12e31081c5d6a6b7b3bccb52b063653eace9b4c9247d5df17ba9e9`
 
-| Цикл code/QE | Фактический результат |
+История и все13 исходных условий сохранены; target не перенаправлен. Первая CLI-попытка evaluate отказала exit2 из-за неподдерживаемого для этого action флага --reviewers; она сохранена отдельно и не объявляется исполненным QE. Повтор использовал поддерживаемую форму без этого флага и дал actual closed. Это не обход ceiling и не новый цикл вместо согласованного.
+
+## Исправление и доказательства
+
+Единственный private source delta отR3 — `CONFIRMED.clear()` первым действием operate, до fallible lookup/lstat/lock/open/read. Строка отзывает старое process-local разрешение даже при раннем отказе. Durable marker/backup/pending/history не сбрасываются. Нестандартное использование namespace для нескольких операций требует дополнительной revalidation; это ограничение доступности, не расширение полномочий.
+
+| Привязка | SHA-256 |
 |---|---|
-| R1 | Поддерживаемый native evaluate: unresolved12, rounds1. Исполнитель и его ограничения доработаны; исходные condition objects/отчёты сохранены. |
-| R2 | Поддерживаемый native evaluate: unresolved2, rounds2. Открыты прежнее QE-PRIMARY-01 и новое QESEC-R2-01. |
-| R3 | Собственные три отчёта: no-go. Конкретные R2 контрпримеры устранены, но остался отказ до входа в revalidate, сохраняющий прежнее подтверждение. Поддерживаемый native evaluate exit1: unresolved2, rounds3, native-fixed-ceiling-reached. Открыты QE-PRIMARY-01 и QESEC-R2-01. |
+| Private executor/entire payload | `db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087` |
+| Launcher, неизменён | `b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892` |
+| Measured test | `4292d6eb2e5fd726ddb999f0e40a0b542d76503b1e998f30b7ce092682bcee16` |
+| Captured composite test program | `377873df7e248088ff910e413e05806f46a9f931a1e660e37577a918f47fbc98` |
 
-Текущая R3 revision `9a1a55689ca064034778e15b6302f4efea6e1782bb4174cbb87a6cd0cfb60119`, nonce `18ea8b1e-c720-45cf-9157-dcc86b220a16`. Число исходных условий12 плюс одно добавленное вR2; одинаковый оставшийся смысл не размножается новыми ID. Частные raw-логи и полный runtime config остаются вне Git.
+Автор:8 old RED,10 targeted GREEN,40 operational/2 portable,14 mutants RED. Независимые повторения и hashes — [originating-qe-r4.md](reviews/originating-qe-r4.md). Удаление entry clear снова даёт точный старый source и воспроизводит callback1; исправленный даёт0 после восстановления fault fixture. Positive control требует полной повторной revalidation. Current own13 verifications и whole structural delta подтверждены каждым владельцем условия.
 
-## Подтверждённый оставшийся отказ
+## Трассировка и anti-drift
 
-После успешного apply в одной captured namespace старое process-local подтверждение может пережить отказ следующего explicit revalidate: вызывающая `operate` открывает конфигурацию раньше, чем вызывается сброс подтверждения в `revalidate`. Реальные локальные ENOENT/O_NOFOLLOW сценарии оставили допуск следующему тестовому business callback. Это неполное исправление QE-PRIMARY-01/QESEC-R2-01, а не дефект пользовательского интерфейса.
+| Требование/риск | Реальное доказательство | Граница |
+|---|---|---|
+| FR-1: exact TEST alias/rewrite/XFF, unchanged RO owners | portable2 и bound operational profile,11 hashes | live parser/apply ещё не исполнены |
+| FR-2/AM-4/7/8: sole account/TEST/new intent/correlation | authority/clock/old-intent/cancel/relay отрицательные cases; unchanged normative scope | provider/main-ledger реального нового платежа ещё нет |
+| FR-3/NFR-1/AM-1/2/3/5/6: fail-closed/durable/recovery/captured source | actual owned fd/inode/fsync/flock/fork/SIGKILL, former entry failures, mutated guards | external runtime adapters SIMULATED |
 
-Primary и security самостоятельно воспроизвели оставшийся сценарий; architecture проверил тот же контракт в полной дельте. Их прежние исправленные условия подтверждены только в границах соответствующих собственных отчётов. Авторы и координатор не закрывали HIGH собственным утверждением.
+OpenSpec/01/ADR/03.5/05/fragment/3RO не изменены. Repo code delta остаётся scoped fragment/test; metadata06 заранее связывает actual private source. Отдельные08/09/review records фиксируют факты и не меняют native target. Full config, секреты, token/session profiles, raw пользовательские данные и медиа в Git не помещены.
 
-## Тесты и anti-drift
+## Что НЕ закрыто
 
-R3 source/payload SHA `976223c60ee9b175d7592db4faed81e5cd58a4d23e973d1ab173b35c6c0e626e`, launcher SHA `b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892`. Измеренный R3 test SHA `8463703701e53efbfe17a534cff4ef91d543a44291f38aa31cf05c70e21bb0a5`. Требования, нормативные ADR/05/OpenSpec, fragment и три READ-ONLY app owners не изменены.
+CLOSED относится к code/offline QE. Actual runtime route apply, parser/health нового candidate, TEST checkout/decline/cancel/notification/duplicate/grant/paid media и трёхролевой отчёт ещё **NOT RUN**. Historical terminal TEST debt не начислялся/не пересылался; он остаётся read-only/deferred. Cloud/c.clipmkr/DNS и настоящие списания не менялись.
 
-Авторские окончательные9 команд exit0:30 operational tests,58 portable/related,13 mutants RED,7 invalid profile inputs отказали. Они не заменяют независимые отрицательные контрпримеры. Собственные reviewers повторили существенные actual-source проверки на своих inputs/output. fd/inode/fsync/flock/fork/SIGKILL — настоящие локальные операции только над принадлежащими тесту файлами и процессами; Docker/Caddy/HTTP/control adapters **SIMULATED**. Успех этих тестов не означает прохождение настоящего платежа.
-
-K2 на финальном R3 плане выполнен из настоящего execution worktree:5/5 targets на диске,0 failure/warning/skip; target admission exit0. Исторические проверки из другого cwd не подменяют этот результат. Текущий gate не ослаблен ради прохождения тестов.
-
-## Runtime и границы
-
-На рабочем сайте приложение остаётся ревизии `6d19cb8345b9d104205e26f988d42252d8f4483f`. Только read-only диагностика подтвердила прежний alias→legacy и checkout→main. Обе платёжные БД и известные provider objects сверены чтением; исторический TEST-долг DEFERRED/UNRESOLVED, без relay/grant/status mutations. Новые TEST-покупки для этой приёмки ещё не создавались.
-
-Диск/загруженная конфигурация edge совпали, существующие SSH и network transport доступны, фоновый watch/restart-loop не найден. Измерено опережение часов сайта примерно19,5с относительно управляющего VPS; никакое системное время не менялось. Эти наблюдения требуют свежего повторения перед будущей операцией и не являются автоматическим runtime GO.
-
-Проверки собственного платёжного QA также выявляли ограничения; generic FIFO helper остаётся исключённым из оснований финансовой приёмки. Для одного обычного оплаченного задания есть отдельный ограниченный план канонической SQL-сверки. Нативный provider duplicate, явная отмена пользователем, права/ledger/paid job ещё NOT VERIFIED. Служебный relay не будет назван повторной доставкой провайдера.
-
-## Дальнейший допуск
-
-Подготовлен отдельный авторский кандидат: сброс process-local подтверждений первым действием `operate`, до всех fallible checks. Завершённый R3 сохранён в history/code-qe-r3-blocked; текущие06/test/source теперь представляют отдельный кандидат для точного согласования. Подготовка кандидата не считается четвёртым QE или независимым закрытием HIGH. Перед дополнительным циклом нужны точный измеренный targetRevision, отдельное согласование владельца по ceiling3 и originating verification исправления. Reset истории, новая family/nonce ради обхода потолка и фиктивные approvals запрещены.
-
-No route apply/reload, paid job, Cloud/DNS deployment, migration либо финансовая приёмка этим отчётом не заявлены.
-
-## Зафиксированный результат и подготовленный кандидат
-
-Native journal `4568510f-841d-40c2-af6a-b84526212aae`, sequence7, cycle `0814e0cc-fc21-43bc-874e-b1da02050eae`, eventDigest `d030de03c1d68eeeee2db52723ff3d57722415e9bf387c341e4220c23db685d5`. Первая попытка evaluate отказала с exit2 из-за прежних верхнеуровневых nonce/revision review envelope. Координатор исправил только эти два поля; собственные отчёты и condition objects остались побайтно прежними. Повторный настоящий evaluate дал указанный exit1 и потолок3; отказ и исправление сохранены приватно.
-
-Кандидат source `db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087`, test `4292d6eb2e5fd726ddb999f0e40a0b542d76503b1e998f30b7ce092682bcee16`: одна строка сброса допуска в начале operate. Авторские40 operational/2 portable,10 targeted GREEN и14 mutants RED не являются независимым четвёртым QE. Read-only K2 и target measurement exit0; журнал/host/review при подготовке не изменялись. [Точное предложение владельцу](09_continuation_request.md).
-
-Дополнительный private media-only QA также пока STOP: независимо найден недостаточный ownership proof при revoke истёкшей технической сессии. Generic FIFO helper по-прежнему quarantined. Реальных чужих сессий не читали/не изменяли; это локально проверенный контрпример. Финансовая и медиаприёмка после оплаты не закрыта.
+Старый private preparer ожидает старую release и closedR3; он не допущен к запуску. Его ограниченная актуализация должна проверить реальный CLOSED4/current source/release, пройти собственные synthetic checks и независимое ревью. Только затем fresh BOTH-store inventory/control/health и root runtime GO. Generic FIFO helper остаётся quarantined; финансовая приёмка использует отдельную проверенную canonical SQL процедуру для одного фактически наблюдаемого job. Не превращать текущий closed code gate в полный payment/CJM PASS.
