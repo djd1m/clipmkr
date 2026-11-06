@@ -42,3 +42,14 @@ OpenSpec/01/ADR/03.5/05/fragment/3RO не изменены. Repo code delta ос
 CLOSED относится к code/offline QE. Actual runtime route apply, parser/health нового candidate, TEST checkout/decline/cancel/notification/duplicate/grant/paid media и трёхролевой отчёт ещё **NOT RUN**. Historical terminal TEST debt не начислялся/не пересылался; он остаётся read-only/deferred. Cloud/c.clipmkr/DNS и настоящие списания не менялись.
 
 Старый private preparer ожидает старую release и closedR3; он не допущен к запуску. Его ограниченная актуализация должна проверить реальный CLOSED4/current source/release, пройти собственные synthetic checks и независимое ревью. Только затем fresh BOTH-store inventory/control/health и root runtime GO. Generic FIFO helper остаётся quarantined; финансовая приёмка использует отдельную проверенную canonical SQL процедуру для одного фактически наблюдаемого job. Не превращать текущий closed code gate в полный payment/CJM PASS.
+
+
+## Фактический source runtime, 06.11.2026
+
+После настоящего CLOSED4 и штатного checkpoint выполнена свежая сверка обеих платёжных БД, GET известных TEST-объектов, процессов/cron/timers, release/image и загруженной конфигурации. Незавершённых операций и известных pending-платежей не найдено. Приватный preparer отдельно проверен независимым originating reviewer после исправления IPREP-01:65 регрессионных,28 metadata и50 настоящих fd-проверок,9 отрицательных мутаций. Совместимость текущего executor с bridge проверена в новой cross-model сессии; внешние adapters её тестов были SIMULATED.
+
+Подготовка сначала остановилась без изменения маршрута: отсутствовал родительский приватный каталог. Read-only проверка подтвердила отсутствие operation directory; после создания родительского0700 каталога выполнена новая полная подготовка, старый неуспешный результат сохранён.
+
+Actual apply завершился exit0/state=applied: прежний bind inode сохранён, резервная копия создана, Caddy validate/reload и штатные проверки health/release/защиты от поддельного XFF прошли. Кандидат конфигурации имеет SHA-256 `93967c31704f6468ffd3bff5a88730b77a1048e4056d1075b227c1cf427b6c08`; приложение осталось на `11a90aec9d26be56849ac06c9f12a98001739a28`. Cloud.ru не изменялся.
+
+**Платёжная приёмка ещё не пройдена.** Следующая actual baseline-проверка завершилась `PAID_ORACLE_PROXY_AMBIGUOUS_OR_SHIFTED_ALIAS` до создания сессии и checkout. Read-only инвентаризация показала: intermediate proxy использует `web:3000`, при этом имя `web` есть у нескольких контейнеров в присоединённых сетях. Неверная фактическая доставка не установлена; однозначная привязка к нужному backend защитой не подтверждена. Успешный отдельный /health не заменяет это доказательство. Подготовлен отдельный bounded блок `disambiguate-proxy-upstream`; guard не ослабляется. Исторический code QE4 не переоткрывается и не выдаётся за финансовый E2E. До устранения STOP новые оплаты не создаются.
