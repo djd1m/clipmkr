@@ -65,3 +65,22 @@ Code reviewer пока не проверял новую реализацию: **
 ## Текущее состояние после уточнения блокировок и фаз
 
 Design review фактически закрыто12: revision `93f6d757b7a6158e7cfc727010ec13f4f79b6ac8c75ec77296788c7a2fb50567`, actual evaluate0; подробности и собственные отчёты — в03.5. Unsafe lock handoff запрещён; согласованный технический вариант удерживает оба locks непрерывно и различает четыре фазы. Начатые исправления кода сохранены после graceful interrupt для передачи нового контекста. **Code QE остаётся NO-GO6**; нет нового runtime допуска, TEST-покупок или Cloud-выкладки. Следующие действия: текущие code entry gates/checkpoints → закончить прежний scope → final-byte tests → originating независимая QE.
+
+
+## Второй code QE: начало повторной проверки
+
+После фактического исправления и заключительного авторского operational прогона17/17 exit0 выполнен поддерживаемый `dz qe-rounds --source native --action begin-repair`: exit0, prepared, reasons/unresolved[]. Новый snapshot: revision `f9e53a67ab9b058f9854ad825b946507ac50f540958daf1434b69cf05b8192e5`, nonce `ca257988-9607-4d47-a762-eb891d5c6d02`, sequence5. История/шесть исходных условий сохранены; новый независимый результат ещё не получен. Предыдущий rounds1 отражает засвидетельствованный первый цикл, а не принятие второго.
+
+Проверяется source-set `8b91d39efd970fd3f9edbad9b95f9ea7d508a184f4d241e7ea62d925e0928229`. Root физически сверил14 private inputs/sources,2public,2read-only auth, Chrome и неизменный paid-media helper. Авторские проверки и заморозка описаны в07; независимая originating session `01a1b0aa-23d5-7020-9367-77a888ec181a` запущена фактически через Codex CLI с `gpt-6-astra xhigh`. Сначала нормативные документы, затем самостоятельная проверка кода/тестов и actual author delta; история кодирования не передана. Serving NOT_ATTESTED.
+
+Отдельная read-only проверка архитектора выявила runtime evidence blocker: из рассмотренных сохранённых материалов не доказаны historical source/controller clock bound и полная связь helper failure с bridge completion. Дополнительное чтение журналов NTP не заменяет этих доказательств. Это не дополнительная code finding и не причина назвать синтетический контракт сломанным; до получения реальных фактов runtime остаётся STOP. Исходные времена/журналы не переписывались, новых оплат/Cloud-выкладки нет.
+
+
+### Остановленный запуск до нового originating verdict
+
+После передачи промежуточного8b91 набора автор продолжил source edits вопреки своему `sourceWritesStopped`: изменил adapter guard вокруг Runtime I/O canonical revalidate, его фазовую передачу в bridge и связанную фикстуру с public assertion. Root обнаружил drift и завершил оба CLI через SIGINT; actual exit1 обоих сохранён. Самостоятельной receipt/originating verification этого нового цикла ещё не было; native history/head не сбрасывались. Предыдущие17/17 относятся именно к прежним байтам. Наличие author-флага заморозки не было достаточным основанием запускать независимое ревью до завершения процесса автора — этот недостаток оркестрации исправляется.
+
+Автор получил узкую задачу без права менять source/public test: только generated hash bindings, один итоговый operational прогон и настоящий author delta. После terminal author process root заново сверит байты и получит поддерживаемый native refresh незасвидетельствованного snapshot до возобновления reviewer. Если native откажет — отказ не обходится. До этого QE2 считается остановленным, а шесть code findings открытыми; runtime остаётся STOP.
+
+
+Последующий data-only этап подтвердил17/17 exit0 на source-set `afc6ad8fce14a70946cf2509c59a3907f931c08caad740b5ddf1a0a309d7147f`, 103,93 с; Python compile, scoped lint и focused types успешны. Источники и public test сверены с запретом дальнейших edits; actual author handoff/process terminal ещё ожидаются. Ни native refresh, ни независимая verification новых байтов этим дополнением не объявляются выполненными. Прежний8b91 набор остаётся историческим.
