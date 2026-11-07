@@ -24,3 +24,6 @@ Actual QE2 не принял код: late action finalization, whole-scope/phase
 
 # Граница
 Только приватный QA/оператор TEST clipmkr.ru; production handlers/auth/payment policy, grants/ledger, Cloud/DNS не меняются. Основной план в features/recover-known-checkout-response/. Новая delta сама не является gate или runtime GO.
+
+# Supporting QA packaging revision3 (PROPOSED)
+Только test-only extraction05T/06TASK-8:6private+3public, TShelper строки cases в прежнем процессе; общий lint≤500, private<700, exact parity. FR1–FR6/user CJM/14design/9KCQE/round budget unchanged; actual installation/K1/K2/review ещё обязательны, не GO.

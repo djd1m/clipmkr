@@ -114,3 +114,12 @@ QA MAY выполнить только одноразовый `administrative-te
 - **GIVEN** administrative disposition завершён либо новый ordinary open вернул captured response
 - **WHEN** составляется acceptance результата
 - **THEN** original decline/manual-cancel остаётся NOT_VERIFIED; обязательны отдельные настоящие decline/manual-cancel, успешная TEST оплата с paid clip и полноценный3-role referral/revenue CJM; metadata/offline fixtures их не заменяют
+
+### Requirement: Supporting QA packaging revision3, без нового user scope
+QA MUST сохранять FR1–FR6/AM-1…20;6private+3public по05T, helper только testcase String.raw, runtime sources ровно6.
+
+#### Scenario: Extraction без изменения исполняемых проверок
+- **GIVEN** exact ed810 baseline и actual approved S installation/K1/K2/scope admission
+- **WHEN** existing contiguous cases извлечены по05T в test-only TShelper
+- **THEN** rendered Python bytes,17titles,70old/128current assertion intents/всеmatrix counts MUST совпасть; TS lint metric MUST быть≤500/private modules<700, real operational Chrome/FD/process suite MUST пройти заново
+- **AND** существующий native code-target manifest MUST пиннить helper; новые manifest/profile fields, executable JSON/MD blobs и изменение payment/authority/once/deadline/reader/unknown guards MUST NOT вводиться
