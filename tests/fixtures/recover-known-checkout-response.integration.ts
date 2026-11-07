@@ -208,4 +208,102 @@ def _completion_matrix(b,tests):
     tests['stop replay and partial recovery before callback']['D1a-closed-chain']=results
     tests['stop replay and partial recovery before callback']['lawfulHealthRevalidation']=True
 
+    # QE3: the full known contract is admitted before the first observable effect.
+    admission=[]
+    def observe(c,f,call):
+        operation=pathlib.Path(f['s']['directory']+'/operation.json')
+        journal=operation.parent/'controller-bridge.json'
+        before,prior=operation.read_bytes(),journal.read_bytes()
+        snapshots=len(list(operation.parent.glob('recovery-origin-*.snapshot')))
+        writes=[];previous=sys.getprofile();result=None;diagnostic=None
+        def record(frame,event,value):
+            if event=='call' and frame.f_code==c['n']['persist'].__code__:
+                writes.append(frame.f_locals.get('path'))
+        sys.setprofile(record)
+        try:result=call()
+        except RuntimeError as error:diagnostic=str(error)
+        finally:sys.setprofile(previous)
+        return {'diagnostic':diagnostic,'persists':len(writes),'snapshots':len(list(operation.parent.glob('recovery-origin-*.snapshot')))-snapshots,'operationChanged':operation.read_bytes()!=before,'journalChanged':journal.read_bytes()!=prior,'witness':(operation.parent/'recovery-finalization.private.json').exists(),'accepted':result is not None}
+    def initial(c,control,name):
+        f=fixture(c)
+        if name!='origin-only':
+            value={'state':'consumed_unknown' if name=='unknown' else 'canonical_returned','ticket_sha':'a'*64}
+            if name=='kind':value['completion']={'kind':'action-completion-v1'}
+            elif name=='type':value['completion']=None
+            f['journal']['used']['previous']=value;_envelope(f)
+        return observe(c,f,lambda:run(c,f,controller=control))
+    def pending(c,control,name):
+        f=fixture(c,False);run(c,f);ticket=_ticket(c,f)
+        if name=='id128':ticket['id']='x'*128
+        elif name=='extra':ticket['unknown_field']=True
+        elif name=='overlong':ticket['id']='x'*129
+        elif name=='utf8-overlong':ticket['id']='я'*65
+        elif name=='id-type':ticket['id']=42
+        elif name=='source-extra':ticket['source_authority']['unknown_field']=True
+        create,cleanup,native=_native(c,f,ticket);callbacks=[]
+        def invoke(projection,ticket,scope):
+            callbacks.append(True);return create(projection,ticket,scope)
+        row=observe(c,f,lambda:_action(c,f,ticket,invoke,cleanup,controller=control))
+        row.update(callbacks=len(callbacks),nativeCalls=len(native))
+        return row
+    def reconcile(c,control,name):
+        f=fixture(c,False);run(c,f);ticket=_ticket(c,f)
+        create,cleanup,native=_native(c,f,ticket);_action(c,f,ticket,create,cleanup,controller=control)
+        _accepted_head(c,f,1)
+        path=pathlib.Path(f['s']['directory']+'/controller-bridge.json');journal=json.loads(path.read_bytes())
+        entry=journal['recovery']['actions'][ticket['id']]['completion']
+        if name=='extra':entry['unexpected']=True
+        elif name=='L':entry['L']['wall']=entry['authority']['action_window']['deadline']+.001
+        elif name=='head':f['s']['recovery_authority']['expected_head']='0'*64
+        elif name=='missing':journal['recovery']['actions'][ticket['id']].pop('completion')
+        _replace(str(path),enc(journal))
+        provider=json.loads(f['exact']['provider']['body']);provider.pop('confirmation')
+        provider.update(status='canceled',cancellation_details={'reason':'expired_on_confirmation'})
+        f['exact']['provider']['body']=enc(provider).decode();f['inv']['raw']['main']['providers']=[provider]
+        f['proof']['phase']='ACTIVE_RECONCILE';refresh(f)
+        count=len(native)
+        row=observe(c,f,lambda:control['reconcile_bound'](c,f['s'],f['proof'],f['exact'],f['inv'],SimulatedRuntime(f)))
+        assert native[:count]==['session-create','session-revoke'] and len(native)==count
+        return row
+    def ledger(c,control,name):
+        f=fixture(c,False)
+        if name=='other-owner':historical_debt(f,'canceled',empty=True,other=True)
+        if name in ('target','collector'):
+            target=f['inv']['raw']['main']['intents'][0]
+            provider=copy.deepcopy(f['inv']['raw']['main']['providers'][0]);provider.pop('confirmation')
+            provider.update(status='canceled',paid=False,cancellation_details={'reason':'expired_on_confirmation'})
+            event=fixtures['_event_row'](f,'main',target,provider,age=87000)
+            assert target['created_at']<event['event_bound'] and event['event_bound']+86401<time.time()
+        refresh(f)
+        if name=='collector':
+            observed,queries=_whole(c,f)
+            assert sum(query.startswith('BEGIN') for _,query,_ in queries)==4
+            assert set(observed['raw']['main']['events'][0])=={'id','created_at','provider','provider_event_id','payload_sha256'}
+            f['inv']={**f['inv'],**observed};refresh(f)
+        return observe(c,f,lambda:run(c,f,controller=control))
+    groups=[('B0',initial,[('origin-only',None),('unknown','RECOVERY_ACTION_UNKNOWN'),('terminal','RECOVERY_ACTION_UNKNOWN'),('kind','RECOVERY_COMPLETION_SCHEMA'),('type','RECOVERY_ACTION_UNKNOWN')]),('ticket',pending,[(name,None if name in ('valid','id128') else 'RECOVERY_COMPLETION_SCHEMA') for name in ('valid','id128','extra','overlong','utf8-overlong','id-type','source-extra')]),('chain',reconcile,[('valid',None),('extra','RECOVERY_COMPLETION_SCHEMA'),('L','RECOVERY_COMPLETION_TIME'),('head','RECOVERY_ORDINARY_HEAD_BINDING'),('missing','RECOVERY_ACTION_UNKNOWN')]),('event',ledger,[('empty',None),('other-owner',None),('target','RECOVERY_PENDING_LEDGER'),('collector','RECOVERY_PENDING_LEDGER')])]
+    for family,run_case,cases in groups:
+        for name,diagnostic in cases:
+            row=run_case(b,bridge,name)
+            row.update(case=family+':'+name,allowed=diagnostic is None,callbacks=row.get('callbacks',0),nativeCalls=row.get('nativeCalls',0))
+            assert row['diagnostic']==diagnostic,(row,diagnostic)
+            if diagnostic is not None:
+                assert row['persists']==row['snapshots']==row['callbacks']==row['nativeCalls']==0 and not row['operationChanged'] and not row['journalChanged'] and not row['witness'],row
+            elif family=='ticket':assert row['callbacks']==1 and row['nativeCalls']==2 and row['accepted']
+            else:assert row['accepted'] and row['persists']>0
+            admission.append(row)
+    mutants=[]
+    removals=[('B0',"and (recovery or origin_ticket is not None):","and recovery:",initial,'terminal'),('ticket',"        runner['action_input'](dict(recovery['projection'], observed_at=exact['observed_at']), recovery['proof_sha'], bundle['source_sha'], ticket['action'], ticket)","        pass",pending,'extra'),('chain',"        a['_read_chain'](bundle, s, journal, scope, fresh)\n        r = n['loadrecord'](s['directory'] + '/operation.json')","        r = n['loadrecord'](s['directory'] + '/operation.json')",reconcile,'extra')]
+    for guard,old,new,run_case,name in removals:
+        mutant,control=_mutated(b,'bridge',old,new)
+        row=run_case(mutant,control,name)
+        assert row['persists']>0 and row['operationChanged'],row
+        mutants.append({'guard':guard,'forbiddenPersist':True,'forbiddenBinding':row['accepted']})
+    mutant,_=_mutated(b,'adapter',"for e in inv['history_sources'][store]['event_provenance']) and not any(p.get('intent_id') == o['intent']","for e in data['events']) and not any(p.get('intent_id') == o['intent']")
+    row=ledger(mutant,bridge,'collector')
+    assert row['diagnostic'] is None and row['accepted'] and row['persists']>0
+    mutants.append({'guard':'event','forbiddenPersist':True,'forbiddenBinding':True})
+    tests['stop replay and partial recovery before callback']['QE3-pre-effect']=admission
+    tests['stop replay and partial recovery before callback']['QE3-guard-mutants']=mutants
+
 `;

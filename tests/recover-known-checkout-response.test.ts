@@ -204,6 +204,7 @@ def _accepted_head(b, f, expected):
     # The fixture issuer advances only after a successful observed producer call;
     # runtime does not derive fresh authority from surviving journal bytes.
     f['lineage'] = (expected, sha(b'clipmkr/action-completion/v1/entry\0' + enc(entry)))
+    f['s']['recovery_authority'].update(expected_generation=expected, expected_head=f['lineage'][1])
     return entry
 
 
@@ -413,7 +414,7 @@ describe.runIf(operational)('offline operational acceptance: real local resource
       historicalDebtNegativeCases: 18, genuineNoEvents: true, knownOtherOwner: true, coverageMutant: 'accepted-unknown-retention-gap', rawCorrelationNegatives: 4,
     });
   });
-  test('stop replay and partial recovery before callback', () => { 
+  test('stop replay and partial recovery before callback', () => {
     const replay = policy.tests['stop replay and partial recovery before callback'] as Record<string, unknown>;
     expect(replay['D1a-full-legit-positive']).toEqual({ generations: 5, laterCase: 'cancel', rosterImmutable: true, laterSlotNative: ['session-create', 'session-revoke'], pendingNative: ['session-create', 'session-revoke'], followNative: ['session-create', 'session-revoke'] });
     expect(replay['QT08-deadline-only']).toEqual([{ mutant: false, startupPersists: 0, diagnostic: 'RECOVERY_ORDINARY_DEADLINE_REBIND', storedTicketUnchanged: true }, { mutant: true, startupPersists: 2, diagnostic: 'RECOVERY_SESSION_BINDING', storedTicketUnchanged: true }]);
@@ -423,6 +424,10 @@ describe.runIf(operational)('offline operational acceptance: real local resource
     expect(replay['D1a-closed-chain']).toHaveLength(8);
     expect(rows(replay['D1a-closed-chain']).every(row => row.followingEffects === 0 && String(row.diagnostic).startsWith('RECOVERY_'))).toBe(true);
     expect(replay.lawfulHealthRevalidation).toBe(true);
+    expect(rows(replay['QE3-pre-effect'])).toHaveLength(21);
+    expect(rows(replay['QE3-pre-effect']).filter(row => !row.allowed).every(row => row.persists === 0 && row.snapshots === 0 && row.callbacks === 0 && row.nativeCalls === 0 && !row.operationChanged && !row.journalChanged && !row.witness && String(row.diagnostic).startsWith('RECOVERY_'))).toBe(true);
+    expect(rows(replay['QE3-pre-effect']).filter(row => row.allowed).map(row => row.case)).toEqual(['B0:origin-only', 'ticket:valid', 'ticket:id128', 'chain:valid', 'event:empty', 'event:other-owner']);
+    expect(rows(replay['QE3-guard-mutants']).map(row => [row.guard, row.forbiddenPersist])).toEqual(['B0', 'ticket', 'chain', 'event'].map(guard => [guard, true]));
     expect(replay['D1a-pre-effect-capacity-binding']).toHaveLength(6);
     expect(rows(replay['D1a-pre-effect-capacity-binding']).every(row => row.startupPersists === 0 && row.nativeCalls === 0)).toBe(true);
     expect(policy.tests['stop replay and partial recovery before callback']).toMatchObject({ otherIntendedUnknownStates: 3, lateReplyStop: true, realSIGKILL: ['action:operation.json.next', 'action:controller-bridge.json.next', 'reconcile:operation.json.next'], realFlock: 2, partialEntries: ['recover', 'ordinary', 'session', 'action', 'reconcile'], closureCrashBoundaries: [...(['operation', 'journal'] as const).flatMap(target => ['before-fsync', 'after-fsync', 'before-dir-fsync', 'after-dir-fsync', 'readback'].map(point => ({ target, point, stop: target === 'journal' && ['readback', 'before-dir-fsync', 'after-dir-fsync'].includes(point) ? 'RECOVERY_WITNESS_IO' : 'RECOVERY_PARTIAL_STOP', callbacks: 0, partialPreserved: true }))), { target: 'ordinary', point: 'before-callback', stop: 'RECOVERY_ACTION_UNKNOWN', callbacks: 0, partialPreserved: true }, { target: 'ordinary', point: 'after-callback', stop: 'RECOVERY_ACTION_UNKNOWN', callbacks: 1, partialPreserved: true }] }); });
@@ -431,7 +436,7 @@ describe.runIf(operational)('offline operational acceptance: real local resource
     expect(policy.tests['reject changed captured source and fd identity']).toMatchObject({ pathReplacement: true, modeSymlinkRejected: true, runtimeLockDriftNoPersist: true, wholeGuardRegressions: [{ guard: 'route', subsequentOperationWrites: 0 }, { guard: 'controller', subsequentOperationWrites: 0 }, { guard: 'phase', callbacks: 0, startupPersist: 0 }, { guard: 'source_set_sha', callbacks: 0, startupPersist: 0 }] }); });
   test('require fresh control health and positive own cleanup', () => { expect(policy.tests['require fresh control health and positive own cleanup']).toMatchObject({ staleControlRejected: true, actualNativeSessionCases: 3, lateReplyCleanup: true, sameHeldRouteFD: true, contenderBlocked: true, nativeCalls: ['session-create', 'session-revoke'], refusalMutants: [{ mutant: 'native_leaf', positiveBroken: true, remoteCalls: 0 }, { mutant: 'own_session', positiveBroken: true, remoteCalls: 0 }, { mutant: 'skip-partial', violation: 'partial-deleted-and-callback' }, { mutant: 'skip-unknown', violation: 'second-action-callback' }, { mutant: 'route-handoff', violation: 'held-lock-lost', callback: 0 }] }); });
   test('reconcile recovered terminal without rewriting origin', () => { expect(policy.tests['reconcile recovered terminal without rewriting origin']).toMatchObject({ twoClosures: true, readerResync: true, readerOrder: ['file', 'dir'], lateBusinessStops: true, lateAuditResync: true, readerFaults: [{ fault: 'file-error', stop: 'RECOVERY_WITNESS_IO', business: 0 }, { fault: 'dir-error', stop: 'RECOVERY_WITNESS_IO', business: 0 }, { fault: 'unlink', stop: 'RECOVERY_WITNESS_IO', business: 0 }, { fault: 'replacement', stop: 'RECOVERY_WITNESS_IDENTITY', business: 0 }, { fault: 'symlink', stop: 'RECOVERY_WITNESS_IDENTITY', business: 0 }, { fault: 'lock', stop: 'RECOVERY_LOCK_IDENTITY', business: 0 }, { fault: 'readback', stop: 'RECOVERY_WITNESS_READBACK', business: 0 }, { fault: 'wrong-file', stop: 'RECOVERY_WITNESS_IDENTITY', business: 0 }, { fault: 'wrong-dir', stop: 'RECOVERY_WITNESS_IDENTITY', business: 0 }, { fault: 'late', stop: 'RECOVERY_METADATA_AUTH_EXPIRED', business: 0 }, { fault: 'lock-loss', stop: 'RECOVERY_LOCK_LOST', business: 0 }, { fault: 'host', stop: 'changed inode/metadata', business: 0 }], readerMutants: [{ mutant: 'skip-file', actualSyncOrder: ['dir'], readback: true }, { mutant: 'skip-dir', actualSyncOrder: ['file'], readback: true }, { mutant: 'wrong-fd', actualSyncOrder: ['dir', 'dir'], readback: true }, { mutant: 'skip-readback', actualSyncOrder: ['file', 'dir'], readback: false }] }); });
-  test('reconcile expired origin without pending binding or actions', () => { 
+  test('reconcile expired origin without pending binding or actions', () => {
     const admin = policy.tests['reconcile expired origin without pending binding or actions'] as Record<string, unknown>;
     expect(admin['AM8-snapshot-order']).toEqual(['control', 'skip-snapshot-dir', 'late-snapshot'].map(mutant => ({ mutant, diagnostic: mutant === 'control' ? null : 'SNAPSHOT_ORDER', actualFirstPersistObserved: true })));
     expect(admin.FR6).toEqual({ adminOnly: true, unknownRetained: true, firstOrdinaryOnce: true, negativeConjuncts: 9, unknownRecoveryRefusals: 2 });
@@ -442,7 +447,7 @@ describe.runIf(operational)('offline operational acceptance: real local resource
     expect(admin['AM8-first-revalidation-SIGKILL']).toHaveLength(32);
     expect(rows(admin['AM8-first-revalidation-SIGKILL']).every(row => row.SIGKILL && row.followingCallbacks === 0)).toBe(true);
     expect(policy.tests['reconcile expired origin without pending binding or actions']).toMatchObject({ noEventDirect: true, failedOriginPreserved: true, callbacks: 0, sessions: 0, checkout: 0, decline: 'NOT_VERIFIED' }); });
-  test('fence historical entries across every durable recovery boundary', () => { 
+  test('fence historical entries across every durable recovery boundary', () => {
     const fence = policy.tests['fence historical entries across every durable recovery boundary'] as Record<string, unknown>;
     const primitiveNames = (value: unknown) => rows(value).filter(row => row.event === 'call').map(row => row.name);
     const traces = fence.primitiveTraces as Record<string, unknown>;
@@ -453,7 +458,7 @@ describe.runIf(operational)('offline operational acceptance: real local resource
     expect(rows(fence['AM8-revalidate-compatibility']).map(row => row.ordered)).toEqual([true, false].map(() => ['control', 'bound', 'readfd', 'readfd', 'visible', 'validate', 'health', 'control', 'bound', 'readfd', 'persist']));
     expect(policy.tests['fence historical entries across every durable recovery boundary']).toMatchObject({ old812Refused: true, readerBarrier: true, ordinaryCallbacks: 1, originalDerivativeEquivalent: true, ordinaryGuardNegatives: 6, ordinaryNativeCalls: ['session-create', 'session-revoke'], readerSIGKILL: ['before-file', 'after-file', 'before-dir', 'after-dir', 'readback'], readerBusiness: 1, readerWrites: 0, fifoKills: 12, actualProtocol: ['ready', 'callback', 'result', 'callback', 'result', 'reconciled', 'closed'], producerSIGKILL: [{ point: 'finalization:L', completeSurvivor: false }, { point: 'witness:before-file-fsync', completeSurvivor: false }, { point: 'witness:after-file-fsync', completeSurvivor: false }, { point: 'witness:file-durable', completeSurvivor: false }, { point: 'witness:renamed', completeSurvivor: true }, { point: 'witness:directory-durable', completeSurvivor: true }, { point: 'witness:readback', completeSurvivor: true }] }); });
   test('preserve every canonical event predicate with one known pending', () => { expect(policy.tests['preserve every canonical event predicate with one known pending']).toMatchObject({ negativeCases: 13 }); });
-  test('bind confirmation URL only to fresh read-only provider evidence', () => { 
+  test('bind confirmation URL only to fresh read-only provider evidence', () => {
     const collector = policy.tests['bind confirmation URL only to fresh read-only provider evidence'] as Record<string, unknown>;
     expect(collector.AM18).toHaveLength(10);
     expect(rows(collector.AM18).filter(row => row.diagnostic === null).map(row => row.case)).toEqual(['positive', 'source-clock-behind']);
