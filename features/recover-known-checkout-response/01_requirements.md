@@ -1,10 +1,10 @@
-> **PROPOSED PRIVATE DRAFT — FR6 + QE2 repair, 06.11.2026.** Planning only; W/native/code неизменны. Source afc6 не принят: KCQE-04…09 unresolved. Adoption, originating reviews/gates и implementation допускаются только отдельно.
+> 07.11.2026: owner-approved clean-before-write delta; code/QE/runtime допуск отдельный. Прежняя история —08.
 
 # Требования: восстановление известного TEST checkout
 
 ## Наблюдение
 
-QE2 update (LOCAL report, не новая verification): independent report и native evaluate sequence7/event3b2b52b087fa7f8866e0190ef0c70a644c3f9ea5c25504f6cdf0885d854ed98e дают unresolved/exit1, rounds2/ceiling3. KCQE-01/02/03 verified только на afc6 revision;04–06 unresolved и07–09 HIGH. Все original conditions сохранены в native host без изменения; нынешний proposal не закрывает их.
+Исторические QE2 findings/receipts сохранены в08 и Git; эта редакция не закрывает их.
 HTTP201 выведен из pinned c12 control flow: case.request сохраняется только после r.status()===201. Это не wire capture; request — parsed postDataJSON projection, exact response_at отсутствует. Helper завершился1 до intentId/redirect URL; original failed case сохранён. Read-only exact account/browser key и provider GET подтвердили одно TEST pending намерение и0payment/event; own-session revoke и failed callback/STOP1 сохранены в исходных receipts. Local Chrome/fsync probe20/20 подтверждает класс race, не точную masked live exception.
 
 Clarification после codeQE cycle1: KCQE-01…06 открыты. Candidate controller bound [authentic case.checkoutClickAt, bridge-completion.completedAt] не является установленным clock/source/causal proof. Corrected observation даёт одного approved owner из четырёх main rows; TEST/shop/amount/order correlation всех четырёх не является ownership/history GO. Initial applied inventory совпадает с original runtime-spec.inventory; later manifest законно иной. Это техническое уточнение evidence прежних FR, не изменение user scope. Для прежней clarification OpenSpec hashes/bytes сохранялись; новая supporting QA delta FR6 ниже явно изменяет proposed ledger, не actual W.
@@ -30,6 +30,8 @@ FR6 (supporting QA contract, не новый user-facing scope): distinct `admin
 
 Уточнение реализации FR2–FR5 по QE2, без расширения user scope: все final business/admission markers записываются до live L_action; без exact D1a completion любой consumer считает их UNRESOLVED. Post-L audit добавляет только immutable completion при equality всех иных полей и прежних entries; следующему entry нужны exact closed schema/snapshots/chain, fresh authority и real journal reader durability, либо STOP. Late business не создаёт L/completion; late audit после genuine L оставляет лишь candidate. Finite immutable ordinary descriptor roster/cap и1MiB проверяются доeffect; whole context→ticket→отдельный GO/head→once binding при consume по05D1a.2, включая deadline-only refusal. History/tickets не переписываются. Общий held-scope/previous-unknown guard предшествует snapshots/health и каждой persist; ordinary ticket связывает exact phase/current case. Полный BOTH-store proof запрещает cross-store provider/intent/owner collisions и raw event contradictions. Collector/consumer обязаны согласовать реальные SELECT fields, bounded dependent sets и честные coverage cuts; неизвестность не исправляется fabricated timestamp/flag. Эти требования действуют также внутри proposed FR6.
 
+Уточнение владельца07.11 (KCQE-05): pristine до первой progress-записи допускает только новый явный вход с полным fresh preflight; partial/unknown сохраняют STOP. Точный контракт — OpenSpec «Новый явный вход до первой записи»; отсутствие artifacts не GO.
+
 NFR: документыRU, secrets/private IDs/provider URL вне Git; минимум готовых existing blocks; никакого нового daemon/runtime/container.
 
 Packaging05T/06TASK-8: только testcase extraction,6private+3public; TS lint≤500/private<700, exact parity. FR1–FR6/AM-1…20/14design/9KCQE и round budget unchanged; K1 новых имён NOT_ESTABLISHED.
@@ -38,7 +40,7 @@ Packaging05T/06TASK-8: только testcase extraction,6private+3public; TS lin
 Канонические captured executor/launcher и reviewed bridge, существующие browser/native guard/cleanup и read-only BOTH-store collector — владельцы invariants. Не копировать financial dispatcher/ledger в новый framework. Подробный inventory и обязательный выбор альтернатив — архитектор до code.
 
 ## Ledger revision3 — supporting QA packaging
-PRIVATE PROPOSED, не approved W ledger: OpenSpec `openspec/changes/recover-known-checkout-response/proposal.md`, SHA-256 `1de2dc5686ac06e7c17594987402483abdb1a07f6d9dd794935c4d0ef5720892`; `openspec/changes/recover-known-checkout-response/specs/payment-qa-recovery/spec.md`, SHA-256 `1d857604a1f6386d7703cc71363cef02159f17d34054945e6e70953b58c1608d`. Hashes измерены по actual private proposed bytes текущего integrated bundle. Actual adoption/checkpoints/QCSD/K1/K2 и code review выполняются отдельно в том же feature.
+Текущие OpenSpec bytes (clean-boundary согласован; иные допуски отдельны): OpenSpec `openspec/changes/recover-known-checkout-response/proposal.md`, SHA-256 `82d270724eee14b96ebab706880036e4946ac7e10e8a47b1aa3042a3a827cb76`; `openspec/changes/recover-known-checkout-response/specs/payment-qa-recovery/spec.md`, SHA-256 `23310a0e989f1dd1f3e9175d8026fcc305616222299b910e5a8c88da293183f1`. Hashes измерены по actual private proposed bytes текущего integrated bundle. Actual adoption/checkpoints/QCSD/K1/K2 и code review выполняются отдельно в том же feature.
 
 ## Planning-only authorization и предел доказательства
 Все FR1–FR5 recovery predicates действуют для своих existing modes; FR6 — явная supporting QA requirements delta, не их silent fallback. Root delegated TEST authority покрывает draft выбора; дальнейшие gate/implementation/execution permissions отдельны. Завершённый codeQE2 на sourceSet prefix afc6/native revision a9905f80a820bff04bb2124d8b25f231ba77f9cf83c351555eae3acafae35275 не принимал код и не оценивает этот новый draft.14 design conditions и9 KCQE сохраняют meanings/lineage; никаких closures здесь.

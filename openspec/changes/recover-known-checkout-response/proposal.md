@@ -27,3 +27,6 @@ Actual QE2 не принял код: late action finalization, whole-scope/phase
 
 # Supporting QA packaging revision3 (PROPOSED)
 Только test-only extraction05T/06TASK-8:6private+3public, TShelper строки cases в прежнем процессе; общий lint≤500, private<700, exact parity. FR1–FR6/user CJM/14design/9KCQE/round budget unchanged; actual installation/K1/K2/review ещё обязательны, не GO.
+
+# Уточнение владельца 07.11.2026: чистая граница
+Владелец разрешил новый явный вход до первой progress-записи с доказанным pristine state и полным свежим preflight. Partial/unknown остаются STOP; автоматического retry нет. Точная семантика и матрица — сценарии «Повторное или незавершённое восстановление» и «Новый явный вход до первой записи» в spec. Это не runtime GO и не закрытие KCQE-05.

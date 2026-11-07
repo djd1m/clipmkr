@@ -40,9 +40,16 @@ QA MUST сохранять actual request/status/body evidence до смены �
 Recovery MUST сохранять global-off/sole approved TEST target, source identity, canonical health/revalidate, stable locks,24h event bounds, own-session positive cleanup и запрет historical grant/relay. Pending MUST NOT называться terminal/no_pending, controlled relay MUST NOT называться provider redelivery.
 
 #### Scenario: Повторное или незавершённое восстановление
-- **GIVEN** уже consumed recovery или interrupted/partial record
-- **WHEN** процесс запускается снова
-- **THEN** он сохраняет историю и останавливается до отдельной сверки; новая namespace/покупка не создаются
+- **GIVEN** уже consumed recovery либо после прерывания остались snapshot, `.next`, health/business переход, interrupted/partial record или неизвестный результат
+- **WHEN** повторяется восстановление или незавершённый переход
+- **THEN** MUST STOP до эффектов, сохранить все прежние bytes/artifacts; автоматическое продолжение, очистка, достройка и новая namespace/покупка запрещены
+
+#### Scenario: Новый явный вход до первой записи
+- **GIVEN** прерывание до любой progress-записи; заново доказаны pristine original state и отсутствие partial/unknown, не только отсутствие файлов
+- **WHEN** оператор явно начинает отдельный вход под прежними locks с повторной свежей проверкой identity/source/phase/history/financial/actor/control/health и действующей ограниченной authority
+- **THEN** MAY выполнить исходную разрешённую metadata transition; отсутствие артефактов само по себе не GO, прежний checkout не повторяется и новые полномочия не возникают
+- **AND** wrong phase, stale/expired authority, missing/unknown proof MUST STOP до следующих эффектов; open/create-before-write считается артефактом, если оставил файл. Частично видимый, но ещё не durable snapshot также MUST STOP без удаления
+- **AND** матрица MUST входить в правильный `recover` с otherwise-valid данными: 30 artifact-bearing SIGKILL случаев дают точный partial STOP, ноль новых файлов/записей/действий и сохранность прежних bytes; два clean-before-write случая дают новый явный metadata entry с полным preflight. Неправильная phase/пустой ticket не заменяют этот oracle; fresh-invalid negatives и одиночные guard mutants обязаны различать запрещённые эффекты
 
 #### Scenario: Поздняя durability результата действия
 - **GIVEN** реальный callback состоялся, final business/admission markers уже видны, но operation/journal/result/cleanup business I/O или readback завершились после applicable authority deadline

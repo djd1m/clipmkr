@@ -121,6 +121,9 @@ FR1–FR5 и весь user CJM сохраняются; FR6 остаётся от
 Confirmation: independent probes04/06/07/08/09 сначала воспроизводятся в existing suite на admitted afc6; затем actual modified captured code с real I/O/native/browser и projection-faithful external SIMULATED boundary. AM8 first-revalidation kill matrix и AM13 ordered primitives/individual guards сохраняются для actual original reference и derivative. → test `fence historical entries across every durable recovery boundary` in `tests/recover-known-checkout-response.test.ts`; → test `stop replay and partial recovery before callback` in `tests/recover-known-checkout-response.test.ts`; → test `preserve every canonical event predicate with one known pending` in `tests/recover-known-checkout-response.test.ts`; → test `bind confirmation URL only to fresh read-only provider evidence` in `tests/recover-known-checkout-response.test.ts` (fails if reverted). Всё это будущие checks.14 design meanings требуют originating reverification,04–09 не закрываются автором design.
 
 ## Confirmation
+
+Owner07.11/KCQE-05: clean-before-write → новый explicit entry с full fresh preflight; partial/unknown → STOP. Exact contract —01/OpenSpec. Не automatic resume.
+
 - Method: independent requirements-first review actual private bytes и executable fixtures; real Chrome/local HTTP/fsync RED→GREEN; real POSIX FD/process crash/concurrency probes.
 - Monitoring: безопасные diagnostic codes, recovery/action journal states, counts checkout forwarded/blocked; runtime receipt без секретов.
 - Success metric:20/20 original Chrome RED и20/20 candidate GREEN с ровно одним POST на попытку; все negative/partial/replay fixtures отказывают до business callback; unknown cleanup не считается завершённым.
