@@ -4,7 +4,7 @@
 
 **DRAFT, terminal-origin delta после read-only observation06.11.2026,11:08:37Z.** Все прежние решения по QCSQ-01, RISK-01/RISK-02, QT-01–QT-04 сохранены; новый snapshot требует originating verification. Основания:01, ADR-001,02; OpenSpec hashes закреплены в01. Бизнескод приложения и canonical db0/b9/f15/native/collector не меняются. Исторический callback QE4 CLOSED сохраняется. Никакого runtime допуска этот документ не выдаёт.
 
-Reuse input binding: `features/recover-known-checkout-response/02_reuse_inventory.md`, SHA-256 `5030b383aeb5a3c1cc6ab3b4513592701e3dcc1c780a14efb6663833c759be52`. Это actual PRIVATE PROPOSED bytes, не W approval. Этот exact источник содержит dependency SHA roster; его изменение требует нового design snapshot, даже если default ideation scanner не включает имя02_reuse автоматически.
+Reuse input binding: `features/recover-known-checkout-response/02_reuse_inventory.md`, SHA-256 `5e7bba14bbd69a2aa3a2140b41114974f591cc16874547fc5a763cb0ef028f6e`. Это текущий input snapshot07.11; не independent/code/runtime approval. Этот exact источник содержит dependency SHA roster; его изменение требует нового design snapshot, даже если default ideation scanner не включает имя02_reuse автоматически.
 
 ## C4 Component
 

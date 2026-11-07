@@ -1,3 +1,15 @@
+## Подготовка матрицы: независимый requirements GO
+
+07.11.2026. Originating `gpt-6.1-terra xhigh` завершил повторное requirements review exit0: **GO по согласованности/проверяемости**, RR01–05 resolved for requirements, новых findings нет. Согласованное владельцем исключение clean-before-write,13code conditions и native4NO-GO сохранены. Это не результат code QE или runtime GO.
+
+После этого отдельно уточнён один negative oracle: early guards требуют0новых файлов/persist; fullcutover STOP после canonical revalidate допускает лишь прежние snapshots/health trace по05C/AM8, с сохранением preimage/B0/business/used и0B1/authorization/native/callback, безrollback. Нельзя навязывать redesign runtime ради ошибочного нового требования «вообще0trace».30artifact-bearing restart по-прежнему требуют абсолютных0новыхfiles/persist/effects. Этот узкий delta передан на независимую сверку; code ещё не запускался.
+
+## Восстановление доступа и review дельты — 07.11.2026
+
+Свежая авторизация владельца была сохранена в профиле infraadmin; root использовал прежний отозванный профиль. Запись авторизации перенесена в root с сохранением закрытой резервной копии, без вывода секретов. После этого реальная новая сессия `gpt-6.1-terra xhigh` успешно исполнилась: независимое requirements review завершилось exit0, вердикт **NO-GO**, RR01–05. Это результат проверки документов, не code QE. Найдены blanket killSTOP в ADR, смешение partial и complete survivor, stale inventory binding, недостаточная provenance amendment и общие fresh-negative controls. Подготовлены точечные исправления без изменения кода. Старая формулировка auth-blocked ниже — историческая; повторная проверка исправленного delta ещё требуется.
+
+Прежний normative snapshot сохранён в Git commit d80aea646dbea72b4a905c3e61097656a64dfe4c, current owner delta впервые в f27888a1a8e3c38c781f1024f3167f9b5ad9b749. Ранее указанное inventory SHA5030b383 относится к старому draft; текущий binding05 измеряется по02, его исторические OpenSpec SHA явно помечены historical, текущие ledger SHA —01. Все13 originating code conditions и прежняя native история сохранены. No code/runtime acceptance.
+
 ## Текущий допуск — подготовка остановлена на авторизации Codex
 
 07.11.2026. Согласованное владельцем уточнение clean-before-write внесено в требования/ADR/архитектуру/план/OpenSpec. Проверки: K2 PASS (C8 warning вручную требует FR→AM трассировки; C4 acid corpus отсутствует, SKIPPED), строгая OpenSpec validation exit0, code-targets admitted/reasons[], coder context complete. Это структурные проверки, не независимый допуск или принятие кода.

@@ -98,9 +98,9 @@ QA MAY выполнить только одноразовый `administrative-te
 - **THEN**0administrative authorization/closure/callback/session/checkout; no guessed true/empty, no cleanup/reset/fallback и no owner waiver
 
 #### Scenario: Partial/late administrative closure
-- **GIVEN** kill/late I/O/.next, одна closure, absent/partial/conflicting confirmation либо неизвестный completion
+- **GIVEN** после kill остался partial/unknown: `.next`, одна closure, absent/partial/conflicting confirmation либо поздняя business durability без prior live L
 - **WHEN** любой entry рассматривает продолжение
-- **THEN** STOP до действия без достройки; только complete original witness может пройти прежний reader real file+directory fsync/readback под fresh authority; payload prior L не переписывается
+- **THEN** MUST STOP без достройки. Отдельный доказанный complete immutable survivor с prior live L MAY пройти только прежний reader real file+directory fsync/readback под fresh authority/fullgate; payload/L не переписываются, killed producer не объявляется successful
 
 ### Requirement: Первый ordinary после administrative quarantine отдельный и одноразовый
 Первый уже согласованный будущий TEST MUST быть отдельным одноразовым ordinary admission после joint admin closures, reader resync и fresh GO/fullgate. Полный порядок consume/archive, сохранность failed origin, canonical guards и запрет повторного admin exception из сценариев ниже MUST соблюдаться.
@@ -130,3 +130,12 @@ QA MUST сохранять FR1–FR6/AM-1…20;6private+3public по05T, helper 
 - **WHEN** existing contiguous cases извлечены по05T в test-only TShelper
 - **THEN** rendered Python bytes,17titles,70old/128current assertion intents/всеmatrix counts MUST совпасть; TS lint metric MUST быть≤500/private modules<700, real operational Chrome/FD/process suite MUST пройти заново
 - **AND** существующий native code-target manifest MUST пиннить helper; новые manifest/profile fields, executable JSON/MD blobs и изменение payment/authority/once/deadline/reader/unknown guards MUST NOT вводиться
+
+### Requirement: Различающие controls чистой границы
+Новый explicit entry MUST заново проверять все прежние predicates. Частичный прогресс и неизвестность относятся к проверяемому metadata переходу; exact original failed/consumed_unknown provenance сохраняется по FR2/3/6, не очищается и не расширяется.
+
+#### Scenario: Каждый свежий predicate проверен независимо
+- **GIVEN** otherwise-valid pristine setup для direct/admin; ровно один invalid predicate: identity, source, phase, history completeness, financial evidence, actor census, control freshness, health binding, authority expiry или pristine proof
+- **WHEN** вызывается правильный recover с полными остальными данными
+- **THEN** MUST получить адресный STOP до B1/authorization/native/callback. Для ранних guards —0persist/0новых файлов; для fullcutover после canonical revalidate допустим только существующий trace/snapshots по05C/AM8: exact preimage сохранён, business/used/B0 неизменны, trace не rollback. В обоих случаях сравниваются весь file set/bytes и counters; каждый predicate имеет named case. Обязательны clean-positive и30partial/2clean SIGKILL matrix
+- **AND** существующие guard-mutant controls MUST покрывать отказ от artifact guard, missing-pristine/fresh-preflight и подмену restart неправильной phase: mutant считается обнаруженным только при конкретном forbidden persist/newfile/callback либо нарушении positive, не unrelated fixture/parser error. Остальные guard-removal controls сохраняются по AM13/17/18/19, без дублирования уже различающих cases
