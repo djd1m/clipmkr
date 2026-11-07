@@ -214,6 +214,7 @@ def _completion_matrix(b,tests):
         operation=pathlib.Path(f['s']['directory']+'/operation.json')
         journal=operation.parent/'controller-bridge.json'
         before,prior=operation.read_bytes(),journal.read_bytes()
+        files={str(path):path.read_bytes() for path in operation.parent.iterdir() if path.is_file()}
         snapshots=len(list(operation.parent.glob('recovery-origin-*.snapshot')))
         writes=[];previous=sys.getprofile();result=None;diagnostic=None
         def record(frame,event,value):
@@ -223,7 +224,7 @@ def _completion_matrix(b,tests):
         try:result=call()
         except RuntimeError as error:diagnostic=str(error)
         finally:sys.setprofile(previous)
-        return {'diagnostic':diagnostic,'persists':len(writes),'snapshots':len(list(operation.parent.glob('recovery-origin-*.snapshot')))-snapshots,'operationChanged':operation.read_bytes()!=before,'journalChanged':journal.read_bytes()!=prior,'witness':(operation.parent/'recovery-finalization.private.json').exists(),'accepted':result is not None}
+        return {'diagnostic':diagnostic,'persists':len(writes),'snapshots':len(list(operation.parent.glob('recovery-origin-*.snapshot')))-snapshots,'operationChanged':operation.read_bytes()!=before,'journalChanged':journal.read_bytes()!=prior,'witness':(operation.parent/'recovery-finalization.private.json').exists(),'accepted':result is not None,'allBytesUnchanged':all(pathlib.Path(path).read_bytes()==value for path,value in files.items()),'newFiles':sum(path.is_file() and str(path) not in files for path in operation.parent.iterdir())}
     def initial(c,control,name):
         f=fixture(c)
         if name!='origin-only':
@@ -247,15 +248,24 @@ def _completion_matrix(b,tests):
         row.update(callbacks=len(callbacks),nativeCalls=len(native))
         return row
     def reconcile(c,control,name):
-        f=fixture(c,False);run(c,f);ticket=_ticket(c,f)
-        create,cleanup,native=_native(c,f,ticket);_action(c,f,ticket,create,cleanup,controller=control)
-        _accepted_head(c,f,1)
+        f=fixture(c,False);run(c,f);native=[]
+        if not name.startswith('zero'):
+            ticket=_ticket(c,f);create,cleanup,native=_native(c,f,ticket)
+            _action(c,f,ticket,create,cleanup,controller=control);_accepted_head(c,f,1)
+        lineage=f['lineage']
         path=pathlib.Path(f['s']['directory']+'/controller-bridge.json');journal=json.loads(path.read_bytes())
-        entry=journal['recovery']['actions'][ticket['id']]['completion']
+        if not name.startswith('zero'):entry=journal['recovery']['actions'][ticket['id']]['completion']
         if name=='extra':entry['unexpected']=True
         elif name=='L':entry['L']['wall']=entry['authority']['action_window']['deadline']+.001
         elif name=='head':f['s']['recovery_authority']['expected_head']='0'*64
         elif name=='missing':journal['recovery']['actions'][ticket['id']].pop('completion')
+        elif name=='drop-entry':journal['recovery']['actions'].pop(ticket['id'])
+        elif name=='drop-map':journal['recovery'].pop('actions')
+        elif name in ('zero-head','zero-generation','zero-bool'):
+            f['proof']['metadata_go']['ordinary']={'expected_generation':lineage[0],'expected_head':lineage[1]}
+            f['s']['recovery_authority'].update(expected_head='0'*64) if name=='zero-head' else f['s']['recovery_authority'].update(expected_generation=False if name=='zero-bool' else 1)
+        elif name.startswith('zero-go'):
+            f['proof']['metadata_go']['ordinary']={'expected_generation':False if name=='zero-go-bool' else 1 if name=='zero-go-generation' else lineage[0],'expected_head':'0'*64 if name=='zero-go' else lineage[1]}
         _replace(str(path),enc(journal))
         provider=json.loads(f['exact']['provider']['body']);provider.pop('confirmation')
         provider.update(status='canceled',cancellation_details={'reason':'expired_on_confirmation'})
@@ -263,7 +273,8 @@ def _completion_matrix(b,tests):
         f['proof']['phase']='ACTIVE_RECONCILE';refresh(f)
         count=len(native)
         row=observe(c,f,lambda:control['reconcile_bound'](c,f['s'],f['proof'],f['exact'],f['inv'],SimulatedRuntime(f)))
-        assert native[:count]==['session-create','session-revoke'] and len(native)==count
+        assert native[:count]==([] if name.startswith('zero') else ['session-create','session-revoke']) and len(native)==count and f['lineage']==lineage
+        row.update(independentGeneration=lineage[0],callbacks=0,nativeCalls=len(native)-count)
         return row
     def ledger(c,control,name):
         f=fixture(c,False)
@@ -305,5 +316,47 @@ def _completion_matrix(b,tests):
     mutants.append({'guard':'event','forbiddenPersist':True,'forbiddenBinding':True})
     tests['stop replay and partial recovery before callback']['QE3-pre-effect']=admission
     tests['stop replay and partial recovery before callback']['QE3-guard-mutants']=mutants
+
+    # QE4: independently retained head also governs the empty chain.
+    corrected=[]
+    for name in ('zero','valid','drop-entry','drop-map','zero-head','zero-generation','zero-bool','zero-go','zero-go-generation','zero-go-bool'):
+        row=reconcile(b,bridge,name);allowed=name in ('zero','valid')
+        assert row['diagnostic']==(None if allowed else 'RECOVERY_ORDINARY_HEAD_BINDING'),row
+        if allowed:assert row['accepted'] and row['persists']==2 and row['witness'],row
+        else:assert row['persists']==row['snapshots']==row['callbacks']==row['nativeCalls']==row['newFiles']==0 and row['allBytesUnchanged'] and not row['witness'],row
+        corrected.append(dict(row,case='chain:'+name,allowed=allowed))
+    def ordinary(c,control,name):
+        mode,key=name.split(':');f=_admin_fixture(c) if mode=='admin' else fixture(c)
+        run(c,f);p,t,callback=_post(c,f);calls=[]
+        assert f['proof']['origin']['operator_key']!=f['proof']['origin']['browser_key']
+        if key!='fresh':p['request_key']=f['proof']['origin'][key];t['context_sha']=sha(enc(p));_issue(c,f,p,t,'POST_RECOVERY')
+        def invoke(scope):calls.append(1);return callback(scope)
+        row=observe(c,f,lambda:control['ordinary'](c,f['s'],p,SimulatedRuntime(f),invoke,t))
+        row.update(callbacks=len(calls),nativeCalls=len(callback.nativecalls))
+        return row
+    for mode in ('admin','recovery'):
+        for key in ('fresh','operator_key','browser_key'):
+            name=mode+':'+key;row=ordinary(b,bridge,name);allowed=key=='fresh'
+            assert row['diagnostic']==(None if allowed else 'RECOVERY_ORIGINAL_KEY_REUSE'),row
+            if allowed:assert row['accepted'] and row['persists']==3 and row['callbacks']==1 and row['nativeCalls']==2,row
+            else:assert row['persists']==row['snapshots']==row['callbacks']==row['nativeCalls']==row['newFiles']==0 and row['allBytesUnchanged'],row
+            corrected.append(dict(row,case=name,allowed=allowed))
+    directed=[]
+    fresh_check="need(type(fresh_proof.get('expected_generation')) is int and (fresh_proof.get('expected_generation'), fresh_proof.get('expected_head')) == head, 'RECOVERY_ORDINARY_HEAD_BINDING')"
+    go_check="need(type(expected.get('expected_generation')) is int and (expected.get('expected_generation'), expected.get('expected_head')) == head, 'RECOVERY_ORDINARY_HEAD_BINDING')"
+    block='    '+fresh_check+"\n    expected = fresh_proof['metadata_go'].get('ordinary', fresh_proof)\n    "+go_check
+    skip_empty='    if entries:\n'+''.join('    '+line+'\n' for line in block.splitlines()).rstrip('\n')
+    for label,old,new,name in [('empty-bypass',block,skip_empty,'drop-map'),('independent-head',fresh_check,"need(True, 'RECOVERY_ORDINARY_HEAD_BINDING')",'zero-head'),('metadata-head',go_check,"need(True, 'RECOVERY_ORDINARY_HEAD_BINDING')",'zero-go')]:
+        mutant,_=_mutated(b,'adapter',old,new);row=reconcile(mutant,bridge,name)
+        assert row['diagnostic'] is None and row['accepted'] and row['persists']==2 and row['witness'],row
+        directed.append({'guard':label,'forbiddenPersist':row['persists'],'forbiddenCallbacks':0})
+    both="p['request_key'] not in (s['origin_proof']['origin']['operator_key'], s['origin_proof']['origin']['browser_key'])"
+    for key,remaining in [('operator_key','browser_key'),('browser_key','operator_key')]:
+        mutant,_=_mutated(b,'adapter',both,"p['request_key'] != s['origin_proof']['origin']['"+remaining+"']")
+        row=ordinary(mutant,bridge,'admin:'+key)
+        assert row['diagnostic'] is None and row['accepted'] and row['persists']==3 and row['callbacks']==1 and row['nativeCalls']==2,row
+        directed.append({'guard':key,'forbiddenPersist':row['persists'],'forbiddenCallbacks':row['callbacks']})
+    tests['stop replay and partial recovery before callback']['QE4-corrected-head-keys']=corrected
+    tests['stop replay and partial recovery before callback']['QE4-directed-mutants']=directed
 
 `;

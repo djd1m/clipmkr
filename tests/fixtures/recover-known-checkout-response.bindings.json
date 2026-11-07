@@ -4,7 +4,7 @@
   "sources": {
     "adapter": {
       "alias": "recover-known-checkout.private.py",
-      "sha256": "4333dda3c7e4c5cf3e205e4d8e89df75c8cef7c179e492e0ad8c26375f1d7aed"
+      "sha256": "a827015ffbc790de4866d409f83d8fbd1f5069e59887eebed795d51e8ce155ba"
     },
     "bridge": {
       "alias": "bridge.private.py",
@@ -20,7 +20,7 @@
     },
     "recovery_fixture": {
       "alias": "recovery-fixtures.private.py",
-      "sha256": "07d9b57bd00e51b67f44a21d7bb4b409d160b47511a65069dd9933c5f9af2176"
+      "sha256": "27d7e3a80dbe53c111a936ba4de2f564bad8228a87ea23981d2e8d106c12b872"
     },
     "capture_fixture": {
       "alias": "capture-fixtures.private.mjs",
@@ -65,7 +65,7 @@
     "alias": "chromium-1223/chrome-linux64/chrome",
     "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
   },
-  "publicTestSha256": "6878415ee9394c1f937472db7e801ad92bf7caefbcbfd8c8e38d375529101fcf",
+  "publicTestSha256": "dd8d856a83b6ff69cc905bfc0616ec2f7292eebdfdbf637ac4e400d3f1da4556",
   "supportingReadOnly": {
     "apps/web/src/server/auth.ts": "699076bf660eee46cfc1a3e67258cfc438219eabe958ce9d4b319816b438ead3",
     "apps/web/src/server/auth-store.ts": "84744406a808cefddf657f7a1be607517888e5ae7ecd85743e2c5b86e0821d8f"
