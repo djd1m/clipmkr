@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "status": "author-candidate-native-qe3-pending-no-runtime-go",
+  "sources": {
+    "adapter": {
+      "alias": "recover-known-checkout.private.py",
+      "sha256": "0c2b37bdaa20e34c71386bcd330a75e5a13264a5d278c4ee3840c813a4595093"
+    },
+    "bridge": {
+      "alias": "bridge.private.py",
+      "sha256": "61792e01618e0b8f5f1e101fe826405769a3dd4c048eeb629165d4040a86b02e"
+    },
+    "browser": {
+      "alias": "browser.private.mjs",
+      "sha256": "868e69b0ac43f8324d83c377a295f1734292b7fff45a9eb36b30242d25dfb3dc"
+    },
+    "runner": {
+      "alias": "run.private.py",
+      "sha256": "9201947525968db6acc3d0b7984a054e5f53bdca09f134659016d039b90123a2"
+    },
+    "recovery_fixture": {
+      "alias": "recovery-fixtures.private.py",
+      "sha256": "07d9b57bd00e51b67f44a21d7bb4b409d160b47511a65069dd9933c5f9af2176"
+    },
+    "capture_fixture": {
+      "alias": "capture-fixtures.private.mjs",
+      "sha256": "ed76aecf0c3d6e27febc277f3717d8b8515afa2ff2e8224fdd3f7e35856ec36f"
+    }
+  },
+  "inputs": {
+    "executor": {
+      "alias": "apply-route.private.py",
+      "sha256": "db0dbd2fbdae3caea1de1b9416d5c9a67596dc5f59bfff0363d2613610118087"
+    },
+    "launcher": {
+      "alias": "launch-route.private.py",
+      "sha256": "b9b8ab7b8965d518f1dc4849d3dea0903696dc13200efbaa803e320cdff25892"
+    },
+    "historical_bridge": {
+      "alias": "bridge.private.py",
+      "sha256": "81292776ba2b5442540f8572a07848a491dab6eca32119e77184033437a84023"
+    },
+    "historical_browser": {
+      "alias": "browser.private.mjs",
+      "sha256": "c12c4a311f4291a0bb5ae8c3adb61ea2a44fcb79e7a597cfe3a51fc97958ba48"
+    },
+    "historical_runner": {
+      "alias": "run.private.py",
+      "sha256": "f15ce1e17ec83226eaa59bce153866a09a5077310391bc143bf04d736baed01e"
+    },
+    "native": {
+      "alias": "native-probe.private.mjs",
+      "sha256": "ababad30d66c6d878623e54478308e943bfb1182c06b934487d38465511a67e0"
+    },
+    "inventory": {
+      "alias": "collect-cutover-readonly.private.mjs",
+      "sha256": "39b849cf573f76caf24a70f71b154c709c5bf0330b43f617c4ed8f5fe4577690"
+    },
+    "launch_witness": {
+      "alias": "launch-bridge.private.py",
+      "sha256": "1f23509d0f41b7d679b809693325f4ac801fd74f691fb03024fe2e39d5e3a54d"
+    }
+  },
+  "chrome": {
+    "alias": "chromium-1223/chrome-linux64/chrome",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "publicTestSha256": "0ba8ac55327aaecdfdd4533f5b956a188abcb5bdb97afcf1e8241a7fa5ee9cdd",
+  "supportingReadOnly": {
+    "apps/web/src/server/auth.ts": "699076bf660eee46cfc1a3e67258cfc438219eabe958ce9d4b319816b438ead3",
+    "apps/web/src/server/auth-store.ts": "84744406a808cefddf657f7a1be607517888e5ae7ecd85743e2c5b86e0821d8f"
+  }
+}
