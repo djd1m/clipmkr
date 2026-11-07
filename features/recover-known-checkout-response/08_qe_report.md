@@ -1,3 +1,25 @@
+## Итог ручного независимого QE2 — 07.11.2026: все 13 условий подтверждены
+
+**Служебный блок восстановления прошёл независимую проверку текущего offline-контракта.** Автор — `gpt-6.1-sol high`, проверяющий — исходная независимая сессия `gpt-6-astra xhigh`, без контекста кодирования. Оба процесса фактически завершились с exit0; serving identity не аттестована. Все13 исходных условий сохранены и независимо подтверждены, включая KCQE-05 по отдельно согласованной владельцем поправке. Новых HIGH/BLOCKER нет.
+
+Исправлен неверный тест перезапуска: теперь после настоящего SIGKILL вызывается правильный recover с полноценными данными.30случаев с артефактами дают точный STOP,0новыхфайлов/записей/действий и сохранность прежних bytes. Два случая до первой записи допускают лишь новый явный вход с полной свежей проверкой; отдельный ordinary требует своего допуска. Выполнены10отрицательныхсценариев и3различающие мутации. Бизнес-код приложения, adapter/bridge/browser/runner не менялись; переиспользованы существующие фикстуры и helper.
+
+Проверки автора:17/17,failed0/skipped0, один полный прогон311.87с. **Независимый прогон:17/17,failed0/skipped0, один полный прогон325.61с**; три дочерних процесса exit0 без таймаутов. Независимые lint,TypeScript,Python/Node syntax и дополнительные boundary/guard probes прошли. Проверяющий завершил code-critic до тестов, сверил cumulative scope, исходные неуспешные прогоны и все41 физических привязки до/после; ведущий повторил сверку после terminal. Неудачные прежние проверки не удалены и не переименованы в успех.
+
+Code/spec anti-drift: текущие01/02/ADR/05/06/OpenSpec и точное решение владельца сверены. Старые SHA в02 помечены историческими, текущие ledger/reuse bindings совпадают; прежняя оговорка автора о якобы оставшихся stale hashes снята независимой проверкой. Исполняемые источники не изменялись после финальных тестов. Measured revision `1d6bf68751cb52f4d939ffa2e7b829f19cda690b1d6d080339278b3c7ca61f73`; sourceSet `5f6491137a461ef691a5be0acc1d76072e77170bbad7104031d95149ad3a01ec`.
+
+Это согласованный владельцем **ручной cross-model QE**, а не пятый native-цикл: native QE4 NO-GO/история остаются неизменными, native CLOSED и успешный native QE checkpoint не создавались. Отчёт и обычный JSON проверяющего сохранены отдельно; SHA-256 полного независимого отчёта: `ab601587357890eb4ef557d9280fb1a91e582a380ec3f3546e992f8761cccda9`.
+
+**Граница результата:** реальные Chrome/localHTTP/FD/flock/fsync/fork/SIGKILL и функции native/auth; внешние PG/provider/AuthSession/config/financial transport симулировались. Настоящие TEST отказ/отмена/успех/дубликат, оплаченный клип и кабинеты трёх ролей ещё не приняты. Runtime GO отсутствует: старые A0/clock, полный delivery/history, actor census и независимый текущий head требуют фактических доказательств. Приложение, БД, платежи, Cloud.ru и DNS не обновлялись. Следующий пользовательский результат — настоящая платёжная E2E-приёмка; повторять этот зелёный offline-блок без новых изменений не требуется.
+
+## Текущий кандидат: автор завершён, независимый ручной QE2 готовится
+
+07.11.2026. Согласованный clean-before-write контракт и negative trace oracle прошли independent requirements R2/trace GO (`gpt-6.1-terra xhigh`, фактические процессы terminal0). Исходный автор `gpt-6.1-sol high` завершился terminal0. Исправлена только тестовая матрица: correct recover32,30partial STOP с0новыхpersist/files/actions и сохранностьюbytes;2pristine entry сfullfreshpreflight и отдельным freshordinaryGO;10отрицательныхpredicates и3различающихmutantclasses. Runtime adapter/bridge/browser/runner/recovery_fixture сохранены; test extraction переиспользует существующий helper/export.
+
+Финальный авторский operational **17/17, failed0/skipped0, exit0, один полный прогон**,311.87с;3children0/noTimeout. Общийlint,focusedTypeScript,Python/Node syntax exit0. Ведущий прочитал raw результаты и полный diff, сверил все41pins: ровно6допущенныхизменений,35неизменны. Project code checkpoint записывает local tested candidate, не independent acceptance. SourceSet `5f6491137a461ef691a5be0acc1d76072e77170bbad7104031d95149ad3a01ec`.
+
+Оригинальный независимый `gpt-6-astra xhigh` далее проверяет **все13условий** в manualQE2; до его результата KCQE-05 не считается независимо закрытым. Native QE4 NO-GO/history не переписываются. ВнешниеPG/provider/AuthSession симулируются; настоящая TEST-оплата/paidclip/3roles ещё не приняты, приложение/Cloud/DNS/финансовые данные не менялись.
+
 ## Подготовка матрицы: независимый requirements GO
 
 07.11.2026. Originating `gpt-6.1-terra xhigh` завершил повторное requirements review exit0: **GO по согласованности/проверяемости**, RR01–05 resolved for requirements, новых findings нет. Согласованное владельцем исключение clean-before-write,13code conditions и native4NO-GO сохранены. Это не результат code QE или runtime GO.

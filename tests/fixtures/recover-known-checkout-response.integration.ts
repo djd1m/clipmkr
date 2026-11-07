@@ -359,4 +359,109 @@ def _completion_matrix(b,tests):
     tests['stop replay and partial recovery before callback']['QE4-corrected-head-keys']=corrected
     tests['stop replay and partial recovery before callback']['QE4-directed-mutants']=directed
 
+def _snapshot_matrix(b,tests):
+    rows=[]
+    points=['before-snapshot:operation','snapshot:operation','snapshot:browser_request','snapshot:before-file','snapshot:after-file','snapshot:before-dir','snapshot:after-dir','snapshot:readback','before-health','operation:before-file','operation:after-file','operation:before-dir','operation:after-dir','operation:readback','after-revalidate','journal:consumed_unknown']
+    for admin in (False,True):
+        for point in points:
+            f=_admin_fixture(b) if admin else fixture(b)
+            with bridge['locks'](b['n'],f['s']):pass
+            readfd,writefd=os.pipe();basefd,basewrite=os.pipe();child=os.fork()
+            if child==0:
+                os.close(basefd);_clean_inputs(b,f);os.write(basewrite,enc({z.name:sha(z.read_bytes()) for z in pathlib.Path(f['s']['directory']).iterdir() if z.is_file()}));os.close(basewrite)
+                os.close(readfd);native_sync,native_read=os.fsync,os.read;first=[True];renamed=[];snapshot=[True]
+                def halt():os.write(writefd,b'R');signal.pause()
+                def hook(stage):
+                    if stage=='snapshot:operation':snapshot[0]=False
+                    if stage==point or (admin and point=='journal:consumed_unknown' and stage=='journal:preparing_unknown'):halt()
+                def sync(fd):
+                    name=os.readlink('/proc/self/fd/'+str(fd));which=None
+                    if name==f['s']['directory']+'/recovery-origin-operation.snapshot':which='snapshot-file'
+                    elif name==f['s']['directory'] and snapshot[0] and os.path.exists(f['s']['directory']+'/recovery-origin-operation.snapshot'):which='snapshot-dir'
+                    elif name==f['s']['directory']+'/operation.json.next':which='file'
+                    elif name==f['s']['directory'] and os.path.exists(f['s']['directory']+'/operation.json') and first[0] and renamed:which='dir'
+                    if which and point==('snapshot:before-'+which.removeprefix('snapshot-') if which.startswith('snapshot-') else 'operation:before-'+which):halt()
+                    result=native_sync(fd)
+                    if which and point==('snapshot:after-'+which.removeprefix('snapshot-') if which.startswith('snapshot-') else 'operation:after-'+which):halt()
+                    return result
+                def read(fd,count):
+                    result=native_read(fd,count)
+                    if not result and snapshot[0] and point=='snapshot:readback' and os.readlink('/proc/self/fd/'+str(fd))==f['s']['directory']+'/recovery-origin-operation.snapshot':halt()
+                    if not result and renamed and first[0] and os.readlink('/proc/self/fd/'+str(fd))==f['s']['directory']+'/operation.json':
+                        if point=='operation:readback':halt()
+                        first[0]=False
+                    return result
+                replace=os.replace
+                def moved(src,dst):
+                    result=replace(src,dst)
+                    if src==f['s']['directory']+'/operation.json.next':renamed.append(True)
+                    return result
+                runtime=SimulatedRuntime(f);health=runtime.health
+                def health_seen(*args):
+                    result=health(*args)
+                    if point=='before-health':halt()
+                    return result
+                runtime.health=health_seen;os.fsync,os.read,os.replace=sync,read,moved
+                try:run(b,f,runtime,hook)
+                except BaseException:
+                    import traceback
+                    traceback.print_exc()
+                os._exit(9)
+            os.close(writefd);os.close(basewrite)
+            with os.fdopen(basefd,'r') as stream:baseline=json.load(stream)
+            _wait_kill(child,readfd,f['s']['lock_path']);rows.append(_clean_restart(b,f,admin,point,baseline))
+    tests['reconcile expired origin without pending binding or actions']['AM8-first-revalidation-SIGKILL']=rows
+
+    _clean_negatives(b,tests)
+
+
+def _clean_negatives(b,tests):
+    rows=[]
+    cases=[('identity',False,'RECOVERY_SQL_IDENTITY'),('source',False,'RECOVERY_SOURCE_MISMATCH'),('phase',False,'RECOVERY_PHASE_MISMATCH'),('history',False,'RECOVERY_HISTORY_INCOMPLETE'),('financial',True,'RECOVERY_TARGET_GRANT'),('actor',True,'RECOVERY_ADMIN_ACTORS'),('control',False,'RECOVERY_CONTROL_STALE'),('health',False,'RECOVERY_HOST_CHANGED'),('authority',False,'RECOVERY_METADATA_AUTH_EXPIRED'),('pristine',False,'RECOVERY_ACTION_UNKNOWN')]
+    for name,admin,code in cases:
+        f=_admin_fixture(b) if admin else fixture(b)
+        with bridge['locks'](b['n'],f['s']):pass
+        if name=='identity':f['exact']['sql']['intents'][0]['account_id']='other'
+        elif name=='source':f['proof']['source_set_sha']='0'*64
+        elif name=='phase':f['proof']['phase']='POST_RECOVERY'
+        elif name=='history':f['inv']['history_complete']=False
+        elif name=='financial':f['exact']['sql']['grants']=[{'id':'target-grant','account_id':f['proof']['origin']['account'],'payment_ref':f['proof']['origin']['intent']}]
+        elif name=='actor':f['inv']['history_sources']['main']['delivery']['census']['actors'][1]['inflight']=['unknown']
+        elif name=='health':pathlib.Path(f['s']['host_path']).write_bytes(b'SYNTHETIC changed health binding')
+        elif name=='pristine':f['journal']['used']['other']={'ticket_sha':'a'*64,'state':'canonical_returned'};_envelope(f)
+        _clean_inputs(b,f)
+        if name=='authority':f['proof']['metadata_go']['deadline']=time.time()-1
+        runtime=SimulatedRuntime(f)
+        if name=='control':runtime.control=lambda:{'observed_at':time.time()-91}
+        root=pathlib.Path(f['s']['directory']);before=(root/'operation.json').read_bytes();journal=(root/'controller-bridge.json').read_bytes();row=_clean_entry(b,f,runtime=runtime)
+        assert row['diagnostic']==code and not row['accepted'] and row['nativeCalls']==row['followingCallbacks']==0 and not row['witness'] and (root/'controller-bridge.json').read_bytes()==journal,row
+        late=name in ('history','actor')
+        if late:
+            assert row['persists']==1 and row['newFiles'] and all(n.startswith('recovery-origin-') for n in row['newFiles']) and row['changedFiles']==['operation.json'],row
+            assert (root/'recovery-origin-operation.snapshot').read_bytes()==before
+            current=b['n']['loadrecord'](str(root/'operation.json'));prior=json.loads(before)['record'];b['modules']['adapter']['unchanged'](prior,current)
+            assert current['last_completed']=='revalidated' and current['state']=='healthy_unconfirmed' and current['applied'] is False and current['revalidated_health']['phase']=='after'
+            assert current['transitions'][-1]['applied'] is True and current['transitions'][-1]['last_completed']=='revalidated'
+        else:assert row['persists']==0 and not row['newFiles'] and row['allOldBytesUnchanged'],row
+        rows.append(dict(row,predicate=name,lateTrace=late))
+    mutants=[]
+    f=fixture(b)
+    with bridge['locks'](b['n'],f['s']):pass
+    _clean_inputs(b,f);marker=pathlib.Path(f['s']['directory'])/'recovery-origin-data_history.snapshot';write(str(marker),b'SYNTHETIC retained partial')
+    mutant,control=_mutated(b,'bridge',"need(not any(x.endswith('.next') or x.startswith('recovery-origin-') for x in os.listdir(s['directory'])), 'RECOVERY_PARTIAL_STOP')","need(True, 'RECOVERY_PARTIAL_STOP')")
+    row=_clean_entry(mutant,f,controller=control);assert row['newFiles'] and row['diagnostic']=='RECOVERY_PARTIAL_STOP' and marker.read_bytes()==b'SYNTHETIC retained partial',row
+    mutants.append({'guard':'artifact','forbiddenNewFiles':len(row['newFiles']),'forbiddenPersists':row['persists'],'positiveBroken':False})
+    mutant,control=_mutated(b,'bridge','and (recovery or origin_ticket is not None):','and recovery:');f=fixture(mutant)
+    with bridge['locks'](b['n'],f['s']):pass
+    f['journal']['used']['other']={'ticket_sha':'a'*64,'state':'canonical_returned'};_envelope(f);_clean_inputs(mutant,f);row=_clean_entry(mutant,f,controller=control)
+    assert row['persists']>0,row
+    mutants.append({'guard':'pristine-preflight','forbiddenNewFiles':len(row['newFiles']),'forbiddenPersists':row['persists'],'positiveBroken':False})
+    f=fixture(b)
+    with bridge['locks'](b['n'],f['s']):pass
+    _clean_inputs(b,f);row=_clean_entry(b,f,wrong=True)
+    assert row['diagnostic']=='RECOVERY_PHASE_MISMATCH' and not row['accepted'] and row['persists']==0 and not row['witness'],row
+    mutants.append({'guard':'wrong-phase-only-oracle','forbiddenNewFiles':0,'forbiddenPersists':0,'positiveBroken':True})
+    tests['reconcile expired origin without pending binding or actions']['clean-fresh-invalid']=rows
+    tests['reconcile expired origin without pending binding or actions']['clean-guard-mutants']=mutants
+
 `;

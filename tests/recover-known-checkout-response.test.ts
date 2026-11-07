@@ -450,6 +450,15 @@ describe.runIf(operational)('offline operational acceptance: real local resource
     expect(admin['AM15-producer-SIGKILL']).toEqual(['finalization:L', 'witness:before-file-fsync', 'witness:after-file-fsync', 'witness:file-durable', 'witness:renamed', 'witness:directory-durable', 'witness:readback'].map((point, index) => ({ point, producerSIGKILL: true, completeCandidate: index >= 4, followingCallbacks: index >= 4 ? 1 : 0, readerResync: index >= 4 })));
     expect(admin['AM8-first-revalidation-SIGKILL']).toHaveLength(32);
     expect(rows(admin['AM8-first-revalidation-SIGKILL']).every(row => row.SIGKILL && row.followingCallbacks === 0)).toBe(true);
+    const restart = rows(admin['AM8-first-revalidation-SIGKILL']);
+    expect(restart.filter(row => !row.accepted)).toHaveLength(30);
+    expect(restart.filter(row => !row.accepted).every(row => row.diagnostic === 'RECOVERY_PARTIAL_STOP' && row.persists === 0 && row.nativeCalls === 0 && row.allOldBytesUnchanged && (row.newFiles as unknown[]).length === 0 && row.priorInputsPreserved)).toBe(true);
+    expect(restart.filter(row => row.accepted).map(row => [row.pristineBeforeEntry, row.witness, row.separateFreshCallbacks, row.separateFreshNative])).toEqual([false, true].map(() => [true, true, 1, ['session-create', 'session-revoke']]));
+    expect(rows(admin['clean-fresh-invalid']).map(row => row.predicate)).toEqual(['identity', 'source', 'phase', 'history', 'financial', 'actor', 'control', 'health', 'authority', 'pristine']);
+    expect(rows(admin['clean-fresh-invalid']).every(row => row.followingCallbacks === 0 && row.nativeCalls === 0 && !row.witness && (row.lateTrace || (row.persists === 0 && row.allOldBytesUnchanged && (row.newFiles as unknown[]).length === 0)))).toBe(true);
+    expect(rows(admin['clean-guard-mutants']).map(row => row.guard)).toEqual(['artifact', 'pristine-preflight', 'wrong-phase-only-oracle']);
+    expect(rows(admin['clean-guard-mutants']).every(row => Number(row.forbiddenNewFiles) > 0 || Number(row.forbiddenPersists) > 0 || row.positiveBroken === true)).toBe(true);
+
     expect(policy.tests['reconcile expired origin without pending binding or actions']).toMatchObject({ noEventDirect: true, failedOriginPreserved: true, callbacks: 0, sessions: 0, checkout: 0, decline: 'NOT_VERIFIED' }); });
   test('fence historical entries across every durable recovery boundary', () => {
     const fence = policy.tests['fence historical entries across every durable recovery boundary'] as Record<string, unknown>;

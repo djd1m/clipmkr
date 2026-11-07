@@ -24,7 +24,7 @@
     },
     "capture_fixture": {
       "alias": "capture-fixtures.private.mjs",
-      "sha256": "ed76aecf0c3d6e27febc277f3717d8b8515afa2ff2e8224fdd3f7e35856ec36f"
+      "sha256": "61dc02e8b39762ac65fa56dcd0899ed91370e4277cf7c75c8bbdb83953727432"
     }
   },
   "inputs": {
@@ -65,7 +65,7 @@
     "alias": "chromium-1223/chrome-linux64/chrome",
     "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
   },
-  "publicTestSha256": "dd8d856a83b6ff69cc905bfc0616ec2f7292eebdfdbf637ac4e400d3f1da4556",
+  "publicTestSha256": "af6f8dc98cda46c9d8e957ac15584e02a55ea3ddc688e0cbab2295c4cd684f6c",
   "supportingReadOnly": {
     "apps/web/src/server/auth.ts": "699076bf660eee46cfc1a3e67258cfc438219eabe958ce9d4b319816b438ead3",
     "apps/web/src/server/auth-store.ts": "84744406a808cefddf657f7a1be607517888e5ae7ecd85743e2c5b86e0821d8f"
