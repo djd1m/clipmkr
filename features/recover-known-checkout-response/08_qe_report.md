@@ -1,3 +1,31 @@
+# Актуальный результат независимого QE — 07.11.2026, цикл 3
+
+**NO-GO.** Независимый `gpt-6-astra xhigh` в исходной requirements-first сессии проверил код автора `gpt-6.1-sol high`; serving identity отдельно не аттестована. История кодирования автором не передавалась. Это cross-model по действующей политике владельца.
+
+Полный независимый operational прогон: **17/17, без пропусков, exit 0**, 266,06 с Vitest. Общий lint, настоящий focused TypeScript, Python compile и Node syntax — exit 0. Собственные дополнительные probes выявили четыре нарушения действующих контрактов; зелёный основной набор не является их проверкой.
+
+| Условия | Результат независимой проверки |
+|---|---|
+| KCQE-01/02/03/06/08/09 | Проверены в текущей offline-границе |
+| KCQE-04/05/07 | Не закрыты |
+| KCQE-10 | Новый HIGH: некорректный закрытый билет отвергается после callback/session, требуется отказ до эффекта |
+| KCQE-11 | Новый HIGH: ACTIVE_RECONCILE не проверяет полную предыдущую completion chain до записи/witness |
+| KCQE-12 | Новый HIGH: проверка отсутствия событий pending target читает поле, которого нет в настоящей SQL projection; требуется проверенная raw↔provenance связь |
+
+Остаток KCQE-07: дополнительная terminal-looking запись без proof допускает 14 snapshots и health persist до STOP. Положительные controls исполнены. Для новых случаев сохранены отдельные минимальные воспроизведения, включая actual collector roundtrip и native session-create/revoke на SIMULATED внешней границе. Их exit 0 означает успешное воспроизведение дефекта.
+
+Ревизия `ffc0415a67db1a887213e4931f13b73de6c1dc60f6ae190221deca298da63ee3`; sourceSet `dcd9331417e59b90794d4df717633a561ff0c83e2d1b75e7bfbf53c8fc50ff42`. SHA независимого подробного отчёта `df2a6536cdcd807cb918c1e92014a843ec0e1b41f1b64168cb5cf727dc822a88`. Private evidence: `known-checkout-code-qe/cycle3` — actual commands/exits, raw probes, source readbacks и собственная reviewer receipt; приватные источники в Git не помещаются.
+
+Поддерживаемый `dz qe-rounds --source native --action evaluate` фактически вернул exit 1 / `unresolved`: KCQE-04/05/07/10/11/12, **3 цикла из 3**, sequence 9. История/условия сохранены. Дополнительный формальный цикл этим результатом не разрешён; сначала подготавливается ограниченное исправление TASK9/10.
+
+Code/spec anti-drift: current01 содержит точные действующие OpenSpec hashes; семь нормативных документов и их смысл не менялись. Проверяющий отдельно отметил устаревшие inline cross-reference hashes в 02/05: это открытое замечание к метаданным; действующие входные bytes однозначно заданы current01 и физической freeze. Исправление этих ссылок не выдаётся за выполненное.
+
+Chrome/local HTTP/FD/flock/fsync/fork/SIGKILL реальны локально; PostgreSQL/provider/AuthSession/config transport — **SIMULATED**. Runtime STOP: real TEST decline/manual-cancel/success/duplicate/paid-clip и три роли не приняты; production/Cloud/DNS не изменялись. Ни оценка автора, ни этот отчёт не закрывают фактический CJM.
+
+Ниже без переписывания сохранён исторический отчёт предыдущего цикла.
+
+---
+
 # Независимое QE восстановления известной тестовой оплаты
 
 Дата: 06.11.2026. **Второй цикл: NO-GO, D. Открыты KCQE-04…09; допуска к runtime нет. История первого цикла сохранена.** Это отчёт о локальном инструменте проверки; приёмка оплаты, клипов и трёх кабинетов ещё не завершена.
