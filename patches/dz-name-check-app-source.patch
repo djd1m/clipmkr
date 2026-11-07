@@ -1,47 +1,274 @@
 --- a/node_modules/@dzhechkov/harness-cli/dist/cli.js
 +++ b/node_modules/@dzhechkov/harness-cli/dist/cli.js
-@@ -16074,8 +16074,42 @@
+@@ -159,7 +159,7 @@
+   dz qe-rounds (--slug <feature> | --feature-dir <abs>) [--source bridge|native] [--action prepare|evaluate|begin-repair|begin-continuation|begin-post-ci-correction --reviewers <json>] [--owner-approval <json>] [--correction-evidence <path>] [--ceiling <n> (bridge only)] [--project <dir>] [--json]   (native actions use the installed CLI-owned helper and durable fixed-three-cycle history; omitted action is read-only. how many Step-8 review rounds has this feature ALREADY had? Reads what dz qe-bridge already wrote — signoff-<runId>.json and failed-*.json under features/<slug>/.fa-state/qe-bridge — and writes nothing itself, so it can answer for runs already past. A round is a runId, not a file; an attempt with no verdict is counted SEPARATELY and never merged; an unreadable record is NAMED and the count is declared a LOWER BOUND. ONE directory, never a union across checkouts. exit 0 under the ceiling / 1 at-or-over — owner decides, the command does not judge whether the rounds were warranted / 2 NOT ESTABLISHED, which is never "zero rounds")
+   dz restart-advisor --slug <s> [--threshold C|D] [--rounds N] [--json]   (read-only advisory decision over features/<slug>/.fa-state/checkpoints.jsonl and .dz/fa-training/<slug>/qe.jsonl. Defaults: threshold D, rounds 2 — both origins are printed. Equal sources corroborate; conflicts, torn/unreadable evidence, gaps, and unsafe paths are NOT ESTABLISHED. RECOMMENDATION ONLY: autoAction=false; never invokes feature-adr, deletes a stage, or writes advisor state. exit 0 established recommendation/no-recommendation / 2 NOT ESTABLISHED or invalid input / 1 unexpected runtime failure)
+   dz tg-post --draft <file.html> [--manifest <sources.json>] [--channel <@name|id>] [--send --yes] [--night] [--preview] [--json]   (the sender for an APPROVED channel post, per the accepted genai-tweets-channel ADRs: HTML mode only — never MarkdownV2; link preview OFF by default (x.com previews in Telegram are broken); the 00:00-06:00 MSK quiet window refuses without an explicit --night. DEFAULT IS A DRY-RUN: it validates the draft (tag balance, allowed tags, bare &/<, the 4096 visible-character limit with the overshoot counted) and runs the provenance gate over --manifest IN-PROCESS — a draft with no manifest is refused as unchecked, and anything but ALLOWED refuses. A real send needs --send --yes, stating ADR-004's manual-publishing decision out loud each time. The token comes from TELEGRAM_BOT_TOKEN or telegram.tokenFile in .dz/config.json and is never printed. exit 0 sent or clean dry-run / 1 refused or Telegram error / 2 usage)
+-  dz name-check [--command <n>] [--module <basename>] [--export <a,b>] [--project <dir>] [--json]   (is this name free, BEFORE a line of code? Scans workspace SOURCE — never dist, because a stale build answers 'free' confidently. Checks a dz command name against the dispatcher AND the help block, a module basename against every package's src/, and exported identifiers against every declaration in the workspace. exit 0 all free / 1 at least one taken, naming where / 2 nothing asked or the scan did not run — an empty sweep is never a clean bill. Honest limit, printed on the passing path: it reads declarations, so a re-export under a different name stays the build's job)
++  dz name-check [--command <n>] [--module <basename>] [--export <a,b>] [--project <dir>] [--source-root <absolute-existing-dir>] [--json]   (is this name free, BEFORE a line of code? Scans workspace SOURCE — never dist, because a stale build answers 'free' confidently. Clipmkr defaults: apps/packages/scripts/tests JS/TS; one extra root adds static Python module declarations. Unsupported extra sources or incomplete/bounded reads refuse. Checks a dz command name against the dispatcher AND the help block, a module basename against every package's src/, and exported identifiers against every declaration in the workspace. exit 0 all free / 1 at least one taken, naming where / 2 nothing asked or the scan did not run — an empty sweep is never a clean bill. Honest limit, printed on the passing path: it reads declarations, so a re-export under a different name stays the build's job)
+   dz brief-check <file> [--json]   (does a swarm brief declare OUTPUT_DIR, UNITS and ASSEMBLY_UNIT? parsed as DATA, refused by name; verifies the brief DECLARED the contract, not that the agent follows it. exit 0 ok / 1 refused / 2 unreadable)
+   dz provenance-check --manifest <sources.json> [--project <dir>] [--json]   (nothing goes out citing a source that may not leave this machine. Checks PROVENANCE, not words: every claim names its source, and only a KNOWN kind that resolves safely is cleared. Repo paths go through 'git -C <root> check-ignore' over the RESOLVED path — a symlink into an ignored directory is REFUSED (git classifies the string and never dereferences, MEASURED), and the verdict does not change with your working directory. Store records must be named in the git-TRACKED provenance-public.json, so declaring one public is a reviewable commit rather than a field inside an ignored store. An undeclared kind is refused, never inferred from the path's shape. exit 0 allowed / 1 blocked / 3 NOT ESTABLISHED — an empty manifest, an unreadable one, or an oracle that did not run is never a pass. It proves what was CITED: it cannot see a paraphrase with no citation, nor confidential text pasted by hand into an allowed file)
+   dz project-skills [--project <dir>] [--json] [--stages-json]   (polymorphic feature-adr: resolve architecture/project-skills.json — fixed roles product-vision/critic/brand/impl-bar plus an open extra[] — into per-stage guidance. READ-ONLY. --project names the root explicitly, so it works from any cwd; without it the manifest is read from the current repo. No manifest ⇒ a byte-identical generic run)
+@@ -16072,10 +16072,207 @@
+ // outright — `dz retro` was already a command, `decideProvenance` already an export — and both were
+ // answerable in advance. The decisions are pure and live in harness-core/src/name-check.ts; this half
  // scans the workspace SOURCE, never `dist` (ADR-001: a stale build answers "free" confidently).
- function nameCheckScan(repoRoot) {
+-function nameCheckScan(repoRoot) {
++function nameCheckScan(repoRoot, sourceRoot) {
++    const started = process.hrtime.bigint();
      const pkgsRoot = join(repoRoot, 'packages', '@dzhechkov');
 -    if (!existsSync(pkgsRoot))
 -        return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true };
-+    if (!existsSync(pkgsRoot)) {
-+        // Clipmkr compatibility: scan actual application source, not a synthetic harness workspace.
++    if (sourceRoot !== undefined || !existsSync(pkgsRoot)) {
++        // Explicit native scope shares these budgets; the no-flag native collector below is unchanged.
++        let native = false;
 +        const commands = new Set();
 +        const modules = new Map();
 +        const exportsFound = new Map();
-+        let files = 0;
-+        let packages = 0;
-+        const visit = (dir) => {
-+            for (const entry of readdirSync(dir, { withFileTypes: true })) {
-+                if (['node_modules', 'dist', '.next', '.git'].includes(entry.name)) continue;
++        const scan = { status: 'partial', roots: [], supportedLanguages: ['JavaScript', 'TypeScript', 'Python (explicit root only)'], observedLanguages: [], files: 0, bytes: 0, entries: 0, counts: {}, commandManifestBytes: 0, exclusions: [], failureCode: null };
++        let failureCode = 'io-failure';
++        const fail = (code) => { failureCode = code; throw new Error(code); };
++        const elapsed = () => Number(process.hrtime.bigint() - started) / 1e6;
++        const budget = () => { if (elapsed() >= 10000) fail('elapsed-limit'); };
++        const io = (read) => { budget(); const result = read(); budget(); return result; };
++        const checkedPath = (path) => {
++            const stat = io(() => lstatSync(path));
++            if (stat.isSymbolicLink()) fail('symlink');
++            if (io(() => realpathSync(path)) !== path) fail('path-alias');
++            return stat;
++        };
++        const read = (path) => {
++            const before = checkedPath(path);
++            if (!before.isFile()) fail('not-regular-file');
++            if (before.size > 1048576) fail('file-size-limit');
++            if (scan.bytes + before.size > 33554432) fail('total-bytes-limit');
++            const fd = io(() => openSync(path, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW | fsConstants.O_NONBLOCK));
++            try {
++                const opened = io(() => fstatSync(fd));
++                if (!opened.isFile() || opened.dev !== before.dev || opened.ino !== before.ino) fail('path-changed');
++                const buffer = Buffer.alloc(1048577);
++                let size = 0;
++                while (size < buffer.length) {
++                    const got = io(() => readSync(fd, buffer, size, buffer.length - size, null));
++                    if (!got) break;
++                    size += got;
++                }
++                if (size > 1048576) fail('file-size-limit');
++                if (scan.bytes + size > 33554432) fail('total-bytes-limit');
++                const after = io(() => fstatSync(fd));
++                if (after.size !== size || opened.size !== size || opened.mtimeMs !== after.mtimeMs || opened.ctimeMs !== after.ctimeMs) fail('file-changed');
++                const current = checkedPath(path);
++                if (current.dev !== opened.dev || current.ino !== opened.ino || current.size !== after.size || current.mtimeMs !== after.mtimeMs || current.ctimeMs !== after.ctimeMs) fail('path-changed');
++                scan.bytes += size;
++                return buffer.subarray(0, size);
++            } finally { closeSync(fd); budget(); }
++        };
++        // Fixed stdlib-only AST program. Investigated bytes are stdin data, never imported or run.
++        const python = `import ast, json, sys
++try:
++    tree = ast.parse(sys.stdin.buffer.read())
++    names = []
++    pending = list(tree.body)
++    while pending:
++        node = pending.pop()
++        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
++            names.append(node.name)
++        else:
++            pending.extend(ast.iter_child_nodes(node))
++    print(json.dumps(names))
++except BaseException:
++    sys.exit(2)
++`;
++        const visit = (dir, root, depth = 0) => {
++            if (depth > 32) fail('depth-limit');
++            if (!checkedPath(dir).isDirectory()) fail('not-directory');
++            const entries = io(() => readdirSync(dir, { withFileTypes: true }));
++            checkedPath(dir);
++            scan.entries += entries.length;
++            if (scan.entries > 20000) fail('entries-limit');
++            for (const entry of entries) {
++                budget();
 +                const full = join(dir, entry.name);
-+                if (entry.isDirectory()) visit(full);
-+                else if (entry.isFile() && /\.(?:[cm]?js|tsx?)$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
-+                    const rel = full.slice(repoRoot.length + 1);
-+                    const base = entry.name.replace(/\.[^.]+$/, '');
-+                    if (!modules.has(base)) modules.set(base, rel);
-+                    for (const name of exportedNamesIn(readFileSync(full, 'utf8'))) {
-+                        if (!exportsFound.has(name)) exportsFound.set(name, rel);
++                const stat = checkedPath(full);
++                if (root.kind === 'native') {
++                    // Native policy: package directories, then direct src/*.ts only (not .d.ts).
++                    if (depth === 0 && stat.isDirectory()) {
++                        const src = join(full, 'src');
++                        let srcExists = false;
++                        try { io(() => lstatSync(src)); srcExists = true; }
++                        catch (error) { if (error.code !== 'ENOENT') throw error; }
++                        if (srcExists) { root.packages++; visit(src, root, depth + 2); }
++                        else scan.exclusions.push({ path: full, reason: 'native-no-src' });
++                        continue;
 +                    }
-+                    files++;
++                    if (depth === 0 || !stat.isFile() || !entry.name.endsWith('.ts') || entry.name.endsWith('.d.ts')) {
++                        scan.exclusions.push({ path: full, reason: 'native-selection' }); continue;
++                    }
++                } else {
++                    if (stat.isDirectory() && ['node_modules', 'dist', '.next', '.git'].includes(entry.name)) {
++                        scan.exclusions.push({ path: full, reason: 'build-or-dependency' }); continue;
++                    }
++                    if (stat.isDirectory()) { visit(full, root, depth + 1); continue; }
++                    if (!stat.isFile()) fail('not-regular-file');
++                }
++                const js = /\.(?:[cm]?js|tsx?)$/.test(entry.name) && !entry.name.endsWith('.d.ts');
++                const py = root.kind === 'extra' && entry.name.endsWith('.py');
++                if (!js && !py) {
++                    const metadata = /\.(?:md|txt|json|ya?ml|toml|ini|cfg|csv|lock|png|jpe?g|gif|svg|webp|mp[34]|wav|pdf)$/.test(entry.name) || ['LICENSE', 'NOTICE', '.gitignore', '.gitkeep'].includes(entry.name);
++                    if (root.kind === 'extra' && !metadata && !entry.name.endsWith('.d.ts')) fail('unsupported-source');
++                    scan.exclusions.push({ path: full, reason: entry.name.endsWith('.d.ts') ? 'declaration-file' : metadata ? 'metadata-or-media' : 'language-policy' });
++                    continue;
++                }
++                if (scan.files >= 4096) fail('sources-limit');
++                const bytesBefore = scan.bytes;
++                const data = read(full);
++                let names;
++                if (py) {
++                    budget();
++                    const parsed = spawnSync('python3', ['-I', '-S', '-c', python], { input: data, encoding: 'utf8', timeout: Math.max(1, Math.floor(Math.min(2000, 10000 - elapsed()))), maxBuffer: 1048576, killSignal: 'SIGKILL' });
++                    budget();
++                    if (parsed.error?.code === 'ETIMEDOUT') fail('parser-timeout');
++                    if (parsed.error?.code === 'ENOBUFS') fail('parser-output-limit');
++                    if (parsed.error || parsed.status !== 0) fail('python-parse-failure');
++                    try { names = JSON.parse(parsed.stdout); } catch { fail('parser-protocol'); }
++                    if (!Array.isArray(names) || names.some((name) => typeof name !== 'string')) fail('parser-protocol');
++                } else {
++                    let text;
++                    try { text = new TextDecoder('utf-8', { fatal: true }).decode(data); } catch { fail('encoding-failure'); }
++                    names = exportedNamesIn(text);
++                    if (root.kind === 'native' && entry.name === 'cli.ts') {
++                        // ONE enumeration, every consumer derives (ADR-001, feature command-count-triad). This
++                        // scan's question is "is the name TAKEN?", so taken = dispatched ∪ documented, which is
++                        // legitimately LARGER than the canonical command count — but it must be the SAME parse
++                        // the layer-1 parity test uses, not a second private regex that agrees by coincidence.
++                        // The any-indent `dispatchedCommandsIn` fallback stays for a cli.ts WITHOUT a main
++                        // `switch (command)` (none in this workspace today): a partial sweep would answer "free"
++                        // about a taken name, and that is the one answer this command may never give.
++                        let mainSwitchParsed = false;
++                        try {
++                            for (const c of dispatchedCommands(text))
++                                commands.add(c);
++                            for (const c of documentedCommands(text))
++                                commands.add(c);
++                            mainSwitchParsed = true;
++                        }
++                        catch { /* no main switch here — fall back to the broad regexes below */ }
++                        if (!mainSwitchParsed) {
++                            for (const c of dispatchedCommandsIn(text))
++                                commands.add(c);
++                            const help = /^\s{2}dz ([a-z][a-z0-9-]*)/gm;
++                            for (let m = help.exec(text); m !== null; m = help.exec(text))
++                                if (m[1] !== undefined)
++                                    commands.add(m[1]);
++                        }
++                    }
++                }
++                budget();
++                const language = py ? 'Python' : /\.tsx?$/.test(entry.name) ? 'TypeScript' : 'JavaScript';
++                if (!scan.observedLanguages.includes(language)) scan.observedLanguages.push(language);
++                if (!root.observedLanguages.includes(language)) root.observedLanguages.push(language);
++                const counts = scan.counts[language] ??= { files: 0, bytes: 0 };
++                counts.files++; counts.bytes += scan.bytes - bytesBefore;
++                root.files++; root.bytes += scan.bytes - bytesBefore; scan.files++;
++                const rel = root.kind === 'native' ? relative(pkgsRoot, full) : root.kind === 'extra' ? full : relative(repoRoot, full);
++                const base = entry.name.replace(/\.[^.]+$/, '');
++                if (!modules.has(base)) modules.set(base, rel);
++                for (const name of names) {
++                    const known = exportsFound.get(name);
++                    if (known === undefined || (root.kind === 'native' && known.endsWith('/index.ts') && entry.name !== 'index.ts')) exportsFound.set(name, rel);
 +                }
 +            }
++            budget();
 +        };
 +        try {
-+            for (const root of ['apps', 'packages', 'scripts']) {
-+                const path = join(repoRoot, root);
-+                if (existsSync(path)) { visit(path); packages++; }
++            try { io(() => lstatSync(pkgsRoot)); native = true; }
++            catch (error) { if (error.code !== 'ENOENT') throw error; }
++            for (const { requested, kind } of [...(native ? [{ requested: pkgsRoot, kind: 'native' }] : ['apps', 'packages', 'scripts', 'tests'].map((name) => ({ requested: join(repoRoot, name), kind: 'default' }))), ...(sourceRoot === undefined ? [] : [{ requested: sourceRoot, kind: 'extra' }])]) {
++                const root = { requested, canonical: null, kind, status: 'partial', packages: 0, files: 0, bytes: 0, observedLanguages: [] };
++                scan.roots.push(root);
++                let stat;
++                try { stat = io(() => lstatSync(requested)); }
++                catch (error) {
++                    if (error.code === 'ENOENT' && root.kind === 'default') { root.status = 'absent'; continue; }
++                    throw error;
++                }
++                if (stat.isSymbolicLink()) fail('symlink');
++                root.canonical = io(() => realpathSync(requested));
++                if (root.canonical !== resolve(requested)) fail('path-alias');
++                visit(root.canonical, root);
++                root.status = 'complete';
 +            }
-+            const pkg = join(repoRoot, 'package.json');
-+            if (existsSync(pkg)) for (const name of Object.keys(JSON.parse(readFileSync(pkg, 'utf8')).scripts ?? {})) commands.add(name);
++            if (!native) {
++                const pkg = join(repoRoot, 'package.json');
++                let stat;
++                try { stat = io(() => lstatSync(pkg)); } catch (error) { if (error.code !== 'ENOENT') throw error; }
++                if (stat) {
++                    const before = scan.bytes;
++                    for (const name of Object.keys(JSON.parse(read(pkg).toString('utf8')).scripts ?? {})) commands.add(name);
++                    scan.commandManifestBytes = scan.bytes - before;
++                }
++            }
++            if (!scan.files) fail('empty-scan');
++            budget();
++            scan.status = 'complete';
++            return { commands, modules, exports: exportsFound, scan, scanned: { packages: scan.roots.reduce((count, root) => count + (root.kind === 'native' ? root.packages : root.status === 'complete' ? 1 : 0), 0), files: scan.files, exports: exportsFound.size, commands: commands.size } };
 +        } catch {
-+            return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true };
++            scan.failureCode = failureCode;
++            return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true, scan };
 +        }
-+        if (!files) return { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true };
-+        return { commands, modules, exports: exportsFound, scanned: { packages, files, exports: exportsFound.size, commands: commands.size } };
 +    }
      const commands = new Set();
      const modules = new Map();
      const exportsFound = new Map();
+@@ -16216,7 +16413,7 @@
+         write(`  ${v.rule}: ${visibleText(v.detail)}`);
+     return 1;
+ }
+-function cmdNameCheck(options, flags, cwd, write) {
++function cmdNameCheck(options, optionLists, flags, cwd, write) {
+     const repoRoot = resolve(options.get('project') ?? cwd);
+     const json = flags.has('json');
+     const queries = [];
+@@ -16227,13 +16424,18 @@
+     push('command', options.get('command'));
+     push('module', options.get('module'));
+     push('export', options.get('export'));
+-    const facts = nameCheckScan(repoRoot);
++    const valued = ['command', 'module', 'export', 'project', 'source-root'];
++    const invalid = [...options.keys()].some((key) => !valued.includes(key)) || [...flags].some((key) => key !== 'json') || valued.some((key) => (optionLists.get(key)?.length ?? 0) > 1 || (options.has(key) && !options.get(key).trim())) || (options.has('source-root') && !isAbsolute(options.get('source-root')));
++    const facts = invalid
++        ? { commands: new Set(), modules: new Map(), exports: new Map(), scanFailed: true, scan: { status: 'partial', roots: [], failureCode: 'invalid-arguments' } }
++        : nameCheckScan(repoRoot, options.get('source-root'));
+     const decision = decideNameCheck(queries, facts);
+     if (json)
+-        write(JSON.stringify(decision));
+-    else
+-        for (const line of renderNameCheck(decision, facts.scanned, facts))
+-            write(line);
++        write(JSON.stringify({ ...decision, ...(facts.scan ? { scan: facts.scan } : {}) }));
++    else {
++        for (const line of renderNameCheck(decision, facts.scanned, facts)) write(line);
++        if (facts.scan) write('  Source scope: ' + visibleText(JSON.stringify(facts.scan)));
++    }
+     return decision.exit;
+ }
+ // ── recap publish-times cache (feature recap-publish-cache) ──────────────────
+@@ -24736,7 +24938,7 @@
+             case 'tg-post':
+                 return cmdTgPost(options, flags, cwd, write);
+             case 'name-check':
+-                return cmdNameCheck(options, flags, cwd, write);
++                return cmdNameCheck(options, optionLists, flags, cwd, write);
+             case 'brief-check':
+                 return cmdBriefCheck(options, flags, cwd, write);
+             case 'provenance-check':
+--- a/node_modules/@dzhechkov/harness-cli/dist/known-flags.js
++++ b/node_modules/@dzhechkov/harness-cli/dist/known-flags.js
+@@ -315,6 +315,7 @@
+     'slice',
+     'slug',
+     'source',
++    'source-root',
+     'split',
+     'stage',
+     'stage-timeout',
