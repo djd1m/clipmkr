@@ -1,3 +1,27 @@
+# Текущий итог: четвёртый независимый QE завершён — NO-GO
+
+**07.11.2026.** Владелец разрешил ровно один дополнительный четвёртый цикл для указанной ниже ревизии и предшественника. Поддерживаемый закреплённый `dz` принял разрешение (admission sequence 10); исходный независимый `gpt-6-astra xhigh` завершил проверку кода автора `gpt-6.1-sol high`. Процесс проверяющего завершился exit 0; это завершение проверки, а не принятие реализации. Serving identity — NOT_ATTESTED.
+
+Фактический итог `dz qe-rounds --source native --action evaluate`: **exit 1, unresolved KCQE-05/11/13, rounds 4**, sequence 11, eventDigest `7688ae5b13634bff32a84937be3fcb3a575367dd45b62c29e9096da9325571c1`. TargetRevision: `bb2f22e839b2a4b0e692e2e8624d6cb585bc040845fbf7468bd72ac19873640c`. Все 12 исходных условий сохранены буквально; десять подтверждены, два остаются открытыми, добавлен HIGH KCQE-13. Подробный собственный отчёт проверяющего SHA-256: `aee0c1f33a59e6d0195e9f909afdf551752b7681d139498437afad1d441ce0e8`.
+
+| Остаток | Независимое наблюдение | Необходимое исправление |
+|---|---|---|
+| KCQE-11, HIGH | Удаление всего предыдущего action при сохранённом независимом generation/head позволяет сверку и запись нового подтверждения. | Проверять независимый head и при пустой цепочке; различать начальный нулевой anchor и потерю уже известной generation. |
+| KCQE-13, HIGH | Первый ordinary checkout после административного завершения допускает старый operator key. Предварительная проверка выполняется раньше архивации исходной attempt. | До первого эффекта запрещать оба исходных ключа — operator и browser; сохранить положительный сценарий с новым ключом. |
+| KCQE-05, HIGH | Полный зелёный набор пропускает эти контрпримеры; часть старых restart-проб использует пустой/неподходящий вход. | Добавить различающие проверки обоих дефектов и исправить входы restart-проб так, чтобы они были допустимы без внедрённого сбоя; сохранить существующие положительные controls. |
+
+Независимый полный operational-прогон: **17/17, без ошибок и пропусков, exit 0**, 293,16 с Vitest. Lint, focused TypeScript, Python compile и Node syntax — exit 0. Настоящие локальные Chrome/FD/flock/fsync/fork/SIGKILL; внешние provider/PG/AuthSession — **SIMULATED**. Две ошибки собственных assertions проверяющего сохранены в логах; уточнялись только его пробы. После настоящего завершения процесса ведущий повторно сверил все 34 frozen файла, буквальный author object и все исходные условия — без изменений. Основной код во время QE не редактировался.
+
+Code/spec anti-drift: текущие requirements, ADR, архитектура, план и OpenSpec сохранили зафиксированные байты; leading-author assessment и 12 исходных условий сохранены. KCQE-11/13 — нарушения уже существующих требований, без расширения продуктового scope. Устаревшие inline-ссылки на hashes в 02/05 остаются известным замечанием к метаданным; authoritative hashes current01 и фактическая freeze проверены.
+
+**Допуск к runtime закрыт.** Реальная TEST-оплата, оплаченный клип и три роли ещё не приняты. Приложение, реальные аккаунты, платежи, базы, Cloud.ru и DNS в этом цикле не изменялись. Этап успешного QE, доставка и OpenSpec archive не объявляются выполненными.
+
+Одноразовое разрешение использовано. Обычный пятый цикл текущий протокол не допускает; отдельный post-CI маршрут требует успешно CLOSED четвёртого и здесь неприменим. `prepare`, новый slug/nonce, удаление истории или смена reviewer не являются обходом. Исправления выше описаны для последующего решения о продолжении; этим отчётом они не объявляются реализованными или проверенными.
+
+Ниже сохранены исходный запрос разрешения и история проверок. Их прежние статусы относятся к моменту записи, а текущий итог указан выше.
+
+---
+
 # Исправленный кандидат: запрос одного дополнительного независимого QE
 
 **Статус: ожидается согласование владельца. Исправления авторски проверены; независимая приёмка новой ревизии ещё не выполнена.** Этот раздел — запрос, а не подтверждение согласия или пройденный этап.
@@ -232,3 +256,18 @@ Originating quality/risk завершили design review текущей revisio
 
 
 Root выполнил поддержанные requirements/ADR/ideation/architecture/plan checkpoints: каждый exit0/ok=true. После них заново выполнены Step7 targets admission0 и complete literal context0 без обрезки; exact блок96 741bytes включён один раз в actual prompt. Запущен прежний author session `gpt-6.1-sol high` на локальное исправление04…09 и контракт QT07/08. Это допуск только существующего code/test scope, внешние boundaries SIMULATED; author ещё работает, исправления/финальные tests не приняты. Native QE head sequence7/rounds2 остаётся прежним; QE3 до terminal автора и physical freeze не открывается. Runtime/оплата/Cloud не запускались.
+
+
+## Originating codeQE4 — 7 ноября 2026, NO-GO
+
+Ровно один дополнительный четвёртый цикл по отдельному разрешению владельца для текущего target; прежняя история и условия сохранены. Reviewer qe-primary / owner-exception; requested gpt-6-astra xhigh, author gpt-6.1-sol high; serving NOT_ATTESTED. Native evaluation остаётся действием root; пятый цикл не запускался и не разрешён этим отчётом.
+
+Собственная текущая проверка: VERIFIED KCQE-01/02/03/04/06/07/08/09/10/12; UNRESOLVED KCQE-05/11. Все12 исходных условий сохранены дословно. Новый HIGH KCQE-13: первый ordinary checkout после administrative disposition принимает исходный operator request key; контроль fresh key проходит, исходный browser key правильно отклоняется. Подтверждены actual native create/revoke, callback и canonical persistence на синтетических внешних данных. Реального платежа не выполнялось.
+
+KCQE-11 остаётся открытым: удаление целого предыдущего action при неизменном независимом head generation1 позволяет ACTIVE_RECONCILE записать closure/witness. Исправление прежних invalid-L/schema примеров не закрывает весь контракт цепочки. KCQE-05 остаётся открытым из-за неполной behavioral coverage; часть старых restart-oracles использует недопустимый вход. Четыре собственные valid-restart пробы усиливают только соответствующие четыре границы.
+
+Один независимый полный operational запуск:17/17,0 failed,0 skipped,exit0,293.16с Vitest; все3 fixture children exit0 без timeout. Whole-project lint, focused TypeScript, Python compile, Node syntax checks — exit0. Собственные одиночные guard/fault пробы проверяют реальный forbidden effect и genuine positives. Две ошибки assertions в собственной restart-пробе сохранены в приватных логах и исправлены только в собственной пробе; кандидат не менялся. Это не повтор полного suite до зелёного результата.
+
+Физические streaming checks34 unique files до/после substantive review совпали с freeze. SourceSet `523bad72f6b3b8f16722d4962d4989001bf3afe4512e609b99c0f08414cec416`. Подробный private report и actual command/readback/receipt evidence сохранены reviewer; public файл не содержит финансовых payload, private IDs, credentials или provider URLs. Actual author assessment проверен после кода: scope полон, structural classification верна, но delta implementationVerified=false.
+
+Runtime STOP сохраняется: исторические clock/head/whole-history/actor prerequisites не установлены. Real provider/PG/AuthSession/SSH/payment/app/Cloud/DNS/deploy и protected paid helper не исполнялись. CJM3 оплаты и CJM4 ролей не приняты; offline QE не устанавливает готовность продукта.
