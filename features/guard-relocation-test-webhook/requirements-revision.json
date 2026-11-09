@@ -1,0 +1,12 @@
+{
+  "origin": "features/relocate-clipmkr-to-workspace-vps:qe-primary-01",
+  "ledger": {
+    "openspec/changes/guard-relocation-test-webhook/proposal.md": "1de60f54db9acbe1da609fbac04d50fd53a171df4c23c7bf77e7472a07e15cc5",
+    "openspec/changes/guard-relocation-test-webhook/design.md": "5f3baf19878da8b366ceeefd838c649cbd6dc81c0f92db2bfc24a37f1f0e3398",
+    "openspec/changes/guard-relocation-test-webhook/specs/qa-payment-callback/spec.md": "479c4e6ad8abcb16cf05019cb44fdfcfa22c0cf5f8aa05f78719e71fff3adba5",
+    "openspec/changes/guard-relocation-test-webhook/tasks.md": "530982d7861cbd8b838998257227c36f85183d397f0f9a26a014519db90e017d"
+  },
+  "authority": "feature-adr/06_implementation_plan.md",
+  "code": "NOT RUN",
+  "parentHistory": "unchanged by this planning task"
+}
