@@ -1,0 +1,99 @@
+# Полный candidate для общего edge; private includes обязательны.
+# EXISTING_SITES: четыре исходных чужих sites, без globals и старого IP stub.
+# TLS includes: только tls <scoped cert> <key>; AUTH: строка owner <hash>.
+# Не применять до actual raw-port/container-IP fence и независимого review.
+{
+	default_sni 77.83.87.178
+}
+
+import {$RELOCATION_EXISTING_SITES_FILE}
+
+(relocation-auth) {
+	basic_auth {
+		import {$RELOCATION_QA_AUTH_FILE}
+	}
+}
+
+(relocation-headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Robots-Tag "noindex, nofollow"
+		-Server
+	}
+}
+
+(relocation-proxy) {
+	reverse_proxy {args[0]} {
+		# QA никогда не доверяет relay или клиентским forwarded headers.
+		header_up X-Forwarded-For "{http.request.remote.host}, {http.request.local.host}"
+		header_up -X-Clipmkr-Relay-IP
+		header_up -X-Clipmkr-Relay-Key
+		header_up -X-Real-IP
+		header_up X-Client-IP {http.request.remote.host}
+		transport http {
+			read_timeout 360s
+			write_timeout 60s
+		}
+	}
+}
+
+(relocation-main) {
+	import relocation-headers
+	route {
+		@test-callback {
+			method POST
+			path /api/webhooks/yookassa-test
+		}
+		handle @test-callback {
+			# Отдельное merchant окно и admission обязательны. Любое значение,
+			# кроме буквального true, оставляет ответ503 без обращения к web.
+			@window-open expression `"{$RELOCATION_QA_TEST_WEBHOOK_ENABLED:false}" == "true"`
+			handle @window-open {
+				rewrite * /api/webhooks/yookassa
+				import relocation-proxy 172.29.8.1:5811
+			}
+			handle {
+				respond "TEST webhook window is closed" 503
+			}
+		}
+		handle {
+			import relocation-auth
+			@public-media path /c/* /g/*
+			header @public-media Cache-Control no-store
+			import relocation-proxy 172.29.8.1:5811
+		}
+	}
+}
+
+https://77.83.87.178 {
+	tls {
+		issuer acme https://acme-v02.api.letsencrypt.org/directory {
+			profile shortlived
+		}
+	}
+	import relocation-main
+}
+
+clipmkr.ru {
+	import {$RELOCATION_MAIN_TLS_FILE}
+	import relocation-main
+}
+
+www.clipmkr.ru {
+	import {$RELOCATION_WWW_TLS_FILE}
+	route {
+		import relocation-auth
+		redir https://clipmkr.ru{uri} 308
+	}
+}
+
+support.clipmkr.ru {
+	import {$RELOCATION_SUPPORT_TLS_FILE}
+	import relocation-headers
+	route {
+		import relocation-auth
+		import relocation-proxy 172.29.8.1:5812
+	}
+}

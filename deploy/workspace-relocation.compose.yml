@@ -1,0 +1,138 @@
+# Только QA поверх docker-compose.yml + ops/cloudru/compose.images.yml.
+# Не выполнять общий up/down: existing DB/Redis не пересоздаются. Перед каждым
+# стартом нужны actual DB/Redis admission, network/firewall fence и пустой backlog.
+x-relocation-env: &qa-env
+  DATABASE_URL: postgresql://n5_relocation_qa:${RELOCATION_QA_DB_PASSWORD:?set URL-encoded QA password}@clipmkr-stage-20261028-db-1:5432/n5_relocation_qa_test
+  REDIS_URL: redis://:${REDIS_PASSWORD:?set existing Redis password}@clipmkr-stage-20261028-redis-1:6379/4
+  S3_KEY_PREFIX: tests/local-ux-20261104/relocate-20261109/
+  N5_PUBLIC_ORIGIN: ${N5_PUBLIC_ORIGIN:?set reviewed QA HTTPS origin}
+  N5_LIMIT_USER_RERENDERS: "1"
+  N5_LIMIT_USER_MINUTES: "3"
+  N5_LIMIT_PAID_USER_MINUTES: "3"
+  N5_LIMIT_USER_UPLOADS: "1"
+  N5_LIMIT_USER_UPLOAD_REFUNDS: "1"
+  N5_LIMIT_USER_LLM: "1"
+  N5_LIMIT_GLOBAL_MINUTES: "3"
+  N5_LIMIT_GLOBAL_LLM: "1"
+
+x-relocation-app: &qa-app
+  build: !reset null
+  pull_policy: never
+  restart: "no"
+  cpus: 1
+  logging:
+    driver: json-file
+    options: {max-size: "5m", max-file: "2"}
+
+services:
+  web:
+    <<: *qa-app
+    image: sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6
+    environment:
+      <<: *qa-env
+      N5_TRUSTED_PROXY_HOPS: "1"
+      N5_CHECKOUT_ENABLED: "false"
+      N5_PAYMENTS_MODE: ${RELOCATION_QA_PAYMENTS_MODE-off}
+      N5_TEST_CHECKOUT_ACCOUNT_ID: ${RELOCATION_QA_TEST_ACCOUNT_ID-}
+      YOOKASSA_TEST_MODE: "true"
+      YOOKASSA_SHOP_ID: ${RELOCATION_QA_TEST_SHOP_ID-}
+      YOOKASSA_SECRET_KEY: ${RELOCATION_QA_TEST_SHOP_KEY-}
+      N5_MAIL_MODE: ${RELOCATION_QA_MAIL_MODE-disabled}
+      N5_RESEND_API_KEY: ${RELOCATION_QA_RESEND_API_KEY-}
+      N5_MAIL_FROM: ${RELOCATION_QA_MAIL_FROM-}
+      N5_SMTP_HOST: ""
+      N5_SMTP_PORT: ""
+      N5_SMTP_USER: ""
+      N5_SMTP_PASSWORD: ""
+      N5_SMTP_SECURE: ""
+      N5_MAIL_TEST_CAPTURE_FILE: ""
+      N5_METRIKA_COUNTER_ID: ""
+      # IP QA не должна отправлять браузер на действующий source helpdesk.
+      # Включать лишь в отдельном hostname/resolver QA профиле.
+      N5_SUPPORT_MODE: ${RELOCATION_QA_SUPPORT_MODE-disabled}
+      N5_SUPPORT_BASE_URL: ${RELOCATION_QA_SUPPORT_BASE_URL-}
+      N5_SUPPORT_INBOX_ID: ${RELOCATION_QA_SUPPORT_INBOX_ID-}
+      N5_SUPPORT_IDENTIFIED: "false"
+      N5_SUPPORT_JWT_SECRET: ""
+    ports: !override
+      - "172.29.8.1:5811:3000"
+    mem_limit: 768m
+
+  worker-stt:
+    <<: *qa-app
+    image: sha256:6e66c8717b0f7d31c720d63db14d5841b9ec7d9cd965d9a3f2c3ac0cb1ae8800
+    profiles: [relocation-workers]
+    environment:
+      <<: *qa-env
+    volumes: !override
+      - type: bind
+        source: /var/lib/clipmkr-relocation/qa/stt
+        target: /work
+        bind: {create_host_path: false}
+      - type: bind
+        source: /var/lib/clipmkr-relocation/qa/spend
+        target: /work/spend
+        bind: {create_host_path: false}
+    mem_limit: 512m
+
+  worker-llm:
+    <<: *qa-app
+    image: sha256:6e66c8717b0f7d31c720d63db14d5841b9ec7d9cd965d9a3f2c3ac0cb1ae8800
+    profiles: [relocation-workers]
+    environment:
+      <<: *qa-env
+    volumes: !override
+      - type: bind
+        source: /var/lib/clipmkr-relocation/qa/llm
+        target: /work
+        bind: {create_host_path: false}
+      - type: bind
+        source: /var/lib/clipmkr-relocation/qa/spend
+        target: /work/spend
+        bind: {create_host_path: false}
+    mem_limit: 384m
+
+  worker-video:
+    <<: *qa-app
+    image: sha256:6e66c8717b0f7d31c720d63db14d5841b9ec7d9cd965d9a3f2c3ac0cb1ae8800
+    profiles: [relocation-workers]
+    environment:
+      <<: *qa-env
+    volumes: !override
+      - type: bind
+        source: /var/lib/clipmkr-relocation/qa/video
+        target: /work
+        bind: {create_host_path: false}
+    mem_limit: 1200m
+
+  relocation-helpdesk:
+    image: libredesk/libredesk:v2.9.0@sha256:e7aa3bac149323d21e8e130adc8d9dd83b2c4fc85f83bb3b08b544ffa3c7d201
+    platform: linux/amd64
+    pull_policy: never
+    profiles: [relocation-support]
+    restart: "no"
+    command: ["./libredesk", "--config", "/libredesk/config.toml"]
+    cpus: 1
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+    ports: ["172.29.8.1:5812:9000"]
+    networks: [relocation-support-qa]
+    volumes:
+      - type: bind
+        source: ${RELOCATION_HELPDESK_QA_CONFIG:?set absolute private QA TOML path}
+        target: /libredesk/config.toml
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: /var/lib/clipmkr-relocation/qa/helpdesk-uploads
+        target: /libredesk/uploads
+        bind: {create_host_path: false}
+
+networks:
+  # Existing PG/Redis подключаются оператором с aliases relocation-db/relocation-redis.
+  # TOML: n5_helpdesk_qa_test / n5_helpdesk_qa, Redis DB5; проверить до старта.
+  relocation-support-qa:
+    name: clipmkr-relocation-support-qa
+    internal: true
