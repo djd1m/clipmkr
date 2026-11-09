@@ -24,9 +24,9 @@
 Read-only состав хранилищ, текущая маршрутизация, source image IDs, предварительные очереди/multipart и scoped TLS материал установлены в02/operations. Ещё не доказаны финальный cross-store snapshot, Redis roundtrip, ACL/sequence mapping, live ingress/egress fences, peak scratch, merchant окно, доступ кDNS, полная UI приёмка и R1/R2. Native QCSD initial вернул условия к дизайну; успешное закрытие gates не утверждается.
 
 ## OpenSpec
-Дельта: openspec/changes/relocate-clipmkr-to-workspace-vps/specs/server-relocation/spec.md; точный SHA будет записан после стабилизации текста.
+Дельта: openspec/changes/relocate-clipmkr-to-workspace-vps/specs/server-relocation/spec.md; точный SHA приведён ниже и обновлён вместе с текущим уточнением.
 
-Точная SHA-256 дельты на09.11.2026: `8a585a3df2f5631f34c3e1c942f131ccee6e3ce7cc8660013be02ebc45084289`.
+Точная SHA-256 дельты на09.11.2026: `c4fbc7c2ee658aca1115d73d7f24c902075ce5f6e0fbad6304cb165b8e3db76c`.
 
 ## Уточнение критериев сохранности после QCSD — qtest-03
 FR-1/FR-2 сравнивают повторный классифицированный private baseline с frozen manifest, а затем восстановленное состояние с тем же frozen manifest. Каждый manifest содержит время, dataset, защищённый ID/hash logical key, статус БД, HEAD/размер/ETag, проверенный checksum при наличии, multipart UploadId/parts и категорию результата. Поздний live source не заменяет frozen эталон.
@@ -52,3 +52,7 @@ FR-1/FR-2 сравнивают повторный классифицирован
 До отдельного DNS GO оператор показывает владельцу матрицу с PASS/FAIL/NOT RUN и причинами. Полная приёмка не объявляется при незакрытых обязательных сценариях. Изменить порядок/принять явное ограничение может владелец; такое решение записывается отдельно и не переписывает результат теста. После activation до открытия общего ingress требуется отдельный краткий контроль импортированных аккаунтов/support; его fail удерживает обслуживание, без автоматического R1.
 
 Чтобы не создать конфликт email в реферальной цепочке, QA проходит две последовательные ревизии: сначала отдельно проверяется вход по скопированному owner hash/ID без jobs/payment intents; evidence сохраняется, этот QA dataset останавливается и пересоздаётся только в его собственной DB/Redis namespace. Затем fresh schema используется для synthetic blogger/owner-operator и регистрации разрешённого owner email как привлечённого клиента через UI. Его новый QA ID сверяется с email и только он допускается TEST checkout. Source/local/import БД при этом не меняются; production ID не подменяется. Один живой upload и TEST бюджет относятся ко второй ревизии, обе ревизии явно указаны в evidence.
+
+## Уточнение FR-3/FR-4: QA callback guard, originating qe-primary-01
+
+Позднее verified source TEST payment/refund без точной локальной QA пары intent/provider ID MUST получить503 до payment_event/payment/grant writes; каждый повтор остаётся retryable. Local QA intent обрабатывается штатной идемпотентностью, включая drain после отзыва checkout allowance. Source/canonical production handler и финансовые consumers не меняются. Для этого разрешён узкий QA-only adapter/route зависимости `features/guard-relocation-test-webhook`, прямой target TEST путь без rewrite в canonical handler и отдельный immutable QA web image из source base `11a90aec9d26be56849ac06c9f12a98001739a28` + только4 child code targets. Это реализация уже принятого503 требования, а не новое разрешение source/merchant/DNS/charge. Полная изоляция/TEST creator fence и ручная смена merchant callback сохраняются. Child component tests не доказывают real merchant delivery; parent qe-primary-01 остаётся открытым до исходного независимого reviewer. Новый parent QE cycle не открывается до settled совокупного7-file patch и image/config admission.

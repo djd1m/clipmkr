@@ -27,3 +27,15 @@
 #### Scenario: На новом сервере появились записи
 - **WHEN** требуется вернуть старый сервер после новых регистраций, заданий или webhook
 - **THEN** writers останавливаются и переносится актуальное состояние либо сохраняется единственная актуальная БД; возврат старого snapshot запрещён
+
+### Requirement: Изолированный QA TEST callback
+
+QA MUST отклонять чужое проверенное TEST payment/refund событие503 до финансовых записей и сохранять завершение собственных intent после закрытия новых checkout. Для этого допускается только отдельный QA web image из исходной source base с проверенным guard patch; production handler, source и workers не меняются.
+
+#### Scenario: Позднее source событие пришло в QA
+- **WHEN** verified notification не имеет точной локальной пары intent/provider payment ID
+- **THEN** прямой QA TEST route отвечает503 при каждом повторе, без payment event/payment/grant writes; callback остаётся закрытым до parent independent closure и merchant допуска
+
+#### Scenario: QA checkout разрешение отозвано
+- **WHEN** приходит событие уже привязанной локальной QA оплаты при сохранённом TEST provider
+- **THEN** штатная идемпотентная обработка завершается без повторного начисления

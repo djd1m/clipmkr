@@ -35,3 +35,9 @@
 - `operations-routing.md`: SHA-256 `64bab5d97fd548aa31ccf0d887ba4e7e8e46c50d137acaec6e33a7f67168c918`.
 
 Scoped TLS main/www/support сохранены только в закрытом tls-source-backup/ с проверкой hostname и пары crt/key; в Caddy не загружались. Скопирован только нужный TLS, не ACME-account/общий том. Libredesk по исходному digest уже загружен в локальное хранилище Docker; контейнер не запускался.
+
+## Read-only уточнение: причина QA payment blocker
+
+Actual canonical `apps/web/src/server/billing-handler.ts` после consumer возвращает200 для unknown_intent; `packages/db/src/payments.ts` до такого outcome уже вызывает claimEvent и сохраняет unknown payment. Поэтому status rewrite после consumer не решает требование503/no-write: следующий retry становитсяduplicate200. Originating condition `qe-primary-01` сохранено в native parent receipt. Reuse выбран child `guard-relocation-test-webhook`: wrappers applyPayment/recordRefund после штатной provider verification проверяют локальную intent/provider ID пару до consumers; canonical файлы не изменяются. Тонкий новый Next route существует отдельно. Для route inventory реально требуется четвёртый child target `tests/payments-guards.test.ts`.
+
+Исходный web image `sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6` связан с source commit `11a90aec9d26be56849ac06c9f12a98001739a28`. Новый QA build ещё не является проверенным runtime и не подменяет source release. Private исходный разбор: `payment-blocker-architecture.private.md`, SHA256 `eac90ebcea66acec0ba8078a94ce93ce975c25f702e735bf79b246d2325b0946`. Child результаты/ограничения читаются из его07/08 и native receipts; исторический parent QE report здесь не переписывается.

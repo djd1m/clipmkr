@@ -23,3 +23,7 @@ Task kind: tooling
 Recall закреплённым dz выполнен: три лексических совпадения о коммуникации/UI/review; непосредственно относящихся к переносу результатов в этой выдаче нет. Они не объявляются требованиями/проверками миграции.
 
 Разрешение владельца: подготовить перенос всех пользователей и данных сюда; DNS согласовать отдельно после проверок. Это не разрешение включить реальные списания или изменять Cloud.ru. Фактических успешных checkpoints пока нет.
+
+## Уточнение scope: QA callback guard
+
+Cumulative code targets7:3 исходных configuration/test +4 файлов зависимости `guard-relocation-test-webhook`. Тир L и обязательные этапы сохраняются. Узкое исключение ADR-002 разрешает отдельный QA-only web build из source base11a90 с проверенным4-file patch; production/source/worker images и schema не меняются. Parent original qe-primary-01 и2/3 witnessed QE cycles сохраняются; отдельная зависимость не является новым началом parent.
