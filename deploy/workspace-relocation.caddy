@@ -55,7 +55,6 @@ import {$RELOCATION_EXISTING_SITES_FILE}
 			# кроме буквального true, оставляет ответ503 без обращения к web.
 			@window-open expression `"{$RELOCATION_QA_TEST_WEBHOOK_ENABLED:false}" == "true"`
 			handle @window-open {
-				rewrite * /api/webhooks/yookassa
 				import relocation-proxy 172.29.8.1:5811
 			}
 			handle {

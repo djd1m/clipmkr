@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
@@ -14,7 +14,7 @@ import { clientIp } from '../apps/web/src/server/ip';
 import { environment } from './fixtures/environment';
 
 const prefix = 'tests/local-ux-20261104/relocate-20261109/';
-const webImage = 'sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6';
+const webImage = 'sha256:d1880bc89258fd88c27bdcd3f9393c69bb70ebdf6bf4e54216f92cbd946688f9';
 const workerImage = 'sha256:6e66c8717b0f7d31c720d63db14d5841b9ec7d9cd965d9a3f2c3ac0cb1ae8800';
 const services = ['web', 'worker-stt', 'worker-llm', 'worker-video'] as const;
 const files = ['docker-compose.yml', 'ops/cloudru/compose.images.yml', 'deploy/workspace-relocation.compose.yml'];
@@ -26,6 +26,7 @@ type Compose = { name: string; services: Record<typeof services[number] | 'db' |
   networks: Record<string, { name: string; internal?: boolean }> };
 type Matcher = { host?: string[]; path?: string[]; method?: string[]; expression?: { expr: string } };
 type CaddyNode = { match?: Matcher[]; handler?: string; host?: string[]; path?: string[]; group?: string;
+  rewrite?: unknown;
   routes?: CaddyNode[]; upstreams?: Array<{ dial: string }>; default_sni?: string; trusted_proxies?: string[];
   headers?: { request: { set: Record<string, string[]>; delete: string[] } };
   providers?: { http_basic: { accounts?: Array<{ username: string; password: string }> } }; status_code?: number };
@@ -126,6 +127,9 @@ describe('workspace relocation configuration', () => {
     }
     const unbounded = structuredClone(config); unbounded.services['worker-video'].cpus = 0;
     expect(() => assertAdmission(unbounded)).toThrow();
+    const unguardedImage = structuredClone(config);
+    unguardedImage.services.web.image = 'sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6';
+    expect(() => assertAdmission(unguardedImage)).toThrow();
     const exposed = structuredClone(config); exposed.services['relocation-helpdesk'].networks.default = {};
     expect(() => assertAdmission(exposed)).toThrow();
   });
@@ -170,12 +174,16 @@ describe('workspace relocation configuration', () => {
         const routes = siteObjects.find(x => x.routes?.some(r => r.match?.some(m => m.path?.includes('/api/webhooks/yookassa-test'))))!.routes!;
         expect(routes).toHaveLength(2);
         expect(routes[0]!.match).toEqual([{ method: ['POST'], path: ['/api/webhooks/yookassa-test'] }]);
-        expect(objects(routes[0]).filter(x => x.handler === 'rewrite')).toMatchObject([{ uri: '/api/webhooks/yookassa' }]);
+        // Preserve the exact TEST URI so the QA pre-ledger guard is reached.
+        expect(objects(routes[0]).filter(x => x.handler === 'rewrite')).toEqual([]);
         expect(objects(routes[0]).some(x => x.handler === 'authentication')).toBe(false);
         const callbackRoutes = objects(routes[0]).find(x => x.routes?.some(r => r.match?.some(m => m.expression)))!.routes!;
         expect(callbackRoutes).toHaveLength(2);
         expect(callbackRoutes[0]!.match).toEqual([{ expression: { expr: `"${windowValue}" == "true"`, name: 'window-open' } }]);
-        expect(objects(callbackRoutes[0]).filter(x => x.handler === 'reverse_proxy')).toHaveLength(1);
+        const callbackProxies = objects(callbackRoutes[0]).filter(x => x.handler === 'reverse_proxy');
+        expect(callbackProxies).toHaveLength(1);
+        expect(callbackProxies[0]!.upstreams).toEqual([{ dial: '172.29.8.1:5811' }]);
+        expect(callbackProxies[0]!.rewrite).toBeUndefined();
         expect(callbackRoutes[1]!.match).toBeUndefined();
         expect(objects(callbackRoutes[1]).filter(x => x.handler === 'static_response')).toMatchObject([{ status_code: 503 }]);
         expect(objects(callbackRoutes[1]).filter(x => x.handler === 'reverse_proxy')).toHaveLength(0);
@@ -212,6 +220,11 @@ describe('workspace relocation configuration', () => {
           env: { ...env, RELOCATION_QA_TEST_WEBHOOK_ENABLED: value }, stdio: ['ignore', 'pipe', 'pipe'],
         });
       }
+      // Re-adapt the formerly deployed rewrite; valid Caddy syntax must still
+      // fail admission because it bypasses the QA guard.
+      const oldRewrite = put('old-rewrite.caddy', readFileSync(file, 'utf8').replace(
+        '\t\t\thandle @window-open {\n', '\t\t\thandle @window-open {\n\t\t\t\trewrite * /api/webhooks/yookassa\n'));
+      expect(() => assertIngress(adapt(oldRewrite, { RELOCATION_QA_TEST_WEBHOOK_ENABLED: 'true' }), 'true')).toThrow();
       // Falsifiers operate on adapted JSON, so auth/order/matcher regressions
       // cannot stay green merely because Caddy accepts their syntax.
       const wide = structuredClone(adapted);

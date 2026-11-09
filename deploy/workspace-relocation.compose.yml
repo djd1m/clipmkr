@@ -27,7 +27,7 @@ x-relocation-app: &qa-app
 services:
   web:
     <<: *qa-app
-    image: sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6
+    image: sha256:d1880bc89258fd88c27bdcd3f9393c69bb70ebdf6bf4e54216f92cbd946688f9
     environment:
       <<: *qa-env
       N5_TRUSTED_PROXY_HOPS: "1"
