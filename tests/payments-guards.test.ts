@@ -26,16 +26,17 @@ export function planWriters(roots: readonly string[] = SRC): string[] {
   }).sort();
 }
 
-describe('AC-16: ровно один вебхук, два маршрута оформления, три пути смены плана', () => {
+describe('AC-16: ровно два вебхука, два маршрута оформления, три пути смены плана', () => {
   it('в дереве маршрутов оплаты ровно: вебхук ЮKassa, оформление, опрос, два экрана', () => {
     expect(routes('apps/web/src/app').filter(p => /yookassa|webhooks|payments|checkout|billing|upgrade/i.test(p)).map(p => p.split(path.sep).join('/')).sort()).toEqual([
       'apps/web/src/app/api/checkout/[intentId]/route.ts',
       'apps/web/src/app/api/checkout/route.ts',
+      'apps/web/src/app/api/webhooks/yookassa-test/route.ts',
       'apps/web/src/app/api/webhooks/yookassa/route.ts',
       'apps/web/src/app/upgrade/page.tsx',
       'apps/web/src/app/upgrade/return/page.tsx',
     ]);
-    expect(readdirSync('apps/web/src/app/api/webhooks')).toEqual(['yookassa']);
+    expect(readdirSync('apps/web/src/app/api/webhooks').sort()).toEqual(['yookassa', 'yookassa-test']);
     expect(readFileSync('apps/web/next.config.ts', 'utf8')).not.toMatch(/yookassa|webhooks|checkout|rewrites|redirects/i);
   });
   it('план аккаунта меняют ровно три оператора: оплата (grantPaidPlan), сторож (expirePaidPlans), оператор (setPlanByOperator)', () => {
