@@ -54,3 +54,18 @@ K1/K2, QCSD, код/QE/fleet checkpoints не выполнены. Положит
 - Настоящий Chromium открыл QA landing: HTTP200, форма регистрации/входа присутствует, pageerror отсутствуют. Это пока не приёмка нарезки, оплаты, почты или истории поддержки.
 
 Оставшиеся обязательные проверки: полный browser CJM с реальным S3, поддержка, почта, согласованное TEST-окно с закрытием qe-primary-01, полный R2, актуальный финальный freeze и ручная приёмка. Новые конфигурационные файлы не меняют продуктовую логику; частичный runtime успех не объявляет перенос завершённым. Приватные профили/пароли/скриншоты находятся вне Git.
+
+
+## Browser CJM и исправление support ingress
+
+- В настоящем Chromium созданы synthetic QA account и сессия: регистрация200, автоматический переход `/dashboard`. В QA также сохранены ID/хеши двух согласованных реальных учётных записей (плательщик и владелец); исходные пароли не менялись.
+- Реальный120.000s файл загружен через UI→Cloud.ru S3 (OPTIONS200/PUT200), complete202. STT/select/два render завершены без повторов:2/2 clips DONE; расход2min STT/1LLM. Все три QA worker после результата остановлены exit0.
+- Оба видео воспроизводятся в Chromium: currentTime>0.2, videoWidth1080/videoHeight1920, media.error=null. Через UI выбраны и скачаны оба клипа:6 710 269 и3 934 902 байта; ffprobe подтверждает H.264/AAC,1080×1920,48.52s/25.6s. Первые download probes ошибочно искали вторую одновременно видимую кнопку: фактически нужно сначала выбрать фрагмент. Исправлен private тест, приложение этим не менялось.
+- Support первоначально принимал логин, но API возвращал401. Контролируемая проверка одной cookie: без внешнего Authorization200, с QA BasicAuth401. Это фактический конфигурационный дефект, а не потеря перенесённых обращений.
+- Support-only repair удаляет Authorization перед Libredesk после проверки BasicAuth; main/callback прежние. Native begin-repair после actualdelta принят: revision `4316c1d2e34fb110ade84210df6b4568a7bbc0a1f52fc77f6911a780aee6d9c7`. Автор RED→76/76PASS; независимый pre-apply14/14PASS, guard-removal falsifier,13/13manifest hashes. Это не closure всего QE.
+- После target-only Caddy reload одна cookie через защищённый TLS edge: valid credentials200, absent/wrong401. Browser Libredesk показывает My Inbox3/Unassigned8/All11; Invalid credential отсутствует. Создание нового QA обращения/attachment ещё не принято.
+- Один browser forgot202 для владельца; QA `support_email_token.delivery_state=accepted`, затем отправка снова отключена. Владелец подтвердил получение письма в чате. Исходный пароль не менялся;202 само по себе не объявлено подтверждением доставки.
+- External source-host probes к target public5811/5812 блокируются; после подключения existingDB/Redis к support bridge повторены same-bridge отрицательные проверки. Три исходящих support TCP probes (внешний IP/source/target443) заблокированы. Реальный tailnet-client probe пока NOT RUN.
+- `dz teach` сохранил подтверждённый сетевой урок `teach:2375dbebc4aa6262`; повторный lexical recall его вернул. Старый Node24 дал ABI mismatch better-sqlite3; фактический рабочий запуск использовал закреплённый Node22 и SQLite store.
+
+Anti-drift: product source logic/DB schema не изменены; QA support repair только Caddy+contract test в ранее допущенных путях. Рабочий source, DNS, Cloud.ru и source callbacks не менялись. Платёжное условие qe-primary-01, полная R2 репетиция и финальный cutover остаются открытыми.

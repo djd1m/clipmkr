@@ -24,18 +24,22 @@ import {$RELOCATION_EXISTING_SITES_FILE}
 	}
 }
 
+(relocation-proxy-options) {
+	# QA никогда не доверяет relay или клиентским forwarded headers.
+	header_up X-Forwarded-For "{http.request.remote.host}, {http.request.local.host}"
+	header_up -X-Clipmkr-Relay-IP
+	header_up -X-Clipmkr-Relay-Key
+	header_up -X-Real-IP
+	header_up X-Client-IP {http.request.remote.host}
+	transport http {
+		read_timeout 360s
+		write_timeout 60s
+	}
+}
+
 (relocation-proxy) {
 	reverse_proxy {args[0]} {
-		# QA никогда не доверяет relay или клиентским forwarded headers.
-		header_up X-Forwarded-For "{http.request.remote.host}, {http.request.local.host}"
-		header_up -X-Clipmkr-Relay-IP
-		header_up -X-Clipmkr-Relay-Key
-		header_up -X-Real-IP
-		header_up X-Client-IP {http.request.remote.host}
-		transport http {
-			read_timeout 360s
-			write_timeout 60s
-		}
+		import relocation-proxy-options
 	}
 }
 
@@ -94,6 +98,10 @@ support.clipmkr.ru {
 	import relocation-headers
 	route {
 		import relocation-auth
-		import relocation-proxy 172.29.8.1:5812
+		reverse_proxy 172.29.8.1:5812 {
+			import relocation-proxy-options
+			# Edge BasicAuth уже проверен; Libredesk использует собственную cookie.
+			header_up -Authorization
+		}
 	}
 }

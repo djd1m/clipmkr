@@ -194,6 +194,9 @@ describe('workspace relocation configuration', () => {
         expect(proxy.trusted_proxies).toBeUndefined();
         expect(proxy.headers!.request.set['X-Forwarded-For']).toEqual(['{http.request.remote.host}, {http.request.local.host}']);
         expect(proxy.headers!.request.delete).toEqual(expect.arrayContaining(['X-Clipmkr-Relay-IP', 'X-Clipmkr-Relay-Key', 'X-Real-IP']));
+        // Edge BasicAuth must not override Libredesk's cookie authentication.
+        // Only support strips Authorization; the main/callback contract stays intact.
+        expect(proxy.headers!.request.delete.includes('Authorization')).toBe(proxy.upstreams!.some(u => u.dial === '172.29.8.1:5812'));
       }
       for (const host of ['77.83.87.178', 'clipmkr.ru', 'www.clipmkr.ru', 'support.clipmkr.ru']) {
         const guard = objects(site(host)).find(x => x.handler === 'authentication')!;
@@ -219,6 +222,10 @@ describe('workspace relocation configuration', () => {
       const support = objects(publicSupport).find(x => x.match?.some(m => m.host?.includes('support.clipmkr.ru')))!;
       objects(support).find(x => x.handler === 'authentication')!.handler = 'encode';
       expect(() => assertIngress(publicSupport)).toThrow();
+      const forwardedAuth = structuredClone(adapted);
+      const supportProxy = objects(forwardedAuth).find(x => x.handler === 'reverse_proxy' && x.upstreams?.some(u => u.dial === '172.29.8.1:5812'))!;
+      supportProxy.headers!.request.delete = supportProxy.headers!.request.delete.filter(name => name !== 'Authorization');
+      expect(() => assertIngress(forwardedAuth)).toThrow();
       const spoofed = structuredClone(adapted);
       const proxy = objects(spoofed).find(x => x.handler === 'reverse_proxy' && x.upstreams?.some(u => u.dial === '172.29.8.1:5811'))!;
       proxy.headers!.request.set['X-Forwarded-For'] = ['{http.request.header.X-Forwarded-For}'];
