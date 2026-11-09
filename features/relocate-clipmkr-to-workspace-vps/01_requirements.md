@@ -1,6 +1,6 @@
 # Требования к переносу clipmkr.ru
 
-Статус: черновик по поручению владельца09.11.2026; runtime-применение и DNS не выполнены.
+Статус: требования по поручению владельца09.11.2026; после предъявления плана владелец ответил «действуй». Это разрешение на подготовку переноса, не отдельная команда переключения DNS и не подтверждение gates. Runtime-применение и DNS не выполнены.
 
 ## Участники
 Владелец принимает результат и переключение; пользователи и блогеры сохраняют доступ, клипы, баланс и рефералов. Оператор выполняет перенос и документирует восстановление.
@@ -21,9 +21,34 @@
 Сохранить текущие образы по digest и схему; не смешивать перенос с продуктовым исправлением или обновлением зависимостей. Cloud.ru и c.clipmkr.ru не менять. Существующие финансовые аномалии сохранить, не исправлять ради зелёной проверки. Индивидуальный TEST-доступ не расширять. Автоматическое слияние аккаунтов по email запрещено.
 
 ## Неустановленные факты
-Свежий состав данных обоих серверов, источник runtime-образов, актуальные очереди/активные multipart, финальная сверка/Redis backup, объём scratch, доступ к DNS, TLS до cutover и маршрутизация webhook/support ещё проверяются. Полный E2E и независимые gates NOT RUN.
+Read-only состав хранилищ, текущая маршрутизация, source image IDs, предварительные очереди/multipart и scoped TLS материал установлены в02/operations. Ещё не доказаны финальный cross-store snapshot, Redis roundtrip, ACL/sequence mapping, live ingress/egress fences, peak scratch, merchant окно, доступ кDNS, полная UI приёмка и R1/R2. Native QCSD initial вернул условия к дизайну; успешное закрытие gates не утверждается.
 
 ## OpenSpec
 Дельта: openspec/changes/relocate-clipmkr-to-workspace-vps/specs/server-relocation/spec.md; точный SHA будет записан после стабилизации текста.
 
 Точная SHA-256 дельты на09.11.2026: `8a585a3df2f5631f34c3e1c942f131ccee6e3ce7cc8660013be02ebc45084289`.
+
+## Уточнение критериев сохранности после QCSD — qtest-03
+FR-1/FR-2 сравнивают повторный классифицированный private baseline с frozen manifest, а затем восстановленное состояние с тем же frozen manifest. Каждый manifest содержит время, dataset, защищённый ID/hash logical key, статус БД, HEAD/размер/ETag, проверенный checksum при наличии, multipart UploadId/parts и категорию результата. Поздний live source не заменяет frozen эталон.
+
+Категории: существующие объекты done/failed source; существующие clip/thumbnail; done clips с исходно NULL keys (baseline65); failed clips без ключей (5); uploading с совпавшим multipart (5); uploading без совпадения (13); неизвестный по владельцу multipart (1); непроверенные исторические объекты/версии вне whitelist. Эти числа относятся к срезу09.11, повторяются перед окном и не выдаются за вечные константы. HEAD404 uploading с multipart не является потерей частей. Новое404 ранее существовавшего объекта, потеря key/part/UploadId, неожиданное изменение size/hash или неклассифицированное расхождение блокирует соответствующий переход до исследования/решения владельца. Известные исходные пропуски сохраняются как ограничения, не перекрашиваются в PASS и не исправляются переносом.
+
+Для чтения: HEAD всех whitelist refs; Range GET минимум по одному существующему done и failed source, всем доступным main clip/thumbnail (на baseline по1); полный GET/checksum, browser play и download текущего доступного main clip и свежего QA clip. Source медиасэмплы выбираются по категории/владению, фиксируются private; полный original media playback до startup выполняется через read-only S3 URL в закрытом браузере, не через production clone. Это выборка, не checksum всего бакета. Unknown-owner multipart только наблюдается; чужие/исторические объекты не удаляются.
+
+## Матрица приёмки FR-4 / core-CJM после QCSD — qtest-04
+Все новые runtime сценарии ниже NOT RUN, пока нет собственного evidence. Unit/integration pass, принятие ограничения владельцем и реально пройденный UI сценарий — разные результаты.
+
+| Сценарий | Контекст и действие | Свидетельство | Момент и STOP |
+|---|---|---|---|
+| Вход, пароль, сессия, 3 роли | До переключения: owner hash/ID в QA, synthetic regular/blogger/owner; сравнить все account/session rows, роли и limits импорта | Private manifests, Browser login/role screenshots, отсутствие чужих данных | До DNS: QA проверки; imported runtime login только после единственного writer activation, до открытия обычного ingress |
+| Старые аккаунты после activation | Owner и доступные владельцу контрольные старые аккаунты каждой роли входят с прежними credentials; старую сессию проверить в том же hostname | TLS/remote target address, cookie/session, role/limits и dashboard | Нет изменения чужих паролей. Недоступные контрольные аккаунты остаются NOT RUN; ошибка известного аккаунта удерживает maintenance/R2 |
+| Upload/resume/render/play/download | Owner QA: один fresh file≤120с, прервать и продолжить multipart, дождаться transcript/clips, play и download | UI trace, QA job/fence, S3 prefix/parts, downloaded bytes/ffprobe | До DNS; реальный provider обязателен, ошибка блокирует готовность |
+| 90/120 минут и индивидуальный лимит | Synthetic regular/blogger/owner: серверные boundary tests; отдельное ресурсное окно для настоящих90/120мин файлов и owner индивидуального лимита; self-escalation запрещена | tests/limits.integration.test.ts и UI evidence отдельного длинного прогона | Короткий QA прогон не закрывает длинные границы. До DNS явно предъявить NOT RUN; исключение требует явного решения владельца и не становится PASS |
+| TEST пакет | Только разрешённый owner email/ID, merchant TEST окно: success/cancel, provider confirmation, repeat без второго grant, повторный login и доступ к оплаченной функции | Provider IDs/status, private row deltas/grant counts, UI | До DNS после отдельного merchant разрешения; настоящий charge запрещён |
+| Блогер → клиент → использование → TEST → статистика | Разные QA browser contexts: блогер получает ссылку; разрешённый owner QA account регистрируется как привлечённый клиент; короткий pipeline и TEST; блогер/владелец видят соответствующий источник | Referral/intent/payment linkage, UI counters до/после reload+duplicate, проверка чужой статистики403 | Для этого используется единственный fresh owner QA account, не создаётся второй TEST-allowed email. Сценарии координировать с upload/payment budget; незавершённая цепь NOT RUN до owner решения |
+| Resend/reset | Только je.chkov.dmitriy@gmail.com, один synthetic reset, фактическое получение/использование одноразового token и отказ повтору | Полученное письмо, UI login, token state без секрета вGit | До DNS; API accepted недостаточно |
+| Support | Защищённая копия: staff login/history, новое QA обращение/ответ/вложение, anonymous widget поведение при identified=false | UI + DB/media/files equality,401 постороннему, отсутствие egress | До DNS; после activation повторить на перенесённом support единственном writer |
+
+До отдельного DNS GO оператор показывает владельцу матрицу с PASS/FAIL/NOT RUN и причинами. Полная приёмка не объявляется при незакрытых обязательных сценариях. Изменить порядок/принять явное ограничение может владелец; такое решение записывается отдельно и не переписывает результат теста. После activation до открытия общего ingress требуется отдельный краткий контроль импортированных аккаунтов/support; его fail удерживает обслуживание, без автоматического R1.
+
+Чтобы не создать конфликт email в реферальной цепочке, QA проходит две последовательные ревизии: сначала отдельно проверяется вход по скопированному owner hash/ID без jobs/payment intents; evidence сохраняется, этот QA dataset останавливается и пересоздаётся только в его собственной DB/Redis namespace. Затем fresh schema используется для synthetic blogger/owner-operator и регистрации разрешённого owner email как привлечённого клиента через UI. Его новый QA ID сверяется с email и только он допускается TEST checkout. Source/local/import БД при этом не меняются; production ID не подменяется. Один живой upload и TEST бюджет относятся ко второй ревизии, обе ревизии явно указаны в evidence.

@@ -21,4 +21,17 @@
 ## Ограничения
 Данные Redis/activejobs/multipart, размеры всех образов и support uploads, TLS/DNS-доступ, SMTP/Resend и полный callbackchain ещё не проверены. Docker показывает52образа/50GB и buildcache31,18GB на цели; оценки reclaimable не складывать как гарантированно освобождаемые. Ничего не очищено.
 
-Дополнительный backend n5-referral-paytest-20261028 использует отдельную БД и Redis9, с6аккаунтами/4видео/10клипами/6платежами. Его сохранение нужно для текущего TEST callback; без переноса фактической маршрутизации финансовый путь не считается перенесённым. Финансовые строки не менялись.
+Дополнительный backend n5-referral-paytest-20261028 использует отдельную БД и Redis9, с6аккаунтами/4видео/10клипами/6платежами. Его backup сохранён на случай обнаружения зависимости; свежая проверка Caddy показывает отдельный host n5.clipmkr.ru. Маршрут clipmkr.ru/api/webhooks/yookassa-test ведёт в основной web после rewrite. Поэтому перенос legacy-приложения автоматически не включается в scope clipmkr.ru. Финансовые строки не менялись.
+
+## Проверка содержимого согласованных снимков
+09.11.2026 на источнике экспортированы независимые PostgreSQL REPEATABLE READ READ ONLY snapshots для основной, legacy и support БД. Каждый pg_dump снят с явным --snapshot; в той же удерживаемой транзакции вычислены количество строк и SHA-256 каждой row_to_json с сортированным агрегатом на каждую таблицу. После restore в временные БД существующего локального PG совпали ВСЕ27таблиц основной,27legacy и57support. Временные БД удалены.
+Это доказывает равенство содержимого таблиц этих предварительных source snapshots и восстановленных копий. Это не одновременный согласованный PostgreSQL+Redis+S3 snapshot, не проверка ACL/ролей и не финальное состояние перед cutover. Private: consistent-snapshots/summary.actual.private.json и *.row-equality.actual.private.json.
+
+## Переиспользование образов
+Исходныеweb sha256:4afaad4d19cad352c5ed89bae16a3c694b2d41af3abf7873fb63968d2527f8f6 и worker sha256:6e66c8717b0f7d31c720d63db14d5841b9ec7d9cd965d9a3f2c3ac0cb1ae8800 уже существуют на цели. Новая сборка/доставка этих образов не нужны. Supportimage sha256:e7aa3bac149323d21e8e130adc8d9dd83b2c4fc85f83bb3b08b544ffa3c7d201 пока отсутствует локально.
+
+## Привязки дополнительных входов
+- `operations-storage.md`: SHA-256 `a49e0b3e56071e8a0dddb253de9afb4d6cf6294d60343f9e353ec5c382294783`.
+- `operations-routing.md`: SHA-256 `64bab5d97fd548aa31ccf0d887ba4e7e8e46c50d137acaec6e33a7f67168c918`.
+
+Scoped TLS main/www/support сохранены только в закрытом tls-source-backup/ с проверкой hostname и пары crt/key; в Caddy не загружались. Скопирован только нужный TLS, не ACME-account/общий том. Libredesk по исходному digest уже загружен в локальное хранилище Docker; контейнер не запускался.
