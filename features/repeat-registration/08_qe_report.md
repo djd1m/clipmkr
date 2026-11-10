@@ -1,3 +1,5 @@
+> Итог10.11.2026: source QE закрыт, исправление опубликовано и проверено на clipmkr.ru. [Фактическая поставка и ручная проверка](10_delivery.md). Ниже сохранён журнал этапов; ранние «не выполнено» относятся к тому моменту.
+
 # AUTH-001: фактические проверки и ограничения
 
 ## До реализации
@@ -55,3 +57,19 @@ Base Specification.md побайтово совпадает с653c032 и SHA3ac0
 FR1/2: storebool→outcome→настоящаяsession/cookie, PG/HTTPS reload. FR3/7: actualLanding conflict/recovery, preservedemail/emptyfocusedpassword, inline notices, обе проверенные темы/ширины/клавиатура. FR4: uniqueINSERT/trialtransaction, existingRPC/signup0 включая delayed retry, PG snapshots+positivecontrols. FR5/6: status/hash fence, invalidstore503, rate/Origin/body/cookie/next/log guards. Legacy boundary явно отражена и вFR2, и вOpenSpec/addendum. Нет migrations/packages/newservices, login/forgot/resetAPI сохранены. BaseSpec3ac09f3d… совпала побайтово сbaseline;3ledgerSHA совпадают, approvedHTML20b1c2 неизменён. Манифест16source/test совпадает; обязательные11AM найденыactualamendment-check0.
 
 Поставка текущемуVPS ещё следует поdeployment-plan; закрытыйsourceQE не называется провереннымpublishedUI. Полныйresponsive-mediaCLI/физическийWindows/WCAG/inboxdelivery не заявлены; проверка оплаты/генерации не повторялась радиAUTH.
+
+## Итог после публикации
+
+Публичный Chromium browser: новая регистрация, конфликт неверного пароля, обычный login, существующий аккаунт с верным паролем, нативная Secure/HttpOnly cookie и protected reload — PASS. Читающая БД-проверка собственного QA-аккаунта:1account/1trial grant,3session,0неотозванных после выхода.2существующих клипа воспроизводятся и скачиваются. Обновлён только web085103b; backup до/послеexit0. Все42QE snapshot SHA после поставки совпали. Полный протокол10_delivery.md.
+
+QE-VERDICT: A-
+
+Буквенная оценка — итог координатора по фактическим проверкам и ограничениям, включая исходный неполный handoff; независимые роли дали clean без буквенной оценки. Подтверждённых source findings нет, пустой Findings ledger не создаётся.
+
+qe ledger row skipped — stage resumed
+
+После восстановления контекста обнаружен уже записанный checkpointqe этой ревизии; согласно resume guard новая ledger row не добавлялась. В проектном run-cost ledger отдельная строка этого slug не найдена: это ограничение учёта, а не доказательство нулевых затрат. Native closure и реальные тесты подтверждены независимо от cost ledger.
+
+Финальный guard check --op code:exit0/pass,0violations; проверен no-skill-drift. Signature-fresh — notEstablished, worktree audit store отсутствует, поэтому это не доказательство подписи/audit log. Прямой no-stubs scan всех16замороженных source/test files дал0совпадений; новых исходников после QE нет.
+
+Подтверждённый live-урок сохранён actual dz teach --no-mirror: teach:93a90fc757a70df8; повторный recall вернул этот урок с reward0.85; фактическое чтение проверено. Сначала recall ошибочно выполнен другим Node runtime и не прочитал SQLite native module; под проектным Node22 фактическое чтение восстановлено, ложный no-hits не принят за результат store.
