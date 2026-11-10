@@ -2,7 +2,12 @@
   "ledger": {
     "openspec/changes/clip-retention-policy/tasks.md": "8d32ca608a6715814dfaf84123cb1b4b3e751f8d043e6217511222802a0f4e80",
     "openspec/changes/clip-retention-policy/proposal.md": "21453b806337a8fe917fb9f9ebd149d6016a21b0dac60b0c4808b2e51c0ba2fb",
-    "openspec/changes/clip-retention-policy/specs/clip-retention/spec.md": "322ee41823fac68c302414955dce691b98f7a5ba9167d5e6c7953ef3ab299f12"
+    "openspec/changes/clip-retention-policy/specs/clip-retention/spec.md": "090201525e6cc6c262104d6417dc3e1f5bd4819fd00756678ae60a6d6a1c6746"
   },
-  "state": "Согласование продуктовых правил получено; планирование, не разрешение обходить code gates"
+  "state": "Согласовано единое пользовательское состояние; текущий spec обновлён. Предыдущее независимое ревью относится к прежним хешам; gates реализации не пройдены.",
+  "previousLedger": {
+    "openspec/changes/clip-retention-policy/tasks.md": "8d32ca608a6715814dfaf84123cb1b4b3e751f8d043e6217511222802a0f4e80",
+    "openspec/changes/clip-retention-policy/proposal.md": "21453b806337a8fe917fb9f9ebd149d6016a21b0dac60b0c4808b2e51c0ba2fb",
+    "openspec/changes/clip-retention-policy/specs/clip-retention/spec.md": "322ee41823fac68c302414955dce691b98f7a5ba9167d5e6c7953ef3ab299f12"
+  }
 }
