@@ -1,0 +1,40 @@
+{
+  "origin": "docs/operations/2026-11-10-backup-audit.md @ f808cbf",
+  "ledger": {
+    "openspec/changes/regular-clipmkr-backups/design.md": "ce56253c727cd48f2add23da5bf2101c4ad3232832f50deba07e7128bf3e08a0",
+    "openspec/changes/regular-clipmkr-backups/proposal.md": "3567f339e790dc44406f06d3248f2bcb757ce6db95d45b7435c398dec3ac4508",
+    "openspec/changes/regular-clipmkr-backups/specs/application-backups/spec.md": "9a7c08b476af13d7c67cb87ade14d8b723493474b20a15000aebfa07da0f854f",
+    "openspec/changes/regular-clipmkr-backups/tasks.md": "53c42c4dc845a2bb6d904bced9a8a037a1cb827b2728c45bdf6da405db04ccfc"
+  },
+  "authority": "features/regular-clipmkr-backups/06_implementation_plan.md",
+  "state": "Код проверен native cross-model QE; runtime установлен, обе offsite copies и восстановление двух изолированных БД подтверждены независимо; hourly timer включён, первое автоматическое срабатывание ещё не наблюдалось.",
+  "sourceAudit": {
+    "path": "docs/operations/2026-11-10-backup-audit.md",
+    "commit": "f808cbf",
+    "sha256": "c2e65a60a2df1bfeece48042bddf0fcf4f3f1cac244a1fe3b0885abfe491702b"
+  },
+  "rework": {
+    "conditions": [
+      "Q-STAGING-01",
+      "RISK-01",
+      "RISK-02"
+    ],
+    "plannerModel": "gpt-6-astra",
+    "reasoning": "xhigh",
+    "session": "/root/backup_final_planner",
+    "implementationAuthorModel": "gpt-6.1-sol",
+    "implementationAuthorReasoning": "high",
+    "authorHandoff": "features/regular-clipmkr-backups/author-handoff.md"
+  },
+  "integrationDiscovery": {
+    "source": "/opt/corp-infra/bootstrap/schemas/backup-manifest.schema.json",
+    "observation": "service enum excludes clipmkr; independently read by planner",
+    "decision": "own trusted root-only JSON descriptor /etc/clipmkr/backup/clipmkr.backup-manifest.json for hourly wrapper only; no global registry/schema/rescan/daily hook integration",
+    "planAmendment": "AM-5",
+    "expectedCodeTargetsUnchanged": true
+  },
+  "completionLedger": {
+    "previousTasksSha256": "a8d4b3bea143d863fbd2cab85008b08076cfe65b04ff3f75766dd486c51555e4",
+    "scope": "Обновлены статусы задач и явно различены первый ручной запуск service и включённое расписание; требования/spec и код не изменены."
+  }
+}
