@@ -10,15 +10,16 @@ export class PgAuthStore implements AuthStore {
       'SELECT id, password_hash, status FROM account WHERE email = $1', [email]);
     return result.rows[0] ?? null;
   }
-  async register(email: string, passwordHash: string, session: SessionInput): Promise<void> {
-    await transaction(this.pool, async tx => {
+  async register(email: string, passwordHash: string, session: SessionInput): Promise<boolean> {
+    return transaction(this.pool, async tx => {
       const policy = this.billingMode === 'credits_v1' ? 'credits_v1' : 'legacy_daily_v1';
       const row = (await tx.query<{ id: string }>(`INSERT INTO account(email,password_hash,plan,status,billing_policy)
         VALUES ($1,$2,'free','active',$3) ON CONFLICT(email) DO NOTHING RETURNING id`, [email,passwordHash,policy])).rows[0];
-      if (!row) return;
+      if (!row) return false;
       if (policy === 'credits_v1') await grantTrialTx(tx,row.id,'signup');
       await tx.query(`INSERT INTO session(account_id,cookie_token_hash,ip_prefix,expires_at) VALUES($1,$2,$3::cidr,$4)`,
         [row.id,session.hash,session.ipPrefix,session.expiresAt]);
+      return true;
     });
   }
   async createSession(account: AccountCredentials, session: SessionInput): Promise<boolean> {

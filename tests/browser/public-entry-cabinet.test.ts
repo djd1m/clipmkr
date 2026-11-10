@@ -17,11 +17,12 @@ beforeAll(async () => {
     plugins: [{ name: 'public-entry-components', enforce: 'pre',
       resolveId(id) { if (id === entry) return entry; if (id === 'next/navigation') return navigation; },
       load(id) {
-        if (id === navigation) return 'export const useRouter=()=>({push(path){window.pushes.push(path)},refresh(){window.refreshes++}});';
+        if (id === navigation) return `import {useSyncExternalStore} from 'react';export const usePathname=()=>useSyncExternalStore(cb=>{addEventListener('fixture-route',cb);return()=>removeEventListener('fixture-route',cb)},()=>window.fixturePath||'/');export const useRouter=()=>({push(path){window.pushes.push(path);window.fixturePath=path.split('?')[0].split('#')[0]||'/';dispatchEvent(new Event('fixture-route'))},refresh(){window.refreshes++}});`;
         if (id.endsWith('/acquisition-analytics.ts')) return readFileSync(id, 'utf8').replace('export function observeSignup()', 'function actualObserveSignup()') + '\nexport function observeSignup(){window.signupCalls++;actualObserveSignup()}';
         if (id === entry) return `import {createElement as h} from 'react';import {createRoot} from 'react-dom/client';import {Landing} from '/apps/web/src/app/Landing.tsx';
-          window.pushes=[];window.refreshes=0;window.signupCalls=0;let root=createRoot(document.getElementById('root'));
-          const render=()=>root.render(h(Landing,{theme:document.documentElement.dataset.theme,creditMode:!new URLSearchParams(location.search).has('legacyBilling')}));
+          import {AuthFlowProvider,AuthFlowNotice} from '/apps/web/src/app/AuthFlow.tsx';import {RecoveryForm} from '/apps/web/src/app/support/RecoveryForm.tsx';import {usePathname} from 'next/navigation';
+          window.pushes=[];window.refreshes=0;window.signupCalls=0;window.fixturePath='/';let root=createRoot(document.getElementById('root'));
+          const View=()=>usePathname()==='/forgot'?h(RecoveryForm,{mode:'forgot',mailAvailable:false}):h(Landing,{theme:document.documentElement.dataset.theme,creditMode:!new URLSearchParams(location.search).has('legacyBilling')});const render=()=>root.render(h(AuthFlowProvider,null,h(AuthFlowNotice),h(View)));
           window.remount=()=>{root.unmount();root=createRoot(document.getElementById('root'));render()};render();`;
       }, configureServer(vite) { vite.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith('/fixture.html')) { next(); return; }
@@ -65,7 +66,7 @@ async function fill(page: Page, password = 'synthetic-only-password') {
 async function submit(page: Page) { await page.locator('#auth button[type=submit]').click(); }
 async function transport(page: Page, failApply = false) {
   const calls: string[] = [], payloads: object[] = [];
-  await page.route('**/api/auth/*', async route => { calls.push(new URL(route.request().url()).pathname); await route.fulfill({ json: { ok: true } }); });
+  await page.route('**/api/auth/*', async route => { calls.push(new URL(route.request().url()).pathname); await route.fulfill({ json: { ok: true, registration: 'created' } }); });
   await page.route('**/api/trpc/code.apply', async route => { calls.push('apply'); payloads.push(route.request().postDataJSON()); await route.fulfill(failApply && payloads.length === 1 ? { status: 400, json: { error: { message: 'Контрольный отказ кода' } } } : { json: { result: { data: { data: {} } } } }); });
   return { calls, payloads };
 }
@@ -169,7 +170,7 @@ for (const discard of [false, true]) it(`signedIn apply retry without second aut
 it('public entry: preserves safe next and rejects synchronous duplicate submits', async () => {
   for (const next of ['/upgrade?from=clip_card', '/upgrade/return?intent=11111111-1111-4111-8111-111111111111', 'https://evil.invalid', 'javascript:alert(1)']) await fixture(async page => {
     const calls: string[] = []; let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
-    await page.route('**/api/auth/*', async route => { calls.push('auth'); await gate; await route.fulfill({ json: { ok: true } }); });
+    await page.route('**/api/auth/*', async route => { calls.push('auth'); await gate; await route.fulfill({ json: { ok: true, registration: 'created' } }); });
     await page.route('**/api/trpc/code.apply', async route => { calls.push('apply'); await route.fulfill({ json: { result: { data: { data: {} } } } }); });
     await page.locator('.landing-cta').click(); await login(page).click(); await page.locator('.theme-toggle').click(); await fill(page);
     expect(new URL(page.url()).searchParams.get('next')).toBe(next);
@@ -181,7 +182,7 @@ it('public entry: preserves safe next and rejects synchronous duplicate submits'
 });
 for (const mode of ['register', 'login'] as const) for (const pending of ['auth', 'apply']) it(`busy guards all external controls ${mode}/${pending}`, async () => fixture(async page => {
   let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; }); const calls: string[] = [];
-  await page.route('**/api/auth/*', async route => { calls.push('auth'); if (pending === 'auth') await gate; await route.fulfill({ json: { ok: true } }); });
+  await page.route('**/api/auth/*', async route => { calls.push('auth'); if (pending === 'auth') await gate; await route.fulfill({ json: { ok: true, registration: 'created' } }); });
   await page.route('**/api/trpc/code.apply', async route => { calls.push('apply'); if (pending === 'apply') await gate; await route.fulfill({ json: { result: { data: { data: {} } } } }); });
   if (mode === 'login') await login(page).click(); await fill(page); await submit(page); await expect.poll(() => calls.length).toBe(pending === 'auth' ? 1 : 2);
   expect(await page.locator('.public-header-login').isDisabled()).toBe(true); expect(await register(page).isDisabled()).toBe(true); expect(await page.locator('.landing-cta').getAttribute('aria-disabled')).toBe('true');
@@ -192,7 +193,7 @@ for (const mode of ['register', 'login'] as const) for (const pending of ['auth'
 }));
 for (const mode of ['register', 'login'] as const) for (const failure of ['4xx', '5xx', 'reject', 'malformed']) it(`honest auth error and retry ${mode}/${failure}`, async () => fixture(async page => {
   let calls = 0;
-  await page.route('**/api/auth/*', async route => { calls++; if (calls > 1) { await route.fulfill({ json: { ok: true } }); return; }
+  await page.route('**/api/auth/*', async route => { calls++; if (calls > 1) { await route.fulfill({ json: { ok: true, registration: 'created' } }); return; }
     if (failure === 'reject') await route.abort(); else if (failure === 'malformed') await route.fulfill({ body: '{', contentType: 'application/json' }); else await route.fulfill({ status: failure === '4xx' ? 400 : 503, json: { error: 'Контрольный отказ' } }); });
   await page.route('**/api/trpc/code.apply', route => route.fulfill({ json: { result: { data: { data: {} } } } }));
   if (mode === 'login') await login(page).click(); await fill(page); await submit(page); await page.getByRole('alert').waitFor();
@@ -238,4 +239,55 @@ it('public entry RED baseline: initial registration mode', async () => fixture(a
 }));
 it('public entry RED baseline: mobile order', async () => fixture(async page => {
   expect(await page.evaluate(() => document.querySelector('#auth')!.getBoundingClientRect().bottom <= document.querySelector('.landing-demo')!.getBoundingClientRect().top)).toBe(true);
+}));
+
+it('repeat registration conflict preserves email and switches to login', async () => fixture(async page => {
+  await page.route('**/api/auth/register', route => route.fulfill({ status: 409, json: { code: 'account_exists', error: 'ignored' } }));
+  await fill(page); await submit(page);
+  await expect.poll(() => login(page).getAttribute('aria-pressed')).toBe('true');
+  expect(await page.locator('[name=email]').inputValue()).toBe('fixture@example.invalid');
+  expect(await page.locator('[name=password]').inputValue()).toBe('');
+  expect(await page.getByRole('alert').textContent()).toBe('Этот аккаунт уже существует. Войдите с прежним паролем или восстановите доступ');
+  expect(await page.locator('[name=password]').evaluate(el => el === document.activeElement)).toBe(true);
+  expect(await page.locator('.public-header-login').isEnabled()).toBe(true);
+}));
+it('recovery round trip preserves email without persistence', async () => fixture(async page => {
+  await page.route('**/api/auth/register', route => route.fulfill({ status: 409, json: { code: 'account_exists' } }));
+  await fill(page); await submit(page); await expect.poll(() => login(page).getAttribute('aria-pressed')).toBe('true');
+  await page.getByRole('link', { name: 'Забыли пароль?' }).click(); await page.getByRole('heading', { name: 'Восстановить доступ' }).waitFor();
+  expect(await page.locator('[name=email]').inputValue()).toBe('fixture@example.invalid');
+  await page.locator('nav[aria-label="Доступ к аккаунту"]').getByRole('link', { name: 'Войти', exact: true }).click();
+  await expect.poll(() => login(page).getAttribute('aria-pressed')).toBe('true');
+  expect(await page.locator('[name=email]').inputValue()).toBe('fixture@example.invalid'); expect(await page.locator('[name=password]').inputValue()).toBe('');
+  expect(await page.locator('[name=password]').evaluate(element => element === document.activeElement)).toBe(true);
+  expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toContain('fixture@example.invalid');
+  expect(page.url()).not.toContain('fixture%40'); await page.reload(); expect(await page.locator('[name=email]').inputValue()).toBe('');
+}));
+it('created registration shows approved dismissible notice', async () => fixture(async page => {
+  await transport(page); await fill(page); await submit(page);
+  await page.getByRole('status').filter({ hasText: 'Аккаунт создан. Вы вошли.' }).waitFor();
+  await page.getByRole('button', { name: 'Закрыть уведомление' }).click(); expect(await page.locator('.auth-flow-notice').count()).toBe(0);
+}));
+for (const explicit of [false, true]) it(`existing skips attribution and signup explicit=${explicit}`, async () => fixture(async page => {
+  const s = await transport(page);
+  await page.route('**/api/auth/register', route => { expect(route.request().headers()['x-clipmkr-registration']).toBe('outcomes-v1'); return route.fulfill({ json: { ok: true, registration: 'existing' } }); });
+  await fill(page); if (explicit) { await page.locator('summary').click(); await page.locator('[name=partner_code]').fill('PARTNER'); }
+  await submit(page); await page.getByRole('status').filter({ hasText: 'Аккаунт уже существует. Вы вошли.' }).waitFor();
+  expect(s.calls).toEqual([]); expect(await page.evaluate(() => (window as unknown as Observations).signupCalls)).toBe(0);
+  expect(await page.evaluate(() => (window as unknown as Observations).pushes)).toEqual(['/dashboard']);
+}));
+for (const body of [{}, null, [], { ok: false }, { ok: true }, { ok: true, registration: 'unknown' }]) it(`rejects unconfirmed registration ${JSON.stringify(body)}`, async () => fixture(async page => {
+  let apply = 0; await page.route('**/api/auth/register', route => route.fulfill({ json: body }));
+  await page.route('**/api/trpc/code.apply', route => { apply++; return route.fulfill({ json: {} }); });
+  await fill(page); await submit(page); await page.getByRole('alert').waitFor();
+  expect(apply).toBe(0); expect(await register(page).isEnabled()).toBe(true);
+  expect(await page.evaluate(() => ({ signup: (window as unknown as Observations).signupCalls, pushes: (window as unknown as Observations).pushes }))).toEqual({ signup: 0, pushes: [] });
+}));
+it('existing redirect retry never applies referral', async () => fixture(async page => {
+  const s = await transport(page);
+  await page.route('**/api/auth/register', route => route.fulfill({ json: { ok: true, registration: 'existing' } }));
+  await fill(page); await submit(page); await expect.poll(() => page.evaluate(() => (window as unknown as Observations).refreshes)).toBe(1);
+  // Router is deliberately held at the old page: a second click during delayed navigation still cannot attribute.
+  await submit(page); await expect.poll(() => page.evaluate(() => (window as unknown as Observations).refreshes)).toBe(2);
+  expect(s.calls).toEqual([]); expect(await page.evaluate(() => (window as unknown as Observations).signupCalls)).toBe(0);
 }));

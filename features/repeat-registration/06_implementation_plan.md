@@ -36,9 +36,10 @@ Done: negative cases действительно достигают guard и не
 
 ### TASK-3 — согласованный auth/recovery UI и notice; ADR-001, FR-1, FR-2, FR-3, FR-4, FR-6, FR-7
 Phase: refinement. Depends: TASK-2. Оценка 35–55 мин.
-Files: `apps/web/src/app/AuthForm.tsx`, новый `apps/web/src/app/AuthFlow.tsx`, `apps/web/src/app/layout.tsx`, `apps/web/src/app/globals.css`, `apps/web/src/app/support/RecoveryForm.tsx`, `tests/browser/public-entry-cabinet.test.ts`, `tests/support-ui.test.ts`.
+Files: `apps/web/src/app/AuthForm.tsx`, новый `apps/web/src/app/AuthFlow.tsx`, `apps/web/src/app/layout.tsx`, `apps/web/src/app/globals.css`, `apps/web/src/app/support/RecoveryForm.tsx`, `apps/web/src/app/WorkspaceHeader.tsx`, `apps/web/src/app/upgrade/return/page.tsx`, `tests/browser/public-entry-cabinet.test.ts`, `tests/support-ui.test.ts`, `tests/browser/repeat-registration-next.test.ts`.
 Action: новый header и strict response validation; created сохраняет code.apply/signup once/retry/discard, existing пропускает оба. Root context notice с точными approved created/existing текстами и dismiss; memory recovery email/next и клиентские переходы туда/назад. Не менять forgot/reset API. После conflict release busy/onAvailabilityChange ДО onModeChange; pending message переживает mode/focus effect, email сохранён, password пуст. Return draft переключает Landing в login; его source файл менять не требуется.
 Tests: `repeat registration conflict preserves email and switches to login`, `recovery round trip preserves email without persistence`, `created registration shows approved dismissible notice`; реальный Landing + AuthForm после React settle, не callback-only mock. Existing + explicit/referral не вызывает RPC/signup. 200 `{}`, null/array/ok:false/unknown outcome/legacy ok-only, 4xx/5xx/offline/malformed дают retry без signedIn; ordinary login ok-only остаётся допустимым. Проверить duplicate submit, created attribution retry/discard, safe next, обе темы/390/1440px, screenreader role и Tab/Enter, no overflow.
+Presentation detail (AM-11): AuthFlowProvider сохраняет прежнее состояние; новый экспорт представления `AuthFlowNotice` в том же `AuthFlow.tsx` выводит утверждённый inline banner. Вставить его после header в `WorkspaceHeader.tsx` и после nav в `upgrade/return/page.tsx`: обычный поток страницы под навигацией, без floating fixed toast/overlay и произвольного оформления. Семантика авторизации, notice state и утверждённые тексты не меняются. До edits двух новых targets/экспорта координатор повторяет K1 inventory для `AuthFlowNotice` и K2 для этого плана. Native test `auth notice follows approved inline layout` проверяет при 390/1440px обеих тем положение после навигации, отсутствие перекрытия основного контента и fixed/absolute overlay, затем dismiss.
 Done: approved flow и тексты соответствуют HTML; на full reload memory draft/notice исчезают; пароль/token не в context/storage/URL. Условные verify/reset/mail-disabled support UI не сломаны.
 
 ### TASK-4 — настоящий PG конфликт, fence и rollback; ADR-001, FR-1, FR-2, FR-4, FR-5
@@ -85,7 +86,7 @@ TASK-0 → TASK-1 → TASK-2 → TASK-3; TASK-4 после TASK-1/2 может �
 - `npm run build` в этой рабочей копии с synthetic profile, затем `npm test -- --config vitest.browser.config.ts tests/browser/repeat-registration-next.test.ts` — реальный собранный Next, HTTPS, PG/Redis, Chromium/WebKit.
 - `npm run typecheck` и `npm run lint` — включая существующих строковых register callers и typed fake stores. Затронутые support-email, partner и credit trial regression suites запускаются в действительном тестовом профиле; отсутствие prerequisites отмечается явно, без притворного green.
 
-Trailing block содержит **14 source/test targets: 8 application и 6 tests**. Только новый AuthFlowProvider и native browser test создаются с нуля; остальное — существующие блоки/адресные fixtures. Два документа anti-drift указаны в TASK-6 отдельно. Это уточняет первоначальную оценку 4–10 файлов: по шестимерному router file-score=3, остальные прежние 2/1/1/1/2, сумма10, tier M сохраняется. Если фактический объём меняется, обновить plan/inventory и K2 до новых target edits. Нет искусственного ограничения числа нужных файлов ради tier.
+Trailing block содержит **16 source/test targets: 10 application и 6 tests** с двумя точками вставки утверждённого inline notice из AM-11. Только новый AuthFlowProvider и native browser test создаются с нуля; остальное — существующие блоки/адресные fixtures. Два документа anti-drift указаны в TASK-6 отдельно. Это уточняет первоначальную оценку 4–10 файлов: по шестимерному router file-score=3, остальные прежние 2/1/1/1/2, сумма10, tier M сохраняется. Если фактический объём меняется, обновить plan/inventory и K2 до новых target edits. Нет искусственного ограничения числа нужных файлов ради tier.
 
 ## Risk assessment
 
@@ -115,9 +116,13 @@ AM-9 (TST-3): seeded spent/reserved grant и заменяемая attribution, �
 
 AM-10 (coordinator source finding): сначала release busy/availability, затем Landing mode change; pending error переживает effect. Confirmation: actual parent+form после React settle находятся в login с email/сообщением и пустым password → test `repeat registration conflict preserves email and switches to login` in `tests/browser/public-entry-cabinet.test.ts` (fails if reverted).
 
+AM-11 (coordinator actual diff / approved existing_correct layout): вынести view `AuthFlowNotice` в тот же AuthFlow.tsx, сохранив state в AuthFlowProvider; вставить inline banner после header WorkspaceHeader и после nav upgrade/return согласно утверждённому HTML. До нового экспорта и двух новых target edits обязательны обновлённые K1/K2. Confirmation: notice расположен под навигацией в обычном потоке, не перекрывает контент и не является floating fixed/absolute overlay при 390/1440px обеих тем → test `auth notice follows approved inline layout` in `tests/browser/repeat-registration-next.test.ts` (fails if reverted).
+
 ## Завершение предкодового допуска
 
 Ideation aggregate по установленному helper: exit0/closed, revision `db36a53a3abe04b251dffdb491633ff9e651205a7cef56ddf1bf6e3ec5bdb5a7`; девять originating условий подтверждены тремя независимыми ролями. Последний RISK-03 явно уточняет negotiation/legacy fallback в FR-2 и OpenSpec; технические задачи и14targets прежние. K1 актуальных AuthFlow names:FREE0. K2 preflight:PASS0,0warnings,1skip(no acid corpus); финальный повтор на этом файле записывается отдельно. Это не результаты ещё не выполненных code/QE.
+
+Допуск AM-11: прежние результаты выше относятся к прежнему набору targets/exports. Для `AuthFlowNotice`, двух новых файлов и текущих 16 targets повторные K1/K2 выполняет координатор; до их действительного результата расширенные edits не разрешены.
 
 EXPECTED_CODE_TARGETS:
 - apps/web/src/server/auth.ts
@@ -128,6 +133,8 @@ EXPECTED_CODE_TARGETS:
 - apps/web/src/app/layout.tsx
 - apps/web/src/app/globals.css
 - apps/web/src/app/support/RecoveryForm.tsx
+- apps/web/src/app/WorkspaceHeader.tsx
+- apps/web/src/app/upgrade/return/page.tsx
 - tests/auth.test.ts
 - tests/bcrypt-load.test.ts
 - tests/database.integration.test.ts

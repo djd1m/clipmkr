@@ -689,6 +689,9 @@ Scenario: данные удалены за 72 часа
 
 ## Область AUTH — вход, сессии, удаление (FR-AUTH-001…003, без прямой US)
 
+> Текущая дельта10.11.2026: повторная регистрация определяется [AUTH-001](../features/repeat-registration/01_requirements.md) и [дополнением FR-AUTH-001](Specification-addendum.md). Ниже сохранены8исторических AUTH-сценариев frozen base; их anti-enumeration сценарий по login остаётся действующим, сокрытие занятого email при register заменено явно. Полные новые BDD — в [OpenSpec](../openspec/changes/repeat-registration/specs/auth-registration/spec.md); исторические числа86 не включают эту отдельную дельту.
+
+
 Закрывает находку V1-R01 из `validation-stories.md`: у FR-AUTH-001 в прозе есть анти-энумерация и
 лимит частоты, но ни один документ Phase 1 не называл для них трассируемый сценарий. Раздел FR-AUTH-003
 (удаление) уже покрыт US-014 выше и здесь не дублируется. С раунда правок 2 Specification.md сама
@@ -813,3 +816,15 @@ Scenario: повторный запрос на удаление во время 
 | FR-LOOK-013 | Принято | мобильная раскладка принимается прибором (NFR-UI-001, фичи 23–24); шаг сетки и брейкпоинты не сверялись |
 | FR-LOOK-014 | Принято | не реализовано: раздела тарифов на лендинге нет — вне объёма фичи 30 (`features/payments/05_completion.md`) |
 | FR-LOOK-015 | Принято | реализовано: оценка объяснена тремя компонентами на бесплатном тарифе (`selection`, `clip-card`); SC-US-004-1/2 |
+
+
+## AUTH-001: дополнительные критерии10.11.2026
+
+| Критерий | Автоматическая проверка |
+|---|---|
+| Created/existing/conflict/unavailable, header negotiation, fixed log | tests/auth.test.ts |
+| Один account/trial, наблюдаемый concurrent INSERT, reset/erasure fence, transaction rollback | tests/database.integration.test.ts |
+| Approved notice, email/recovery, actual Landing busy→login, malformed success | tests/browser/public-entry-cabinet.test.ts |
+| Настоящий HTTPS cookie jar, protected reload, side-effects/positive controls, legacy | tests/browser/repeat-registration-next.test.ts |
+
+Наличие named test не означает успешный запуск; актуальные команды и результаты — features/repeat-registration/08_qe_report.md. Base spec frozen hash не изменяется.

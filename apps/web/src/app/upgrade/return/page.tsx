@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getRuntime } from '../../../server/runtime';
 import { ThemeToggle } from '../../ThemeToggle';
 import { requestTheme } from '../../theme-server';
+import { AuthFlowNotice } from '../../AuthFlow';
 import { ReturnScreen } from './ReturnScreen';
 export const dynamic = 'force-dynamic';
 const INTENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -18,6 +19,6 @@ export default async function UpgradeReturnPage({ searchParams }: { searchParams
   const token = (await cookies()).get('__Host-n5_session')?.value;
   // Без сессии — на вход С ВОЗВРАТОМ сюда же: иначе оплативший человек теряет экран подтверждения своего платежа.
   if (!token || !await auth.authenticate(token)) redirect(intent ? `/?next=${encodeURIComponent(`/upgrade/return?intent=${intent}`)}#auth` : '/#auth');
-  return <><nav className="navigation"><Link className="brand" href="/dashboard"><span>◧</span> КлипМейкер</Link><Link href="/dashboard">Мои записи</Link><ThemeToggle initial={await requestTheme()} /></nav>
+  return <><nav className="navigation"><Link className="brand" href="/dashboard"><span>◧</span> КлипМейкер</Link><Link href="/dashboard">Мои записи</Link><ThemeToggle initial={await requestTheme()} /></nav><AuthFlowNotice />
     <main className="container"><ReturnScreen intentId={intent ?? 'unknown'} /></main></>;
 }

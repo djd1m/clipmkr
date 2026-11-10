@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { takeFragmentToken, validPassword, supportRequest, SupportError } from '../apps/web/src/lib/support-client';
 import { RecoveryForm } from '../apps/web/src/app/support/RecoveryForm';
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/forgot' }));
 afterEach(() => vi.unstubAllGlobals());
 describe('support recovery boundaries', () => {
   it('removes fragment synchronously before returning token and ignores query tokens', () => {

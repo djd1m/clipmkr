@@ -1,0 +1,45 @@
+# AUTH-001 — независимое security QE
+
+Дата: 10.11.2026. Роль `qe-security`, family `owner-exception`; отдельная сессия `/root/repeat_registration_qe_security`, назначенная модель `gpt-6-astra xhigh`, автор реализации — `gpt-6.1-sol high`. Основание cross-model исключения: `docs/review-policy.md`, `docs/model-matrix.md`, AGENTS.md. История кодирования, авторские результаты запуска и отчёт завершения не использовались как исходные доказательства.
+
+**Вердикт: clean в проверенной security-области AUTH-001.** Подтверждённых новых нарушений требований безопасности не найдено; originating conditions отсутствуют. Это результат одной независимой роли, не aggregate gate, не разрешение выпуска и не ручная приёмка владельца.
+
+## Привязка и входные документы
+
+- Native revision: `64b6843421c7b36bd8212647a350760b30ba54f5954c20c875446163ef4a6dd1`.
+- Nonce: `7d508213-9258-4c3a-aa05-de8908ebc714`.
+- Самостоятельно пересчитаны SHA256 всех **42/42** путей manifest из `.fa-state/review-convergence-qe-host.json`: совпали. Это проверка идентичности всех артефактов, а не утверждение визуального аудита 12 PNG.
+- Самостоятельно пересчитаны **3/3** OpenSpec ledger hashes из `requirements-revision.json`: proposal `f97e9cb3014de2e31d850365e0b1a2d4dd0659c8282ac85346609f4b6a33eee3`, spec `26c834f811f60a402c92fd32286805b67400dbfd0f912593fc8845c9f73088bc`, tasks `e4352acd8d3444ae0526ec3ecdfbdaa2ee51401d2e4af71eeae04577fb6b1a61`.
+- HTML утверждённого макета совпал с owner authority: `20b1c2232ee87ae5e67c1e973a670cc75480a5c64f0d2cdc511105123edd298b`.
+
+До реализации прочитаны AGENTS.md, CLAUDE.md, `01_requirements.md`, ADR-001, `05_architecture.md`, `06_implementation_plan.md`, `owner-authority.md`, `requirements-revision.json`, OpenSpec spec и `docs/design/2026-11-10-repeat-registration.{md,html}`. Затем самостоятельно найдены source/tests. Дополнительные основания: `docs/acceptance/core-cjm.md`, локальные security/secrets rules, установленный `/home/clipmkr/.agents/skills/feature-adr/modules/08-qe.md` и pinned references `qe-ref-security-testing/REFERENCE.md`, `qe-ref-risk-based-testing/REFERENCE.md` (upstream pin `0a6de058575cbe292afe220df105cc74120f7674`). Применены их методы; AQE runtime, SAST/DAST fleet или dependency scanner не объявляются исполненными.
+
+## Проверенные границы
+
+| Граница / требование | Собственное наблюдение |
+|---|---|
+| Настоящая сессия, FR-1/2/5 | `apps/web/src/server/auth.ts:33`: только строгое store `true` даёт created; неожиданный store result бросает ошибку. Duplicate modern проходит `passwordLogin`: bcrypt compare, строго active, затем `createSession`; unavailable не несёт token. `auth-store.ts:13` возвращает результат транзакции; просмотренный существующий `transaction` возвращает его после COMMIT. |
+| Password/status fence, FR-2/5 | `auth-store.ts:27` вставляет session через `id + status='active' + password_hash` под `FOR SHARE`, с проверкой `rowCount === 1`. `findSession` повторно требует active, срок и отсутствие revoke. Существующий reset берёт account lock, меняет hash и отзывает sessions в одной транзакции. Bcrypt остаётся вне PG connection. Изучены настоящие SQL barrier/fence/rollback tests в `tests/database.integration.test.ts:45`, `:99`, `:126`; их PG execution относится к роли qe-tests, не к моему запуску. |
+| Trial/account/referral, FR-4 | Duplicate выходит из registration transaction до `grantTrialTx` и session INSERT. Нет UPDATE пароля, роли, billing policy, баланса или attribution. `AuthForm.tsx:96` исключает `code.apply` для existing; `continueToCabinet` отправляет signup только для created, включая отдельный retry path. Прочитаны PG snapshots со spent/reserved trial и положительные created/login controls в native тесте. |
+| Header negotiation, FR-2/4/6 | `auth-handler.ts:64` разрешает existing login только для точного `outcomes-v1`; missing/unknown → false. Legacy duplicate active даёт 409 без createSession/cookie, inactive/missing → общий 401. Заголовок не обходит bcrypt/status/fence. Старый исходный AuthForm сохранён как SHA-bound fixture и действительно используется в compatibility test; это не header-stripping имитация. |
+| Origin/rate/body/password/cookie, FR-6 | Порядок прежних guards сохранён: rate-limit до body, чужой Origin до body, JSON и фактический поток ≤4096 bytes, нормализация email, strict input, 8 chars/72 UTF-8 bytes. Cookie остаётся `__Host-n5_session`, HttpOnly/Secure/SameSite=Lax/Path=/, без Domain; token не выдаётся в JSON. Отказы не выдают новый auth-cookie и не отзывают прежний. |
+| Privacy и malformed clients, FR-5/6 | `auth-handler.ts:76` логирует только фиксированную категорию/action, не произвольный exception. Unit marker test проверен собственным запуском. `AuthForm.tsx:80` отвергает null/array/ok false/неизвестный outcome/старый ok-only register. Такие ответы не устанавливают signedIn и не вызывают RPC/signup/redirect. Login остаётся с одинаковым 401 для unknown/wrong/erasing. |
+| Recovery lifecycle / next, FR-3/6 | `AuthFlow.tsx:5` содержит только фиксированный вид notice и recovery email/safe next/returning, без password/session/reset token. Draft очищается после переноса, успешного входа и ухода с `/`/`/forgot`; full reload очищает React memory. `RecoveryForm.tsx:46` возвращает в URL только разрешённый next. Прочитанный неизменённый `safeNextPath` принимает закрытый набор upgrade paths, не произвольный URL. Собственный browser component запуск подтвердил conflict→forgot→login, пустой password, отсутствие email в storage/URL и очистку после reload. |
+| Изоляция полномочий | Session относится к account из серверного credential lookup, не из входных полей. Strict auth schema не принимает роль; новые client context/notice не участвуют в серверной авторизации. Проверены относящиеся к этому стыку неизменённые `page-account.ts`, `route.ts` и owner handler: authority берётся из session account и серверной owner policy. Полная регрессия всех ролей/ресурсов не выполнялась в этой роли. |
+
+Инъекционный риск новых данных проверен по потоку: SQL параметризован, notice фиксированный, email записывается в input value, ошибка отображается React text. Новых SQL/HTML evaluator, внешних fetch destinations, криптографических алгоритмов или зависимостей изменение не вводит. Публичная различимость active email при регистрации — явно разрешённая дельта FR-AUTH-001 в требованиях, ADR/OpenSpec и `docs/Specification-addendum.md:312`, а не скрытая регрессия anti-enumeration login/forgot.
+
+## Собственное исполнение
+
+Ресурсы согласованы с `qe-tests`; PG/Redis/production не использованы. Private profiles/secrets не читались и не выводились.
+
+1. `env -u DATABASE_URL -u REDIS_URL npm test -- tests/auth.test.ts tests/support-ui.test.ts` — **exit 0, 22/22 passed, 0 skipped**, 2 файла, 5.44 s, начало 12:36:58 UTC. Включает реальные bcrypt compare, legacy versions/inactive matrix, body/rate/Origin/UTF-8 guards, unknown store outcome, fixed-log marker и прежние reset/verify UI boundaries. Store здесь fake: этот запуск не доказывает SQL-конкурентность.
+2. `env -u DATABASE_URL -u REDIS_URL npm test -- --config vitest.browser.config.ts tests/browser/public-entry-cabinet.test.ts -t 'repeat registration conflict|recovery round trip|rejects unconfirmed registration|existing skips attribution|existing redirect retry'` — **exit 0, 11 selected passed, 35 skipped фильтром `-t`**, 7.59 s, начало 12:37:53 UTC. Chromium, настоящие React-компоненты и CSS; router/transport управляемые. Generic skip reporter также перечислил отсутствующие env, но выбранные 11 тестов не пропускались и не требуют PG/Redis/S3. Это не полный suite и не native HTTPS/auth execution.
+
+## Риск и пределы доказательства
+
+Приоритет проверки дан наиболее дорогим сбоям: вход без актуального credential/fence (impact 5), повторный trial/изменение attribution (impact 4), утечка credentials (impact 5). Недавняя замена register/login ветвления повышает вероятность дефекта до проверки; source trace, негативные tests и сохранение существующих guards уменьшают основание для конкретной находки. Численный остаточный security risk по одному локальному review не оценивался.
+
+Подтверждённых новых рисков после проверки области нет. Реальный PostgreSQL interleaving, rollback, native HTTPS acceptance/cookie jar, роль-браузерная матрица, полный WebKit прогон, mutation tests, live VPS и ручная приёмка не исполнялись этой ролью; нужны отдельные фактические свидетельства соответствующих ролей/этапов. Прочитанные неизменённые зависимости служили контекстом стыка; они не добавляются к measured manifest и не объявляются новым полным аудитом. Не проводились общий npm audit, аудит прежней инфраструктуры, пен-тест production или проверка реальной доставки recovery email. Отсутствие этих действий не превращено ни в вымышленный дефект, ни в утверждение успешного прохождения.
+
+Own receipt содержит только `qe-security`, `verdict=clean`, пустые conditions/verifications, `authorAssessmentChecked=false`, `deltaVerification=null`: это initial review, авторская delta assessment не проверялась. Aggregate native evaluate и ledger всего Step-8 остаются у координатора.

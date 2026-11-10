@@ -1,8 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthFlow } from '../AuthFlow';
 import { clearSupportIdentity, supportRequest, SupportError, takeFragmentToken, validPassword, type SupportAccount } from '../../lib/support-client';
 export function RecoveryForm({ mode, account = null, mailAvailable }: { mode: 'verify' | 'forgot' | 'reset'; account?: SupportAccount; mailAvailable: boolean }) {
   const token = useRef('');
+  const email = useRef<HTMLInputElement>(null);
+  const flow = useAuthFlow(), router = useRouter();
+  useEffect(() => { if (mode === 'forgot' && email.current && flow.recovery && !flow.recovery.returning) email.current.value = flow.recovery.email; }, [mode, flow.recovery]);
   const [hasToken, setHasToken] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [success, setSuccess] = useState('');
   useEffect(() => { token.current = takeFragmentToken(window.location, window.history); setHasToken(!!token.current); return () => { token.current = ''; }; }, []);
   const title = mode === 'verify' ? 'Подтвердить почту' : mode === 'forgot' ? 'Восстановить доступ' : 'Новый пароль';
@@ -29,7 +34,7 @@ export function RecoveryForm({ mode, account = null, mailAvailable }: { mode: 'v
       } catch (cause) { setError(cause instanceof SupportError && cause.status === 401 ? 'Войдите в тот же аккаунт, затем снова откройте ссылку из письма.' : cause instanceof Error ? cause.message : 'Не удалось выполнить действие.'); }
       finally { setBusy(false); }
     }}>
-      {mode === 'forgot' && <label>Почта<input name="email" type="email" autoComplete="email" required /></label>}
+      {mode === 'forgot' && <label>Почта<input ref={email} name="email" type="email" autoComplete="email" required /></label>}
       {mode === 'reset' && <><label>Новый пароль<input name="password" type="password" minLength={8} autoComplete="new-password" required aria-describedby="password-help" /></label><p id="password-help" className="muted">От 8 символов, не более 72 байт UTF-8.</p><label>Повторите пароль<input name="repeat" type="password" autoComplete="new-password" required /></label></>}
       <button disabled={busy || !!success || (mode === 'forgot' ? !mailAvailable : !hasToken || (mode === 'verify' && !account))}>{busy ? 'Подождите…' : mode === 'forgot' ? 'Отправить инструкцию' : mode === 'verify' ? 'Подтвердить почту' : 'Сменить пароль'}</button>
     </form>
@@ -38,6 +43,10 @@ export function RecoveryForm({ mode, account = null, mailAvailable }: { mode: 'v
       catch (cause) { setError(cause instanceof Error ? cause.message : 'Письмо недоступно.'); } finally { setBusy(false); }
     }}>Отправить новое письмо</button>}
     {error && <p role="alert">{error}</p>}{success && <p role="status" className="support-success">{success}</p>}
-    <nav className="support-links" aria-label="Доступ к аккаунту"><a href="/#auth">Войти</a><a href="/dashboard">Кабинет</a><a href="/support">Поддержка</a></nav>
+    <nav className="support-links" aria-label="Доступ к аккаунту"><a href="/#auth" onClick={event => {
+      if (mode !== 'forgot' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault(); flow.rememberRecovery(email.current?.value ?? '', flow.recovery?.next ?? null, true);
+      const next = flow.recovery?.next; router.push(next ? `/?next=${encodeURIComponent(next)}#auth` : '/#auth');
+    }}>Войти</a><a href="/dashboard">Кабинет</a><a href="/support">Поддержка</a></nav>
   </section>;
 }

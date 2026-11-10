@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation';
 import { observeSignup } from '../lib/acquisition-analytics';
 import { clearSupportIdentity } from '../lib/support-client';
 import { rpc } from '../lib/rpc';
+import { useAuthFlow } from './AuthFlow';
 import { safeNextPath } from '../lib/payment-return';
+type AuthReply = { ok?: unknown; registration?: unknown; code?: unknown; error?: unknown };
 const afterLogin = () => safeNextPath(new URLSearchParams(window.location.search).get('next')) ?? '/dashboard';
 
 export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChange, creditMode = false }: {
@@ -15,18 +17,30 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [signedIn, setSignedIn] = useState(false);
   const [emailError, setEmailError] = useState(''), [passwordError, setPasswordError] = useState('');
-  const request = useRef(false), authenticated = useRef(false), pendingRegistration = useRef(false);
+  const request = useRef(false), authenticated = useRef(false), pendingRegistration = useRef<'created' | 'existing' | null>(null);
   const email = useRef<HTMLInputElement>(null), password = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const flow = useAuthFlow();
+  const pendingConflict = useRef('');
+  const returnedDraft = useRef(false);
   useEffect(() => {
     const focus = () => { if (location.hash === '#auth') email.current?.focus(); };
     focus(); addEventListener('hashchange', focus);
     return () => removeEventListener('hashchange', focus);
   }, []);
   useEffect(() => {
-    setError(''); setEmailError(''); setPasswordError(''); password.current?.setCustomValidity('');
-    if (focusRequest) email.current?.focus();
+    setError(pendingConflict.current); setEmailError(''); setPasswordError(''); password.current?.setCustomValidity('');
+    if (pendingConflict.current || returnedDraft.current) { password.current?.focus(); returnedDraft.current = false; }
+    else if (focusRequest) email.current?.focus();
   }, [mode, focusRequest]);
+  useEffect(() => {
+    const draft = flow.recovery;
+    if (!draft?.returning || returnedDraft.current) return;
+    returnedDraft.current = true;
+    if (email.current) email.current.value = draft.email;
+    if (password.current) password.current.value = '';
+    flow.clearRecovery(); onModeChange('login'); password.current?.focus();
+  }, [flow, onModeChange]);
   function validatePassword(field: HTMLInputElement) {
     const message = register && new TextEncoder().encode(field.value).length > 72
       ? 'Пароль должен занимать не больше 72 байт. Сократите его.' : '';
@@ -35,14 +49,16 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
   }
   function startRequest() {
     if (request.current) return false;
-    request.current = true; onAvailabilityChange(false); setBusy(true); setError(''); return true;
+    request.current = true; onAvailabilityChange(false); setBusy(true); setError(''); pendingConflict.current = ''; return true;
   }
   function finishRequest() {
     request.current = false; setBusy(false); onAvailabilityChange(!authenticated.current);
   }
   function continueToCabinet() {
-    if (pendingRegistration.current) { observeSignup(); pendingRegistration.current = false; }
-    router.push(afterLogin()); router.refresh();
+    const target = afterLogin();
+    if (pendingRegistration.current === 'created') { observeSignup(); pendingRegistration.current = null; flow.showNotice('created', target); }
+    else if (pendingRegistration.current === 'existing') flow.showNotice('existing', target);
+    flow.clearRecovery(); router.push(target); router.refresh();
   }
   return <form id="auth" className="auth-card public-auth" aria-labelledby="auth-title" onInvalid={event => {
     const field = event.target as HTMLInputElement;
@@ -59,16 +75,25 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
     try {
       if (!authenticated.current) {
         clearSupportIdentity();
-        const response = await fetch(`/api/auth/${operation}`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        const response = await fetch(`/api/auth/${operation}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(operation === 'register' ? { 'X-Clipmkr-Registration': 'outcomes-v1' } : {}) },
           body: JSON.stringify({ email: form.get('email'), password: form.get('password') }) });
-        const body = await response.json();
-        if (!body || typeof body !== 'object') throw new Error('Не удалось прочитать ответ сервера. Повторите позже');
+        const payload: unknown = await response.json();
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Не удалось прочитать ответ сервера. Повторите позже');
+        const body = payload as AuthReply;
+        if (operation === 'register' && response.status === 409 && body.code === 'account_exists') {
+          pendingConflict.current = 'Этот аккаунт уже существует. Войдите с прежним паролем или восстановите доступ';
+          if (password.current) password.current.value = '';
+          finishRequest(); onModeChange('login'); setError(pendingConflict.current); password.current?.focus(); return;
+        }
         if (!response.ok) throw new Error(typeof body.error === 'string' ? body.error : 'Не удалось войти');
-        pendingRegistration.current = operation === 'register';
+        if (body.ok !== true || (operation === 'register' && body.registration !== 'created' && body.registration !== 'existing')) {
+          throw new Error('Не удалось подтвердить вход. Повторите или выберите «Войти»');
+        }
+        pendingRegistration.current = operation === 'register' && (body.registration === 'created' || body.registration === 'existing') ? body.registration : null;
         authenticated.current = true; setSignedIn(true);
       }
       const explicit = String(form.get('partner_code') ?? '').trim();
-      await rpc('code.apply', explicit ? { code: explicit } : {}, true);
+      if (pendingRegistration.current !== 'existing') await rpc('code.apply', explicit ? { code: explicit } : {}, true);
       continueToCabinet();
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Нет связи с сервером'); }
     finally { finishRequest(); }
@@ -88,13 +113,18 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
     <p className="public-hint" id="auth-password-error">{passwordError}</p>
     <details className="public-partner"><summary>Есть код партнёра? Необязательно</summary><label htmlFor="auth-partner">Код партнёра</label><input id="auth-partner" name="partner_code" autoComplete="off" maxLength={12} /></details>
     {error && <p className="public-error" role="alert" aria-atomic="true">{error}</p>}
-    <button className="public-primary public-submit" type="submit" disabled={busy}>{busy ? 'Подождите…' : signedIn ? 'Повторить применение кода' : register ? 'Создать аккаунт' : 'Войти →'}</button>
+    <button className="public-primary public-submit" type="submit" disabled={busy}>{busy ? 'Подождите…' : signedIn ? pendingRegistration.current === 'existing' ? 'Перейти в кабинет' : 'Повторить применение кода' : register ? 'Создать аккаунт' : 'Войти →'}</button>
     <p className="public-legal" hidden={!register}>Создавая аккаунт, вы принимаете <a href="/legal/terms">соглашение</a> и <a href="/legal/privacy">политику конфиденциальности</a>.</p>
-    {signedIn && error && <button type="button" className="public-discard" disabled={busy} onClick={async () => {
+    {signedIn && error && pendingRegistration.current !== 'existing' && <button type="button" className="public-discard" disabled={busy} onClick={async () => {
       if (!startRequest()) return;
       try { await rpc('code.apply', { discard_referral: true }, true); continueToCabinet(); }
       catch { setError('Не удалось продолжить. Повторите позже'); } finally { finishRequest(); }
     }}>Продолжить без применения кода</button>}
-    <nav className="support-links public-help" aria-label="Помощь со входом"><a href="/forgot">Забыли пароль?</a><a href="/support">Поддержка</a></nav>
+    <nav className="support-links public-help" aria-label="Помощь со входом"><a href="/forgot" onClick={event => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault(); if (request.current || authenticated.current) return;
+      flow.rememberRecovery(email.current?.value ?? '', safeNextPath(new URLSearchParams(window.location.search).get('next')));
+      router.push('/forgot');
+    }}>Забыли пароль?</a><a href="/support">Поддержка</a></nav>
   </form>;
 }

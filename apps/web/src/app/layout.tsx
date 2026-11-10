@@ -4,6 +4,7 @@ import { workspaceLayoutFromCookie } from '../lib/workspace-layout';
 import { WorkspacePreferenceSync } from './WorkspaceSettings';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { AuthFlowProvider } from './AuthFlow';
 import { SupportLauncher } from './SupportLauncher';
 import { AcquisitionAnalytics } from './AcquisitionAnalytics';
 import { counterId } from '../lib/acquisition-analytics';
@@ -21,5 +22,5 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const theme = await requestTheme();
   const layout = workspaceLayoutFromCookie((await headers()).get('cookie') ?? undefined);
   const env = readEnvironment();
-  return <html lang="ru" data-theme={theme} data-workspace-layout={layout}><body><WorkspacePreferenceSync initialLayout={layout} initialTheme={theme} />{children}<SupportLauncher /><AcquisitionAnalytics counter={counterId(env.N5_METRIKA_COUNTER_ID)} /></body></html>;
+  return <html lang="ru" data-theme={theme} data-workspace-layout={layout}><body><WorkspacePreferenceSync initialLayout={layout} initialTheme={theme} /><AuthFlowProvider>{children}<SupportLauncher /></AuthFlowProvider><AcquisitionAnalytics counter={counterId(env.N5_METRIKA_COUNTER_ID)} /></body></html>;
 }

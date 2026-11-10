@@ -60,11 +60,21 @@ export function createAuthHandler(action: 'login' | 'register' | 'logout', deps:
       const parsed = inputSchema.safeParse(body);
       if (!parsed.success) return json({ error: 'Укажите корректную почту и пароль от 8 символов до 72 байт' }, 422);
       const { email, password } = parsed.data;
-      const token = await deps.auth[action](email, password, ipPrefix(ip));
+      if (action === 'register') {
+        const outcome = await deps.auth.registerWithOutcome(email, password, ipPrefix(ip), {
+          allowExistingLogin: request.headers.get('X-Clipmkr-Registration') === 'outcomes-v1',
+        });
+        if (outcome.kind === 'conflict') return json({ code: 'account_exists',
+          error: 'Этот аккаунт уже существует. Войдите с прежним паролем или восстановите доступ' }, 409);
+        if (outcome.kind === 'unavailable') return json(LOGIN_FAILURE, 401);
+        if (outcome.kind === 'created' || outcome.kind === 'existing') return json({ ok: true, registration: outcome.kind }, 200, cookie(outcome.token));
+        return json(LOGIN_FAILURE, 401);
+      }
+      const token = await deps.auth.login(email, password, ipPrefix(ip));
       if (!token) return json(LOGIN_FAILURE, 401);
       return json({ ok: true }, 200, cookie(token));
-    } catch (error) {
-      console.error('Авторизация: запрос не завершён; вход временно недоступен', error);
+    } catch {
+      console.error('auth_request_failed', action);
       return json({ error: 'Вход временно недоступен. Повторите позже' }, 503);
     }
   };

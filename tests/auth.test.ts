@@ -11,7 +11,7 @@ const secret = randomBytes(32).toString('hex');
 let passwordHash: string;
 beforeAll(async () => { passwordHash = await bcrypt.hash('правильный пароль', BCRYPT_COST); });
 function store(account: AccountCredentials | null = null): AuthStore {
-  return { findAccount: vi.fn(async () => account), register: vi.fn(async () => {}),
+  return { findAccount: vi.fn(async () => account), register: vi.fn(async () => true),
     createSession: vi.fn(async () => true), revoke: vi.fn(async () => {}), findSession: vi.fn(async () => null) };
 }
 function request(password = 'неправильный пароль', headers: Record<string, string> = {}) {
@@ -55,15 +55,110 @@ describe('Аутентификация', () => {
     expect(session.hash).toMatch(/^[a-f0-9]{64}$/); expect(session.hash).not.toBe(token);
     expect(session.ipPrefix).toBe('192.0.2.0/24');
   });
-  it('Регистрация не сообщает о занятом адресе и считает bcrypt до записи', async () => {
+  it('Новая регистрация подтверждает создание и считает bcrypt до записи', async () => {
     const db = store();
     vi.mocked(db.register).mockImplementation(async (_email, hash, session: SessionInput) => {
       expect(bcrypt.getRounds(hash)).toBeGreaterThanOrEqual(10);
       expect(await bcrypt.compare('правильный пароль', hash)).toBe(true);
       expect(session.hash).toMatch(/^[a-f0-9]{64}$/);
+      return true;
     });
     const result = await handler('register', db)(request('правильный пароль'));
-    expect(result.status).toBe(200); expect(await result.json()).toEqual({ ok: true });
+    expect(result.status).toBe(200); expect(await result.json()).toEqual({ ok: true, registration: 'created' });
+  });
+  it('repeat registration authenticates only an active matching password', async () => {
+    for (const status of ['active', 'erasing', 'unknown', null]) for (const matches of [true, false]) {
+      const db = store({ id: 'existing', password_hash: passwordHash, status });
+      vi.mocked(db.register).mockResolvedValue(false);
+      const auth = new AuthService(db, secret);
+      const result = await auth.registerWithOutcome('user@example.org', matches ? 'правильный пароль' : 'wrong-password', '192.0.2.0/24');
+      expect(result.kind).toBe(status !== 'active' ? 'unavailable' : matches ? 'existing' : 'conflict');
+      expect(db.createSession).toHaveBeenCalledTimes(status === 'active' && matches ? 1 : 0);
+    }
+    const db = store({ id: 'existing', password_hash: passwordHash, status: 'active' });
+    vi.mocked(db.register).mockResolvedValue(false); vi.mocked(db.createSession).mockResolvedValue(false);
+    const auth = new AuthService(db, secret);
+    expect(await auth.registerWithOutcome('user@example.org', 'правильный пароль', '192.0.2.0/24')).toEqual({ kind: 'unavailable' });
+    await expect(auth.register('user@example.org', 'wrong-password', '192.0.2.0/24')).rejects.toThrow();
+  });
+  it('legacy registration conflict never creates a session', async () => {
+    for (const version of [undefined, 'unknown', 'outcomes-v1']) {
+      const db = store({ id: 'existing', password_hash: passwordHash, status: 'active' }); vi.mocked(db.register).mockResolvedValue(false);
+      const response = await handler('register', db)(request('правильный пароль', version ? { 'X-Clipmkr-Registration': version } : {}));
+      expect(response.status).toBe(version === 'outcomes-v1' ? 200 : 409);
+      expect(db.createSession).toHaveBeenCalledTimes(version === 'outcomes-v1' ? 1 : 0);
+      if (version === 'outcomes-v1') expect(await response.json()).toEqual({ ok: true, registration: 'existing' });
+      else { expect(response.headers.has('set-cookie')).toBe(false); expect(await response.json()).toMatchObject({ code: 'account_exists' }); }
+    }
+  });
+  it('auth failures never log exception credentials', async () => {
+    const marker = 'synthetic-credential-must-not-escape';
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      for (const action of ['register', 'login'] as const) {
+        const db = store(); const failure = Object.assign(new Error(marker, { cause: new Error(marker) }), { nested: { password: marker } });
+        vi.mocked(db.register).mockRejectedValue(failure); vi.mocked(db.findAccount).mockRejectedValue(failure);
+        const response = await handler(action, db)(request());
+        expect(response.status).toBe(503); expect(response.headers.has('set-cookie')).toBe(false);
+        expect(await response.text()).not.toContain(marker);
+      }
+      expect(log).toHaveBeenCalledTimes(2);
+      expect(log.mock.calls).toEqual([['auth_request_failed', 'register'], ['auth_request_failed', 'login']]);
+    } finally { log.mockRestore(); }
+  });
+  it('registration keeps body, origin and rate guards before credentials', async () => {
+    for (const action of ['register', 'login'] as const) {
+      const db = store(); const req = request(); const reader = vi.spyOn(req.body!, 'getReader');
+      expect((await handler(action, db, async () => false)(req)).status).toBe(429); expect(reader).not.toHaveBeenCalled();
+      expect((await handler(action, db)(request(undefined, { origin: 'https://foreign.invalid' }))).status).toBe(403);
+      const chunks = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new Uint8Array(2048)); controller.enqueue(new Uint8Array(2049)); controller.close(); } });
+      const streamInput: RequestInit & { duplex: 'half' } = { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.99, 10.0.0.5, 172.18.0.2' }, body: chunks, duplex: 'half' };
+      const huge = new Request('https://test.invalid', streamInput); expect(huge.headers.get('content-length')).toBeNull();
+      expect((await handler(action, db)(huge)).status).toBe(413); expect(db.register).not.toHaveBeenCalled(); expect(db.findAccount).not.toHaveBeenCalled();
+    }
+  });
+  it('invalid registration store returns never authenticate', async () => {
+    const db = store({ id: 'existing', password_hash: passwordHash, status: 'active' });
+    vi.mocked(db.register).mockResolvedValue(undefined as never);
+    const response = await handler('register', db)(request('правильный пароль', { 'X-Clipmkr-Registration': 'outcomes-v1' }));
+    expect(response.status).toBe(503); expect(response.headers.has('set-cookie')).toBe(false);
+    expect(db.findAccount).not.toHaveBeenCalled(); expect(db.createSession).not.toHaveBeenCalled();
+  });
+  it('login and registration validate transport and credential boundaries', async () => {
+    for (const action of ['register', 'login'] as const) {
+      const send = (raw: string, headers: Record<string, string> = {}) => new Request('https://test.invalid/api/auth/' + action, { method: 'POST', headers: {
+        'content-type': 'application/json', 'x-forwarded-for': '192.0.2.99, 10.0.0.5, 172.18.0.2', ...headers }, body: raw });
+      for (const [raw, headers] of [['{', {}], [JSON.stringify({ email: 'user@example.org', password: '12345678' }), { 'content-type': 'text/plain' }],
+        [JSON.stringify({ email: 'bad', password: '12345678' }), {}], [JSON.stringify({ email: 'user@example.org', password: '12345678', extra: true }), {}]] as const) {
+        const db = store(); const response = await handler(action, db)(send(raw, headers));
+        expect(response.status).toBe(422); expect(response.headers.has('set-cookie')).toBe(false); expect(db.findAccount).not.toHaveBeenCalled(); expect(db.register).not.toHaveBeenCalled();
+      }
+      for (const value of ['1234567', '12345678', 'a'.repeat(72), 'a'.repeat(73), 'я'.repeat(36), 'я'.repeat(37)]) {
+        const valid = value.length >= 8 && Buffer.byteLength(value) <= 72;
+        const db = store(); const response = await handler(action, db)(send(JSON.stringify({ email: '  USER@EXAMPLE.ORG  ', password: value })));
+        expect(response.status).toBe(!valid ? 422 : action === 'register' ? 200 : 401);
+        if (valid && action === 'register') {
+          expect(db.register).toHaveBeenCalledOnce(); const [email, hash] = vi.mocked(db.register).mock.calls[0]!;
+          expect(email).toBe('user@example.org'); expect(await bcrypt.compare(value, hash)).toBe(true);
+        } else if (valid) expect(db.findAccount).toHaveBeenCalledWith('user@example.org');
+        else { expect(db.findAccount).not.toHaveBeenCalled(); expect(db.register).not.toHaveBeenCalled(); }
+        if (!response.ok) expect(response.headers.has('set-cookie')).toBe(false);
+      }
+      const db = store(), raw = JSON.stringify({ email: 'user@example.org', password: '12345678' });
+      const forbidden = send(raw, { origin: 'https://foreign.invalid' }), forbiddenReader = vi.spyOn(forbidden.body!, 'getReader');
+      expect((await handler(action, db)(forbidden)).status).toBe(403); expect(forbiddenReader).not.toHaveBeenCalled();
+      const unavailable = send(raw), unavailableReader = vi.spyOn(unavailable.body!, 'getReader');
+      expect((await handler(action, db, async () => { throw new Error('synthetic Redis outage'); })(unavailable)).status).toBe(503);
+      expect(unavailableReader).not.toHaveBeenCalled(); expect(db.findAccount).not.toHaveBeenCalled(); expect(db.register).not.toHaveBeenCalled();
+    }
+  });
+  it('inactive and missing duplicate accounts have the same HTTP refusal for every protocol version', async () => {
+    for (const status of ['erasing', 'unknown', null, undefined]) for (const version of [undefined, 'unknown', 'outcomes-v1']) {
+      const db = store(status === undefined ? null : { id: 'existing', status, password_hash: passwordHash }); vi.mocked(db.register).mockResolvedValue(false);
+      const response = await handler('register', db)(request('правильный пароль', version ? { 'X-Clipmkr-Registration': version } : {}));
+      expect(response.status).toBe(401); expect(await response.json()).toEqual({ error: 'Неверная почта или пароль' });
+      expect(response.headers.has('set-cookie')).toBe(false); expect(db.createSession).not.toHaveBeenCalled();
+    }
   });
   it('logout сначала отзывает серверную сессию, затем удаляет cookie', async () => {
     const db = store(); const token = randomBytes(32).toString('base64url');

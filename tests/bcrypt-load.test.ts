@@ -21,7 +21,7 @@ it('RV-008: 12 реальных входов <= 3000 мс, fs во время н
   const hash = await bcrypt.hash(password, BCRYPT_COST);
   const store: AuthStore = {
     findAccount: async () => ({ id: 'load-account', password_hash: hash, status: 'active' }),
-    register: async () => {}, createSession: async () => true, revoke: async () => {}, findSession: async () => null,
+    register: async () => true, createSession: async () => true, revoke: async () => {}, findSession: async () => null,
   };
   const auth = new AuthService(store, 'load-test-secret');
   const start = performance.now();

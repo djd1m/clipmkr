@@ -6,6 +6,10 @@ import { migrate } from '../packages/db/src/migrate';
 import { AuthService, BCRYPT_COST } from '../apps/web/src/server/auth';
 import { ipPrefix } from '../apps/web/src/server/ip';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
+import type { PoolClient } from 'pg';
+import type { AccountCredentials, SessionInput } from '../apps/web/src/server/auth';
+import { createAuthHandler } from '../apps/web/src/server/auth-handler';
+import { setTimeout as delay } from 'node:timers/promises';
 import { PgAuthStore } from '../apps/web/src/server/auth-store';
 
 // Compose test передаёт DATABASE_URL с БД n5_test. Без URL логические тесты идут без PostgreSQL.
@@ -27,16 +31,114 @@ describe.skipIf(!databaseUrl)('PostgreSQL: ограничения, миграц�
   });
   it('Миграция идемпотентна; все 15 сущностей и 4 таблицы оплаты присутствуют', async () => {
     const result = await pool.query('SELECT tablename FROM pg_tables WHERE schemaname = $1 AND tablename <> $2', [schema, '_schema_migration']);
-    // 15 сущностей канона + 4 таблицы оплаты фичи 30 (ADR-019, миграция 021) — ровно названные, не «сколько-то ещё».
-    expect(result.rowCount).toBe(26);
-    expect(result.rows.map((r: { tablename: string }) => r.tablename)).toEqual(expect.arrayContaining(['payment_intent', 'payment_event', 'payment', 'operator_action']));
+    // 27 CREATE TABLE в текущих миграциях001…028, включая четыре support-таблицы023.
+    expect(result.rowCount).toBe(27);
+    expect(result.rows.map((r: { tablename: string }) => r.tablename)).toEqual(expect.arrayContaining(['payment_intent', 'payment_event', 'payment', 'operator_action', 'support_mail_admission']));
     const used = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name='quota_counter'", [schema]);
     expect(used.rows.map((r: { column_name: string }) => r.column_name)).not.toContain('limit');
   });
-  it('12 конкурентных регистраций оставляют один аккаунт и одну сессию; cookie дубля не авторизует', async () => {
+  it('12 конкурентных регистраций оставляют один аккаунт и действительные сессии', async () => {
     const tokens = await Promise.all(Array.from({ length: 12 }, () => auth.register('race@example.org', 'пароль аккаунта', '192.0.2.0/24')));
     expect((await pool.query("SELECT id FROM account WHERE email='race@example.org'")).rowCount).toBe(1);
-    expect((await Promise.all(tokens.map((t) => auth.authenticate(t)))).filter(Boolean)).toHaveLength(1);
+    expect((await Promise.all(tokens.map((t) => auth.authenticate(t)))).filter(Boolean)).toHaveLength(12);
+  });
+  it('concurrent repeat registration grants once and authenticates only the winner password', async () => {
+    for (const billing of ['credits_v1', 'legacy'] as const) for (const samePassword of [false, true]) {
+      const email = `barrier-${randomUUID()}@example.invalid`;
+      let inserted!: () => void, release!: () => void;
+      const insertedGate = new Promise<void>(resolve => { inserted = resolve; });
+      const releaseGate = new Promise<void>(resolve => { release = resolve; });
+      let winnerPid = 0, loserPid = 0;
+      function observedPool(winner: boolean): Pool {
+        return new Proxy(pool, { get(target, property) {
+          if (property !== 'connect') { const value = Reflect.get(target, property); return typeof value === 'function' ? value.bind(target) : value; }
+          return async () => {
+            const client = await target.connect();
+            const pid = (await client.query('SELECT pg_backend_pid() AS pid')).rows[0].pid as number;
+            if (winner) winnerPid = pid; else loserPid = pid;
+            return new Proxy(client, { get(connection, key) {
+              if (key !== 'query') { const value = Reflect.get(connection, key); return typeof value === 'function' ? value.bind(connection) : value; }
+              return async (...args: unknown[]) => {
+                const result = await Reflect.apply(connection.query, connection, args);
+                if (winner && typeof args[0] === 'string' && args[0].includes('INSERT INTO account')) { inserted(); await releaseGate; }
+                return result;
+              };
+            } }) as PoolClient;
+          };
+        } });
+      }
+      const winner = new AuthService(new PgAuthStore(observedPool(true), billing), 'barrier-secret');
+      const loser = new AuthService(new PgAuthStore(observedPool(false), billing), 'barrier-secret');
+      const first = winner.registerWithOutcome(email, 'winner-password', '192.0.2.0/24');
+      let second: ReturnType<AuthService['registerWithOutcome']> | undefined;
+      try {
+        await Promise.race([insertedGate, delay(5000).then(() => { throw new Error('Winner insert not observed'); })]);
+        second = loser.registerWithOutcome(email, samePassword ? 'winner-password' : 'loser-password', '192.0.2.0/24');
+        const deadline = Date.now() + 5000; let blocked = false;
+        while (Date.now() < deadline) {
+          if (loserPid) {
+            const row = (await pool.query('SELECT pg_blocking_pids($1) AS blockers, query FROM pg_stat_activity WHERE pid=$1', [loserPid])).rows[0];
+            if (row?.blockers.includes(winnerPid)) { expect(row.query).toContain('INSERT INTO account'); blocked = true; break; }
+          }
+          await delay(10);
+        }
+        expect(blocked, 'real unique INSERT loser must block on uncommitted winner').toBe(true);
+        expect(winnerPid).not.toBe(loserPid);
+      } finally { release(); }
+      const [created, repeated] = await Promise.all([first, second!]);
+      expect(created.kind).toBe('created'); expect(repeated.kind).toBe(samePassword ? 'existing' : 'conflict');
+      const account = (await pool.query('SELECT id,password_hash FROM account WHERE email=$1', [email])).rows;
+      expect(account).toHaveLength(1); expect(await bcrypt.compare('winner-password', account[0].password_hash)).toBe(true);
+      expect((await pool.query('SELECT count(*)::int AS n FROM credit_grant WHERE account_id=$1', [account[0].id])).rows[0].n).toBe(billing === 'credits_v1' ? 1 : 0);
+      expect((await pool.query('SELECT count(*)::int AS n FROM session WHERE account_id=$1', [account[0].id])).rows[0].n).toBe(samePassword ? 2 : 1);
+      if (created.kind === 'created') expect(await winner.authenticate(created.token)).toEqual({ account_id: account[0].id });
+      if (repeated.kind === 'existing') expect(await loser.authenticate(repeated.token)).toEqual({ account_id: account[0].id });
+      expect(await loser.login(email, 'loser-password', '192.0.2.0/24')).toBeNull();
+    }
+  }, 30000);
+  it('repeat registration fences password reset and erasure before session insert', async () => {
+    for (const operation of ['reset', 'erasure']) {
+      const email = `fence-${randomUUID()}@example.invalid`;
+      let ready!: () => void, release!: () => void;
+      const snapshotReady = new Promise<void>(resolve => { ready = resolve; });
+      const gate = new Promise<void>(resolve => { release = resolve; });
+      const events: string[] = [];
+      class PausedStore extends PgAuthStore {
+        override async createSession(account: AccountCredentials, session: SessionInput) {
+          events.push('compared'); ready(); await gate; events.push('insert'); return super.createSession(account, session);
+        }
+      }
+      await auth.register(email, 'original-password', '192.0.2.0/24');
+      const account = (await pool.query('SELECT id FROM account WHERE email=$1', [email])).rows[0].id;
+      const before = (await pool.query('SELECT count(*)::int AS n FROM session WHERE account_id=$1', [account])).rows[0].n;
+      const service = new AuthService(new PausedStore(pool), 'fence-secret');
+      const pending = service.registerWithOutcome(email, 'original-password', '192.0.2.0/24');
+      try {
+        await Promise.race([snapshotReady, delay(5000).then(() => { throw new Error('Credential snapshot not reached'); })]);
+        const change = operation === 'reset' ? await bcrypt.hash('replacement-password', 10) : 'erasing';
+        const sql = operation === 'reset' ? 'UPDATE account SET password_hash=$2 WHERE id=$1 RETURNING password_hash AS value' : 'UPDATE account SET status=$2 WHERE id=$1 RETURNING status AS value';
+        expect((await pool.query(sql, [account, change])).rows[0].value).toBe(change); events.push('committed');
+      } finally { release(); }
+      expect(await pending).toEqual({ kind: 'unavailable' }); expect(events).toEqual(['compared', 'committed', 'insert']);
+      expect((await pool.query('SELECT count(*)::int AS n FROM session WHERE account_id=$1', [account])).rows[0].n).toBe(before);
+    }
+  });
+  it('registration session failure rolls back account and trial', async () => {
+    const email = `rollback-${randomUUID()}@example.invalid`;
+    await pool.query(`CREATE FUNCTION fail_registration_session() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic session failure'; END $$`);
+    await pool.query('CREATE TRIGGER fail_registration_session BEFORE INSERT ON session FOR EACH ROW EXECUTE FUNCTION fail_registration_session()');
+    const before = (await pool.query('SELECT count(*)::int AS n FROM credit_grant')).rows[0].n;
+    const handler = createAuthHandler('register', { auth: new AuthService(new PgAuthStore(pool, 'credits_v1'), 'rollback-secret'), publicOrigin: 'https://test.invalid', trustedProxyHops: 2, allowMutation: async () => true });
+    try {
+      const response = await handler(new Request('https://test.invalid/api/auth/register', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.9, 10.0.0.2, 10.0.0.3' }, body: JSON.stringify({ email, password: 'rollback-password' }) }));
+      expect(response.status).toBe(503); expect(response.headers.has('set-cookie')).toBe(false);
+      const observer = await pool.connect();
+      try {
+        expect((await observer.query('SELECT id FROM account WHERE email=$1', [email])).rowCount).toBe(0);
+        expect((await observer.query('SELECT count(*)::int AS n FROM credit_grant')).rows[0].n).toBe(before);
+        expect((await observer.query('SELECT s.id FROM session s JOIN account a ON a.id=s.account_id WHERE a.email=$1', [email])).rowCount).toBe(0);
+      } finally { observer.release(); }
+    } finally { await pool.query('DROP TRIGGER fail_registration_session ON session'); await pool.query('DROP FUNCTION fail_registration_session()'); }
   });
   it('logout отозван в БД; повторное использование cookie отвергается', async () => {
     const token = await auth.register('logout@example.org', 'пароль аккаунта', '192.0.2.0/24');

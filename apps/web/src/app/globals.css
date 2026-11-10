@@ -494,7 +494,7 @@ html:has(.public-entry), body:has(.public-entry) { background:var(--workspace-pa
 .public-entry input:not([type=checkbox]):not([type=radio]):not([type=file]) { display:block; width:100%; min-width:0; border:1px solid var(--workspace-control-border); background:var(--workspace-surface); color:var(--workspace-ink); border-radius:.2rem; padding:.6rem .7rem; min-height:2.9rem; margin:.35rem 0 0; }
 .public-entry input[aria-invalid=true] { border-width:2px !important; }
 .public-entry .public-hint { font-size:.76rem; color:var(--workspace-muted); margin-top:.35rem; }
-.public-entry .public-error { font-size:.82rem; margin-top:.8rem; font-weight:650; }
+.public-entry .public-error { font-size:.82rem; margin-top:.8rem; font-weight:650; border-left:3px solid var(--danger); padding-left:12px; }
 .public-entry .public-partner { font-size:.8rem; margin:1rem 0; }
 .public-entry .public-partner summary { cursor:pointer; min-height:2.75rem; color:var(--workspace-muted); }
 .public-entry .public-partner label { margin-top:.25rem; }
@@ -546,3 +546,8 @@ html:has(.public-entry), body:has(.public-entry) { background:var(--workspace-pa
 .workspace-shell .clip-context h2 { font-size:1.1rem; }
 .workspace-shell .clip-context [data-context-body] { margin-top:1rem; max-width:40rem; }
 .workspace-shell .clip-context [data-context-body] > button { margin-right:.5rem; }
+
+/* AUTH-001: transient notice follows client navigation, dismisses explicitly. */
+ .auth-flow-notice { width: min(73.75rem, calc(100% - 3rem)); margin: 1.5rem auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; border: 1px solid var(--line); border-left: 3px solid var(--green); border-radius: 0; background: var(--surface); color: var(--ink); font-size: .875rem; }
+.workspace-shell .auth-flow-notice { width: 100%; }
+.auth-flow-notice button { flex-shrink: 0; min-width: 44px; min-height: 44px; padding: 0; background: transparent; color: inherit; border: 0; font-size: 1.4rem; }
