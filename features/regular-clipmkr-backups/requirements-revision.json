@@ -1,0 +1,29 @@
+{
+  "origin": "docs/operations/2026-11-10-backup-audit.md @ f808cbf",
+  "ledger": {
+    "openspec/changes/regular-clipmkr-backups/design.md": "7efb3091ac7827dfbaf9fa17466dbb897e49ccb7cdca60de79feb4dfa363943d",
+    "openspec/changes/regular-clipmkr-backups/proposal.md": "f5fdd73ee71aa5dc74599c47247e9c90af2cc2703446c3e6f40107a638c41ac0",
+    "openspec/changes/regular-clipmkr-backups/specs/application-backups/spec.md": "0fbf8bff0835b942fd0ba0bd489e0ab803aecacf4936c07757f73d6523f32ef7",
+    "openspec/changes/regular-clipmkr-backups/tasks.md": "b492b956404f61622b96288d4c52873265d083e769d370610a04f78a557bd06f"
+  },
+  "authority": "features/regular-clipmkr-backups/06_implementation_plan.md",
+  "state": "scoped planning rework after initial ideation exit1; originating re-verification/convergence pending; K1 observed by coordinator; K2/code/runtime NOT RUN by planner",
+  "sourceAudit": {
+    "path": "docs/operations/2026-11-10-backup-audit.md",
+    "commit": "f808cbf",
+    "sha256": "c2e65a60a2df1bfeece48042bddf0fcf4f3f1cac244a1fe3b0885abfe491702b"
+  },
+  "rework": {
+    "conditions": [
+      "Q-STAGING-01",
+      "RISK-01",
+      "RISK-02"
+    ],
+    "plannerModel": "gpt-6-astra",
+    "reasoning": "xhigh",
+    "session": "/root/backup_final_planner",
+    "implementationAuthorModel": "gpt-6.1-sol",
+    "implementationAuthorReasoning": "high",
+    "authorHandoff": "features/regular-clipmkr-backups/author-handoff.md"
+  }
+}
