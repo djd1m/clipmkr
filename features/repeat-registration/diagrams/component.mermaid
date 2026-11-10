@@ -1,0 +1,17 @@
+flowchart TD
+  Layout[Root layout] --> Notice[AuthFlowProvider: notice and recovery memory]
+  Form[AuthForm: existing form] -->|POST register or login| Handler[createAuthHandler: guards and HTTP mapping]
+  Form -->|created or existing notice and forgot draft| Notice
+  Recovery[Existing RecoveryForm] -->|email draft and return to login| Notice
+  Form -->|created or ordinary login| Apply[Existing code.apply RPC]
+  Handler --> Outcome[AuthService.registerWithOutcome]
+  Caller[Existing string callers] --> Wrapper[AuthService.register wrapper]
+  Wrapper --> Outcome
+  Outcome -->|INSERT attempt| Store[PgAuthStore]
+  Outcome -->|INSERT conflict| Password[Shared private passwordLogin]
+  Handler --> Login[AuthService.login]
+  Login --> Password
+  Password -->|findAccount then fenced createSession| Store
+  Store --> PG[(PostgreSQL: account, session, credit_grant)]
+  Apply --> Partner[Existing PartnerService]
+  Partner --> PG

@@ -19,3 +19,7 @@
 ## После реализации
 
 Пока не выполнены: PostgreSQL-конкуренция нового кода; actualHTTPSNext/browser cookie/reload; проверка сохранности attribution/grants; независимый sourceQE; code/spec anti-drift; сборка/поставка. Нельзя считать precode/mockup проверки их заменой.
+
+## Закрытие предкодовой проверки
+
+Actual third ideation aggregate:exit0/closed на db36a53a3abe04b251dffdb491633ff9e651205a7cef56ddf1bf6e3ec5bdb5a7, все9условий verified. Второй aggregate былexit1 толькоRISK03; его нормативная дельта согласовала FR2/OpenSpec с legacy negotiation без изменения утверждённого HTML. Исполнение sourceQE ещё впереди. K1 currentAuthFlow names FREE0; K2 preflight PASS0,0warnings,1no-acid skip.

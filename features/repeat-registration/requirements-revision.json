@@ -1,9 +1,9 @@
 {
   "ledger": {
-    "openspec/changes/repeat-registration/proposal.md": "fc8fec4f104ccc521286383a63afc637d3f76d3a7957e33443c4f2a66095d5c7",
-    "openspec/changes/repeat-registration/specs/auth-registration/spec.md": "97a72cdc8162d320f1ea8da4e68d3e1553486038c5b2b4426b5fd0f5bb25cbe1",
+    "openspec/changes/repeat-registration/proposal.md": "f97e9cb3014de2e31d850365e0b1a2d4dd0659c8282ac85346609f4b6a33eee3",
+    "openspec/changes/repeat-registration/specs/auth-registration/spec.md": "26c834f811f60a402c92fd32286805b67400dbfd0f912593fc8845c9f73088bc",
     "openspec/changes/repeat-registration/tasks.md": "cd8824666a5ee25096c56283c678430cbbb7c95f7203b90e74c7fcee3e2d82e4"
   },
   "mockupSha256": "20b1c2232ee87ae5e67c1e973a670cc75480a5c64f0d2cdc511105123edd298b",
-  "state": "Бизнес-объём и конкретный макет утверждены; native QCSD/K1/K2 ещё не пройдены"
+  "state": "Макет утверждён; RISK-03 уточняет version negotiation и legacy fallback до кода, требует originating focused verification"
 }

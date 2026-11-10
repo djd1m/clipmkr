@@ -1,0 +1,31 @@
+{
+  "addressed": [
+    "Q-01",
+    "Q-02",
+    "Q-03",
+    "TST-1",
+    "TST-2",
+    "TST-3",
+    "RISK-01",
+    "RISK-02",
+    "RISK-03"
+  ],
+  "changedScope": [
+    "features/repeat-registration/01_requirements.md",
+    "features/repeat-registration/03_adr/001-reuse-password-login.md",
+    "features/repeat-registration/05_architecture.md",
+    "features/repeat-registration/06_implementation_plan.md",
+    "features/repeat-registration/requirements-revision.json",
+    "openspec/changes/repeat-registration/proposal.md",
+    "openspec/changes/repeat-registration/specs/auth-registration/spec.md",
+    "openspec/changes/repeat-registration/tasks.md"
+  ],
+  "classification": "structural",
+  "delta": "DESIGN ONLY. Q-01/RISK-01: exact X-Clipmkr-Registration: outcomes-v1 opt-in; legacy active duplicate получает 409 ДО passwordLogin/session, inactive/unknown общий401, без attribution/signup. Q-02: approved forgot email prefill и возврат через root client memory, без URL/storage. Q-03: approved created и existing notices. RISK-02: fixed category/action auth log вместо raw exception, negative secret-marker test. TST-1: реальные unique INSERT blocker/winner PID и loser path, compare→commit reset/erasure→fenced SQL barriers, rollback trigger. TST-2: scoped native Next HTTPS origin и настоящий cookie jar/flags/protected reload без Cookie injection. TST-3: использованный+зарезервированный grant, заменяемая attribution и другие explicit/referral sources, real RPC/signup observers с created/login controls и snapshots. AuthForm освобождает busy/parent availability перед mode switch; pending conflict переживает effect. Полный implementation plan пока PENDING focused QCSD/K1/K2. Дополнительный RISK-03: FR-2/OpenSpec явно привязаны к обновлённой форме/outcome-header, FR-6a отдельно закрепляет legacy409/no-session/no-sideeffects и доступный обычный вход/обновление. Архитектура и утверждённый макет не менялись с предыдущего design-review.",
+  "evidence": "Изменены ADR Decision/Consequences/Confirmation и architecture protocol/UI/API sections; план перечисляет точные source/test targets, сценарии и зависимости. Прочитаны originating отчёты, утверждённый HTML, реальные AuthForm/Landing/RecoveryForm/PartnerService/analytics/contracts. Native host при текущем чтении содержит все8условий, поэтому addressed перечисляет8, newRisks.conditions пуст. По сообщению координатора первая aggregate попытка отказала из-за scope RISK-01, затем risk originator исправил собственный receipt, следующий evaluate дал author-delta-missing. История отказов не сбрасывалась автором; host/review не редактировались. Это исправление дизайна, не реализация, не закрытие условий и не прохождение тестов. Требуется originating verification нового measured snapshot. Actual cycle2 aggregate exit1 unresolved толькоRISK-03; остальные8 conditions originating verified. Нормативная дельта и hashes обновлены до кода; новый клиент не обещает обратной совместимости, которой фактически нет.",
+  "newRisks": {
+    "assessment": "Новых рисков сверх исправления RISK-03 не выявлено автором; независимая проверка требуется",
+    "evidence": "Изменены только требования/ledger дельты совместимости, исходный код/ADR/архитектура/макет не изменены",
+    "conditions": []
+  }
+}
