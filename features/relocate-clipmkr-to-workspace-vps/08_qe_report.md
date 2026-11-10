@@ -156,3 +156,10 @@ Production private candidate исправлен по независимому з
 Свежий du исходных локальных томов:stt20776B,llm2005B,render0B,spend73515B,helpdeskuploads0B. На target24GiB свободно. Это подготовка до maintenance, не frozen receipt.
 
 Maintenance выполнен10.11 в05:42:06UTC после независимого maintenance-only review exact SHA `4e9ee26b1123ce4a96eb8017ecf6574f8160edc20168819bac2cf9a4e07a8daa`. Runtime validate/reload/file-loaded parity exit0. Двенадцать HTTPS GET/POST probes на6main/support hostnames вернули503 с TLS verify0. Directmain4181 тоже503; directsupport4191 connection refused после остановки только support proxy. Main/web/workers/support app ещё работают до завершения drain, target production writers не запускались. Начат обязательный900сек период истечения ранее выданных partURL. Сохранены исходные конфиги и runtime IDs, их архив перенесён на target. Эти факты не означают завершённого snapshot.
+
+
+## Окно синхронизации10.11 — фактический результат
+
+После двух stable fullparts probes (первый >932сек послеfence) и нулевых queues/attempts все5source apps остановлены с exit0/OOMfalse. Capture, scoped restore, raw Redis archive иsource R1 выполнены exit0. Независимое read-only чтение цели:84таблицы(994+138строк),56sequences,260+13Rediskeys,4files/7dirs совпали с frozen manifests. Все12основных artifacts иrawarchive SHA сверены на обоих хостах. Target production app не запускался.
+
+Source восстановлен в06:03:23UTC, окно1277сек;7HTTPSадресов200/308TLS0. Original QA возвращена с прежними QAbindings отдельно от новыхfinalDB. После source resume копия считается frozen-at-T, но preliminary для будущегоcutover. Нового native closure не заявлено, код семи targets не менялся. Подробности и ограничения: [операционный протокол](../../docs/operations/relocation-20261110-final-sync.md).
