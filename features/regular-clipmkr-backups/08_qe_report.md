@@ -148,3 +148,45 @@ Production capture/install/timer enable/restore не выполнялись. Exi
 | QE-RETENTION-03 | HIGH | fixed | 1 | codex | Forbidden-command test пропускает настоящий restic forget |
 
 Текущий итог после QE3: все три code/QE conditions независимо закрыты на revision99d5e457…; новые findings отсутствуют. Координатор выполняет native evaluate и отдельную TASK-5 приёмку. Этот отчёт не объявляет production restore или всю feature завершёнными.
+
+
+## TASK-5: независимая read-only проверка runtime-доказательств — 10.11.2026 08:26 UTC
+
+Это проверка эксплуатационной приёмки после code-QE closure, **не новый code review cycle**. Native code/QE receipt/revision не изменялись. Исполнитель backup/restore — координатор; независимый проверяющий `gpt-6-astra xhigh /root/backup_qe` самостоятельно прочитал доказательства, сверил файлы, выполнил только SELECT в восстановленных isolated БД и read-only запросы к действующим offsites. Повторный restore, новые оплаты/нарезка, изменения production/runtime и удаление proof DB этой сессией не выполнялись.
+
+**Результат: заявленные текущие backup/isolated-restore доказательства подтверждены в ограниченном scope.** Исторические TASK-5 PENDING выше относятся к моменту QE3; актуальное runtime-состояние — этот раздел. Ключевые ограничения внизу сохраняются.
+
+### Run, конфигурация и текущие offsites
+
+Первый отказ действительно присутствует в journal:08:18:37 UTC, component preflight, `unsafe_lock_path`, non-success до capture. `/var/lock` является symlink на `/run/lock`. Независимый stat обоих lock names показал один root-owned regular file dev28/inode6/mode0644. Собственный drop-in корректно сбрасывает ExecStart и задаёт тот же reviewed binary с существующим `--lock /run/lock/corp-backup.lock`; canonical corp daily продолжает открывать тот же inode через старый alias. FD8/shared-flock proof не ослаблен. Installed wrapper/capture побайтно совпали с reviewed40781ce…/18922b…; unit остаётся root, Timeout55min, KillMode control-group.
+
+`last-success.json` и service result подтверждают успешный scoped run08:20:11.842584–08:20:31.870150 UTC, длительность20.027566s. Run `run-5b4c1f0a21b64d2ea5f7d3041ac5733d`; snapshot `b41b5d9db0bc3fe0e91283c3a3a6c1e800f44e66c18828522de78cb19ad40bce`; manifest SHA-256 `0f83f294199e9142c8daf8c4ffac5695a168ebbb5b0c0078dbac0d2bb97acae4`. Primary verified08:20:26.748037, secondary08:20:31.870078 UTC. Это20-секундное наблюдение, не latency/RPO SLA.
+
+Дополнительно reviewer самостоятельно прочитал **оба configured existing S3 repositories** через canonical profile/route с `restic --no-lock --no-cache snapshots --json <current-id>` и `dump <current-id> <manifest>`: full snapshot ID, stable tags и manifest hash совпали отдельно в primary и secondary. Никакие credentials/URL не опубликованы; command-level read-only не выдаётся за отдельное IAM-доказательство.
+
+### Извлечённые bytes и изолированные PostgreSQL
+
+Приватный proof и raw logs: `/root/.config/clipmkr/backup-audit-20261110/restore-20261110T082243Z-f20719/`. Proof root0600; snapshot/run совпали с last-success. Оба native restore stdout называют current snapshot и разные destinations; stderr пусты. Reviewer независимо посчитал SHA-256 всех8 manifest-listed файлов в **каждой** extraction:8/8 совпали,2228104bytes на copy; сами manifests также совпали с success receipt. Все перечисленные files regular/private. Spend повторно parsed:302 JSON objects,74499bytes completed prefix, excluded-tail0, prefix SHA/record count совпали. Эти bytes включают настоящие dumps/RDB/config/spend; live uploads в данном источнике пусты и не выдаются за проверку реального attachment.
+
+Два proof DB names подтверждены отдельными от production names, с уникальным proof prefix. До создания оба count0 отражены в retained logs; native pg_restore stderr пусты и proof exit0. Reviewer не повторял restore: к существующим restored DB выполнены SELECT с `PGOPTIONS=-c default_transaction_read_only=on`; сам сервер подтвердил transaction_read_only=on.
+
+| Независимая проверка restored DB | Наблюдение |
+|---|---|
+| Main public tables / accounts |27 /39 |
+| Helpdesk public tables / conversations |57 /11 |
+| Unvalidated foreign keys |0 в обеих DB |
+| Свежий successful payment от10.11 07:19:34 UTC |1; связанные account1, matching intent/account/provider-id1, grant1, exact payment_succeeded event1 |
+| Новейшая запись от10.11 07:01:11 UTC |video1 status done; account FK1; clips2, обе done; declaredClips2 |
+| Orphans payment→account, grant→intent, video→account, clip→video |0 во всех четырёх независимых count-запросах |
+
+Свежая оплата и новейшее видео проверены как отдельные сохранённые сущности со своими корректными связями; их принадлежность одному аккаунту не утверждается. Дополнительно просмотрены реальные FK definitions. Private row IDs, emails, hashes паролей и provider IDs наружу не выводились.
+
+### Redis, staging и расписание
+
+Проверен retained native checker log восстановленного RDB: `Checksum OK`,602 keys, DB0/1/2/3/4/5/6/15; stderr пуст. Файл RDB независимо вошёл в8/8 checksum проверку обеих copies. Это format check, **не загрузка RDB**; live shared Redis overlay не выполнялся и не утверждается.
+
+На08:26:55 UTC staging содержит1 private root-owned run,2233396bytes включая manifest; available25209638912bytes. Состояние укладывается в согласованный bounded lifecycle и cap. Timer фактически enabled/active/waiting, next elapse09:00:51 UTC; успешный scoped run подтверждён, несколько последующих hourly срабатываний ещё не наблюдались.
+
+### Сохраняющиеся границы
+
+Полный offhost recovery-key/password retrieval и доставка Alertmanager не доказаны. Existing escrow attestation не заменяет retrieval. Online компоненты не образуют атомарный cross-store snapshot; DR требует закрытых workers и reconciliation. Независимой копии original S3 media objects здесь нет: восстановлены metadata/config и ссылки, не обещание пережить удаление исходного bucket. Не заявляются RPO0, подтверждённый hourly RPO, Redis load test либо full product E2E/CI pass. Общий app-suite/typecheck limitations из06 остаются отдельными. Нового подтверждённого code/runtime дефекта в этой bounded проверке не найдено.
