@@ -1,6 +1,55 @@
 # Независимая трассировка FR-1…FR-8
 
-Вердикт: **NO-GO**. Цепочки требований найдены для всех 8 FR, но это не 100% выполненных требований: остаются RET-QP-001/002/003 первичного QE и один самостоятельный пробел обязательного доказательства **RET-TR-001 (HIGH)**. Код и тесты не исправлялись, production не затрагивался.
+## Текущий focused verification — цикл 3
+
+Вердикт моей роли: **CLEAN; RET-TR-001 остаётся проверенным** на revision `01593dab6b59e9f722db9aac5a20f49952516e31aa3f13a182de86bf095b09e6`, nonce `833d9ab1-9436-438c-9a53-2d0193125d52`. Та же originating сессия `/root/retention_fleet_trace`, host model metadata `gpt-6-astra xhigh`, автор `gpt-6.1-sol high`. Общий native gate и чужие originating conditions этим вердиктом не закрываются.
+
+После admission прочитан current `qe-author-delta.json`. Независимое сравнение с сохранённым **cycle-2 snapshot в native-qe-history.jsonl** показало ровно один изменившийся manifest path: `apps/web/src/server/guest-page.ts`. Все 57 current digests совпадают с файлами. Содержимое собственных targets неизменно:
+
+| Target | SHA256 cycle 2 = cycle 3 |
+|---|---|
+| `packages/db/migrations/028_clip_retention.sql` | `2778ae56998e3d2581775b504ed0918f50aaf9296e7bb8fb3369c2aaa9ddbaa9` |
+| `tests/retention-policy.integration.test.ts` | `28fa72ddac9e920b41d516e577642692633c8c07b0b175788a828818d93bcf88` |
+
+Requirements, plan, backend и остальные tests также совпали с прошлым manifest. Поэтому собственный PostgreSQL результат cycle 2 (**2 passed**, две migration cases) остаётся применимым к тем же байтам; повторного выполнения в cycle 3 нет и оно не заявляется.
+
+**Точная source delta установлена независимо от author prose:** удаление из текущего guest-page.ts ровно одной строки текста `[hidden]{display:none!important}` восстанавливает SHA256 guest-page.ts прошлого snapshot. Других изменений содержимого нет. Правило перекрывает author `button,.download { display:inline-block }` для элементов с hidden. Download-all остаётся в DOM с listener; при наличии доступного clip hidden отсутствует и правило его не скрывает, при отсутствии доступных clips hidden+disabled выполняет требование FR-3/FR-5. Второй affected hidden consumer — `interest-login`; после `element.hidden=false` атрибут удаляется и правило не мешает показать ссылку входа. SQL/миграция/clock/права/сроки этой CSS дельтой не меняются.
+
+Прочитан предоставленный `browser-guest-results.private.json`: **2/2 passed**, active и expired, оба status 200. Root сообщил actual Chromium active button visible / expired hidden; это coordinator execution, не мой browser run. Собственная проверка здесь — точная byte delta, CSS/DOM consumer reasoning и неизменность ранее исполненных migration tests. Structural classification author delta верна: меняется видимость действия. Новых самостоятельных серьёзных traceability рисков в этом узком scope не найдено.
+
+Собственное условие RET-TR-001 в current host сверено объектно с сохранённой собственной cycle-2 receipt — **полностью идентично**, включая requirement/scope/evidence. Current author addressed перечисляет все семь теперь сохранённых host conditions, newRisks пуст. Собственная entry сохраняет RET-TR-001 дословно и добавляет current-revision verification, authorAssessmentChecked и structural deltaVerification; чужие entries/author сохраняются под flock. Код, tests, host и native history не редактировались; новый native prepare/evaluate и production операции не выполнялись.
+
+## Предыдущий focused verification — цикл 2
+
+Вердикт моей роли: **CLEAN; RET-TR-001 проверен и закрыт** на revision `85fdf8f2b2e452d4998ab3870ff73ca18e32f63d5e047f0cc1ad758d714a5363`, nonce `cc659720-bc12-4601-b9e3-39b018798275`. Это закрытие собственного условия; чужие originating conditions, общий native gate, deployment и приёмку владельца я не закрываю. Исторический первый pass ниже сохранён и не выдаётся за состояние новой ревизии.
+
+Проверка выполнена той же originating сессией `/root/retention_fleet_trace`, по переданным координатором model metadata `gpt-6-astra xhigh` против автора `gpt-6.1-sol high`. После явного admission прочитан `qe-author-delta.json`, затем независимо текущие миграция, migration test, runner/migration helper, cleanup dependencies, план AM-15/TASK-11 и затронутые traceability связи остальных repair targets. До admission код/receipt не перечитывались. Все **57/57** host manifest digests и **3/3** OpenSpec SHA совпали; исходная migration 028 осталась неизменной.
+
+### Что теперь доказывает RET-TR-001
+
+`tests/retention-policy.integration.test.ts:159–176`, `legacy_render_minimum_filters_and_unknown_backfill`, реально создаёт схему до 028, вставляет прежние данные и применяет текущую 028. В фикстуре две успешные non-rerender render попытки (01.10 и 02.10), более поздний video.finished_at (05.10), более ранние rerender (02.09) и failed render (03.09), а также stt история. Assertion требует **01.10 12:00 UTC / legacy_render**, а не последний render, video fallback или ранний rerender/failed. Отдельный clip требует **05.10 / legacy_video**. Ещё один готовый clip имеет непустой synthetic object_key и created_at, но не имеет допустимой render/video готовности: после migration строго **NULL / unknown / media_deleted_at=NULL**, затем retentionTick с memory storage не вызывает eraseClipPrefix. Непустой key делает последнюю проверку содержательной; production/S3 adapter здесь отсутствует. Старый отдельный fallback test сохранён.
+
+**Собственное execution:** на существующей разрешённой `n5_relocation_webhook_guard_test` в уникальных test schemas выполнен `scripts/test.mjs tests/retention-policy.integration.test.ts -t 'legacy_ready_is_not_reset_on_rollout|legacy_render_minimum_filters_and_unknown_backfill'` с закреплённым Node 22 и private env-file, `N5_PREFIX_RUN_S3=0`. Результат **exit 0, 2 passed, 10 отфильтрованных skipped**, 5.41 секунды. Другие PostgreSQL retentionTick suites в это окно не запускались по координации root; новые схемы удалены штатным finally. Лог `fleet-traceability-cycle2.private.log`, SHA256 `32d70dc75bb7b4506fa73df4606c7948f1155f791cf5be544c731c19fd5eb262` в private evidence directory.
+
+Предварительный собственный запуск с новым уникальным именем *_test не дошёл до тестов: роль получила `permission denied to create database`; **0 выполнено, 12 skipped по ошибке beforeAll**, exit 1. База не была создана. Этот setup failure сохранён отдельно в `fleet-traceability-cycle2-setup.private.log` (SHA256 `f413d63cfd100b516e89334005870564f637aaa04e45aa936cfa8d37b5980bce`) и не засчитан как pass. После этого root подтвердил окно в уже существующей test DB. Production DB не использовалась.
+
+### Различающие проверки и пределы доказательства
+
+Независимо прочитаны точные mutation transforms в private `run-repair-mutations.private.cjs` и сырые результаты двух авторских запусков. Подмена COALESCE(min render, video) на video.finished_at даёт **AssertionError на строке 172: ожидается 01.10, получено 05.10**, exit 1; удаление `AND NOT a.rerender` даёт **ожидается 01.10, получено 02.09**, exit 1. Оба падения содержательные, не ошибки setup/import. SHA256 логов соответственно `0f480dc836b3cd3346f252588d1ff74e21321072cae95730201f00456cc4a43e` и `51c71acd1b6e6fc38072e60f1c3834d6f488b40f3d6e7c084bc900bf4f148af7`.
+
+Это **авторские mutation executions**, самостоятельно я их не повторял и frozen source не мутировал. Собственный green PostgreSQL run плюс прочитанные discriminating assertions/точные mutation failures подтверждают смысл исходного условия. Не заявляю mutation score или доказательство каждого возможного SQL mutation: non-render fixture имеет обычный для stt null clip_id; failed-filter отдельно не мутировался. Эти ограничения не скрывают два требовавшихся различающих сценария и не объявляют новый продуктовый дефект.
+
+### Author delta и затронутая трассировка
+
+Structural classification верна: добавлена обязательная историческая verification, также изменены поведение clocks, reaper и runtime consumers. Readiness/deadline формула, исходная миграция и FR-8 смысл не изменены ради прохождения теста. Current plan AM-15/TASK-11 связывает новый matrix test с FR-8/ADR-001; новые consumer и regression paths включены в measured targets.
+
+Для обнаружения риска от delta проверены связи: actual clock queue/watchdog → retention/post-lock decision и notice claim; outer reaper state/lease → новые PostgreSQL tests; shared `createSupportMailer` → оба runtime callers и capture test; purchase/return/guest 7/30/effective deadline → rendered HTML assertions; CTA fixtures → ready_at и точная 7-day граница; diagnostic fixture → durable claim/S3 error. Новых самостоятельных серьёзных traceability gaps в просмотренном repair scope не найдено. Эти связи проверены по коду/тестам; их полные runtime suites и originating closure принадлежат другим ролям и не присвоены этой сессией. Полная blogger retention matrix, whole-suite, реальная доставка inbox, live browser и owner acceptance этим focused pass не доказываются.
+
+Первая native оценка сохранила только три QP origins; моё действительное условие RET-TR-001 присутствует дословно в `author.newRisks.conditions` для supported lineage adoption. Его исходные id/owner/severity/classification/requirement/scope/evidence сохранены в собственной текущей entry без переименования и без изменения смысла; добавлена verification этой ревизии. Author handoff и чужие entries сохранены под flock. Host/история не сбрасывались, собственный `prepare/evaluate/begin-repair` не выполнялся.
+
+## Исторический первый pass
+
+Вердикт первой ревизии: **NO-GO**. Цепочки требований найдены для всех 8 FR, но это не 100% выполненных требований: оставались RET-QP-001/002/003 первичного QE и один самостоятельный пробел обязательного доказательства **RET-TR-001 (HIGH)**. Код и тесты не исправлялись, production не затрагивался.
 
 Reviewer: `fleet-traceability`, family `owner-exception`. Модель/режим, переданные координатором при запуске: `gpt-6-astra`, `xhigh`; автор: `gpt-6.1-sol`, `high`. Отдельная сессия `/root/retention_fleet_trace`, свежий контекст без истории реализации, согласно `docs/review-policy.md`. Внешний provider session ID инструментами не предоставлен и не выдуман. Модель запуска указана по метаданным задания, независимая техническая аттестация провайдера не выполнялась.
 

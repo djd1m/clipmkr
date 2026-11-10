@@ -1,3 +1,64 @@
+# Текущая независимая проверка — цикл 3
+
+**Собственный вердикт fleet-integration: CLEAN. RET-INT-001 и RET-INT-002 подтверждены для текущей ревизии.** Общий native checkpoint оценивает координатор после всех reviewer receipts; этот отчёт его не подменяет.
+
+Revision `01593dab6b59e9f722db9aac5a20f49952516e31aa3f13a182de86bf095b09e6`, nonce `833d9ab1-9436-438c-9a53-2d0193125d52`. Originating reviewer `/root/retention_fleet_integration`, `gpt-6-astra xhigh`; автор `gpt-6.1-sol high`. Сохранены те же original conditions verbatim. Рассмотрены текущий author delta/newRisks, фактический CSS и затронутые DOM/script/route dependencies.
+
+## Доказательство неизменности предыдущей проверки
+
+Сравнены все 57 paths/digests из сохранённого `qe-cycle2-evaluate-valid.private.json` с текущим host и реальными файлами. Набор путей идентичен; **56 файлов совпали побайтно**, включая mail factory/callers, coordinator/reaper, watchdog/retention, оба собственно выполненных test suites, требования и план. Единственная разница — `apps/web/src/server/guest-page.ts`. Удаление ровно одного `[hidden]{display:none!important}` из текущих bytes воспроизводит SHA256 этого файла cycle2: этим независимо установлена точная минимальная дельта, а не только доверие changedPaths. Все три OpenSpec ledger SHA совпали.
+
+Поэтому собственный cycle2 запуск **42 PASS / 0 SKIP**, exit0, остаётся релевантным подтверждением RET-INT-001/002. Его лог `fleet-integration-cycle2.log` также неизменен: SHA256 `3da32632e4497fe28e6d2d27e47080142347c006c9eb848e61fd5e7f3d8192ab`. Нового тестового запуска в cycle3 не делалось; прежние 42 результата не объявляются повторно исполненными.
+
+## Проверка CSS и границ интеграции
+
+`guest-page.ts:38` задаёт button/.download display:inline-block. Новое правило :39 принудительно скрывает элементы с атрибутом hidden. В :50 истёкший/недоступный pack получает hidden disabled на global download-all; активный pack этого атрибута не получает. Кнопка остаётся в DOM, поэтому существующий listener :78 не ломается. Путь interest-login :69/:74 снимает hidden через DOM property и продолжает работать; новое правило перестаёт совпадать после снятия атрибута. Условные individual video/download nodes и effective deadline не менялись. Изучена существующая привязка `/g/[guest_code]` route → GuestPackService → handler; правки не затрагивают авторизацию, file route, signer, DB lifecycle либо почту.
+
+Прочитаны предоставленные runtime `browser-guest-check.private.cjs` и `browser-guest-results.private.json`: script отдельно утверждает active isVisible=true и expired isVisible=false, отсутствие expired player/individual action, проверяет deadline/МСК и активное playback. Result содержит 2/2 PASS с HTTP200. Это исполнение координатора, не собственный новый browser run. Текущая primary entry — CLEAN; RET-QP-002 не дублируется и не закрывается от чужого имени.
+
+## Current-revision подтверждения
+
+- **RET-INT-001:** runtime factory, queue/support callers и синтетический capture-контракт совпадают с independently tested cycle2; accepted capture, verify/reset, отказ реальному адресу и unavailable при отсутствии sink сохраняют доказательство.
+- **RET-INT-002:** reaper до transport gate и conditional UPDATE совпадают с cycle2; disabled/SMTP unknown transition, отсутствие сети/новых attempts, payload/key/first_attempt_at подтверждены неизменным собственным тестом.
+
+Author assessment checked: structural CSS исправляет фактическую видимость. В focused delta новых существенных рисков не найдено. Отсутствуют новые backend изменения, новые условия и основания повторять DB/S3/полный regression. Нет утверждения inbox delivery, новой production операции или численного coverage. Own receipt записана под flock/atomic replace, чужие entries/author/host сохранены.
+
+---
+
+# Исторический отчёт — цикл 2
+
+# Текущая независимая проверка — цикл 2
+
+**Собственный вердикт fleet-integration: CLEAN. RET-INT-001 и RET-INT-002 независимо подтверждены как исправленные.** Это не общий release PASS: RET-QP-002 остаётся у qe-primary; CSS/guest finding не дублируется новым условием.
+
+Revision `85fdf8f2b2e452d4998ab3870ff73ca18e32f63d5e047f0cc1ad758d714a5363`, nonce `cc659720-bc12-4601-b9e3-39b018798275`. Originating reviewer — та же независимая сессия `/root/retention_fleet_integration`, `gpt-6-astra xhigh` по host dispatch; автор исправлений `gpt-6.1-sol high`. Применён focused repair контракт canonical Step8 и интеграционный протокол Step9. Исторические условия скопированы из `cycle1-review-convergence-qe-review.json.private.json` **без изменения requirement/scope/evidence/severity/owner**. Автор принял их verbatim в author.newRisks; соответствие проверено. Авторский delta рассмотрен как structural, а не как готовое доказательство исправления.
+
+## Подтверждение RET-INT-001
+
+`apps/web/src/server/support/mail.ts:119–124` добавляет общий `createSupportMailer`: существующий `N5_MAIL_TEST_CAPTURE_FILE`, только `/tmp/`, O_NOFOLLOW, append, chmod 0600. Один capture callback передаётся существующему SupportMailer для verify/reset и retention; новая очередь, outbox, env или доставка в stdout не добавлены. `queue-runtime.ts:33` и `support/routes.ts:17` действительно используют эту фабрику. Без capture test-mode retentionSender теперь null, что предотвращает расход attempts для отсутствующего sink. Ограничение synthetic-only остаётся в адаптере; Resend/test контракты не смешиваются.
+
+Собственно исполненный `runtime_test_mailer_captures_synthetic_notice` проверил shared factory → PostgreSQL notice → настоящий локальный файл: accepted/attempts=1, запись synthetic notice; verify/reset также accepted и представлены отдельными строками. Несинтетический recipient отклонён без новой строки capture; отсутствие sink не создаёт/не меняет notices. Это закрывает originating требование wiring через общий фактический конструктор.
+
+## Подтверждение RET-INT-002 и связанный delta
+
+`retention-notices.ts:83–88` выполняет reaper до sender-null return. Обновление также содержит outer state='sending' и lease_until<=asOf, сохраняя актуальный tuple после ожидания блокировки. В двух собственно исполненных вариантах `unavailable_mailer_recovers_expired_sending_lease` (disabled и SMTP) просроченный sending стал unknown, attempts/payload/key/first_attempt_at сохранились, sendRetention не вызван.
+
+Для проверки взаимодействия исправлений исполнены существующие reaper accepted/replacement interleavings и post-lock clock expired/extended cases: прошли. Исследован actual callback из queue-runtime через watchdog к notices; claim берёт clock после notice row lock. Это проверка зависимостей собственных условий, не присвоение права закрывать RET-QP-001/003. Прежние immutable payload, catch-up, recipient-change, retry-age и shared mail transport tests также прошли.
+
+## Собственные результаты и границы
+
+`/root/.config/clipmkr/clip-retention-20261110/run-fleet-integration-cycle2.private.sh` — исходный разрешённый wrapper с двумя аргументами: `tests/retention-notices.integration.test.ts tests/support-mail-resend.test.ts`. Node22, isolated `_test` PostgreSQL, уникальная schema и локальные synthetic capture fixtures; cleanup выполнен штатными afterAll/finally. Exit **0**, **42 passed / 0 skipped**, 2 файла, 9.43s. Log `fleet-integration-cycle2.log`, SHA256 `3da32632e4497fe28e6d2d27e47080142347c006c9eb848e61fd5e7f3d8192ab`.
+
+Дополнительно прочитаны агрегаты предоставленного root runtime evidence: `browser-runtime-mail-result.private.json` — capture 2 после старта и те же 2 после restart, externalDelivery=false; `browser-notice-journal.private.json` — accepted count=2, суммарные attempts=2. Это чужое runtime исполнение, согласующееся с собственным factory тестом; оно не выдаётся за inbox delivery или лично запущенный web startup. Payload/адреса не выводились.
+
+Все **57** host manifest hashes и все **3** OpenSpec ledger hashes сверены перед записью receipt; расхождений нет. Source, host, author handoff и чужие reviewer entries не менялись. Own receipt добавлена под flock/atomic replace, исходные условия сохранены с current-revision implementationVerified=true, authorAssessmentChecked=true и structural deltaVerification.
+
+Новых существенных рисков в собственной focused области не выявлено. Численный coverage, полный исторический regression, retentionTick/S3/Redis startup и браузерный E2E этой сессией заново не запускались; глобальная advisory cleanup suite не пересекалась с другими агентами. Приёмка всей фичи остаётся конъюнкцией всех originating условий, включая незакрытый primary finding.
+
+---
+
+# Исторический отчёт — цикл 1 (сохранён без переписывания выводов)
+
 # Независимый Fleet QE — интеграционные границы
 
 Вердикт: **NO-GO** для текущей ревизии. Новые условия: **RET-INT-001 HIGH**, **RET-INT-002 WARNING**. Существующие RET-QP-001/002/003 остаются у qe-primary; этот отчёт их не закрывает и не создаёт дубликаты.

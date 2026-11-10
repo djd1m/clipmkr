@@ -1,3 +1,84 @@
+# Focused verification — cycle 3
+
+Текущий вердикт qe-primary: **CLEAN — все три собственных условия verified**. RET-QP-001, RET-QP-002 и RET-QP-003 сохранены дословно и проверены на текущей ревизии. Это собственный review verdict; общий native gate требует полного roster и настоящего evaluate, а выпуск — отдельной применимой приёмки.
+
+Reviewer: qe-primary / owner-exception; originating session /root/retention_primary_qe, gpt-6-astra xhigh. Автор — gpt-6.1-sol high. Revision 01593dab6b59e9f722db9aac5a20f49952516e31aa3f13a182de86bf095b09e6; nonce 833d9ab1-9436-438c-9a53-2d0193125d52.
+
+## Проверка фактического изменения
+
+Прочитаны текущие qe-author-delta.json и host manifest, исправленный guest-page.ts, затронутые HTML/CSS/JS зависимости и фактический браузерный script/results/screenshots. Все 57 текущих artifact hashes совпали с host. Из native-qe-history.jsonl самостоятельно извлечён manifest cycle2 revision 85fdf8f2b2e452d4998ab3870ff73ca18e32f63d5e047f0cc1ad758d714a5363: единственный отличающийся путь — apps/web/src/server/guest-page.ts. Таким образом, unchanged binding RET-QP-001/003 и соответствующих тестов установлен по сохранённым measured snapshots, не по заявлению автора.
+
+Новая строка [hidden]{display:none!important} в guest CSS действительно сильнее существующего button,.download{display:inline-block}. Expired download-all остаётся в DOM с hidden disabled, поэтому существующий listener не получает null; у доступного пакета hidden отсутствует и кнопка продолжает показываться. Правило также корректно скрывает interest-login до явного .hidden=false в существующем обработчике 401. Новой продуктовой семантики, зависимости либо обхода доступа эта правка не добавляет.
+
+## RET-QP-002 — verified
+
+Политика 7/30, точный min(clip deadline, guest deadline) МСК и public expired state, проверенные в cycle2, сохранены. Последний residual — реально видимая недоступная глобальная кнопка — закрыт CSS cascade.
+
+Прочитан реальный coordinator evidence:
+- browser-guest-results.private.json: две строки, active и expired, обе status=200 и passed=true; SHA256 4f6ebb1e83105e00f1d6ded543d60aaa4a351a7dc77d96c0e26c583db9dd48df.
+- browser-guest-check.private.cjs: SHA256 4021ec9046773c573b4eeea08d1e2c5358c5b2f116465234a0b5d23ee66f0fd7. Проверены assertions: expired download-all.isVisible()=false, active isVisible()=true, отсутствие expired приглашения/плеера/individual download, точный срок МСК, active currentTime>1, отсутствие горизонтального overflow.
+- Визуально просмотрены browser-guest-expired.png и browser-guest-ready.png: в expired сохранены история и единое состояние без плеера/кнопок скачивания; в ready видны срок МСК, плеер, индивидуальная и глобальная кнопки. Скриншоты синтетические, в Git не копировались.
+
+Корень private evidence: /root/.config/clipmkr/clip-retention-20261110. Это проверенные артефакты исполнения координатора, не собственный браузерный запуск. Исторический failing error file cycle2 не перезаписывался и не используется как результат cycle3.
+
+## RET-QP-001 и RET-QP-003 — verified на текущей revision
+
+Хеши callback-clock реализации queue/watchdog/retention/notices, outer state/lease reaper guards и относящихся PostgreSQL barrier tests идентичны cycle2. Сохраняется собственная проверка cycle2: post-lock actual clock учитывает оплату credit grant после ожиданий; reaper не перезаписывает accepted/live replacement lease. В этом цикле эти backend scenarios не перезапускались — изменения к ним не относятся. Тестовое исполнение не выдаётся за повторное.
+
+## Author delta / новые риски / ограничения
+
+authorAssessmentChecked=true: actual one-path CSS delta соответствует author classification=structural и заявленному scope; новое поведение и unaffected bindings проверены независимо. deltaVerification implementationVerified=true. Новых существенных рисков после focused review изменения и затронутых зависимостей не обнаружено; чужие fleet conditions не присваиваются этой роли.
+
+Дополнительно прочитаны фактические итоговые строки cycle3-hidden-unit.private.log: 2 files / 25 tests passed; cycle3-hidden-build.private.log: Compiled successfully, Generating static pages 14/14. Это чужие результаты, а не собственное execution; shell exit0 известен из сообщения координатора, отдельно в просмотренных summary-строках не присутствует.
+
+Код, production, тесты и native host этой сессией не изменялись/не запускались; изменены только собственный report и entry receipt под общим flock. Ни общий native closure, ни production release, ни ручная приёмка этим отчётом не объявляются.
+
+---
+
+## Исторический focused review (cycle 2)
+
+# Focused verification — cycle 2
+
+Текущий вердикт: **NO-GO**. RET-QP-001 и RET-QP-003 подтверждены по реализации и относящимся к ним тестам. RET-QP-002 остаётся unresolved: глобальная кнопка скачивания на полностью истёкшей гостевой странице всё ещё видима. Исходные три conditions сохранены дословно; нового condition для того же неполного исправления не создаётся.
+
+Reviewer: qe-primary / owner-exception; та же originating session /root/retention_primary_qe, gpt-6-astra xhigh. Автор исправлений — gpt-6.1-sol high. Revision 85fdf8f2b2e452d4998ab3870ff73ca18e32f63d5e047f0cc1ad758d714a5363; nonce cc659720-bc12-4601-b9e3-39b018798275. Перед записью сверены все 57 manifest entries: mismatches=0. Код и тесты этой сессией не изменялись и не запускались.
+
+Сначала прочитаны qe-author-delta.json и текущий host manifest; затем самостоятельно проверены реальные изменения callback clock, reaper, mail factory/runtime callers, purchase/return/guest UI, migration/test matrix, CTA и watchdog diagnostics fixtures и дополненный план. Author classification=structural верна. ChangedScope включает все 15 host changedPaths и затронутые зависимости; четыре условия других reviewers остаются их собственными условиями, моя entry не подменяет их verification.
+
+## RET-QP-001 — verified
+
+queue-runtime.ts теперь передаёт actual callback в watchdogTick, тот передаёт тот же callback в notices и retention. retention.ts получает decision=clock() после account→video→clip locks и использует этот decision для eligibility, claim и next due. Фиксированный Date остаётся только явно выбранным logical clock; в найденных production callers передаётся callback. notices claim вызывает clock после FOR UPDATE, поэтому ожидание notice lock больше не сохраняет старый asOf. Signature guards и формула оплаченного срока не изменены.
+
+Проверены тесты watchdog_delay_credit_grant_before_claim_preserves_media, credit grant starting while retention waits on account lock protects media и notice_claim_rechecks_clock_after_lock_wait (expired/extended). Они используют настоящий PostgreSQL, управляемый Date, отдельные connections/наблюдение lock wait, payment credit_grant с отсутствующим legacy paid_until и assert отсутствия S3/transport. Scheduled start проверен до/на границе; прежний claim-before-payment retry остался. Проверка кода и содержания тестов выполнена независимо; их исполнение в этой сессии не заявляется.
+
+## RET-QP-003 — verified
+
+В retention-notices.ts outer UPDATE теперь имеет state='sending' AND lease_until<=now вместе с bounded id subquery. После ожидания row lock predicate перепроверяется на актуальной строке и не переписывает committed accepted либо новую live lease. Reaper также перенесён до unavailable transport return; immutable payload/key/first_attempt_at этим переходом не изменяются.
+
+Проверен notice_reaper_preserves_concurrent_accepted_and_live_lease для accepted и replacement: finalizer держит реальную PG transaction, второй connection доходит до lock wait, затем commit; asserts сохраняют state/receipt/payload/first_attempt_at и не вызывают transport. Existing expired-lease retry и новые disabled/SMTP tests покрывают обратный переход sending→unknown. Собственного запуска PG tests нет.
+
+## RET-QP-002 — unresolved, исправление частичное
+
+Правильные 7/30 тексты появились в credits/legacy UpgradeScreen, ReturnView и гостевом offer. Поиск старых обещаний в apps/web/src и packages/shared/src не выявил остатка прежнего хранения. Гостевые карточки показывают min(clip deadline, pack expiry) с datetime/МСК, отличают unknown/failed/processing, а expired/claimed/deleted получают единое публичное состояние. Новые consumers включены в plan и measured manifest.
+
+Остаток находится в apps/web/src/server/guest-page.ts: CSS button,.download{display:inline-block} перекрывает user-agent правило для hidden. Разметка all-expired добавляет глобальной кнопке download-all атрибуты hidden disabled, но авторского CSS, обеспечивающего скрытие, нет. Поэтому недоступная кнопка «Скачать все» всё ещё отображается. Сохранение DOM node ради существующего event listener допустимо; нужна фактическая невидимость, а не только атрибут.
+
+tests/retention-policy.test.ts проверяет строку '<button id="download-all" hidden disabled>', поэтому этот residual не ловит. Требуемая проверка — browser visibility/computed style на all-expired при сохранении доступной кнопки в mixed/available состоянии, без поломки обработчика событий. Это остаётся частью исходного RET-QP-002, FR-3/FR-5 и TASK-9.
+
+После собственного статического анализа запрошено прямое browser evidence. Прочитан /root/.config/clipmkr/clip-retention-20261110/browser-guest-error.private.txt: первая строка 'Error: Expired global download visible', SHA256 62dc0f294c1e77f1b86647bc6fe753e18be16712f212121e205fee7f06bcc5ca. Проверен соответствующий assertion в browser-guest-check.private.cjs: locator('#download-all').isVisible(). Это чужой реальный прогон координатора, не собственное исполнение. Секреты/адреса из private сценария не копировались.
+
+## Delta audit и ограничения
+
+Прочитаны новые shared mail factory и оба runtime caller: synthetic recipient gate остаётся в SupportMailer, bounded Resend transport и verify/reset API сохранены; capture использует прежний protected file writer. Дополнения migration и transitive regression tests проверяют исторические даты и прежние lifecycle/error assertions, а не ослабляют политику. Подробная приёмка четырёх fleet conditions остаётся их originating reviewers.
+
+Других существенных рисков сверх незакрытого RET-QP-002 в проверенном repair delta не установлено. deltaVerification остаётся implementationVerified=false, поскольку весь author delta ещё не принят. authorAssessmentChecked=true означает независимую проверку с явным несогласием с полнотой UI исправления; это не авторское GO.
+
+Общая сборка, full test execution, provider delivery, production и owner acceptance не выполнялись этой ролью. Final build по сообщению координатора ещё был pending; не объявляю его успешным. Native evaluate/begin-repair выполняет координатор после полного roster.
+
+---
+
+## Исторический первичный review (cycle 1)
+
 # Независимый первичный QE / code review
 
 Вердикт: **NO-GO**. Три незакрытых условия: RET-QP-001 (CRITICAL), RET-QP-002 (HIGH), RET-QP-003 (HIGH). Полный первый статический pass завершён; исправления и повторная независимая проверка обязательны. Этот отчёт не является разрешением production/release.
