@@ -1,0 +1,7 @@
+flowchart LR
+  Billing[Права оплаты] -->|Customer-Supplier: paid_end| Retention[Хранение результата]
+  Processing[Обработка медиа] -->|Customer-Supplier: ready_at| Retention
+  Retention -->|Shared kernel: deadline| Reads[UI и файлы]
+  Retention -->|Anti-corruption adapter| S3[S3]
+  Retention -->|Anti-corruption adapter| Mail[Resend]
+  Erasure[Удаление аккаунта] -->|Приоритет над retention| Retention

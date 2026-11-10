@@ -1,0 +1,12 @@
+flowchart TD
+  Render[publishRenderResult] --> Facts[ready_at и history]
+  Billing[payments и credits] --> Rights[paid_end]
+  Facts --> Rule[tariff.ts + plan.ts]
+  Rights --> Rule
+  Rule --> Reads[screen/file/link/guest/music/CTA]
+  Rule --> Cleanup[retentionTick]
+  Rule --> Notices[retention-notices]
+  Cleanup --> S3[eraseClipPrefix]
+  Notices --> Transport[support/mail.ts]
+  Watchdog[watchdogTick] --> Cleanup
+  Watchdog --> Notices

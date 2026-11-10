@@ -1,0 +1,6 @@
+flowchart LR
+  Web[Next.js web и watchdog] --> DB[(PostgreSQL)]
+  Worker[Существующий worker] --> DB
+  Worker --> S3[S3]
+  Web --> S3
+  Web --> Mail[Resend]

@@ -7,5 +7,7 @@
 - OpenSpec validate clip-retention-policy --strict: exit0. Это проверка структуры текущего ledger, не полноты реализации. До code gates дополнить delta сценариями FR-4/6/7 и окончательными решениями ADR.
 - Статический HTML проверен настоящим headless Chromium: 5 состояний; отсутствие горизонтального overflow при390px; нет кнопки скачивания в expired/deleted; переключение в светлую тему. Screenshot просмотрен. Это не E2E приложения.
 - Макет: docs/design/2026-11-10-retention.html; screenshot: docs/design/screenshots/retention-390.png. Вопрос о согласовании отправлен владельцу; ответа на момент записи нет.
-- Предварительный независимый обзор требований выполняет gpt-6-astra xhigh, fork_turns=none, отдельная сессия /root/retention_requirements_review. Не заменяет три originating QCSD roles/native convergence.
+- Предварительный независимый обзор требований выполнил gpt-6-astra xhigh, fork_turns=none, отдельная сессия /root/retention_requirements_review. Не заменяет три originating QCSD roles/native convergence.
 - Anti-drift на данном этапе: новые сроки присутствуют только в документах/макете, production продолжает прежние правила. Не выдавать подготовку за поставку.
+
+Подготовлены 3 proposed ADR, DDD, архитектура и план с конкретными targets. Независимый reviewer сформулировал 5 групп уточнений и 12 сценариев; формальные QCSD/gates не закрыты. Технические решения будут уточнены координатором в пределах согласованного поведения; они не являются дополнительными подтверждениями владельца.

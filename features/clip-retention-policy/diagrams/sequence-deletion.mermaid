@@ -1,0 +1,19 @@
+sequenceDiagram
+  participant P as payment
+  participant D as PostgreSQL
+  participant W as retentionTick
+  participant S as S3
+  P->>D: account lock, принять оплату, commit
+  W->>D: account → video → clip locks
+  W->>D: повторно проверить deadline
+  alt продление принято до claim
+    D-->>W: deadline в будущем, skip
+  else срок истёк
+    W->>D: deletion_started_at, cancel rerender, commit
+    W->>S: eraseClipPrefix free/paid/thumbs
+    alt все префиксы подтверждены
+      W->>D: null keys + media_deleted_at
+    else отказ или crash
+      Note over W,D: claim остаётся; следующий tick повторяет независимо от нового paid_end
+    end
+  end
