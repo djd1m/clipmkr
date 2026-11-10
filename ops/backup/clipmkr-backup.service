@@ -1,0 +1,15 @@
+[Unit]
+Description=Clipmkr native backup with two immutable offsite copies
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/opt/clipmkr/backup/backup-clipmkr.sh
+TimeoutStartSec=55min
+KillMode=control-group
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

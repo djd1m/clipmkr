@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "service": "clipmkr",
+  "integration": "standalone-hourly-only",
+  "include": ["/var/lib/clipmkr-backup/staging"],
+  "tags": ["clipmkr", "corp-infra"],
+  "consistency": "native component snapshots; no cross-store atomicity",
+  "schedule_hours": 1,
+  "capture_cap_bytes": 1073741824,
+  "restore": "Isolated PostgreSQL restore; native RDB format check only until an offline Redis destination is proven. Workers remain closed until reconciliation.",
+  "media_coverage": "Original external S3 only; no independent object backup.",
+  "corp_registry_compatible": false
+}
