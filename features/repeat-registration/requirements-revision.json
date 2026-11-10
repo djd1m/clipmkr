@@ -1,0 +1,8 @@
+{
+  "ledger": {
+    "openspec/changes/repeat-registration/proposal.md": "fc8fec4f104ccc521286383a63afc637d3f76d3a7957e33443c4f2a66095d5c7",
+    "openspec/changes/repeat-registration/specs/auth-registration/spec.md": "97a72cdc8162d320f1ea8da4e68d3e1553486038c5b2b4426b5fd0f5bb25cbe1",
+    "openspec/changes/repeat-registration/tasks.md": "3c178ea28da2bbd48b8e0168e07c819f450395443ee2d404422cb1949f375180"
+  },
+  "state": "Требования подготовлены; макет и pre-code gates ещё не закрыты"
+}
