@@ -13,3 +13,7 @@
 | tests/auth.test.ts и existing browser public-entry | guards и настоящий UI | Старый test об opaque register надо адресно заменить по принятой дельте, login privacy tests сохранить |
 
 Не требуется внешний OSS: проект уже использует поддерживаемые bcrypt/pg/Next/React/Playwright. Новый пакет формы или auth-сервис увеличил бы объём без пользы. Совместимость AuthService.register с многочисленными внутренними callers нужно явно решить до кода; массовая перепись fixtures не является целью.
+
+## Исходная репродукция на настоящем PostgreSQL
+
+Координатор выполнил baseline-auth-probe.private.cjs на исходном коде653c032 и существующей отдельной *_test БД, с уникальной схемой и штатными миграциями. Actualexit0: первая регистрация→действительная session; повтор с верным паролем→token returned, authenticate=null; повтор с неверным→token returned, authenticate=null. Counts1account/1session/1credit_grant. Схема удалена вfinally. Это репродукция service/store/DB; исходная браузерная репродукция ещё не выполнялась. Пароли/токены/реальные аккаунты в артефакты не включены.
