@@ -54,6 +54,10 @@ MEASURED: `npm run dz -- amendment-check --feature-dir features/yookassa-receipt
 
 Recall по теме guard/env/receipt вернул[]. Доказанный урок попытались сохранить через project-pinned teach в канонический /home/clipmkr с no-mirror:exit1, store guard REFUSED — lexical SQLite unreadable, recorded97rows. Store не удаляли, guard не сбрасывали, cold-start обход не применяли. Запись урока **не подтверждена**; ошибка не скрыта, на закрытие source QE не влияет. Урок: изменения billing-handler/env требуют соседних guard suites и отрицательных byte-drift/deletion controls; доказательство — исходные S-1/S-2 и независимый R2 security66/66PASS.
 
+Последующая диагностика уточнила причину: SQLite quick_check readonly=ok; Node22 native binding канонической установки работает, а в worktree после npm ci --ignore-scripts binding отсутствует. Повторили project-pinned CLI **из /home/clipmkr на Node22**, не изменяя store и зависимости: настоящий recall вернул существующие уроки, teach exit0/written, ID `teach:90c46998255eb41b`, reward0.9, total98. Повторный recall нашёл ровно эту новую запись. Поэтому предыдущий абзац сохраняет историю отказа, а итог обучения — **записано и извлечено**. Новая строка QE ledger не создавалась.
+
+Поставка source commit `012efb6a2465f156326b2f5756da9171aa2f635e` выполнена после закрытого native QE: окончательный Docker build exit0, миграция029 и опубликованный web приняты узким live smoke. Протокол и точные границы — [10_delivery.md](10_delivery.md); это не расширяет source QE до приёмки боевого магазина.
+
 Ниже сохранён фактический ход подготовки и первого отказного QE; исторические «ещё нужен/не выполнено» относятся к моменту их записи.
 
 ## Подготовка
