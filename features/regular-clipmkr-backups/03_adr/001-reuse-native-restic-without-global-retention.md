@@ -1,11 +1,13 @@
 # ADR-001: Переиспользовать native restic и immutable offsite copy без общего retention запуска
 
 ## Status
-proposed — обратимо до регистрации manifest/timer; пересмотреть при появлении поддерживаемого scoped snapshot-only phase или отдельного охвата S3 объектов. Согласование/исполнение не заявляются.
+proposed — обратимо до установки собственного descriptor/timer; пересмотреть при появлении поддерживаемого scoped snapshot-only phase или отдельного охвата S3 объектов. Согласование/исполнение не заявляются.
 
 ## Context
 
 После переноса активные PostgreSQL/Redis/mounts Clipmkr не входят в существующий backup. Corp infrastructure уже имеет restic0.16.4, local encrypted repo и две immutable S3 copies, systemd/registry/hooks/lock. `backup.sh --service` фильтрует snapshots, но затем выполняет global forget, verify и post-run: этот путь нарушает запрет менять чужую retention/задачи. Полная остановка приложения не разрешена; online атомарности нескольких хранилищ нет. Общий backup FAIL из-за чужого hook отделён от отсутствия Clipmkr coverage.
+
+Дополнительное фактическое discovery: установленная `/opt/corp-infra/bootstrap/schemas/backup-manifest.schema.json` исключает `clipmkr` из service enum. Прежняя идея зарегистрировать Clipmkr в global registry неприменима без foreign schema change, которого этот scope не разрешает. Выбрано убрать global/daily integration и оставить один собственный hourly путь; common native engine/lock/repo/retention переиспользуются.
 
 ## Decision Drivers
 
@@ -23,8 +25,8 @@ proposed — обратимо до регистрации manifest/timer; пер
 
 ## Decision
 
-Выбрать второй вариант: шесть code/config/test targets, один pre-hook подготовки и короткий wrapper с общим flock, native `pg_dump -Fc` двух runtime БД, `redis-cli --rdb` dedicated общего Redis и явным production files/config allowlist. После проверок атомарно публиковать completed staging, делать `restic backup --tag clipmkr --tag corp-infra`, затем existing `rclone copy --immutable --checksum` local restic tree в оба настроенных offsite. Проверять текущий snapshot identity и содержимое каждого offsite чтением, не только общий last-offsite marker. Не вызывать forget/prune, общий apply, чужие hooks и не source-ить исполняемый backup.sh.
-Manifest регистрирует только Clipmkr и тот же capture pre-hook для штатного daily. Hourly wrapper и daily используют один lock; самостоятельный capture вне доказанного shared lock отказывает. Фактическая политика daily local forget остаётся прежней и может убрать hourly snapshots из local repo; offsite append-only retention не меняется. `restic copy` не используется: действующие зеркала repo tree могут иметь один repository ID и append-only credentials.
+Выбрать второй вариант: шесть code/config/test targets, один capture helper и короткий wrapper с общим flock, native `pg_dump -Fc` двух runtime БД, `redis-cli --rdb` dedicated общего Redis и явным production files/config allowlist. После проверок атомарно публиковать completed staging, делать `restic backup --tag clipmkr --tag corp-infra`, затем existing `rclone copy --immutable --checksum` local restic tree в оба настроенных offsite. Проверять текущий snapshot identity и содержимое каждого offsite чтением, не только общий last-offsite marker. Не вызывать forget/prune, общий apply, чужие hooks и не source-ить исполняемый backup.sh.
+Repo target `ops/backup/clipmkr.backup-manifest.json` остаётся одним собственным descriptor: trusted root-only JSON в `/etc/clipmkr/backup/clipmkr.backup-manifest.json`, только для hourly wrapper. Он не ставится в `/var/lib/corp-infra/manifests/`, не валидируется как corp manifest и не добавляет hook в daily; foreign schema/registry не изменяются. Wrapper проверяет только фиксированные необходимые поля/типы/allowlist, без новой schema/platform. Hourly wrapper сериализуется с existing daily по одному lock; самостоятельный capture вне доказанного shared lock отказывает. Фактическая политика daily local forget остаётся прежней и может убрать hourly snapshots из local repo; offsite append-only retention не меняется. `restic copy` не используется: действующие зеркала repo tree могут иметь один repository ID и append-only credentials.
 
 Уточнение по `Q-STAGING-01`/`RISK-01`: hook — единственный cleanup owner собственного staging под тем же lock. Максимум 2 набора по ≤1 GiB (authoritative + candidate/остаток прерванной замены), после нормального окончания максимум 1 completed. До candidate очищаются только own orphan/superseded; действующий include сохраняется до атомарной замены. Unknown ownership/path/symlink вызывает отказ; production/foreign/repo данные не удаляются. После прерывания следующий holder lock завершает cleanup до нового capture. Last success receipt не зависит от удаления staging.
 
@@ -56,3 +58,4 @@ After-action review: оператор Clipmkr через месяц после �
 - Owner: оператор Clipmkr; приёмка владельцем/координатором по native gates.
 - Load-bearing property: stale data/partial capture/одна missing copy/чужой lock/binding drift не образуют success; никакой global forget и restore в live namespace.
 - Required automated check: `tests/backup-clipmkr.test.ts` — failures/stale/bindings/lock/forbidden commands и actual temp restic+rclone roundtrip с fault одной copy; `staging_repeated_failures_and_orphans_remain_bounded`, `capacity_preflight_refuses_before_bulk_capture`, `staging_cap_aborts_without_publication`, `spend_capture_preserves_valid_source_bound_prefix`, `spend_rotation_truncation_or_invalid_record_refuses_publication`. Fixtures обязаны вызвать safeguard, не только проверить наличие ветки. На момент planning эти тесты ещё не реализованы/не исполнены.
+- Integration Confirmation: `hourly_descriptor_avoids_global_registry_and_daily_hooks` в `tests/backup-clipmkr.test.ts` проверяет собственный descriptor path, fixed-field refusal и отсутствие writes/rescan/schema changes/daily registration; существующий общий lock по-прежнему блокирует concurrent capture.

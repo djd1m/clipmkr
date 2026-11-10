@@ -8,5 +8,7 @@
 
 Уточнение перед реализацией: bounded own staging/capacity guard, валидный source-bound completed prefix spend JSONL; обязательны durable uploads/config/spend, rebuildable stt/llm/video scratch явно исключён. Повторный originating review и gates ещё требуются.
 
+Обнаружено, что текущая corp schema исключает service clipmkr: descriptor устанавливается только в собственный `/etc/clipmkr/backup/`, используется hourly wrapper. Global registration/schema changes/daily capture integration исключены; новый manifest framework не вводится. Existing native repo/lock/retention reuse сохранён.
+
 ## Impact
 Только эксплуатация Clipmkr; приложение/UI/schema/DNS/live payments/foreign services не меняются. Выполнение по `features/regular-clipmkr-backups/`; approval, native dz K1/K2 и cross-model QE остаются обязательны. Этот proposal не заявляет их прохождение.

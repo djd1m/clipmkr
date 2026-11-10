@@ -39,6 +39,14 @@
 ### Requirement: Две подтверждённые offsite копии без чужих изменений
 Система MUST использовать установленные encrypted restic и existing immutable Yandex/Cloud.ru copies, проверяя текущую snapshot identity отдельно в каждой; собственный запуск не вызывает globalforget/prune/чужие hooks и не меняет foreign retention/сервисы. Restic tags MUST оставаться стабильными clipmkr/corp-infra; run ID хранится только в manifest/receipt, чтобы не дробить existing retention groups host,tags.
 
+#### Scenario: Global schema не допускает Clipmkr
+- **WHEN** установленный corp service enum не содержит clipmkr
+- **THEN** используется только собственный trusted root0600 JSON descriptor `/etc/clipmkr/backup/clipmkr.backup-manifest.json` hourly wrapper с fixed-field validation; global registry/schema/rescan и daily hooks не изменяются, новая schema/platform не создаётся
+
+#### Scenario: Непригодный собственный descriptor
+- **WHEN** descriptor malformed, не trusted root-owned regular file либо содержит unsafe field/path
+- **THEN** wrapper отказывает до capture; descriptor не исполняет произвольные команды, shared lock всё равно обязателен для совместимости с existing daily/prune
+
 #### Scenario: Одна копия недоступна
 - **WHEN** текущий snapshot отсутствует в primary или secondary либо copy failed
 - **THEN** полный успех не фиксируется, сохраняются прежний success age и явный failed component

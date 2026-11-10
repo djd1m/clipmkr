@@ -1,13 +1,13 @@
 {
   "origin": "docs/operations/2026-11-10-backup-audit.md @ f808cbf",
   "ledger": {
-    "openspec/changes/regular-clipmkr-backups/design.md": "7efb3091ac7827dfbaf9fa17466dbb897e49ccb7cdca60de79feb4dfa363943d",
-    "openspec/changes/regular-clipmkr-backups/proposal.md": "f5fdd73ee71aa5dc74599c47247e9c90af2cc2703446c3e6f40107a638c41ac0",
-    "openspec/changes/regular-clipmkr-backups/specs/application-backups/spec.md": "0fbf8bff0835b942fd0ba0bd489e0ab803aecacf4936c07757f73d6523f32ef7",
-    "openspec/changes/regular-clipmkr-backups/tasks.md": "b492b956404f61622b96288d4c52873265d083e769d370610a04f78a557bd06f"
+    "openspec/changes/regular-clipmkr-backups/design.md": "ce56253c727cd48f2add23da5bf2101c4ad3232832f50deba07e7128bf3e08a0",
+    "openspec/changes/regular-clipmkr-backups/proposal.md": "3567f339e790dc44406f06d3248f2bcb757ce6db95d45b7435c398dec3ac4508",
+    "openspec/changes/regular-clipmkr-backups/specs/application-backups/spec.md": "9a7c08b476af13d7c67cb87ade14d8b723493474b20a15000aebfa07da0f854f",
+    "openspec/changes/regular-clipmkr-backups/tasks.md": "a8d4b3bea143d863fbd2cab85008b08076cfe65b04ff3f75766dd486c51555e4"
   },
   "authority": "features/regular-clipmkr-backups/06_implementation_plan.md",
-  "state": "scoped planning rework after initial ideation exit1; originating re-verification/convergence pending; K1 observed by coordinator; K2/code/runtime NOT RUN by planner",
+  "state": "hourly-only descriptor integration rework after actual corp enum incompatibility; current revision focused review/convergence and gates coordinated separately; no code/runtime changes by planner",
   "sourceAudit": {
     "path": "docs/operations/2026-11-10-backup-audit.md",
     "commit": "f808cbf",
@@ -25,5 +25,12 @@
     "implementationAuthorModel": "gpt-6.1-sol",
     "implementationAuthorReasoning": "high",
     "authorHandoff": "features/regular-clipmkr-backups/author-handoff.md"
+  },
+  "integrationDiscovery": {
+    "source": "/opt/corp-infra/bootstrap/schemas/backup-manifest.schema.json",
+    "observation": "service enum excludes clipmkr; independently read by planner",
+    "decision": "own trusted root-only JSON descriptor /etc/clipmkr/backup/clipmkr.backup-manifest.json for hourly wrapper only; no global registry/schema/rescan/daily hook integration",
+    "planAmendment": "AM-5",
+    "expectedCodeTargetsUnchanged": true
   }
 }

@@ -8,3 +8,7 @@
 - Ideation: первый evaluate реально unresolved по Q-STAGING-01,RISK-01,RISK-02; после авторского исправления revision a9bf24ffccedf10616c7e774ac1592bbb7465412fb9f4504a91989d96d71b41c. Финальный native evaluate после всех трёх собственных reviewer entries: exit0, verdict=closed, unresolved=[], reasons=[]. На основании выполненных gates координатор разрешил Step7; runtime установка ещё не разрешена без фактического QE.
 
 Исходный план Solhigh, финальное планирование Astraxhigh; код предполагается Solhigh, независимый QE — новая сессия Astraxhigh. Повторная own-origin проверка planning delta не называется cross-model относительно финального planner. Документ фиксирует наблюдения, не подменяет native host/reviewer receipts.
+
+## Уточнение подключения по реальной схеме
+
+Действующая corp schema допускает13 сервисов и не содержит clipmkr. Вместо правки чужой схемы/реестра используется собственный hourly descriptor в /etc/clipmkr/backup. После синхронизации требований/ADR/плана/OpenSpec все три originating reviewers выполнили focused проверку этой дельты. Native evaluate: exit0/closed, revision `b71f8469dae91f4ad9b118402f7860beb52e14f8014c1383f231e19339f86ed4`, unresolved=[]; K2 повторно PASS с0failure/0warning/0skip, OpenSpec strict valid. Разрешена реализация затронутого wrapper/descriptor. Реальный урок сохранён через dz teach (teach:104ea94bf104352e) и найден последующим recall.

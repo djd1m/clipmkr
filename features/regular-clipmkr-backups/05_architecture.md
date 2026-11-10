@@ -5,8 +5,8 @@
 ```mermaid
 flowchart LR
     T[Собственный hourly systemd timer] --> W[backup-clipmkr.sh: общий flock, snapshot, две copies]
-    D[Существующий daily corp run] --> H[clipmkr-prepare.sh: capture и validate]
-    W --> H
+    J[Собственный JSON descriptor /etc/clipmkr/backup] --> W
+    W --> H[clipmkr-prepare.sh: capture и validate]
     H --> P[Две runtime PostgreSQL: pg_dump -Fc]
     H --> R[Dedicated Clipmkr Redis: native RDB всех DB]
     H --> F[Allowlist production files, config, image digests]
@@ -21,13 +21,15 @@ flowchart LR
 
 ## Ответственности и интерфейс
 
-- `ops/backup/clipmkr-prepare.sh` — executable manifest pre-hook: проверяет фактические источники и shared lock contract, очищает только собственный staging, проверяет capacity, создаёт уникальный staging0700, свежие dumps/RDB/files/config, checksums и component intervals; проверяет и атомарно публикует completed set. Никакого backup/copy/restore/repo-retention внутри hook.
+- `ops/backup/clipmkr-prepare.sh` — capture helper собственного hourly wrapper: проверяет фактические источники и shared lock contract, очищает только собственный staging, проверяет capacity, создаёт уникальный staging0700, свежие dumps/RDB/files/config, checksums и component intervals; проверяет и атомарно публикует completed set. Никакого backup/copy/restore/repo-retention внутри helper, регистрации в daily нет.
 - `scripts/backup-clipmkr.sh` — единственный hourly wrapper: root, bounded timeout, общий flock на весь run; вызывает hook, native restic, две immutable rclone copies и current snapshot readback; публикует собственный success только после всех шагов. Один CLI, без plugin framework или general-purpose config engine.
-- `ops/backup/clipmkr.backup-manifest.json` — service `clipmkr`, dump-based consistency, pre-hook, один completed staging include, RPO interval1h как целевая настройка; не raw PGDATA и не весь private runtime root. Установка только собственного registry file, exact existing schema validation до записи.
+- `ops/backup/clipmkr.backup-manifest.json` — единственный собственный descriptor hourly wrapper, установленный root0600 в `/etc/clipmkr/backup/clipmkr.backup-manifest.json`: service `clipmkr`, dump-based consistency, один completed staging include, interval1h как целевая настройка. Trusted root-owned regular JSON без symlink/foreign writable parents; wrapper разбирает фиксированные необходимые поля и проверяет типы/значения/allowlist, malformed/unknown unsafe path отказывает до capture. Descriptor не служит исполняемым hook/config language, не вызывает произвольные команды. Нового schema/manifest framework нет; он не регистрируется и не читается corp daily.
 - `ops/backup/clipmkr-backup.service` и `.timer` — свой root unit/почасовое расписание, ограничение runtime/IO по существующему backup convention. Не меняют corp timers/services, app/worker/DNS/платёжный режим.
 - `tests/backup-clipmkr.test.ts` — focused subprocess tests: fake command boundary для отказов, actual local restic/rclone temp repo для содержимого/двух copies; без production credentials.
 
 Новых HTTP API, таблиц, schema migration, зависимостей или контейнеров нет. Никаких runtime restore команд в timer/wrapper.
+
+Фактическое discovery: `/opt/corp-infra/bootstrap/schemas/backup-manifest.schema.json` не допускает service `clipmkr`. Поэтому global registry `/var/lib/corp-infra/manifests/`, rescan и foreign schema остаются без изменений. Никакого Clipmkr daily hook нет; hourly wrapper использует существующие native restic/rclone, repo/env/routes и общий `/var/lock/corp-backup.lock`, сериализующий его с daily/prune. Текущая daily local retention по-прежнему влияет на local repo; отдельного capture coverage от daily не обещается.
 
 ## Runtime binding и данные
 
@@ -36,7 +38,7 @@ Allowlist после повторного read-only подтверждения: 
 
 ### Собственный staging и capacity
 
-Единственный cleanup owner — `clipmkr-prepare.sh` под общим lock, одинаково для daily и hourly. Только root-owned `/var/lib/clipmkr-backup/staging/` и собственные прямые run-каталоги с проверенным ownership marker; root/run paths не symlink, разрешённый authoritative pointer разрешается только внутрь собственного root. Unknown path/marker, alias к production или неоднозначная ownership означают отказ, а не разрешение рекурсивного удаления. Произвольные имена из receipts/manifest не становятся delete targets.
+Единственный cleanup owner — `clipmkr-prepare.sh`, вызванный hourly wrapper под общим lock. Только root-owned `/var/lib/clipmkr-backup/staging/` и собственные прямые run-каталоги с проверенным ownership marker; root/run paths не symlink, разрешённый authoritative pointer разрешается только внутрь собственного root. Unknown path/marker, alias к production или неоднозначная ownership означают отказ, а не разрешение рекурсивного удаления. Произвольные имена из receipts/manifest не становятся delete targets.
 
 Числовой предел: **2 набора максимум, каждый ≤1 GiB**, включая его manifest. В покое после нормального завершения — один authoritative completed; при capture — этот completed и один candidate. Взяв lock, hook сначала убирает только неавторитетные остатки собственных failed/orphan/superseded runs; новый candidate создаётся лишь после этого. Действующий include не удаляется до атомарной замены и не может использоваться конкурентным snapshot благодаря shared lock. После validation hook атомарно переключает include на candidate и удаляет прежний completed до возврата parent; publication не означает общий backup success. При capture failure/TERM удаляется только unpublished candidate. SIGKILL между шагами оставляет максимум два набора; следующий hook под lock восстанавливает этот порядок до записи. Ошибка cleanup блокирует новый capture, не маскируется. Неудача restic/copy сохраняет новый completed и старый success receipt; plaintext историю failures не храним. Last-attempt/last-success receipts заменяются атомарно, без бесконечной коллекции per-run plaintext файлов.
 
@@ -52,7 +54,7 @@ Read-only preflight после cleanup оценивает две БД (`pg_datab
 
 Uploads/config — required durable files с explicit allowlist и проверкой изменения во время capture; текущий compose содержит env непосредственно, support TOML сохраняется явно, отсутствующий env_file не выдумывается. Известные `stt/llm/video` temp/workfiles **исключаются** как rebuildable/in-flight, категории/исключения фиксируются в manifest; они не входят в sizing/capture cap и не служат oracle восстановленного durable state. Незнакомый файл не объявляется scratch автоматически: runtime allowlist обязан различать durable uploads и scratch до capture. Обычный длительный processing не должен расходовать budget backup своими временными медиа. Валидный spend prefix всё равно не является coherent job/queue snapshot: перед DR запуском требуется reconciliation.
 
-Состояния run: capture → validated completed set → local snapshot → primary verified → secondary verified → success. Любой отказ оставляет failed attempt и прежний success age; частичный staging никогда не является authoritative include. Existing daily hook получает доказанный shared lock от corp parent; hourly wrapper удерживает его сам. Существующий `BK_LOCK_HELD=1` без реального удержания lock не принимается доказательством.
+Состояния run: capture → validated completed set → local snapshot → primary verified → secondary verified → success. Любой отказ оставляет failed attempt и прежний success age; частичный staging никогда не является authoritative include. Hourly wrapper удерживает настоящий shared lock сам и передаёт доказательство helper; capture из corp daily отсутствует. Существующий `BK_LOCK_HELD=1` без реального удержания lock не принимается доказательством.
 Local restic tree целиком копируется существующим append-only способом; чужие данные не удаляются. Только стабильные restic tags `clipmkr`, `corp-infra`; run ID хранится в component manifest/receipt, не в tag (existing forget группирует по host,tags). Globaldaily может убрать local hourly snapshots при текущем KEEP_HOURLY0, поэтому новый локальный retention не обещается. `--phase run --service` не используется из-за global forget.
 
 ## Восстановление и границы доверия
