@@ -1,3 +1,4 @@
+import { createSupportMailer } from './support/mail';
 import * as s3 from '@clipmaker/s3';
 import { createQueues } from '@clipmaker/queue';
 import { ensureInitialAttempt } from '@clipmaker/db';
@@ -27,7 +28,7 @@ export function startQueueWatchdog() {
   if (singleton.n5WatchdogStop) return;
   const runtime = getRuntime(), transport = getQueueRuntime();
   const ctx = { client: s3.createS3Client(runtime.config.s3), bucket: runtime.config.s3.bucket };
-  singleton.n5WatchdogStop = startWatchdog(() => watchdogTick(runtime.pool, (job, delay) => transport.enqueue(job, delay), new Date(), 100, {
+  singleton.n5WatchdogStop = startWatchdog(() => watchdogTick(runtime.pool, (job, delay) => transport.enqueue(job, delay), () => new Date(), 100, {
     delete: key => s3.deleteObject(ctx, key), erasePrefix: prefix => s3.erasePrefix(ctx, prefix), eraseClipPrefix: prefix => s3.eraseClipPrefix(ctx, prefix),
-  }));
+  }, {mailer:createSupportMailer(runtime.config.mail),publicOrigin:runtime.config.publicOrigin}));
 }

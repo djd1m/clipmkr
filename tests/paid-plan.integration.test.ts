@@ -34,15 +34,16 @@ describe.skipIf(!url)('тариф paid на настоящем PostgreSQL', () =
 
   // Аккаунт: 'free' | 'paid-active' (оплачен ещё 10 дней) | 'paid-expired' (срок кончился 1 день назад, сторож не проходил)
   // | 'operator'. finishedDaysAgo — когда запись стала done.
-  async function fixture(kind: 'free' | 'paid-active' | 'paid-expired' | 'paid-long-expired' | 'operator', finishedDaysAgo = 5) {
+  async function fixture(kind: 'free' | 'paid-active' | 'paid-expired' | 'paid-long-expired' | 'operator', finishedDaysAgo = 8) {
     const [plan, source, until] = kind === 'free' ? ['free', 'none', null] : kind === 'operator' ? ['paid', 'operator', null]
-      : ['paid', 'payment', new Date(Date.now() + (kind === 'paid-active' ? 10 : kind === 'paid-expired' ? -1 : -4) * DAY)];
+      : ['paid', 'payment', new Date(Date.now() + (kind === 'paid-active' ? 10 : kind === 'paid-expired' ? -1 : -31) * DAY)];
     const account = (await pool.query(`INSERT INTO account(email,password_hash,plan,plan_source,plan_paid_until) VALUES ($1,'x',$2,$3,$4) RETURNING id`,
       [`${randomUUID()}@test.invalid`, plan, source, until])).rows[0].id as string;
     const video = (await pool.query(`INSERT INTO video(account_id,idempotency_key,source,declared_bytes,actual_bytes,object_key,status,duration_seconds,clips_total,finished_at)
       VALUES ($1,$2,'upload',100,100,'source','done',120,1,$3) RETURNING id`, [account, randomUUID(), new Date(Date.now() - finishedDaysAgo * DAY)])).rows[0].id as string;
     const clip = (await pool.query(`INSERT INTO clip(video_id,"index",start_seconds,end_seconds,title,status,watermarked,object_key,thumbnail_key)
       VALUES ($1,1,0,20,'Клип','done',true,'clips/free/v/c.mp4','thumbs/v/c.jpg') RETURNING id`, [video])).rows[0].id as string;
+    await pool.query("UPDATE clip SET ready_at=$2,ready_at_source='render' WHERE id=$1",[clip,new Date(Date.now()-finishedDaysAgo*DAY)]);
     const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     const code = Array.from(randomBytes(6), b => alphabet[b % alphabet.length]).join('');
     await pool.query('INSERT INTO clip_link(clip_id,code) VALUES ($1,$2)', [clip, code]);
@@ -68,8 +69,8 @@ describe.skipIf(!url)('тариф paid на настоящем PostgreSQL', () =
   it('AC-11 чтения: экран клипов, /c/, остаток минут — истёкший оплаченный план = free, действующий = paid', async () => {
     const screen = new ScreenService(pool), links = new ShortLinkService(pool);
     const active = await fixture('paid-active'), expired = await fixture('paid-long-expired', 10), free = await fixture('free');
-    expect((await screen.clips(active.account, active.video)).clips[0]).toMatchObject({ expires_at: null, available: true });
-    // Истёк 4 дня назад, запись готова 10 дней назад: срок хранения = конец оплаты + 3 сут = 1 день назад → недоступен.
+    expect((await screen.clips(active.account, active.video)).clips[0]).toMatchObject({ expires_at: expect.any(String), available: true });
+    // Истёк 31 день назад, запись готова 10 дней назад: срок хранения = конец оплаты + 30 сут = 1 день назад → недоступен.
     const expiredClip = (await screen.clips(expired.account, expired.video)).clips[0]!;
     expect(expiredClip.available).toBe(false);
     expect(Math.abs(Date.parse(expiredClip.expires_at!) - (Date.now() - DAY))).toBeLessThan(60_000);
@@ -81,9 +82,9 @@ describe.skipIf(!url)('тариф paid на настоящем PostgreSQL', () =
     expect((await remainingLimits(pool, limits, expired.account)).minutes).toBe(90);
   });
 
-  it('AC-12 сторож: истёкший оплаченный → free (срок сохранён); оператор не истекает; ретенция считает 3 сут от КОНЦА оплаты', async () => {
+  it('AC-12 сторож: истёкший оплаченный → free (срок сохранён); оператор не истекает; ретенция считает 30 сут от КОНЦА оплаты', async () => {
     const recent = await fixture('paid-expired', 20);        // оплата кончилась 1 день назад — клипы ещё 2 дня живы
-    const old = await fixture('paid-long-expired', 20);       // кончилась 4 дня назад — стираются
+    const old = await fixture('paid-long-expired', 20);       // кончилась 31 день назад — стираются
     const operator = await fixture('operator', 20);
     expect(await expirePaidPlans(pool, 100)).toBe(2);
     expect((await pool.query('SELECT plan,plan_source,plan_paid_until IS NOT NULL AS dated FROM account WHERE id=$1', [recent.account])).rows[0])
@@ -97,7 +98,7 @@ describe.skipIf(!url)('тариф paid на настоящем PostgreSQL', () =
     expect(erased.some(k => k.includes(operator.clip))).toBe(false);
   });
 
-  it('AC-12 ретенция без сторожа: истёкший оплаченный план (ещё paid в строке) не спасает клипы старше 3 суток от конца оплаты', async () => {
+  it('AC-12 ретенция без сторожа: истёкший оплаченный план (ещё paid в строке) не спасает клипы старше 30 суток от конца оплаты', async () => {
     const old = await fixture('paid-long-expired', 20), active = await fixture('paid-active', 20);
     const storage = memoryStorage();
     await retentionTick(pool, storage, new Date(), 100);

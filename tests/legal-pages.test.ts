@@ -13,6 +13,8 @@ const replacements = JSON.parse(readFileSync('tests/artifacts/legal-pages/approv
 it.each([['privacy', privacyDocument, 62], ['terms', termsDocument, 87]] as const)('preserves every supplied %s paragraph except explicit owner-approved replacements', (kind, document, count) => {
   const source = fixture[kind]!;
   const expected = source.paragraphs.map(([style, text], index) => {
+    // Политика хранения согласована 10.11.2026: features/clip-retention-policy, FR-3/5/6.
+    if(kind==='privacy' && text.startsWith('6.2.')) return [style,'6.2. Клипы хранятся по сроку, указанному в записи: бесплатно — 7 суток от готовности, с оплатой — до конца оплаченного периода и ещё 30 суток. После окончания срока доступ закрывается, файлы удаляются, история записи остаётся. Исходная запись хранится отдельно; её автоматическое удаление этими правилами не вводится. Удаление аккаунта действует отдельно.'];
     const change = replacements.find(item => item.document === kind && item.index === index);
     if (change) expect(change.old).toBe(text);
     return [style, change?.new ?? text];

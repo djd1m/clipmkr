@@ -1,6 +1,6 @@
 import { clientIp } from './ip';
 import { z } from 'zod';
-import { effectivePlanSql, retentionFromSql, type Pool } from '@clipmaker/db';
+import { effectivePlanSql, retentionFromSql, retentionDeadlineSql, type Pool } from '@clipmaker/db';
 import { clipExpiry } from '@clipmaker/shared/tariff';
 import { readSessionCookie } from './auth-handler';
 import type { AuthService } from './auth';
@@ -10,7 +10,7 @@ export interface ClipFileDependencies {
   allowRead: (ip: string, account?: string) => Promise<boolean>;
   trustedProxyHops: number;
   pool: Pick<Pool, 'query'>; auth: Pick<AuthService, 'authenticate'>;
-  sign: (key: string, filename?: string) => Promise<string>;
+  sign: (key: string, filename?: string,notAfter?:Date|null) => Promise<string>;
   clock?: () => Date;
   guestSecret?: string;
   stream?: (url: string, request: Request) => Promise<Response>;
@@ -28,8 +28,10 @@ export function createClipFileHandler(deps: ClipFileDependencies, kind: 'file' |
       if ((!session && !code) || !z.string().uuid().safeParse(id).success) return missing();
       if (code !== null && !/^[A-Za-z0-9_-]{32}$/.test(code)) return missing();
       const now = (deps.clock ?? (() => new Date()))();
-      const row = (await deps.pool.query<{ status: string; object_key: string | null; thumbnail_key: string | null; title: string; expires_at: Date | null; retention_from: Date | null; plan: string }>(
-        `SELECT c.status,c.object_key,c.thumbnail_key,c.title,c.expires_at,${retentionFromSql('v', 'a')} AS retention_from,${effectivePlanSql('a')} AS plan FROM clip c
+      const row = (await deps.pool.query<{ status: string; object_key: string | null; thumbnail_key: string | null; title: string; deletion_started_at:Date|null; media_deleted_at:Date|null; retention_deadline:Date|null; guest_expires_at:Date|null; expires_at: Date | null; retention_from: Date | null; plan: string }>(
+        `SELECT c.status,c.object_key,c.thumbnail_key,c.title,c.expires_at,c.deletion_started_at,c.media_deleted_at,
+          ${retentionDeadlineSql('c','v','a','$4')} AS retention_deadline,
+          (SELECT p.expires_at FROM guest_pack p WHERE p.code=$3 AND p.video_id=v.id AND p.account_id=a.id) AS guest_expires_at,${retentionFromSql('v', 'a')} AS retention_from,${effectivePlanSql('a')} AS plan FROM clip c
          JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
          WHERE c.id=$1 AND v.deleted_at IS NULL AND a.status='active' AND (
            ($3::text IS NULL AND v.account_id=$2) OR
@@ -37,13 +39,16 @@ export function createClipFileHandler(deps: ClipFileDependencies, kind: 'file' |
              WHERE pc.clip_id=c.id AND p.video_id=v.id AND p.account_id=v.account_id AND p.code=$3
              AND p.revoked_at IS NULL AND p.sent_at IS NOT NULL AND p.expires_at>$4)))`, [id, session?.account_id ?? null, code, now])).rows[0];
       if (!row) return missing();
-      if (row.status !== 'done') return missing();
-      const expires = clipExpiry({ clipId: id, expiresAt: row.expires_at, plan: row.plan, retentionFrom: row.retention_from });
+      if (row.status !== 'done' || row.deletion_started_at || row.media_deleted_at) return missing();
+      const expires = clipExpiry({ clipId: id, expiresAt: row.expires_at, plan: row.plan, deadline:row.retention_deadline });
       if (expires && expires <= now) return missing();
+      const notAfter=row.guest_expires_at && (!expires || row.guest_expires_at<expires) ? row.guest_expires_at : expires;
+      if (notAfter && notAfter.getTime()-(deps.clock??(()=>new Date()))().getTime()<1000) return missing();
       const key = kind === 'file' ? row.object_key : row.thumbnail_key;
       if (!key) return missing();
       const filename = kind === 'file' && new URL(request.url).searchParams.get('download') === '1'
         ? `${row.title.replace(/[<>:"/\\|?*;\x00-\x1f]/g, '').trim().slice(0, 100) || 'clip'}.mp4` : undefined;
+      const signed=()=>notAfter ? deps.sign(key,filename,notAfter) : deps.sign(key,filename);
       if (code) {
         if (!deps.guestSecret || !deps.stream) throw new Error('Guest file runtime unavailable');
         const signature = url.searchParams.get('sig'), until = url.searchParams.get('until');
@@ -51,18 +56,19 @@ export function createClipFileHandler(deps: ClipFileDependencies, kind: 'file' |
         if (signature !== null || until !== null) {
           const expected = guestFileTicket(deps.guestSecret, id, kind, code, download, until ?? '');
           if (!signature || !until || !validGuestFileTicket(signature, expected, until, now)) return missing();
-          return await deps.stream(await deps.sign(key, filename), request);
+          return await deps.stream(await signed(), request);
         }
-        const deadline = String(now.getTime() + 900_000);
+        const deadline = String(Math.min(now.getTime()+900_000,notAfter?.getTime()??Infinity));
         const params = new URLSearchParams({ g: code, until: deadline,
           sig: guestFileTicket(deps.guestSecret, id, kind, code, download, deadline) });
         if (download) params.set('download', '1');
         return new Response(null, { status: 302, headers: { Location: `/api/clips/${id}/${kind}?${params}`,
           'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' } });
       }
-      return new Response(null, { status: 302, headers: { Location: await deps.sign(key, filename),
+      return new Response(null, { status: 302, headers: { Location: await signed(),
         'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' } });
     } catch (error) {
+      if (error instanceof Error && error.name==='ClipSignatureExpired') return missing();
       console.error('Выдача клипа: не удалось получить файл', error);
       return new Response('Не удалось получить файл. Повторите позже', { status: 503, headers: { 'Cache-Control': 'no-store' } });
     }

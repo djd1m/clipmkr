@@ -29,7 +29,7 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
     if (dropError && closeError) throw new AggregateError([dropError, closeError], 'Database cleanup failed');
     if (dropError) throw dropError; if (closeError) throw closeError;
   });
-  async function fixture(plan = 'free', finished = new Date(now.getTime() - 4 * 86400_000), clipId: string = randomUUID()) {
+  async function fixture(plan = 'free', finished = new Date(now.getTime() - 8 * 86400_000), clipId: string = randomUUID()) {
     const account = (await pool.query("INSERT INTO account(email,password_hash,plan) VALUES($1,'private',$2) RETURNING id", [`${randomUUID()}@test.invalid`, plan])).rows[0].id as string;
     const video = (await pool.query(`INSERT INTO video(account_id,idempotency_key,source,declared_bytes,status,finished_at)
       VALUES($1,$2,'upload',100,'done',$3) RETURNING id`, [account, randomUUID(), finished])).rows[0].id as string;
@@ -37,7 +37,7 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
       VALUES($2,$1,1,0,20,'Private title','done',true) RETURNING id`, [video, clipId])).rows[0].id as string;
     const keys = [`videos/${account}/${video}/source.mp4`, `clips/${plan}/${video}/${clip}.mp4`, `thumbs/${video}/${clip}.jpg`];
     await pool.query('UPDATE video SET object_key=$2 WHERE id=$1', [video, keys[0]]);
-    await pool.query('UPDATE clip SET object_key=$2,thumbnail_key=$3 WHERE id=$1', [clip, keys[1], keys[2]]);
+    await pool.query("UPDATE clip SET object_key=$2,thumbnail_key=$3,ready_at=$4,ready_at_source='render' WHERE id=$1", [clip, keys[1], keys[2],finished]);
     await pool.query('INSERT INTO clip_link(clip_id,code) VALUES($1,$2)', [clip, randomUUID()]);
     const pack = (await pool.query(`INSERT INTO guest_pack(video_id,account_id,code,guest_name,consent_confirmed,consent_version,consent_text_hash,consent_at,sent_at,expires_at)
       VALUES($1,$2,$3,'Private guest',true,'v1','hash',$4,$4,$4::timestamptz+interval '336 hours') RETURNING id`,
@@ -123,8 +123,8 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
     expect((await pool.query("SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname='video_refused_upload_retention'", [schema])).rows[0].indexdef).toContain('created_at');
   });
   it('ADR-018 showcase clip survives free retention; a neighbour with the same age and plan is erased', async () => {
-    const showcase = await fixture('free', new Date(now.getTime() - 4 * 86400_000), SHOWCASE_CLIP_IDS[0]!);
-    const neighbour = await fixture('free', new Date(now.getTime() - 4 * 86400_000));
+    const showcase = await fixture('free', new Date(now.getTime() - 8 * 86400_000), SHOWCASE_CLIP_IDS[0]!);
+    const neighbour = await fixture('free', new Date(now.getTime() - 8 * 86400_000));
     const storage = memoryStorage(); await retentionTick(pool, storage, now, 100);
     const erased = (storage.eraseClipPrefix as ReturnType<typeof vi.fn>).mock.calls.map(call => String(call[0]));
     expect(erased.some(prefix => prefix.includes(showcase.clip))).toBe(false);
@@ -134,7 +134,7 @@ describe.skipIf(!url)('retention PostgreSQL and Cloud S3', () => {
     expect((await pool.query('SELECT object_key FROM clip WHERE id=$1', [neighbour.clip])).rows[0].object_key).toBeNull();
   });
   it('ADR-018 account erasure still erases a showcase clip: the right to delete outranks the showcase', async () => {
-    const showcase = await fixture('free', new Date(now.getTime() - 4 * 86400_000), SHOWCASE_CLIP_IDS[0]!);
+    const showcase = await fixture('free', new Date(now.getTime() - 8 * 86400_000), SHOWCASE_CLIP_IDS[0]!);
     await new ErasureService(pool, () => now).request(showcase.account, { confirm: true });
     await retentionTick(pool, memoryStorage(), new Date(now.getTime() + ERASURE_QUIET_MS));
     expect((await pool.query('SELECT id FROM clip WHERE id=$1', [showcase.clip])).rowCount).toBe(0);

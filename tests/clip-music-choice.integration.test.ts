@@ -54,7 +54,8 @@ describe.skipIf(!url)('clip music choice / real PostgreSQL', () => {
     await pool.query("UPDATE clip SET object_key='old' WHERE id=$1", [f.clip]);
     await pool.query("UPDATE video SET status='failed' WHERE id=$1", [f.video]);
     await expect(service().setMusic(f.account, chosen(f.clip))).rejects.toMatchObject({ status: 409 });
-    await pool.query("UPDATE video SET status='done',finished_at=$2 WHERE id=$1", [f.video, new Date(now.getTime() - 72 * 3600_000)]);
+    await pool.query("UPDATE video SET status='done',finished_at=$2 WHERE id=$1", [f.video, new Date(now.getTime() - 7 * 86400_000)]);
+    await pool.query("UPDATE clip SET ready_at=$2,ready_at_source='render' WHERE id=$1",[f.clip,new Date(now.getTime()-7*86400_000)]);
     await expect(service().setMusic(f.account, chosen(f.clip))).rejects.toMatchObject({ status: 409 });
     await pool.query("UPDATE account SET status='erasing' WHERE id=$1", [f.account]);
     await expect(service().setMusic(f.account, chosen(f.clip))).rejects.toMatchObject({ status: 404 });

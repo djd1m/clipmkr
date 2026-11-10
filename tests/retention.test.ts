@@ -12,7 +12,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 const account = '11111111-1111-4111-8111-111111111111';
 function fixture() {
   const commands: string[] = [];
-  const query = vi.fn(async (sql: string) => {
+  const query = vi.fn(async (sql: string):Promise<{rows:Record<string,unknown>[];rowCount:number}> => {
     commands.push(sql);
     if (sql.includes('SELECT count(*) FROM account')) return { rows: [{ count: '0' }], rowCount: 1 };
     if (sql.includes('pg_try_advisory_lock')) return { rows: [{ locked: true }], rowCount: 1 };
@@ -52,13 +52,15 @@ describe('retention and erasure guards', () => {
     expect(f.commands.some(s => /DELETE FROM/.test(s))).toBe(false);
     expect(f.commands.some(s => s.includes("status='deleted'"))).toBe(false);
   });
-  it('free clips older than three days are removed before row markers', async () => {
+  it('free clips older than seven days are removed before row markers', async () => {
     const f = fixture();
     f.query.mockImplementation(async sql => {
       f.commands.push(sql);
       if (sql.includes('SELECT count(*) FROM account')) return { rows: [{ count: '0' }], rowCount: 1 };
     if (sql.includes('pg_try_advisory_lock')) return { rows: [{ locked: true }], rowCount: 1 };
-      if (sql.startsWith('SELECT c.id,c.object_key')) return { rows: [{ id: account, video_id: 'video', object_key: 'clip', thumbnail_key: 'thumb' }], rowCount: 1 };
+      if (sql.startsWith('SELECT c.id,c.video_id')) return { rows: [{ id: account, video_id: 'video', account_id:account, object_key: 'clip', thumbnail_key: 'thumb' }], rowCount: 1 };
+      if (sql.includes('FOR NO KEY UPDATE') || sql.startsWith('SELECT id FROM video')) return {rows:[{id:account}],rowCount:1};
+      if (sql.startsWith('SELECT c.deletion_started_at')) return {rows:[{deletion_started_at:null,ready_at:new Date('2026-09-01'),alive:false,media_recheck_at:null}],rowCount:1};
       return { rows: [], rowCount: 0 };
     });
     await retentionTick(f.pool, f.storage, new Date('2026-09-24T12:00:00Z'));
@@ -83,7 +85,9 @@ describe('retention and erasure guards', () => {
       f.commands.push(sql);
       if (sql.includes('SELECT count(*) FROM account')) return { rows: [{ count: '0' }], rowCount: 1 };
       if (sql.includes('pg_try_advisory_lock')) return { rows: [{ locked: true }], rowCount: 1 };
-      if (sql.startsWith('SELECT c.id,c.object_key')) return { rows: [{ id: account, video_id: 'video', object_key: 'clip', thumbnail_key: 'thumb' }], rowCount: 1 };
+      if (sql.startsWith('SELECT c.id,c.video_id')) return { rows: [{ id: account, video_id: 'video', account_id:account, object_key: 'clip', thumbnail_key: 'thumb' }], rowCount: 1 };
+      if (sql.includes('FOR NO KEY UPDATE') || sql.startsWith('SELECT id FROM video')) return {rows:[{id:account}],rowCount:1};
+      if (sql.startsWith('SELECT c.deletion_started_at')) return {rows:[{deletion_started_at:null,ready_at:new Date('2026-09-01'),alive:false,media_recheck_at:null}],rowCount:1};
       return { rows: [], rowCount: 0 };
     });
     f.storage.eraseClipPrefix.mockRejectedValueOnce(new Error('storage unavailable'));
@@ -118,7 +122,7 @@ describe('retention and erasure guards', () => {
     expect(readErasureReceipt(token, 'secret', now + 8 * 86400_000)).toBeNull();
   });
 });
-it.each(['SELECT count(*) FROM account', 'DELETE FROM video', 'SELECT c.id,c.object_key'])('RT-004 independent failure at %s cannot suppress erasure', async failure => {
+it.each(['SELECT count(*) FROM account', 'DELETE FROM video', 'SELECT c.id,c.video_id'])('RT-004 independent failure at %s cannot suppress erasure', async failure => {
   const f = fixture(), original = f.query.getMockImplementation()!;
   f.query.mockImplementation(async sql => { if ((sql.includes(failure) && (failure !== 'DELETE FROM video' || sql.includes('refused_user_uploads')))) throw new Error('injected step failure'); return original(sql); });
   await expect(retentionTick(f.pool, f.storage)).rejects.toThrow('Очистка: не завершено операций');

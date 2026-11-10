@@ -19,7 +19,7 @@ export function clipRoute(kind: 'file' | 'thumbnail') {
         trustedProxyHops: runtime.config.trustedProxyHops,
         allowRead: (ip, account) => allowRead(runtime.redis, ip, runtime.config.sessionSecret, account),
         guestSecret: runtime.config.sessionSecret, stream: streamGuestFile,
-        sign: (key, filename) => generateDownloadUrl(ctx, key, filename) }, kind)(request, (await params).clipId);
+        sign: (key, filename,notAfter) => generateDownloadUrl(ctx, key, filename,notAfter) }, kind)(request, (await params).clipId);
     } finally { ctx.client.destroy(); }
   };
 }
@@ -31,7 +31,7 @@ export function showcaseRoute(kind: 'file' | 'thumbnail') {
     try {
       return await createShowcaseFileHandler({ pool: runtime.pool, trustedProxyHops: runtime.config.trustedProxyHops,
         allowRead: ip => allowRead(runtime.redis, ip, runtime.config.sessionSecret),
-        sign: key => generateDownloadUrl(ctx, key) }, kind)(request, (await params).code);
+        sign: (key,notAfter) => generateDownloadUrl(ctx, key,undefined,notAfter) }, kind)(request, (await params).code);
     } finally { ctx.client.destroy(); }
   };
 }

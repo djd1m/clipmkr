@@ -12,12 +12,12 @@ import { GuestPacks, type GuestPreselect } from '../../clips/GuestPacks';
 import type { GuestPackSummary } from '../../../lib/guest-contract';
 import { VideoCtaForm } from '../CtaFields';
 // Фича 29: `video_id` — под «Подробнее» в одной строке со ссылкой назад (не съедает первый экран телефона).
-export function VideoHeader({ video, headingRef }: { video: VideoScreen; headingRef?: Ref<HTMLHeadingElement> }) {
+export function VideoHeader({ video, headingRef, storageEnded=false }: { video: VideoScreen; headingRef?: Ref<HTMLHeadingElement>; storageEnded?:boolean }) {
   return <header className="detail-header"><div className="detail-top"><Link href="/dashboard">← Все записи</Link>
     <details className="video-meta"><summary>Подробнее</summary><p className="video-id">video_id: <code>{video.video_id}</code></p></details></div>
-    <p className="eyebrow">ВАШ ВЫПУСК</p><h1 ref={headingRef} tabIndex={-1}>{video.status === 'done' ? 'Готовые клипы' : 'Клипы записи'}</h1>
+    <p className="eyebrow">ВАШ ВЫПУСК</p><h1 ref={headingRef} tabIndex={-1}>{storageEnded ? 'Срок хранения закончился' : video.status === 'done' ? 'Готовые клипы' : 'Клипы записи'}</h1>
     <p className="workspace-result-lead">{video.duration_seconds !== null && `${(video.duration_seconds / 60).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} мин · `}
-      {video.clips_done} готово / {video.clips_total} выбрано. Выберите фрагмент для просмотра.</p></header>;
+      {storageEnded ? 'История записи и оценки фрагментов сохранены.' : `${video.clips_done} готово / ${video.clips_total} выбрано. Выберите фрагмент для просмотра.`}</p></header>;
 }
 type MusicAttempt = { token: number; track: string; baseline: number; phase: 'saving' | 'awaiting' | 'queued' | 'unknown' };
 const STEP_MARK: Record<StepView, string> = { done: '✓', running: '◷', silent: '…', failed: '!', pending: '○' };
@@ -29,7 +29,8 @@ export function StageRibbon({ steps }: { steps: RibbonStep[] }) {
       {step.detail && <span className="step-detail">{step.detail}</span>}
       <span className="visually-hidden"> — {STEP_STATE_TEXT[step.view]}</span></li>)}</ol>;
 }
-export function ProgressPanel({ video, onRetry, busy = false }: { video: VideoScreen; onRetry?: () => void; busy?: boolean }) {
+export function ProgressPanel({ video, onRetry, busy = false, storageEnded=false }: { video: VideoScreen; onRetry?: () => void; busy?: boolean; storageEnded?:boolean }) {
+  if(storageEnded && video.status==='done') return <section className="status-panel compact" role="status" data-state="expired"><p>История записи сохранена</p></section>;
   if(video.status==='uploading') return <section className="status-panel" role="status" data-state="uploading">
     <h2>Передача файла не завершена. Обработка ещё не началась</h2>
     <p>Продолжите в исходной вкладке: нужны сохранённая сессия и исходный файл.</p>
@@ -160,8 +161,10 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
   // Local clock also detects silence when polling itself loses the network.
   const shown = video.status !== 'uploading' && video.user_state === 'выполняется' && now - Date.parse(video.updated_at) > 300000
     ? { ...video, no_response: true, stage_label: 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.' } : video;
+  const storageEnded=video.status==='done' && clips.length>0 && video.clips_done===video.clips_total &&
+    clips.every(clip=>clip.status==='done' && (clip.retention_state==='expired' || (!!clip.expires_at && Date.parse(clip.expires_at)<=now)));
   return <><div className="workspace-ready">
-    <div className="studio-ready-intro"><VideoHeader video={video} headingRef={headingRef} /><ProgressPanel video={shown} onRetry={() => void retry()} busy={busy} />
+    <div className="studio-ready-intro"><VideoHeader video={video} headingRef={headingRef} storageEnded={storageEnded} /><ProgressPanel storageEnded={storageEnded} video={shown} onRetry={() => void retry()} busy={busy} />
       {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}
       {video.clips_total > 0 && video.clips_total < 3 && <p className="notice">Найдено фрагментов: {video.clips_total}. Самодостаточных моментов меньше трёх — показываем столько, сколько есть.</p>}
       {video.status === 'done' && video.clips_done < video.clips_total && <p className="notice">Часть клипов не удалось собрать. Готовые клипы доступны для скачивания.</p>}

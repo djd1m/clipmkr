@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { transaction, leaseAttemptTx, checkAndConsumeQuota, effectivePlanSql, retentionFromSql, type Attempt, type Pool } from '@clipmaker/db';
-import { clipExpiry } from '@clipmaker/shared/tariff';
+import { transaction, leaseAttemptTx, checkAndConsumeQuota, effectivePlanSql, retentionFromSql, clipAliveSql, type Attempt, type Pool } from '@clipmaker/db';
 import type { Limits } from '@clipmaker/shared/config';
 import { CTA_KIND } from '@clipmaker/shared/enums';
 import { effectiveMusic } from '@clipmaker/shared/music-catalog';
@@ -40,13 +39,10 @@ export class VideoCtaService {
         UNION ALL SELECT 1 FROM clip WHERE video_id=$1 AND status='rendering' LIMIT 1`, [videoId]);
       if (busy.rowCount) throw new UploadError('conflict', 'Клипы записи ещё собираются. Сменить призыв можно, когда сборка закончится', 409);
       const now = this.clock();
-      const clips = (await tx.query<{ id: string; index: number; music_track_id: string | null; expires_at: Date | null }>(
-        `SELECT id,"index",music_track_id,expires_at FROM clip WHERE video_id=$1 AND status='done' AND object_key IS NOT NULL
-        ORDER BY "index" FOR UPDATE`, [videoId])).rows.filter(clip => {
-        // Истёкший клип не пересобирается: его файл уже удалён или вот-вот будет удалён очисткой.
-        const expires = clipExpiry({ clipId: clip.id, expiresAt: clip.expires_at, plan: video.plan, retentionFrom: video.retention_from });
-        return !expires || expires > now;
-      });
+      const clips = (await tx.query<{ id: string; index: number; music_track_id: string | null }>(
+        `SELECT c.id,c.index,c.music_track_id FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
+         WHERE c.video_id=$1 AND c.status='done' AND c.object_key IS NOT NULL AND ${clipAliveSql('c','v','a','$2')}
+         ORDER BY c.index FOR UPDATE OF c`,[videoId,now])).rows;
       await save();
       if (!clips.length) return [];
       const quota = await checkAndConsumeQuota(tx, this.limits, account, 'rerender', clips.length, now);

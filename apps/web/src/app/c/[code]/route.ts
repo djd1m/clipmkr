@@ -12,13 +12,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ code
     return await createShortLinkHandler({ links: new ShortLinkService(pool), auth,
       trustedProxyHops: config.trustedProxyHops, referralSecret: config.sessionSecret,
       allowRead: (ip, account) => allowRead(redis, ip, config.sessionSecret, account),
-      preview: async key => {
+      preview: async (key,notAfter) => {
         try { await headObject(ctx, key); }
         catch (error) {
           if (error instanceof Error && ['NotFound', 'NoSuchKey'].includes(error.name)) return null;
           throw error;
         }
-        return generateDownloadUrl(ctx, key);
+        try { return await generateDownloadUrl(ctx,key,undefined,notAfter); }
+        catch(error) {if(error instanceof Error && error.name==='ClipSignatureExpired') return null;throw error;}
       },
     })(request, (await params).code);
   } finally { ctx.client.destroy(); }

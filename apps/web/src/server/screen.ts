@@ -1,5 +1,5 @@
 import type { Pool } from '@clipmaker/db';
-import { FILE_FAILURES, clipAliveSql, effectivePlanSql, retentionFromSql } from '@clipmaker/db';
+import { FILE_FAILURES, clipAliveSql, effectivePlanSql, retentionFromSql, retentionDeadlineSql } from '@clipmaker/db';
 import { clipExpiry } from '@clipmaker/shared/tariff';
 import type { VideoStatus, VideoFailureReason, ClipStatus, JobStage } from '@clipmaker/shared/enums';
 import { JOB_STAGE, readEnum } from '@clipmaker/shared/enums';
@@ -78,13 +78,13 @@ export class ScreenService {
       next_cursor: rows.length > limit ? rows[limit - 1]!.id : null };
   }
   async clips(account: string, id: string): Promise<{ clips: ClipScreen[] }> {
-    const video = await this.owned(account, id);
-    const rows = (await this.pool.query<ClipRow>(`SELECT c.*,EXISTS (SELECT 1 FROM job_attempt j WHERE j.clip_id=c.id AND j.rerender
+    const video = await this.owned(account, id), now=this.clock();
+    const rows = (await this.pool.query<ClipRow>(`SELECT c.*,${retentionDeadlineSql('c','v','a','$2')} AS retention_deadline,EXISTS (SELECT 1 FROM job_attempt j WHERE j.clip_id=c.id AND j.rerender
       AND j.fence=c.render_fence AND j.status IN ('running','deferred')) AS rerendering,
       (SELECT j.failure_reason FROM job_attempt j WHERE j.clip_id=c.id AND j.rerender
         AND j.fence=c.render_fence AND j.status='failed') AS rerender_failure
-      FROM clip c WHERE c.video_id=$1 ORDER BY c.index,c.id`, [id])).rows;
-    return { clips: rows.map(row => presentClip(row, video, this.clock())) };
+      FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id WHERE c.video_id=$1 ORDER BY c.index,c.id`, [id,now])).rows;
+    return { clips: rows.map(row => presentClip(row, video, now)) };
   }
   async markDownloaded(account: string, id: string) {
     const result = await this.pool.query(`INSERT INTO growth_event (type, account_id, clip_id, day)
@@ -99,6 +99,7 @@ export class ScreenService {
 export interface ClipRow {
   rendered_music_track_id?: string | null; music_skip_reason?: string | null; rerender_failure?: string | null;
   music_track_id?: string | null; render_version?: number; rerendering?: boolean;
+  ready_at?: Date|null; retention_deadline?:Date|null; deletion_started_at?:Date|null; media_deleted_at?:Date|null;
   duration_seconds?: string | null;
   id: string; index: number; start_seconds: string; end_seconds: string; title: string; status: ClipStatus;
   watermarked: boolean; object_key: string | null; expires_at: Date | null;
@@ -107,7 +108,7 @@ export interface ClipRow {
 }
 export function presentClip(row: ClipRow, video: Pick<VideoRow, 'plan' | 'finished_at' | 'retention_from'>, now: Date): ClipScreen {
   const expires = clipExpiry({ clipId: row.id, expiresAt: row.expires_at, plan: video.plan,
-    retentionFrom: video.retention_from === undefined ? video.finished_at : video.retention_from });
+    deadline:row.retention_deadline, readyAt:row.ready_at, paidUntil:video.retention_from, retentionFrom:video.finished_at });
   const score = row.score === null ? {} : scoreSchema.parse({ score: row.score,
     components: { hook: row.score_hook, completeness: row.score_completeness, length: row.score_length },
     explanations: { hook: row.explain_hook, completeness: row.explain_completeness, length: row.explain_length } });
@@ -115,5 +116,6 @@ export function presentClip(row: ClipRow, video: Pick<VideoRow, 'plan' | 'finish
     rerender_failure: row.rerender_failure ?? null,
     published_render_version: Number(row.object_key?.match(/-v(\d+)\.mp4$/)?.[1] ?? 1), music_track_id: row.music_track_id ?? null, render_version: row.render_version ?? 1, rerendering: row.rerendering ?? false, duration_seconds: row.duration_seconds == null ? null : Number(row.duration_seconds), clip_id: row.id, index: row.index, start: Number(row.start_seconds), end: Number(row.end_seconds), title: row.title,
     status: row.status, watermarked: row.watermarked, expires_at: expires?.toISOString() ?? null,
-    available: row.status === 'done' && !!row.object_key && (!expires || expires > now), ...score };
+    retention_state: row.deletion_started_at || row.media_deleted_at || (expires && expires<=now) || (row.status==='done' && !row.object_key) ? 'expired' : !expires ? (row.ready_at===null ? 'unknown' : 'unlimited') : 'active',
+    available: row.status === 'done' && !!row.object_key && !row.deletion_started_at && !row.media_deleted_at && (!expires || expires > now), ...score };
 }

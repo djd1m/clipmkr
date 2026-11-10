@@ -157,11 +157,12 @@ describe.skipIf(!dbUrl)('PostgreSQL guest-pack', () => {
     expect((await createClipFileHandler({ ...deps, allowRead: async () => true, trustedProxyHops: 1 })(request(`https://app.example/api/clips/${clip}/file`, undefined, true), clip)).status).toBe(302);
   });
   it('clip expiry, video removal, inactive owner and foreign membership fail closed', async () => {
+    await pool.query("UPDATE clip SET ready_at=$1,ready_at_source='render' WHERE id=$2",[now,clip]);
     await expect(guests.create(stranger, input)).rejects.toMatchObject({ status: 404 });
     await expect(guests.create(owner, { ...input, clip_ids: [randomUUID()] })).rejects.toMatchObject({ status: 422 });
     const pack = await sent(), code = pack.url.split('/').at(-1)!;
     const handler = createClipFileHandler({ allowRead: async () => true, trustedProxyHops: 1, pool, auth, sign: vi.fn(), guestSecret: 'test', stream: vi.fn(), clock: () => now });
-    now = new Date(now.getTime() + 3 * 86400000);
+    now = new Date(now.getTime() + 7 * 86400000);
     expect((await page()(request(), code)).status).toBe(200);
     expect((await handler(request(`https://app.example/api/clips/${clip}/file?g=${code}`), clip)).status).toBe(404);
     await pool.query('UPDATE video SET deleted_at=now()'); expect((await page()(request(), code)).status).toBe(404);

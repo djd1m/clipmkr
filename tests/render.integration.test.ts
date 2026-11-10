@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, afterAll, describe, it, expect, vi } from 'vitest';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { createPool, type Pool } from '../packages/db/src/index';
+import { createPool,transaction, type Pool } from '../packages/db/src/index';
 import { migrate } from '../packages/db/src/migrate';
-import { leaseAttempt, type Attempt } from '../packages/db/src/attempts';
+import { leaseAttempt, leaseAttemptTx, type Attempt } from '../packages/db/src/attempts';
 import { getRenderInput, publishRenderResult, retryRender, setRenderDeferred } from '../packages/db/src/render';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
 const url = process.env.DATABASE_URL;
@@ -65,6 +65,18 @@ describe.skipIf(!url)('Render PostgreSQL fences, publication and completion', ()
     } finally { await rm(directory, { recursive: true, force: true }); }
   });
 
+  it('first publication fixes per-clip readiness and rerender never resets it',async()=>{
+    const f=await fixture(2),first=f.attempts[0]!,second=f.attempts[1]!;
+    expect(await publishRenderResult(pool,first,output,async()=>10)).toBe(true);
+    const original=(await pool.query('SELECT ready_at FROM clip WHERE id=$1',[first.clip_id])).rows[0].ready_at;
+    expect(original).toBeInstanceOf(Date);
+    expect((await pool.query('SELECT finished_at FROM video WHERE id=$1',[f.video])).rows[0].finished_at).toBeNull();
+    expect((await pool.query('SELECT ready_at FROM clip WHERE id=$1',[second.clip_id])).rows[0].ready_at).toBeNull();
+    expect(await publishRenderResult(pool,second,output,async()=>10)).toBe(true);
+    const rerender=(await transaction(pool,tx=>leaseAttemptTx(tx,f.video,'render',2,first.clip_id,new Date(),true)))!;
+    expect(await publishRenderResult(pool,rerender,output,async()=>10)).toBe(true);
+    expect((await pool.query('SELECT ready_at FROM clip WHERE id=$1',[first.clip_id])).rows[0].ready_at).toEqual(original);
+  });
   it('MANDATORY same fence delivered concurrently: exactly one result UPDATE, idempotent publication, stale audit', async () => {
     const { attempt } = await fixture(); const publish = vi.fn(async () => 10);
     const audit = vi.spyOn(console, 'info');

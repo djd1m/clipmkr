@@ -49,3 +49,44 @@ describe('bounded Resend transport',()=>{
   expect(await mailer(fetchImpl).send(message)).toBe('unknown');expect(fetchImpl).toHaveBeenCalledTimes(1);
  });
 });
+
+describe('retention Resend immutable payload',()=>{
+ const content={from:'Original <old@example.test>',to:'recipient@example.test',subject:'Срок хранения 2 клипов скоро закончится',text:'Доступно до 12 ноября 2026, 15:00 МСК',html:'<p>Доступно до 12 ноября 2026, 15:00 МСК</p>'};
+ it('reuses provider key and exact stored payload across retries and sender configuration changes',async()=>{
+  const fetchImpl=vi.fn<typeof fetch>().mockImplementation(async()=>Response.json({id:'notice-id'}));
+  const first=mailer(fetchImpl),second=mailer(fetchImpl,{...config,from:'New <new@example.test>'});
+  expect(await first.sendRetention(content,'retention_synthetic')).toEqual({state:'accepted',receipt:'notice-id'});
+  expect(await second.sendRetention(content,'retention_synthetic')).toEqual({state:'accepted',receipt:'notice-id'});
+  const [a,b]=fetchImpl.mock.calls;
+  expect(a![1]!.body).toBe(b![1]!.body);
+  expect(a![1]!.headers).toMatchObject({'Idempotency-Key':'retention_synthetic'});
+  expect(JSON.parse(a![1]!.body as string)).toEqual({...content,to:[content.to]});
+ });
+ it('keeps unknown receipt unknown and bounded without leaking content',async()=>{
+  const fetchImpl=vi.fn<typeof fetch>().mockRejectedValue(new Error('synthetic unavailable'));
+  expect(await mailer(fetchImpl).sendRetention(content,'retention_unknown')).toEqual({state:'unknown',receipt:null});
+  expect(fetchImpl).toHaveBeenCalledTimes(1);
+ });
+ it('bounds retention request to 8 seconds and shares support concurrency budget',async()=>{
+  vi.useFakeTimers();const signals:AbortSignal[]=[];
+  const fetchImpl=vi.fn<typeof fetch>().mockImplementation(async(_url,options)=>{
+   signals.push(options!.signal!);
+   return await new Promise<Response>((_resolve,reject)=>options!.signal!.addEventListener('abort',()=>reject(new Error('aborted'))));
+  });
+  const send=mailer(fetchImpl),pending=Array.from({length:4},()=>send.sendRetention(content,'retention_budget'));
+  expect(await send.send(message)).toBe('failed');
+  await vi.advanceTimersByTimeAsync(8000);
+  expect(await Promise.all(pending)).toEqual(Array.from({length:4},()=>({state:'unknown',receipt:null})));
+  expect(signals.every(s=>s.aborted)).toBe(true);
+ });
+ it('does not expose SMTP as idempotent reminder transport and fences synthetic capture',async()=>{
+  const disabled=new SupportMailer({mode:'disabled'});
+  expect(disabled.retentionSender).toBeNull();
+  expect((await disabled.sendRetention(content,'retention_disabled')).state).toBe('failed');
+  const capture=vi.fn(async()=>{}),test=new SupportMailer({mode:'test'},undefined,undefined,undefined,capture);
+  expect((await test.sendRetention({...content,to:'person@real-domain.com'},'retention_real')).state).toBe('failed');
+  expect(capture).not.toHaveBeenCalled();
+  expect((await test.sendRetention(content,'retention_test')).state).toBe('accepted');
+  expect(capture).toHaveBeenCalledOnce();
+ });
+});

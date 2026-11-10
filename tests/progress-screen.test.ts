@@ -81,10 +81,10 @@ describe('экран прогресса и оценки', () => {
     for (const text of ['Цепкость', 'Самодостаточность', 'Длина', 'Вопрос с первых слов', 'Есть законченный ответ', 'Нет лишних слов']) expect(html).toContain(text);
   });
   it('срок бесплатного файла считается с первого дня, истёкший нельзя скачать', () => {
-    const finished_at = new Date(now.getTime() - 4 * 86400000);
+    const finished_at = new Date(now.getTime() - 8 * 86400000);
     const expired = presentClip(clip, { plan: 'free', finished_at }, now);
     expect(expired.available).toBe(false); expect(expired.expires_at).not.toBeNull();
-    expect(presentClip(clip, { plan: 'paid', finished_at }, now).available).toBe(true);
+    expect(presentClip({...clip,retention_deadline:new Date(now.getTime()+30*86400000)}, { plan: 'paid', finished_at }, now).available).toBe(true);
   });
 });
 // Фича 29 progress-ribbon: лента стадий. Заголовки describe/it — цели мутаций scripts/test-progress-mutations.mjs.

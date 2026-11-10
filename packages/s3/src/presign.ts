@@ -12,8 +12,12 @@ export async function signParts(ctx: StorageContext, key: string, uploadId: stri
     expires_at: new Date(now.getTime() + PRESIGNED_SECONDS * 1000).toISOString(),
   })));
 }
-export function generateDownloadUrl(ctx: StorageContext, key: string, filename?: string): Promise<string> {
+export function generateDownloadUrl(ctx: StorageContext, key: string, filename?: string, notAfter?: Date|null, signingDate = new Date()): Promise<string> {
+  const expiresIn = notAfter ? Math.min(PRESIGNED_SECONDS,Math.floor((notAfter.getTime()-signingDate.getTime())/1000)) : PRESIGNED_SECONDS;
+  if (!Number.isFinite(expiresIn) || expiresIn<1) {
+    const error=new Error('Срок хранения закончился'); error.name='ClipSignatureExpired'; return Promise.reject(error);
+  }
   const disposition = filename ? `attachment; filename="clip.mp4"; filename*=UTF-8''${encodeURIComponent(filename).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16))}` : undefined;
   return getSignedUrl(publicSigningClient(ctx), new GetObjectCommand({ Bucket: ctx.bucket, Key: key,
-    ...(disposition ? { ResponseContentDisposition: disposition } : {}) }), { expiresIn: PRESIGNED_SECONDS });
+    ...(disposition ? { ResponseContentDisposition: disposition } : {}) }), { expiresIn, signingDate });
 }

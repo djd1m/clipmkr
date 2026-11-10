@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
-import { clipAliveSql, effectivePlanSql, retentionFromSql, type Pool } from '@clipmaker/db';
+import { clipAliveSql, effectivePlanSql, retentionFromSql, retentionDeadlineSql, type Pool } from '@clipmaker/db';
 import { moscowDay } from '@clipmaker/shared/upload';
 import { GUEST_CONSENT_TEXT, GUEST_CONSENT_VERSION, type GuestPackSummary } from '../lib/guest-contract';
 import { UploadError } from './upload-contract';
@@ -85,8 +85,8 @@ export class GuestPackService {
     const pack = (await this.pool.query<Pack>(`${selectPack} AND p.code=$1 AND p.revoked_at IS NULL
       AND p.sent_at IS NOT NULL AND p.expires_at>$2`, [code, now])).rows[0];
     if (!pack) throw missing();
-    const rows = (await this.pool.query<ClipRow>(`SELECT c.* FROM clip c JOIN guest_pack_clip pc ON pc.clip_id=c.id
-      WHERE pc.guest_pack_id=$1 AND c.video_id=$2 ORDER BY c."index",c.id`, [pack.id, pack.video_id])).rows;
+    const rows = (await this.pool.query<ClipRow>(`SELECT c.*,${retentionDeadlineSql('c','v','a','$3')} AS retention_deadline FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id JOIN guest_pack_clip pc ON pc.clip_id=c.id
+      WHERE pc.guest_pack_id=$1 AND c.video_id=$2 ORDER BY c."index",c.id`, [pack.id, pack.video_id,now])).rows;
     return { ...pack, clips: rows.map(c => presentClip(c, pack, now)) };
   }
   async recordOpen(pack: { id: string; account_id: string }, account: string | null, prefix: string) {

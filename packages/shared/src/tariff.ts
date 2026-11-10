@@ -48,24 +48,27 @@ export function effectivePlan(plan: unknown, source: unknown, paidUntil: Date | 
   return Number.isFinite(until) && until > now.getTime() ? 'paid' : 'free';
 }
 
-/** Срок хранения клипа бесплатного тарифа — 72 ч (FR-TARIFF-003). Единственное место числа: SQL-зеркало — `clipAliveSql` (@clipmaker/db). */
-export const FREE_RETENTION_MS = 3 * 86_400_000;
+/** Сутки — 24 часа; SQL mirror retentionDeadlineSql использует эти же константы. */
+export const FREE_RETENTION_MS = 7 * 86_400_000;
+export const PAID_RETENTION_MS = 30 * 86_400_000;
 export interface ClipExpiryInput {
-  /** clip.id — по нему витрина лендинга (ADR-018) исключается из срока бесплатного тарифа. */
-  clipId: unknown; expiresAt: Date | null | undefined; plan: unknown; retentionFrom: Date | null | undefined;
+  clipId: unknown; expiresAt: Date | null | undefined; plan?: unknown;
+  retentionFrom?: Date | null; readyAt?: Date | null; paidUntil?: Date | null;
+  retentionExempt?: boolean;
+  /** SQL projection того же правила; undefined только у чистых/legacy callers. */
+  deadline?: Date | null;
 }
-/**
- * Срок клипа — ЕДИНСТВЕННОЕ правило для экрана, /c/, файла, смены музыки и призыва (ретенция — `clipAliveSql`):
- *   явный `expires_at` соблюдается всегда (и у витрины);
- *   иначе у не-`paid` — 72 ч от `retention_from` (готовность записи, но не раньше конца оплаченного срока, AC-12);
- *   клип витрины (`SHOWCASE_CLIPS`) срока бесплатного тарифа не имеет: ретенция его не стирает, и чтения не
- *   объявляют его истёкшим — иначе смена призыва/музыки у записи витрины молча не пересобирала бы клип лендинга.
- * План — ДЕЙСТВУЮЩИЙ (`effectivePlanSql`), сравнение на равенство: всё, что не ровно `paid`, — срок есть.
- */
+/** Первая готовность +7, подтверждённая оплаченная история +30, explicit cap приоритетнее. */
 export function clipExpiry(clip: ClipExpiryInput): Date | null {
-  if (clip.expiresAt) return clip.expiresAt;
-  if (clip.plan === 'paid' || !clip.retentionFrom || isShowcaseClip(clip.clipId)) return null;
-  return new Date(clip.retentionFrom.getTime() + FREE_RETENTION_MS);
+  if (clip.deadline !== undefined) return clip.deadline;
+  const ready = clip.readyAt === undefined ? clip.retentionFrom : clip.readyAt;
+  let deadline: Date | null = null;
+  if (!clip.retentionExempt && !isShowcaseClip(clip.clipId) && ready) {
+    deadline = new Date(Math.max(ready.getTime() + FREE_RETENTION_MS,
+      clip.paidUntil ? clip.paidUntil.getTime() + PAID_RETENTION_MS : -Infinity));
+  }
+  if (clip.expiresAt && (!deadline || clip.expiresAt < deadline)) return clip.expiresAt;
+  return deadline;
 }
 
 export const PAYMENTS_MODES =['off', 'fake', 'live'] as const;

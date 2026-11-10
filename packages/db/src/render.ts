@@ -18,6 +18,7 @@ export async function lockRender(tx: PoolClient, attempt: Attempt): Promise<bool
   if (!video.rowCount) return false;
   const result = await tx.query(`SELECT c.id FROM clip c JOIN job_attempt j ON j.clip_id=c.id
     WHERE c.id=$1 AND c.video_id=$2 AND c.render_fence=$3 AND c.status=CASE WHEN j.rerender THEN 'done' ELSE 'rendering' END
+    AND c.deletion_started_at IS NULL AND c.media_deleted_at IS NULL
     AND j.rerender=$4 AND j.video_id=$2 AND j.fence=$3 AND j.stage='render' AND j.status IN ('running','deferred') FOR UPDATE OF c,j`,
   [attempt.clip_id, attempt.video_id, attempt.fence, !!attempt.rerender]);
   return !!result.rowCount;
@@ -88,10 +89,12 @@ export async function publishRenderResult(pool: Pool, attempt: Attempt, result: 
     const previous = (await tx.query<{ object_key: string | null; thumbnail_key: string | null }>(
       'SELECT object_key,thumbnail_key FROM clip WHERE id=$1', [attempt.clip_id])).rows[0]!;
     const written = await tx.query(`UPDATE clip SET status='done',object_key=$4,thumbnail_key=$5,bytes=$6,watermarked=$7,
-      duration_seconds=$8,failure_reason=NULL,rendered_music_track_id=$9,music_skip_reason=$11
+      duration_seconds=$8,failure_reason=NULL,rendered_music_track_id=$9,music_skip_reason=$11,
+      ready_at=CASE WHEN NOT $12 THEN COALESCE(ready_at,now()) ELSE ready_at END,
+      ready_at_source=CASE WHEN NOT $12 AND ready_at IS NULL THEN 'render' ELSE ready_at_source END
       WHERE id=$1 AND video_id=$2 AND render_fence=$3 AND status=$10 RETURNING id`,
     [attempt.clip_id, attempt.video_id, attempt.fence, result.object_key, result.thumbnail_key, bytes,
-      result.watermarked, result.duration_seconds, result.rendered_music_track_id ?? 'none', attempt.rerender ? 'done' : 'rendering', result.music_skip_reason ?? null]);
+      result.watermarked, result.duration_seconds, result.rendered_music_track_id ?? 'none', attempt.rerender ? 'done' : 'rendering', result.music_skip_reason ?? null, !!attempt.rerender]);
     if (!written.rowCount) { auditAttempt('stale_attempt_result', attempt); return null; }
     await tx.query(`UPDATE job_attempt SET status='succeeded',wait_reason=NULL,finished_at=now() WHERE video_id=$1 AND fence=$2`,
       [attempt.video_id, attempt.fence]);

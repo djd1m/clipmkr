@@ -38,5 +38,6 @@ export type ClipScreen = {
   music_track_id?: string | null; render_version?: number; rerendering?: boolean;
   duration_seconds?: number | null;
   clip_id: string; index: number; start: number; end: number; title: string; status: ClipStatus;
+  retention_state?: 'active'|'unknown'|'unlimited'|'expired';
   watermarked: boolean; expires_at: string | null; available: boolean;
 } & Partial<z.infer<typeof scoreSchema>>;

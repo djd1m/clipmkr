@@ -19,7 +19,7 @@ interface Dependencies {
   creditMode?: boolean;
 }
 // Блок тарифа при включённом режиме: ссылка без скрипта (вход и экран тарифа — на /upgrade).
-const PRO_OFFER = `<section aria-label="Тариф Pro"><p>Клипы без метки и хранение без срока — тариф ${PAID_PLAN_TITLE}, ${formatRubles(PAID_PRICE_MINOR)} за ${PAID_PLAN_DAYS} дней.</p>
+const PRO_OFFER = `<section aria-label="Тариф Pro"><p>Бесплатные клипы хранятся 7 суток от готовности; с оплатой — до конца оплаченного периода и ещё 30 суток. Клипы без метки — тариф ${PAID_PLAN_TITLE}, ${formatRubles(PAID_PRICE_MINOR)} за ${PAID_PLAN_DAYS} дней.</p>
 <a class="download" href="/upgrade?from=guest_page">Оформить ${PAID_PLAN_TITLE}</a></section>`;
 // Colour tokens duplicated from apps/web/src/app/globals.css (values must match: tests/theme.test.ts).
 const THEME_TOKENS = ':root{color-scheme:dark;--paper:#0e1311;--surface:#1a211d;--ink:#eef2ec;--green:#8fd4a4;--btn-bg:#dcefd9;--btn-fg:#0f1a14;--media-bg:#060807;--media-fg:#d5ddd6;--focus:#f2b552;}:root[data-theme=light]{color-scheme:light;--paper:#f7f8f3;--surface:#ffffff;--ink:#202a27;--green:#305d45;--btn-bg:#305d45;--btn-fg:#ffffff;--media-bg:#1d2822;--media-fg:#e2e7db;--focus:#9c5e0a;}';
@@ -27,6 +27,7 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 })[c]!);
 function landing(pack: Awaited<ReturnType<GuestPackService['find']>>, nonce: string, theme: Theme, paymentsOn: boolean, creditMode=false) {
+  const allExpired=pack.clips.length>0&&pack.clips.every(clip=>clip.retention_state==='expired');
   return `<!doctype html><html lang="ru" data-theme="${theme}"><head><meta charset="utf-8"><meta name="color-scheme" content="${theme}"><meta name="theme-color" content="${THEME_COLOR[theme]}"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow"><title>Ваши клипы — КлипМейкер</title>
 <style>${THEME_TOKENS}*{box-sizing:border-box}html{background:var(--paper)}body{margin:0;background:var(--paper);color:var(--ink);font:1.125rem/1.6 system-ui,sans-serif}
@@ -35,7 +36,7 @@ main{max-width:65.625rem;margin:auto;padding:1.5rem}h1{font-size:clamp(2rem,4vw,
 article{min-width:0;background:var(--surface);padding:1rem;border-radius:1rem}h2{overflow-wrap:anywhere;font-size:1.375rem}
 video{width:100%;max-height:31.25rem;aspect-ratio:9/16;background:var(--media-bg);border-radius:0.625rem}
 a{color:var(--green)}button,.download{display:inline-block;padding:0.75rem 1.125rem;border:0;border-radius:0.5rem;background:var(--btn-bg);color:var(--btn-fg);font:inherit}:focus-visible{outline:0.1875rem solid var(--focus);outline-offset:0.25rem}
-button{cursor:pointer;margin-bottom:1.25rem}button:disabled{opacity:.6}footer{margin-top:2rem}small{display:block}
+[hidden]{display:none!important}button{cursor:pointer;margin-bottom:1.25rem}button:disabled{opacity:.6}footer{margin-top:2rem}small{display:block}
 @media(max-width:600px){main{padding:1rem}.clips{grid-template-columns:1fr}}
 h1,h2,h3,p,label,button,a,input,select,textarea{overflow-wrap:anywhere;hyphens:none}nav a,main>a:not([hidden]),footer a:not([hidden]){display:inline-flex;align-items:center;min-height:2.75rem}
 main,nav{padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}nav{padding-top:max(1rem,env(safe-area-inset-top))}main{padding-bottom:max(1rem,env(safe-area-inset-bottom))}
@@ -44,17 +45,25 @@ video{max-height:min(70svh,31.25rem);object-fit:contain}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 ${LEGAL_FOOTER_CSS}</style></head><body><main>
 <a href="/">КлипМейкер</a><h1>${escapeHtml(pack.guest_name)}, ${pluralRu(pack.clips.length, ['ваш', 'ваши', 'ваши'])} ${pack.clips.length} ${pluralRu(pack.clips.length, ['момент', 'момента', 'моментов'])} из выпуска</h1>
-<p>Ведущий отметил эти клипы для вас. Скачайте и опубликуйте их у себя.</p>
-<p>Ссылка действует до ${escapeHtml(pack.expires_at!.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' }))}. Файлы могут стать недоступны раньше по сроку хранения.</p>
-<button id="download-all" ${pack.clips.some(c => c.available) ? '' : 'disabled'}>Скачать все</button><p id="download-status" role="status"></p>
+<p>${allExpired?'Срок хранения закончился. История отмеченных фрагментов сохранена.':'Ведущий отметил эти клипы для вас. Скачайте и опубликуйте их у себя.'}</p>
+<p>Ссылка действует до <time datetime="${pack.expires_at!.toISOString()}">${escapeHtml(pack.expires_at!.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }))} МСК</time>. Файлы могут стать недоступны раньше по сроку хранения.</p>
+<button id="download-all" ${pack.clips.some(c => c.available && c.retention_state !== 'expired') ? '' : 'hidden disabled'}>Скачать все</button><p id="download-status" role="status"></p>
 <div class="clips">${pack.clips.map(clip => {
     const base = `/api/clips/${clip.clip_id}`, query = `g=${encodeURIComponent(pack.code)}`;
-    return `<article><h2>${escapeHtml(clip.title)}</h2>${clip.available
-      ? `<video controls playsinline preload="none" src="${base}/file?${query}" poster="${base}/thumbnail?${query}"></video>
+    const expired = clip.retention_state === 'expired';
+    const available = clip.available && !expired;
+    const deadline = new Date(Math.min(pack.expires_at!.getTime(),clip.expires_at ? new Date(clip.expires_at).getTime() : Infinity));
+    const until = `<p>Доступно до <time datetime="${deadline.toISOString()}">${escapeHtml(deadline.toLocaleString('ru-RU',{timeZone:'Europe/Moscow'}))} МСК</time>.</p>`;
+    const state = clip.status === 'failed' ? 'Клип не удалось собрать.'
+      : clip.status === 'rendering' || clip.status === 'queued' ? 'Клип ещё обрабатывается.'
+      : expired ? 'Срок хранения закончился' : 'Файл пока недоступен.';
+    const unknown = clip.retention_state === 'unknown' ? '<p>Дата хранения уточняется.</p>' : '';
+    return `<article><h2>${escapeHtml(clip.title)}</h2>${available
+      ? `${unknown}${until}<video controls playsinline preload="none" src="${base}/file?${query}" poster="${base}/thumbnail?${query}"></video>
 <a class="download" href="${base}/file?${query}&amp;download=1" download>Скачать</a>`
-      : '<p>Срок хранения клипа истёк или файл пока недоступен.</p>'}</article>`;
+      : `${unknown}<p>${state}</p>`}</article>`;
   }).join('')}</div><footer><a href="/">Сделать свои клипы</a>
-${paymentsOn ? (creditMode ? `<section aria-label="Пакеты кредитов"><p>Старт: 990 ₽ / 300 кредитов / 5 ч; Про: 3990 ₽ / 1800 кредитов / 30 ч; дополнительный пакет: 1490 ₽ / 600 кредитов / 10 ч. Каждый оплаченный пакет — 30 дней.</p><a class="download" href="/upgrade?from=guest_page">Выбрать пакет</a></section>` : PRO_OFFER) : `<section aria-label="Интерес к тарифу"><p>Сейчас доступен только бесплатный тариф.</p>
+${paymentsOn ? (creditMode ? `<section aria-label="Пакеты кредитов"><p>Старт: 990 ₽ / 300 кредитов / 5 ч; Про: 3990 ₽ / 1800 кредитов / 30 ч; дополнительный пакет: 1490 ₽ / 600 кредитов / 10 ч. Каждый оплаченный пакет — 30 дней. Бесплатные клипы хранятся 7 суток от готовности; с оплатой — до конца оплаченного периода и ещё 30 суток.</p><a class="download" href="/upgrade?from=guest_page">Выбрать пакет</a></section>` : PRO_OFFER) : `<section aria-label="Интерес к тарифу"><p>Сейчас доступен только бесплатный тариф.</p>
 <p>Нужны больше минут или клипы без метки? Отметьте интерес — это поможет нам оценить спрос.</p>
 <button id="pro-interest">Нужен тариф побольше</button><p id="interest-status" role="status"></p>
 <a id="interest-login" href="/" hidden>Войти в аккаунт</a></section>`}

@@ -46,7 +46,8 @@ export async function eraseAccount(pool: Pool, storage: RetentionStorage, accoun
     await tx.query(`UPDATE account SET status='deleted',email_verified_at=NULL,email='deleted:'||id::text,password_hash='',telegram_user_id=NULL,updated_at=$2 WHERE id=$1`, [account, now]);
   });
 }
-export async function retentionTick(pool: Pool, storage: RetentionStorage, now = new Date(), batch = 100) {
+export async function retentionTick(pool: Pool, storage: RetentionStorage, time:Date|(()=>Date) = () => new Date(), batch = 100) {
+  const clock=typeof time==='function'?time:()=>time, now=clock();
   // Session-level lock spans S3, without an open SQL transaction. All web replicas share it.
   const lease = await pool.connect();
   try {
@@ -90,27 +91,38 @@ export async function retentionTick(pool: Pool, storage: RetentionStorage, now =
     // Витрина лендинга (ADR-018): клипы SHOWCASE_CLIPS срок бесплатного тарифа не стирает — их показывают
     // каждому посетителю. Стирание АККАУНТА (выше) их не щадит: право на удаление сильнее витрины.
     await step('очистка клипов', async () => {
-      const clips = await pool.query<{ id: string; video_id: string; object_key: string | null; thumbnail_key: string | null }>(`SELECT c.id,c.object_key,c.thumbnail_key,c.video_id FROM clip c
+      const clips = await pool.query<{ id: string; video_id: string; account_id: string }>(`SELECT c.id,c.video_id,v.account_id FROM clip c
         JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
-        WHERE c.status='done' AND a.status='active' AND v.status IN ('done','failed')
-        AND NOT ${clipAliveSql('c', 'v', 'a', '$2')} AND (c.object_key IS NOT NULL OR c.thumbnail_key IS NOT NULL)
-        ORDER BY v.finished_at LIMIT $1`, [batch, now]);
-      backlog ||= clips.rows.length === batch;
-      // Порядок — три шага (ревью Codex 28.09: круг 1, находка 2; круг 2, находка 1):
-      //   1) закрыть активные пересборки клипа (video FOR UPDATE, как у рендера и setCta/setMusic). lockRender требует
-      //      АКТИВНУЮ попытку: закрытая больше не примет результат — ни до стирания, ни после; её отвергнутую версию
-      //      publishRenderResult удаляет сам. Новую пересборку истёкшего клипа setCta/setMusic не поставят (clipExpiry);
-      //   2) стереть объекты по префиксу клипа;
-      //   3) и ТОЛЬКО ПОСЛЕ успешного стирания обнулить ключи: при отказе хранилища ключи остаются, и следующий проход
-      //      выберет клип снова — повтор не теряется.
+        WHERE a.status='active' AND v.deleted_at IS NULL AND (
+          (c.deletion_started_at IS NOT NULL AND c.media_recheck_at<=$2) OR
+          (c.status='done' AND c.deletion_started_at IS NULL AND c.ready_at IS NOT NULL
+            AND (c.object_key IS NOT NULL OR c.thumbnail_key IS NOT NULL) AND NOT ${clipAliveSql('c','v','a','$2')}))
+        ORDER BY COALESCE(c.media_recheck_at,c.ready_at),c.id LIMIT $1`, [batch,now]);
+      backlog ||= clips.rows.length===batch;
       for (const clip of clips.rows) await step('удаление клипа', async () => {
-        await transaction(pool, async client => {
-          await client.query('SELECT id FROM video WHERE id=$1 FOR UPDATE', [clip.video_id]);
-          await client.query(`UPDATE job_attempt SET status='failed',failure_reason='stale_attempt_result',finished_at=$2
-            WHERE clip_id=$1 AND rerender AND status IN ('running','deferred')`, [clip.id, now]);
+        const claimed = await transaction(pool, async tx => {
+          const owner = await tx.query("SELECT id FROM account WHERE id=$1 AND status='active' FOR NO KEY UPDATE", [clip.account_id]);
+          if (!owner.rowCount) return false;
+          const video = await tx.query('SELECT id FROM video WHERE id=$1 AND account_id=$2 AND deleted_at IS NULL FOR UPDATE', [clip.video_id,clip.account_id]);
+          if (!video.rowCount) return false;
+          await tx.query('SELECT id FROM clip WHERE id=$1 FOR UPDATE',[clip.id]);
+          // Recompute after the common billing lock, including windows that started while waiting.
+          const decision = clock();
+          const row = (await tx.query<{deletion_started_at:Date|null;ready_at:Date|null;alive:boolean;media_recheck_at:Date|null}>(
+            `SELECT c.deletion_started_at,c.ready_at,c.media_recheck_at,${clipAliveSql('c','v','a','$2')} AS alive
+             FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id WHERE c.id=$1`,[clip.id,decision])).rows[0];
+          if (!row || (!row.deletion_started_at && (!row.ready_at || row.alive)) ||
+            (row.deletion_started_at && row.media_recheck_at && row.media_recheck_at>decision)) return false;
+          await tx.query(`UPDATE clip SET deletion_started_at=COALESCE(deletion_started_at,$2),media_recheck_at=$3 WHERE id=$1`,
+            [clip.id,decision,new Date(decision.getTime()+RETENTION_INTERVAL_MS)]);
+          await tx.query(`UPDATE job_attempt SET status='failed',failure_reason='stale_attempt_result',finished_at=$2
+            WHERE clip_id=$1 AND rerender AND status IN ('running','deferred')`,[clip.id,decision]);
+          return true;
         });
-        for (const prefix of ['clips/free', 'clips/paid', 'thumbs']) await storage.eraseClipPrefix(`${prefix}/${clip.video_id}/${clip.id}`);
-        await pool.query('UPDATE clip SET object_key=NULL,thumbnail_key=NULL,expires_at=COALESCE(expires_at,$2) WHERE id=$1', [clip.id, now]);
+        if (!claimed) return;
+        for (const prefix of ['clips/free','clips/paid','thumbs']) await storage.eraseClipPrefix(`${prefix}/${clip.video_id}/${clip.id}`);
+        await pool.query(`UPDATE clip SET object_key=NULL,thumbnail_key=NULL,media_deleted_at=COALESCE(media_deleted_at,$2)
+          WHERE id=$1 AND deletion_started_at IS NOT NULL`,[clip.id,clock()]);
       });
     });
     if (errors) throw new Error(`Очистка: не завершено операций ${errors}; повтор на следующем проходе`);

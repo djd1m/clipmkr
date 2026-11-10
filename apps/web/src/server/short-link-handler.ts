@@ -14,7 +14,7 @@ interface Dependencies {
   auth: Pick<AuthService, 'authenticate'>;
   trustedProxyHops: number;
   allowRead: (ip: string, account?: string) => Promise<boolean>;
-  preview: (key: string) => Promise<string | null>;
+  preview: (key: string,notAfter?:Date|null) => Promise<string | null>;
   clock?: () => Date;
 }
 // Colour tokens duplicated from apps/web/src/app/globals.css (values must match: tests/theme.test.ts).
@@ -57,7 +57,7 @@ ${LEGAL_FOOTER_CSS}</style></head><body><nav><a href="/">◧ КлипМейке�
 <section><h1>${escapeHtml(title)}</h1>${actions(cta)}<p>Этот фрагмент создан в КлипМейкере.</p>
 <p>Превратите свой подкаст или вебинар в короткие вертикальные клипы с субтитрами — готовые к публикации.</p>
 </section><section class="preview" aria-label="Превью клипа">${preview ? `<img src="${escapeHtml(preview)}" alt="${escapeHtml(title)}" referrerpolicy="no-referrer">`
-    : `<p>${expired ? 'Срок хранения клипа истёк. Файл больше недоступен, но вы можете сделать свои клипы.' : 'Превью этого клипа пока недоступно. Попробуйте сделать свои клипы.'}</p>`}</section></main>${legalFooterHtml()}</body></html>`;
+    : `<p>${expired ? 'Срок хранения закончился. Файл больше недоступен, но вы можете сделать свои клипы.' : 'Превью этого клипа пока недоступно. Попробуйте сделать свои клипы.'}</p>`}</section></main>${legalFooterHtml()}</body></html>`;
 }
 export function createShortLinkHandler(deps: Dependencies) {
   return async (request: Request, code: string): Promise<Response> => {
@@ -71,7 +71,7 @@ export function createShortLinkHandler(deps: Dependencies) {
       if (!await deps.allowRead(ip, session?.account_id)) return new Response('Слишком много запросов. Повторите через минуту', { status: 429, headers });
       const link = await deps.links.find(code);
       const state = previewState(link, (deps.clock ?? (() => new Date()))());
-      const preview = state === 'ready' ? await deps.preview(link.thumbnail_key!) : null;
+      const preview = state === 'ready' ? await deps.preview(link.thumbnail_key!,link.retention_deadline===undefined?link.expires_at:link.retention_deadline) : null;
       await deps.links.recordView(link, session?.account_id ?? null, ipPrefix(ip));
       const referral = referralCookie(request.headers.get('cookie') ?? '', link.partner_code, 'cookie', session?.account_id === link.account_id, deps.referralSecret);
       return new Response(landing(link.title, preview, state === 'expired', themeFromCookie(request.headers.get('cookie') ?? undefined), readStoredCta(link.cta_kind, link.cta_url)), { headers: { ...headers, ...(referral ? { 'Set-Cookie': referral } : {}), 'Content-Type': 'text/html; charset=utf-8' } });

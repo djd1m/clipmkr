@@ -1,4 +1,4 @@
-import type { Pool } from '@clipmaker/db';
+import { retentionDeadlineSql, type Pool } from '@clipmaker/db';
 import { findShowcase } from '@clipmaker/shared/showcase';
 import { clientIp } from './ip';
 
@@ -12,7 +12,7 @@ export interface ShowcaseFileDependencies {
   allowRead: (ip: string) => Promise<boolean>;
   trustedProxyHops: number;
   pool: Pick<Pool, 'query'>;
-  sign: (key: string) => Promise<string>;
+  sign: (key: string,notAfter?:Date|null) => Promise<string>;
 }
 export function createShowcaseFileHandler(deps: ShowcaseFileDependencies, kind: 'file' | 'thumbnail') {
   return async (request: Request, code: string): Promise<Response> => {
@@ -25,16 +25,18 @@ export function createShowcaseFileHandler(deps: ShowcaseFileDependencies, kind: 
       // Членство в наборе — ДО любого запроса к базе: чужой код не стоит ни одного обращения.
       const showcase = findShowcase(code);
       if (!showcase) return missing();
-      const row = (await deps.pool.query<{ object_key: string | null; thumbnail_key: string | null }>(
-        `SELECT c.object_key,c.thumbnail_key FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
+      const row = (await deps.pool.query<{ deadline:Date|null; object_key: string | null; thumbnail_key: string | null }>(
+        `SELECT c.object_key,c.thumbnail_key,${retentionDeadlineSql()} AS deadline FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
          WHERE c.id=$1 AND c.status='done' AND v.deleted_at IS NULL AND a.status='active'
+         AND c.deletion_started_at IS NULL AND c.media_deleted_at IS NULL
          AND (c.expires_at IS NULL OR c.expires_at > now())
          AND EXISTS (SELECT 1 FROM clip_link l WHERE l.clip_id=c.id AND l.code=$2 AND l.revoked_at IS NULL)`,
         [showcase.clipId, showcase.code])).rows[0];
       const key = kind === 'file' ? row?.object_key : row?.thumbnail_key;
       if (!key) return missing();
-      return new Response(null, { status: 302, headers: { ...headers, Location: await deps.sign(key) } });
+      return new Response(null, { status: 302, headers: { ...headers, Location: await deps.sign(key,row?.deadline) } });
     } catch (error) {
+      if (error instanceof Error && error.name==='ClipSignatureExpired') return missing();
       console.error('Витрина: не удалось выдать файл', error);
       return new Response('Не удалось получить файл. Повторите позже', { status: 503, headers: { 'Cache-Control': 'no-store' } });
     }

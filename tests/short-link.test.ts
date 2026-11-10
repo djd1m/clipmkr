@@ -32,10 +32,10 @@ it('anonymous landing returns escaped preview and CTA, no redirect, no cache, mo
 });
 it.each([
   { expires_at: new Date('2026-09-20'), thumbnail_key: null },
-  { retention_from: new Date('2026-09-19T21:00:00Z') },
-])('expired landing survives file removal or 72-hour boundary', async overrides => {
+  { retention_from: new Date('2026-09-15T21:00:00Z') },
+])('expired landing survives file removal or seven-day boundary', async overrides => {
   const deps = setup(overrides); const response = await deps.handle(request(), row.code);
-  expect(response.status).toBe(200); expect(await response.text()).toContain('Срок хранения клипа истёк');
+  expect(response.status).toBe(200); expect(await response.text()).toContain('Срок хранения закончился');
   expect(deps.preview).not.toHaveBeenCalled(); expect(deps.links.recordView).toHaveBeenCalledOnce();
 });
 it('missing object keeps landing and explains unavailable preview', async () => {

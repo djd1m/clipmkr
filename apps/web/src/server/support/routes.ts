@@ -1,5 +1,3 @@
-import { open } from 'node:fs/promises';
-import { constants } from 'node:fs';
 import { after } from 'next/server';
 import { z } from 'zod';
 import { SupportAdminStore, SupportEmailStore, StaffNotFound, SUPPORT_UUID } from '@clipmaker/db';
@@ -8,7 +6,7 @@ import { readSessionCookie } from '../auth-handler';
 import { allowMutation,allowRead } from '../rate-limit';
 import { clientIp } from '../ip';
 import { createEmailHandler } from './email-handler';
-import { SupportMailer } from './mail';
+import { createSupportMailer, type SupportMailer } from './mail';
 import { supportBody,supportFailure,supportJSON,SupportError } from './boundary';
 import { widgetSession } from './widget';
 import { supportContext } from './context';
@@ -16,12 +14,7 @@ let mailer:SupportMailer|undefined;
 export function emailRoute(action:'send'|'confirm'|'forgot'|'reset') {
   return async(request:Request)=>{
     const r=getRuntime();
-    mailer??=new SupportMailer(r.config.mail,r.config.mail.mode==='test'?async message=>{
-      const destination=process.env.N5_MAIL_TEST_CAPTURE_FILE;
-      if(!destination || !destination.startsWith('/tmp/'))throw new Error('test_capture_missing');
-      const file=await open(destination,constants.O_WRONLY|constants.O_CREAT|constants.O_APPEND|constants.O_NOFOLLOW,0o600);
-      try {await file.chmod(0o600);await file.writeFile(JSON.stringify(message)+'\n');}finally{await file.close();}
-    }:undefined);
+    mailer??=createSupportMailer(r.config.mail);
     return createEmailHandler(action,{auth:r.auth,store:new SupportEmailStore(r.pool),mailer,mailAvailable:r.config.mail.mode!=='disabled',
       publicOrigin:r.config.publicOrigin,trustedProxyHops:r.config.trustedProxyHops,secret:r.config.sessionSecret,
       allowIP:ip=>allowMutation(r.redis,ip,r.config.sessionSecret),after:task=>after(task)})(request);

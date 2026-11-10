@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { MUSIC_CATALOG, effectiveMusic } from '@clipmaker/shared/music-catalog';
 import type { Limits } from '@clipmaker/shared/config';
-import { transaction, leaseAttemptTx, checkAndConsumeQuota, effectivePlanSql, retentionFromSql, type Attempt, type Pool } from '@clipmaker/db';
+import { transaction, leaseAttemptTx, checkAndConsumeQuota, effectivePlanSql, retentionFromSql, retentionDeadlineSql, type Attempt, type Pool } from '@clipmaker/db';
 import { clipExpiry } from '@clipmaker/shared/tariff';
 import { UploadError, quotaError } from './upload-contract';
 export const setMusicSchema = z.object({ clip_id: z.string().uuid(), track: z.string().refine(
@@ -19,15 +19,15 @@ export class ClipMusicService {
         JOIN clip c ON c.video_id=v.id WHERE c.id=$1 AND v.account_id=$2
         AND v.deleted_at IS NULL AND a.status='active' FOR UPDATE OF v`, [input.clip_id, account])).rows[0];
       if (!video) throw new UploadError('not_found', 'Клип не найден', 404);
-      const clip = (await tx.query('SELECT * FROM clip WHERE id=$1 FOR UPDATE', [input.clip_id])).rows[0];
+      const clip = (await tx.query(`SELECT c.*,${retentionDeadlineSql()} AS retention_deadline FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id WHERE c.id=$1 FOR UPDATE OF c`, [input.clip_id])).rows[0];
       const active = await tx.query(`SELECT 1 FROM job_attempt WHERE clip_id=$1 AND stage='render'
         AND status IN ('running','deferred')`, [input.clip_id]);
       if (video.status !== 'done' || clip.status !== 'done' || active.rowCount) {
         throw new UploadError('conflict', 'Клип ещё собирается', 409);
       }
       const now = this.clock();
-      const expires = clipExpiry({ clipId: clip.id, expiresAt: clip.expires_at, plan: video.plan, retentionFrom: video.retention_from });
-      if (!clip.object_key || (expires && expires <= now)) throw new UploadError('conflict', 'Срок хранения клипа истёк', 409);
+      const expires = clipExpiry({ clipId: clip.id, expiresAt: clip.expires_at, plan: video.plan, deadline:clip.retention_deadline });
+      if (clip.deletion_started_at || clip.media_deleted_at || !clip.object_key || (expires && expires <= now)) throw new UploadError('conflict', 'Срок хранения клипа истёк', 409);
       const target = effectiveMusic(input.track, video.music, clip.index);
       const rendered = clip.rendered_music_track_id ?? effectiveMusic(clip.music_track_id, video.music, clip.index);
       if (clip.music_skip_reason && target === effectiveMusic(clip.music_track_id, video.music, clip.index)) {

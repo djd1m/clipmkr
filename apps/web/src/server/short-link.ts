@@ -1,15 +1,16 @@
-import { effectivePlanSql, retentionFromSql, type Pool } from '@clipmaker/db';
+import { effectivePlanSql, retentionFromSql, retentionDeadlineSql, type Pool } from '@clipmaker/db';
 import { clipExpiry } from '@clipmaker/shared/tariff';
 import { moscowDay } from '@clipmaker/shared/upload';
 import { UploadError } from './upload-contract';
 
 export interface ShortLink {
   id: string; code: string; clip_id?: string; partner_code?: string | null; partner_code_id?: string | null; account_id: string; title: string; status: string;
+  retention_deadline?:Date|null; deletion_started_at?:Date|null; media_deleted_at?:Date|null;
   thumbnail_key: string | null; expires_at: Date | null; retention_from: Date | null; plan: string;
   cta_kind?: string | null; cta_url?: string | null;
 }
 const missing = () => new UploadError('not_found', 'Ссылка не найдена', 404);
-const linkSelect = `SELECT l.id,l.code,l.clip_id,v.account_id,c.title,c.status,c.thumbnail_key,c.expires_at,${retentionFromSql('v', 'a')} AS retention_from,${effectivePlanSql('a')} AS plan,v.cta_kind,v.cta_url,pc.code AS partner_code,pc.id AS partner_code_id
+const linkSelect = `SELECT l.id,l.code,l.clip_id,v.account_id,c.title,c.status,c.thumbnail_key,c.expires_at,c.deletion_started_at,c.media_deleted_at,${retentionDeadlineSql()} AS retention_deadline,${retentionFromSql('v', 'a')} AS retention_from,${effectivePlanSql('a')} AS plan,v.cta_kind,v.cta_url,pc.code AS partner_code,pc.id AS partner_code_id
   FROM clip_link l JOIN clip c ON c.id=l.clip_id JOIN video v ON v.id=c.video_id
   JOIN account a ON a.id=v.account_id
   LEFT JOIN LATERAL (SELECT c.id,c.code FROM partner p JOIN partner_code c ON c.partner_id=p.id
@@ -57,7 +58,7 @@ export class ShortLinkService {
 
 export function previewState(link: ShortLink, now: Date): 'ready' | 'expired' | 'unavailable' {
   // Витрина (ADR-018) — внутри clipExpiry: срок бесплатного тарифа к ней не применяется, явный expires_at — всегда.
-  const expires = clipExpiry({ clipId: link.clip_id, expiresAt: link.expires_at, plan: link.plan, retentionFrom: link.retention_from });
-  if (expires && expires <= now) return 'expired';
+  const expires = clipExpiry({ clipId: link.clip_id, expiresAt: link.expires_at, plan: link.plan, retentionFrom: link.retention_from,deadline:link.retention_deadline });
+  if (link.deletion_started_at || link.media_deleted_at || (expires && expires <= now)) return 'expired';
   return link.status === 'done' && link.thumbnail_key ? 'ready' : 'unavailable';
 }

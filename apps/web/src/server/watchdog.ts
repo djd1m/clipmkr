@@ -1,10 +1,13 @@
+import { retentionNoticesTick } from './retention-notices';
+import type { SupportMailer } from './support/mail';
 import { retentionTick, RETENTION_INTERVAL_MS, type RetentionStorage } from './retention';
 const retentionLastRun = new WeakMap<Pool, number>();
 import { lockCreditAccountForVideo, finalizeVideoCreditsTx, transaction, ensureInitialAttempt, expirePaidPlans, type Attempt, type Pool } from '@clipmaker/db';
 import { DEFER_DELAY_MS, STALLED_AFTER_MS, WATCHDOG_INTERVAL_MS } from '@clipmaker/queue';
 // Per-process cursor keeps retained jobs from starving attempts beyond the batch boundary.
 const recoveryCursor = new WeakMap<Pool, string>();
-export async function watchdogTick(pool: Pool, enqueue: (job: Attempt, delay?: number) => Promise<void>, now = new Date(), batch = 100, storage?: RetentionStorage) {
+export async function watchdogTick(pool: Pool, enqueue: (job: Attempt, delay?: number) => Promise<void>, time:Date|(()=>Date) = () => new Date(), batch = 100, storage?: RetentionStorage, notices?: {mailer:Pick<SupportMailer,'sendRetention'|'retentionSender'>;publicOrigin:string}) {
+  const clock=typeof time==='function'?time:()=>time, now=clock();
   let step = 'закрытие зависших задач';
   try {
   const failed = await transaction(pool, async tx => {
@@ -73,10 +76,14 @@ export async function watchdogTick(pool: Pool, enqueue: (job: Attempt, delay?: n
   // Фича 30 (AC-12): истёкший ОПЛАЧЕННЫЙ тариф → free. Чтения уже считают его free по сроку (effectivePlanSql);
   // сторож лишь приводит строку в соответствие. Тариф оператора не истекает.
   await expirePaidPlans(pool, batch);
-  if (storage && now.getTime() - (retentionLastRun.get(pool) ?? -Infinity) >= RETENTION_INTERVAL_MS) {
+  if (notices) {
+    try { await retentionNoticesTick(pool,notices.mailer,notices.publicOrigin,clock,batch); }
+    catch { console.error('Сторож: напоминания недоступны; повтор на следующем проходе'); }
+  }
+  if (storage && clock().getTime() - (retentionLastRun.get(pool) ?? -Infinity) >= RETENTION_INTERVAL_MS) {
     step = 'retention';
-    const result = await retentionTick(pool, storage, now, batch);
-    if (result && !result.backlog) retentionLastRun.set(pool, now.getTime());
+    const result = await retentionTick(pool, storage, clock, batch);
+    if (result && !result.backlog) retentionLastRun.set(pool, clock().getTime());
   }
   return { failed, published };
   } catch (error) {

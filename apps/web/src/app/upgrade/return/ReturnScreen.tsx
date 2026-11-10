@@ -14,6 +14,7 @@ export function ReturnView({ state }: { state: ReturnState }) {
     case 'package': return <div data-state="package"><h1>Пакет {state.title} оплачен</h1>
       <p role="status" className="notice">{state.credits} кредитов · {(state.credits/60).toLocaleString('ru-RU')} ч обычной записи.
       {' '}{state.scheduled?'Начнётся':'Период'} {date(state.start)} — {date(state.end)}. {state.scheduled?'До начала периода эти кредиты недоступны.':'Платные функции действуют до конца этого окна.'}</p>
+      <p>Бесплатные клипы хранятся 7 суток от готовности; с оплатой — до конца оплаченного периода и ещё 30 суток.</p>
       <a className="button" href="/dashboard">В кабинет</a></div>;
     case 'waiting': return <div data-state="waiting" aria-busy="true">
       <h1>Ждём подтверждения оплаты</h1>
@@ -21,7 +22,7 @@ export function ReturnView({ state }: { state: ReturnState }) {
     </div>;
     case 'succeeded': return <div data-state="succeeded">
       <h1>Тариф Pro включён</h1>
-      <p role="status" className="notice">{state.until ? `Оплачено до ${date(state.until)}.` : 'Оплата подтверждена.'} Новые клипы соберутся без метки и будут храниться без срока.</p>
+      <p role="status" className="notice">{state.until ? `Оплачено до ${date(state.until)}.` : 'Оплата подтверждена.'} Новые клипы соберутся без метки. Бесплатные клипы хранятся 7 суток от готовности; с оплатой — до конца оплаченного периода и ещё 30 суток.</p>
       <p><a className="button" href="/dashboard">В кабинет</a></p>
     </div>;
     case 'paid_inactive': return <div data-state="paid_inactive">

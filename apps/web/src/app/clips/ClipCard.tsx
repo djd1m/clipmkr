@@ -36,12 +36,12 @@ export function ClipCard({ clip, onMusicQueued, onMusicApplyStart, onMusicFailed
     finally { setCopying(false); }
   }
   const fileVersion = String(clip.published_render_version ?? clip.render_version ?? 1);
-  const expired = !!clip.expires_at && Date.parse(clip.expires_at) <= Date.now();
+  const expired = clip.retention_state==='expired' || (!!clip.expires_at && Date.parse(clip.expires_at) <= Date.now());
   const scored = clip.score !== undefined && clip.components && clip.explanations ? { score: clip.score, components: clip.components, explanations: clip.explanations } : null;
   const downloadIdle = clip.available && !downloadingId;
   const downloadAction = <div className="clip-actions" role="group" aria-label="Действия с клипом">
     <button disabled={!clip.available || downloadingId !== null} aria-label={downloadIdle ? 'Скачать клип' : undefined} onClick={() => void download(clip.clip_id, clip.title)}>
-      {downloadingId ? 'Открываем файл…' : clip.available ? '↓ Скачать' : expired ? 'Срок хранения истёк' : clip.status === 'failed' ? 'Не удалось собрать' : 'Собираем…'}</button>
+      {downloadingId ? 'Открываем файл…' : clip.available ? '↓ Скачать' : expired ? 'Срок хранения закончился' : clip.status === 'failed' ? 'Не удалось собрать' : 'Собираем…'}</button>
   </div>;
   const contextual = <section ref={contextRef} className="clip-context" data-context-clip={clip.clip_id} data-context-kind={context ?? ''} hidden={!context || !selected}>
     <h2>{context === 'edit' ? 'Оформление клипа' : 'Поделиться клипом'}</h2>
@@ -63,19 +63,20 @@ export function ClipCard({ clip, onMusicQueued, onMusicApplyStart, onMusicFailed
     </header>
     <div className="clip-preview">{clip.available ? <video ref={videoRef} key={fileVersion} controls playsInline preload="metadata" onPlay={() => onSelect?.(clip.clip_id)}
       poster={`/api/clips/${clip.clip_id}/thumbnail?v=${fileVersion}`} src={`/api/clips/${clip.clip_id}/file?v=${fileVersion}`} aria-label={clip.title} />
-      : <p>{expired ? 'Срок хранения истёк' : clip.status === 'failed' ? 'Не удалось собрать клип' : 'Собираем клип…'}</p>}
+      : <p>{expired ? 'Срок хранения закончился' : clip.status === 'failed' ? 'Не удалось собрать клип' : 'Собираем клип…'}</p>}
       {scored && <span className="score-badge" aria-hidden="true">{scored.score}</span>}</div>
     <div className="clip-body">
       {error && <p role="alert">{error}</p>}
       {previewError && <p role="alert">{previewError}</p>}
-      {downloadAction}
+      {!expired && downloadAction}
       {copyMessage && <p role="status" className="video-id">{copyMessage}</p>}
       {musicFeedback && <p role="alert">{musicFeedback}</p>}
       {musicNotice && <p role="status">{musicNotice}</p>}
-      {clip.expires_at && <p className="muted">{expired ? 'Файл больше недоступен' : `Хранится до ${new Date(clip.expires_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })} МСК`}</p>}
-      {clip.rerender_failure && !clip.rerendering && <p role="alert">Не удалось пересобрать клип. Предыдущий файл сохранён. Попробуйте ещё раз.</p>}
+      {!clip.expires_at && clip.available && <p className="muted">{clip.retention_state==='unknown' ? 'Дата хранения уточняется' : 'Хранение без ограничения по действующему праву'}</p>}
+      {clip.expires_at && <p className="muted">{expired ? 'Срок хранения закончился' : `Доступно до ${new Date(clip.expires_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })} МСК`}</p>}
+      {!expired && clip.rerender_failure && !clip.rerendering && <p role="alert">Не удалось пересобрать клип. Предыдущий файл сохранён. Попробуйте ещё раз.</p>}
       <details ref={moreRef} className="clip-secondary"><summary>Ещё</summary>
-      <div className="clip-more-actions">
+      <div className="clip-more-actions" hidden={expired}>
         <button type="button" className="secondary" data-context-choice="share" disabled={!clip.available} onClick={() => { setContext('share'); onEditClip?.(null); }}>Поделиться</button>
         <button type="button" className="secondary" data-context-choice="edit" disabled={!clip.available} onClick={() => { setContext('edit'); onEditClip?.(clip.clip_id); }}>Изменить оформление</button>
       </div>
@@ -88,6 +89,6 @@ export function ClipCard({ clip, onMusicQueued, onMusicApplyStart, onMusicFailed
           <dt>Самодостаточность · {scored.components.completeness}/33</dt><dd>{scored.explanations.completeness}</dd>
           <dt>Длина · {scored.components.length}/33</dt><dd>{scored.explanations.length}</dd></dl></details></section> : <p>Без оценки</p>}
       </details></details></div></article>
-      {contextRoot === undefined ? contextual : contextRoot ? createPortal(contextual, contextRoot, clip.clip_id) : null}
+      {!expired && (contextRoot === undefined ? contextual : contextRoot ? createPortal(contextual, contextRoot, clip.clip_id) : null)}
     </>;
 }

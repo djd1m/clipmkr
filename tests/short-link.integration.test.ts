@@ -74,7 +74,7 @@ describe.skipIf(!dbUrl)('PostgreSQL short-link', () => {
     expect(response.status).toBe(200); expect(response.headers.get('location')).toBeNull();
     expect(response.headers.get('cache-control')).toBe('no-store');
     const html = await response.text();
-    expect(html).toContain('Срок хранения клипа истёк'); expect(html).toContain('Сделать свои клипы');
+    expect(html).toContain('Срок хранения закончился'); expect(html).toContain('Сделать свои клипы');
     expect(preview).not.toHaveBeenCalled(); expect(await totals()).toEqual({ count: 1, events: 1 });
   });
   it('unknown and revoked code have identical 404 responses', async () => {

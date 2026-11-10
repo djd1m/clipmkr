@@ -81,8 +81,9 @@ describe('WD-001: watchdog failure diagnostics', () => {
     f.query.mockImplementation(async sql => {
       if (sql.includes('SELECT count(*) FROM account')) return { rows: [{ count: '0' }], rowCount: 1 };
     if (sql.includes('pg_try_advisory_lock')) return { rows: [{ locked: true }], rowCount: 1 };
-      if (sql.startsWith('SELECT c.id')) return { rows: [{ id: 'clip', video_id: 'video', object_key: 'clip.mp4', thumbnail_key: null }], rowCount: 1 };
-      if (sql.startsWith('SELECT id FROM account')) return { rows: [{ id: 'account' }], rowCount: 1 };
+      if (sql.startsWith('SELECT c.id')) return { rows: [{ id: 'clip', video_id: 'video',account_id:'account', object_key: 'clip.mp4', thumbnail_key: null }], rowCount: 1 };
+      if (sql.startsWith('SELECT id FROM account') || sql.startsWith('SELECT id FROM video')) return { rows: [{ id: 'account' }], rowCount: 1 };
+      if(sql.startsWith('SELECT c.deletion_started_at'))return {rows:[{deletion_started_at:null,ready_at:new Date(now.getTime()-8*86400000),alive:false,media_recheck_at:null}],rowCount:1};
       return { rows: [], rowCount: 0 };
     });
     f.storage.eraseClipPrefix.mockRejectedValue(clipError);
