@@ -1,0 +1,22 @@
+{
+  "addressed": [
+    "QC-1",
+    "QT-1",
+    "QT-2",
+    "QT-3",
+    "QT-4"
+  ],
+  "changedScope": [
+    "features/yookassa-receipts/01_requirements.md",
+    "features/yookassa-receipts/03_adr/001-snapshot-receipt-in-payment-intent.md",
+    "features/yookassa-receipts/05_architecture.md"
+  ],
+  "classification": "structural",
+  "delta": "Предлагаемое авторское устранение пяти условий: unbound retry cutoff сужен с 24h до T=23h, invalid/missing/future time отклоняется; bound GET сохранён. Часовой запас и допущения о часах/доставке названы явно, абсолютная внешняя гарантия и вывод из 5s abort исключены. Acceptance требует фактический socket с accepted-request/drop-response, fresh wiring без старого provider, реальные PostgreSQL barrier/observed lock и CHECK/trigger/erase controls, полную config матрицу и synthetic PII faults с доказанным path-fired. Исходное QT-4 буквально требовало positive POST на 24h−1ms; это несовместимо с более безопасным T<24h. Использовано originating clarification reviewer в конце 03.5-testability.md: T−1ms positive, T/exact+1ms и отдельно24h/позже STOP; история исходного условия не переписана. Приоритет дан меньшему финансовому риску и явному согласованию смысла reviewer, а не фиктивному выполнению буквального старого positive case.",
+  "evidence": "Измеренные изменения: 01_requirements.md: FR-6, Измеримое доказательство для QCSD, пределы; ADR-001: Decision, Consequences, Confirmation, доказательство QT-1…QT-4; 05_architecture.md: шаг4 и Дискриминирующие сценарии QC-1/QT-1…QT-4. Originating clarification: 03.5-testability.md (добавление reviewer о T<24h). git diff --check пройден; код и тесты реализации не созданы/не запускались этим rework. Этот объект — author delta, не независимая verification receipt и не closure условий.",
+  "newRisks": {
+    "assessment": "Более ранний cutoff сокращает время самостоятельного повтора на один час; будущее/недостоверное время требует операторской сверки и может консервативно отказать при рассинхронизации часов. Сетевой приём при задержке/ошибке часов больше запаса всё ещё не имеет абсолютной гарантии отсутствия дубля. Эти пределы явно отражены в ADR/архитектуре; новых сервисов, scheduler, IAM и автоматической сверки не вводится. Известные baseline retention unit failures и installer12vs11 не исправляются в receipt scope.",
+    "evidence": "ADR-001 Consequences и 05_architecture.md QC-1/QT-4 задают допущение суммарной погрешности/задержки <1h и операторскую сверку. Новые проверки доказывают локальные cutoff/order/payload, не внешний SLA. Реальная регистрация/доставка чека и live activation остаются вне доказательства.",
+    "conditions": []
+  }
+}

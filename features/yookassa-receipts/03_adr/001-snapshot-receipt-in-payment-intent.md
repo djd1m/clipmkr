@@ -33,7 +33,7 @@ Checkout уже фиксирует payment_intent до HTTP-вызова и ис
 
 Настройки: три optional env `YOOKASSA_RECEIPT_VAT_CODE`, `YOOKASSA_RECEIPT_PAYMENT_SUBJECT`, `YOOKASSA_RECEIPT_PAYMENT_MODE`, без ENABLE-флага и default fiscal values. Полный набор допускает VAT 1..12, subject service|intellectual_activity, mode full_payment. Неизвестные/частичные значения дают непригодный config для checkout, но не ломают чтение webhook/health. Это технический поддержанный поднабор, не подтверждение классификации магазина. full_prepayment отклоняется, поскольку отдельного закрывающего чека нет.
 
-`created_at` существующего intent возвращается создателем. До любого повторного POST unbound intent проверяется срок: возраст >=24 часа даёт 409 и требует reconciliation. Нельзя советовать новый ключ до исключения уже созданного платежа. Известный provider_payment_id сохраняет GET и после суток. Отсчёт от local intent.created_at консервативен: он предшествует первому POST.
+`created_at` существующего intent возвращается создателем. Любой unbound POST допускается при достоверном возрасте 0 <= age < 23h. При age >=23h, invalid/missing timestamp, недействительных текущих часах или created_at в будущем — 409 reconciliation. Последняя проверка после async SQL/wiring работы стоит непосредственно перед вызовом адаптера; текущая валидация адаптера до fetch синхронна. Если на этом участке появится await, возраст проверяется повторно после него до HTTP. Новый ключ запрещено рекомендовать до исключения уже созданного платежа. Bound provider_payment_id сохраняет GET без возрастного ограничения.
 
 ## Rationale
 
@@ -48,7 +48,7 @@ Checkout уже фиксирует payment_intent до HTTP-вызова и ис
 
 Принятые издержки: одна миграция и PII snapshot. CHECK ограничивает форму/enum/размер; immutable trigger запрещает изменение; status API не выбирает поле. Падение после intent и до HTTP оставляет созданное намерение, как и сейчас. Если конфигурация отсутствовала/была непригодна, такое намерение не переоборудуется позже — проверка и новый ключ после reconciliation. Изменение fiscal config относится только к новым намерениям.
 
-После суток без remote ID автоматического продолжения нет: оператор сверяет исходный order_id в кабинете ЮKassa. Изменение publicOrigin между повторами — прежняя эксплуатационная граница; такие незавершённые intent должны быть сверены до смены домена, иначе return_url не идентичен. Этот блок не вводит миграцию домена.
+После 23h либо при недостоверном времени без remote ID автоматического продолжения нет: оператор сверяет исходный order_id в кабинете ЮKassa. Часовой запас выбран как консервативная эксплуатационная граница, а не как измеренный SLA сети. Условие защиты: суммарная погрешность DB/application clocks, остановка процесса после последней проверки и задержка удалённого приёма меньше оставленного часа. Проверка future time отсекает наблюдаемое расхождение, но не доказывает синхронизацию всех часов. При долгой остановке/доставке за пределами запаса внешняя гарантия отсутствия второго платежа не доказана. 5s AbortSignal ограничивает ожидание клиента и не отменяет уже доставленный запрос. Локальные тесты доказывают соблюдение cutoff/повторного payload, а не время обработки ЮKassa. При известной ненадёжности времени оператор сохраняет checkout выключенным до сверки; новых scheduler/IAM/автоматической сверки не вводится. Изменение publicOrigin между повторами — прежняя эксплуатационная граница; такие незавершённые intent должны быть сверены до смены домена, иначе return_url не идентичен. Этот блок не вводит миграцию домена.
 
 Follow-up ADR: сейчас не требуется; отдельное решение обязательно при full_prepayment/closing receipt или инициировании частичных refunds. After-action review: владелец billing вместе с координатором, через месяц после первого разрешённого live запуска; проверить отказные intent и фактическую регистрацию чеков.
 
@@ -56,19 +56,23 @@ Follow-up ADR: сейчас не требуется; отдельное реше
 
 - Method: unit JSON-contract + реальные PostgreSQL handler/deps integration + независимое QCSD/review. Ни одна проверка пока не заявляется выполненной.
 - Monitoring: существующие статические checkout/provider ошибки; операторская проверка receipt_registration в ЮKassa; см. Observability.
-- Success metric: 0 HTTP POST без receipt в real mode; 1 snapshot/order под конкурентными повторами; исходный payload после email/VAT drift; 0 POST после 24h без remote ID; 0 утечек PII.
+- Success metric: 0 HTTP POST без receipt в real mode; 1 snapshot/order под конкурентными повторами; исходный payload после email/VAT drift; 0 локально начатых POST при age >=23h или недостоверном времени без remote ID; 0 утечек PII.
 - Owner: автор backend исполняет проверки; независимый QE подтверждает; координатор закрывает gate.
-- Load-bearing property: один intent не меняет receipt и не создаёт новый remote payment после истечения provider idempotency window.
-- Required automated checks: `tests/yookassa-receipts.integration.test.ts` → `retry reuses receipt snapshot after email and VAT change`, `concurrent retries commit one canonical receipt snapshot`, `unbound intent older than 24 hours requires reconciliation`; `tests/yookassa-receipts.unit.test.ts` → `live provider refuses missing receipt before HTTP`.
+- Load-bearing property: один intent не меняет receipt; локальный повтор прекращается за час до описанного provider window при достоверных часах. Отсутствие удалённого дубля обусловлено явно названным допущением доставки/часов, абсолютная сетевая гарантия не заявляется.
+- Required automated checks: `tests/yookassa-receipts.integration.test.ts` → `retry reuses receipt snapshot after email and VAT change`, `concurrent retries commit one canonical receipt snapshot`, `unbound intent enforces conservative 23 hour retry cutoff`; `tests/yookassa-receipts.unit.test.ts` → `live provider refuses missing receipt before HTTP`.
 
 ## Shift-left validation
 
 | Вопрос | Поведение и проверка | Риск |
 |---|---|---|
 | Две конкурентные попытки с разными конфигурациями? | UNIQUE выбирает одну строку; обе используют победивший snapshot, одна idempotence key; реальный PostgreSQL concurrency test | HIGH, смягчён snapshot+тестом |
-| Provider ответил, но transport/процесс упал? | Исходный snapshot уже committed; повтор до 24h идентичен; после 24h 409 reconciliation | HIGH, смягчён canonical retry+часами |
+| Provider ответил, но transport/процесс упал? | Исходный snapshot уже committed; повтор до 23h идентичен; при 23h и недостоверном времени 409 reconciliation; внешнее время приёма остаётся допущением | HIGH, смягчён canonical retry+часами |
 | Provider недоступен? | Прежний 503; intent остаётся created; credits/referrals не меняются | MEDIUM, existing billing integration |
 | Изолированная проверка возможна? | HTTP seam перехватывает фактический JSON; DB тест не mock-ает transaction/constraint | LOW |
 | Config/email поменялись? | Существующий snapshot не меняется; новая покупка использует новые серверные значения | HIGH, тест drift |
 
-BDD: Given intent с receipt и неопределённым результатом первого POST, When процесс заново собирает deps с другим VAT и email аккаунта изменён в изолированной тестовой БД, Then повтор использует прежний receipt; после 24h HTTP не вызывается. Это тест устойчивости контракта, не введение публичной смены email.
+BDD: Given intent с receipt и неопределённым результатом первого POST, When процесс заново собирает deps с другим VAT и email аккаунта изменён в изолированной тестовой БД, Then повтор использует прежний receipt; при age >=23h или недостоверном времени HTTP не вызывается. Это тест устойчивости контракта, не введение публичной смены email.
+
+## Доказательство условий QT-1…QT-4
+
+Confirmation исполняется на настоящем локальном HTTP socket и PostgreSQL: фикстура сохраняет принятый POST целиком, затем рвёт ответ. Повтор использует заново созданные handler/deps/provider после изменения email/VAT; старые объекты не переиспользуются. Позитивные POST/GET controls доказывают достижение транспорта. Для конкуренции требуется PostgreSQL barrier и наблюдаемая блокировка второго writer, а не один Promise.all. CHECK/trigger имеют positive controls и negative cases для отсутствующих/JSON null/лишних/неверных полей и SQL UNKNOWN; реальный erase предваряется существующим snapshot и состоянием erasing. Матрица config и synthetic PII faults должна подтверждать вызов каждого проверяемого пути. Граница проверяется отдельными fixtures при 23h−1ms/exact/+1ms, отдельно 24h и позже STOP, и invalid/missing/future time; успешный ранний случай не может привязать intent последующего отказного случая. Точные оракулы и имена — 05_architecture, «Дискриминирующие сценарии»; эти положения не являются собственным заключением о закрытии reviewer conditions.
