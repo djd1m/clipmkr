@@ -21,10 +21,14 @@ describe('portable TEST callback fragment and IP contracts', () => {
   });
   it('keeps the three application owners bound and rejects spoofed or missing hops', () => {
     for (const [path, expected] of Object.entries({
-      'apps/web/src/server/billing-handler.ts': '2fcef1bf93e3d300c8d94b17ff73e8a81c1630f9477d64b1ca9f1e52c7af10a0',
+      'apps/web/src/server/billing-handler.ts': '006829ba5c6dfa94a03a02a806522e8938bedd651949a8e657021cb461c3054f',
       'apps/web/src/server/ip.ts': 'af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301',
       'packages/shared/src/config.ts': 'd66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f',
-    })) expect(digest(readFileSync(resolve(path)))).toBe(expected);
+    })) {
+      const bytes = readFileSync(resolve(path));
+      expect(digest(bytes)).toBe(expected);
+      expect(digest(Buffer.concat([bytes, Buffer.from('\n/* synthetic owner byte drift */\n')]))).not.toBe(expected);
+    }
     expect(clientIp(new Headers({ 'x-forwarded-for': '185.71.76.1, 198.51.100.19, 172.20.0.1, 172.21.0.1' }), 2)).toBe('198.51.100.19');
     for (const chain of ['', '172.21.0.1', 'bad, 172.20.0.1, 172.21.0.1']) {
       expect(() => clientIp(new Headers({ 'x-forwarded-for': chain }), 2)).toThrow();

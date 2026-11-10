@@ -193,8 +193,18 @@ it('optional checkout exception remains covered by wiring validation', async () 
   const { environment } = await import('./fixtures/environment');
   const { checkWiring } = await import('../scripts/check-env-wiring.mjs');
   const config = { services: Object.fromEntries(['web', 'worker-stt', 'worker-llm', 'worker-video'].map(name => [name, { environment: environment() }])) };
+  Object.assign(config.services.web!.environment, {
+    YOOKASSA_RECEIPT_VAT_CODE: '', YOOKASSA_RECEIPT_PAYMENT_SUBJECT: '', YOOKASSA_RECEIPT_PAYMENT_MODE: '',
+  });
   expect(config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID).toBe('');
   expect(checkWiring(config)).toEqual([]);
+  for (const name of ['YOOKASSA_RECEIPT_VAT_CODE', 'YOOKASSA_RECEIPT_PAYMENT_SUBJECT', 'YOOKASSA_RECEIPT_PAYMENT_MODE']) {
+    expect(config.services.web!.environment).toHaveProperty(name, '');
+    delete config.services.web!.environment[name];
+    expect(checkWiring(config)).toEqual([`web: ${name}`]);
+    config.services.web!.environment[name] = '';
+    expect(checkWiring(config)).toEqual([]);
+  }
   delete config.services.web!.environment.N5_TEST_CHECKOUT_ACCOUNT_ID;
   expect(checkWiring(config)).toEqual(['web: N5_TEST_CHECKOUT_ACCOUNT_ID']);
 });

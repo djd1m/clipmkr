@@ -6,7 +6,7 @@
 // Подлинность уведомления проверяет web ДО вызова applyVerifiedPayment и ВНЕ транзакции (security-operation-order):
 // сюда приходит только перезапрошенный у ЮKassa платёж. Внутри транзакции нет сетевых вызовов.
 import type { Pool, PoolClient } from 'pg';
-import { CREDIT_SKUS, CREDIT_OFFER_VERSION, isCreditSku, type CreditSku, PAID_PLAN_DAYS } from '@clipmaker/shared/tariff';
+import { CREDIT_SKUS, CREDIT_OFFER_VERSION, isCreditSku, type CreditSku, PAID_PLAN_DAYS, paymentDescription, type ReceiptConfig, type ReceiptSnapshot } from '@clipmaker/shared/tariff';
 import type { PaymentProviderName } from '@clipmaker/shared/enums';
 import { transaction } from './quota.js';
 import { fulfillCreditIntentTx } from './credits.js';
@@ -17,26 +17,29 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: unknown): value is string => typeof value === 'string' && UUID.test(value);
 
 export interface IntentRow { sku?: string; offer_version?: string; grant_seconds?: number; period_start?: Date | null; period_end?: Date | null; id: string; price_minor: number; status: 'created' | 'succeeded' | 'canceled'; provider_payment_id: string | null }
-export type CreateIntentResult = { kind: 'created' | 'existing'; intent: IntentRow } | { kind: 'conflict' } | { kind: 'account_inactive' };
+export interface CheckoutIntentRow extends IntentRow { created_at: Date; receipt_snapshot: ReceiptSnapshot | null }
+export type CreateIntentResult = { kind: 'created' | 'existing'; intent: CheckoutIntentRow } | { kind: 'conflict' } | { kind: 'account_inactive' };
 
 // Намерение выдаётся ДО ухода к провайдеру (long-running-job): повтор с тем же ключом клиента — то же намерение.
 // «Вставить, иначе прочитать» атомарно: UNIQUE (account_id, idempotency_key) + ON CONFLICT DO NOTHING (донор N4/N6).
-export async function createPaymentIntent(pool: Pool, input: { accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode }): Promise<CreateIntentResult> {
+export async function createPaymentIntent(pool: Pool, input: { accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode; receiptConfig?: ReceiptConfig }): Promise<CreateIntentResult> {
   const offer = input.sku ? CREDIT_SKUS[input.sku] : null;
   if (input.sku && (!isCreditSku(input.sku) || input.billingMode!=='credits_v1' || input.priceMinor!==offer?.priceMinor)) return {kind:'conflict'};
   return transaction(pool,async tx=>{
-    const owner=(await tx.query<{status:string}>('SELECT status FROM account WHERE id=$1 FOR SHARE',[input.accountId])).rows[0];
+    const owner=(await tx.query<{status:string;email:string}>('SELECT status,email FROM account WHERE id=$1 FOR SHARE',[input.accountId])).rows[0];
     if(owner?.status!=='active') return {kind:'account_inactive'} as const;
-  const inserted = (await tx.query<IntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,referral_partner_code_id)
-    SELECT id, $2, $3, $4, $5, $6, (SELECT a.partner_code_id FROM attribution a
+  const receipt = input.receiptConfig ? { ...input.receiptConfig, email: owner.email, description: paymentDescription(input.sku) } : null;
+  const inserted = (await tx.query<CheckoutIntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,receipt_snapshot,referral_partner_code_id)
+    SELECT id, $2, $3, $4, $5, $6, $7, (SELECT a.partner_code_id FROM attribution a
       JOIN partner_code c ON c.id=a.partner_code_id JOIN partner p ON p.id=c.partner_id
       WHERE a.account_id=account.id AND a.status IN ('pending','activated') AND p.account_id<>account.id)
     FROM account WHERE id = $1 AND status = 'active'
+    AND NOT EXISTS (SELECT 1 FROM payment_intent WHERE account_id=$1 AND idempotency_key=$3)
     AND (($4='legacy_pro990_v1' AND billing_policy='legacy_daily_v1') OR ($4<>'legacy_pro990_v1' AND billing_policy='credits_v1'))
-    ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds`,
-  [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0])).rows[0];
+    ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot`,
+  [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0,receipt])).rows[0];
   if (inserted) return { kind: 'created', intent: inserted };
-  const existing = (await tx.query<IntentRow>(`SELECT id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds FROM payment_intent
+  const existing = (await tx.query<CheckoutIntentRow>(`SELECT id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot FROM payment_intent
     WHERE account_id = $1 AND idempotency_key = $2`, [input.accountId, input.idempotencyKey])).rows[0];
   // Нет строки: аккаунт не активен (стирается) — намерение не создаётся. Тот же ключ с другой ценой — не повтор.
   if (!existing) return { kind: 'account_inactive' };

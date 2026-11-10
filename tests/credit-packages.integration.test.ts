@@ -258,13 +258,15 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     const oldPool=createPool(url!,oldSchema);
     try{
       await oldPool.query(`CREATE SCHEMA ${oldSchema}`);
-      for(const name of await readdir('packages/db/migrations')) if(name.endsWith('.sql') && !name.startsWith('022_'))await copyFile(path.join('packages/db/migrations',name),path.join(directory,name));
+      for(const name of await readdir('packages/db/migrations')) if(name.endsWith('.sql') && !name.startsWith('022_') && !name.startsWith('029_'))await copyFile(path.join('packages/db/migrations',name),path.join(directory,name));
       await migrate(oldPool,directory);
       const a=(await oldPool.query<{id:string}>(`INSERT INTO account(email,password_hash,plan,plan_source,plan_paid_until)
         VALUES('old-paid@test.invalid','x','paid','payment','2031-01-01'),('old-operator@test.invalid','x','paid','operator',NULL),('old-free@test.invalid','x','free','none',NULL) RETURNING id`)).rows;
       const i=(await oldPool.query<{id:string}>(`INSERT INTO payment_intent(account_id,price_minor,idempotency_key) VALUES($1,99000,'legacy_invoice') RETURNING id`,[a[2]!.id])).rows[0]!.id;
       await oldPool.query(`INSERT INTO video(account_id,idempotency_key,source,declared_bytes,status) VALUES($1,'legacy_job','upload',1,'transcribing')`,[a[0]!.id]);
       await migrate(oldPool);await migrate(oldPool);
+      expect((await oldPool.query("SELECT count(*)::int n FROM _schema_migration WHERE name='029_payment_receipt_snapshot.sql'")).rows[0].n).toBe(1);
+      expect((await oldPool.query('SELECT receipt_snapshot FROM payment_intent WHERE id=$1',[i])).rows[0].receipt_snapshot).toBeNull();
       expect((await oldPool.query('SELECT DISTINCT billing_policy FROM account')).rows).toEqual([{billing_policy:'legacy_daily_v1'}]);
       expect((await oldPool.query('SELECT DISTINCT billing_policy FROM video')).rows).toEqual([{billing_policy:'legacy_daily_v1'}]);
       expect((await oldPool.query('SELECT count(*)::int n FROM credit_grant')).rows[0].n).toBe(0);

@@ -1,0 +1,22 @@
+{
+  "addressed": [
+    "P-1",
+    "S-1",
+    "S-2"
+  ],
+  "changedScope": [
+    "apps/web/src/server/billing-handler.ts",
+    "features/yookassa-receipts/06_implementation_plan.md",
+    "tests/payments-guards.test.ts",
+    "tests/test-webhook-route.test.ts",
+    "tests/yookassa-receipts.integration.test.ts"
+  ],
+  "classification": "structural",
+  "delta": "P-1: прежний unbound age guard перенесён после terminal/bound GET и до receipt-config failures; добавлен exact cross-product test. S-1: synthetic web fixture содержит три receipt env с positive presence и negative deletion controls; прежний TEST-account control сохранён. S-2: fixed handler SHA обновлён вручную после финальных bytes, ip/config pins сверены без изменений; добавлен negative byte-drift control, spoofed/missing-hop cases сохранены. План/targets обновлены координатором; автор нормативный план не менял.",
+  "evidence": "Авторский red receipts-r2-red:35 executed/32PASS/3FAIL ровно P-1,S-1,S-2. После repair receipts-r2-scoped:61/61PASS/0skip (24receipt+17guards+20credit). receipts-r2-regression:105executed/102PASS/3 известных retention baseline FAIL/0skip. Typecheck,lint,synthetic env wiring,git diff --check:exit0. Приватные logs /root/.config/clipmkr/yookassa-receipts-20261110/receipts-r2-{red,scoped,regression}.private.log; /tmp/receipts-r2-{typecheck,lint,env-wiring}.log. Авторская передача для originating roles, не own verification и не закрытие findings.",
+  "newRisks": {
+    "assessment": "Новых подтверждённых рисков в адресном repair автор не обнаружил; прежние ограничения часов/доставки, fiscal classification и runtime/merchant acceptance сохраняются.",
+    "evidence": "Production diff R2 — только перенос существующего guard без нового await/бизнеслогики. Настройки/SQL/grants/provider не менялись. Реальные PG/socket controls, wiring negatives и fixed-pin byte-drift controls выполнены; helper/Caddy/operational approval неизменны. R2 build не запускался: build PASS относится только к R1, окончательный Docker build выполняет координатор из принятого source commit.",
+    "conditions": []
+  }
+}

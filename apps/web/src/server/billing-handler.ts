@@ -15,7 +15,7 @@ import { createHash } from 'node:crypto';
 import type { ApplyPaymentOutcome, CreateIntentResult, IntentView, PaymentEvent } from '@clipmaker/db';
 import type { PaymentProviderName } from '@clipmaker/shared/enums';
 import type { BillingMode } from '@clipmaker/shared/config';
-import { CREDIT_SKUS,isCreditSku,type CreditSku, PAID_PLAN_TITLE, PAID_PLAN_DAYS, PAID_PRICE_MINOR, effectivePlan } from '@clipmaker/shared/tariff';
+import { CREDIT_SKUS,isCreditSku,type CreditSku, PAID_PRICE_MINOR, effectivePlan, paymentDescription, type ReceiptConfig } from '@clipmaker/shared/tariff';
 import { readSessionCookie } from './auth-handler';
 import { clientIp } from './ip';
 import { verifyYooKassaOrigin } from './payments/origin';
@@ -25,10 +25,11 @@ export const MAX_NOTIFICATION_BYTES = 64 * 1024;
 const MAX_CHECKOUT_BYTES = 1024;
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9_-]{8,128}$/;
 const INTENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export const PAYMENT_DESCRIPTION = `КлипМейкер: тариф ${PAID_PLAN_TITLE} на ${PAID_PLAN_DAYS} дней`;
+export const PAYMENT_DESCRIPTION = paymentDescription('legacy_pro990_v1');
 
 export interface BillingDependencies {
   billingMode?: BillingMode;
+  receiptConfig?: ReceiptConfig | null;
   checkoutAllowed: (accountId: string, policy: string | null) => boolean;
   billingPolicy?: (accountId:string)=>Promise<string|null>;
   publicOrigin: string;
@@ -38,7 +39,7 @@ export interface BillingDependencies {
   allowRead: (ip: string, account?: string) => Promise<boolean>;
   // null — оплата выключена (N5_PAYMENTS_MODE не задан или off): все маршруты оплаты — 404.
   provider: PaymentProvider | null;
-  createIntent: (input: { accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode }) => Promise<CreateIntentResult>;
+  createIntent: (input: { accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode; receiptConfig?: ReceiptConfig }) => Promise<CreateIntentResult>;
   // false — у намерения уже ДРУГОЙ платёж: второй платёж по одному намерению — отказ, а не молчание.
   setIntentPayment: (intentId: string, providerPaymentId: string) => Promise<boolean>;
   readIntent: (intentId: string, accountId: string) => Promise<IntentView | null>;
@@ -54,8 +55,8 @@ const fail = (status: number, code: string, message: string) => json({ error: { 
 const notFound = () => fail(404, 'not_found', 'Не найдено');
 const logOf = (deps: BillingDependencies) => deps.log ?? ((line: string) => console.error(line));
 function run(deps: BillingDependencies, what: string, handler: () => Promise<Response>): Promise<Response> {
-  return handler().catch((error: unknown) => {
-    logOf(deps)(`Оплата: ${what} не выполнено (${error instanceof Error ? error.name : 'ошибка'})`);
+  return handler().catch(() => {
+    logOf(deps)(`Оплата: ${what} не выполнено`);
     return fail(503, 'unavailable', 'Сервис временно недоступен. Повторите через минуту');
   });
 }
@@ -116,7 +117,7 @@ export function createCheckoutHandler(deps: BillingDependencies) {
     const sku=credit ? (body as {sku:unknown}).sku : undefined;
     if (credit && (!isCreditSku(sku) || deps.billingMode!=='credits_v1')) return fail(422,'credit_sale_unavailable','Покупка этого пакета недоступна');
     const created = await deps.createIntent({ accountId: entry.accountId, priceMinor: isCreditSku(sku)?CREDIT_SKUS[sku].priceMinor:PAID_PRICE_MINOR,
-      idempotencyKey: key,...(isCreditSku(sku)?{sku,billingMode:deps.billingMode}:{}) });
+      idempotencyKey: key,...(deps.receiptConfig ? {receiptConfig:deps.receiptConfig}:{}),...(isCreditSku(sku)?{sku,billingMode:deps.billingMode}:{}) });
     if (created.kind === 'account_inactive') return fail(401, 'unauthorized', 'Войдите, чтобы оплатить тариф');
     if (created.kind === 'conflict') return fail(409, 'idempotency_conflict', 'Этот ключ уже использован. Обновите страницу');
     const intent = created.intent;
@@ -132,11 +133,23 @@ export function createCheckoutHandler(deps: BillingDependencies) {
         if (existing.status === 'canceled') { await deps.markCanceled(intent.id); return json({ data: { intent_id: intent.id, redirect_url: null, status: 'canceled' } }); }
         return json({ data: { intent_id: intent.id, redirect_url: null, status: 'created' } });
       }
+      const createdAt = intent.created_at instanceof Date ? intent.created_at.getTime() : NaN;
+      const now = (deps.clock ?? (() => new Date()))().getTime();
+      const age = now - createdAt;
+      if (!Number.isFinite(age) || age < 0 || age >= 23 * 60 * 60 * 1000) {
+        logOf(deps)('Оплата: payment_reconciliation_required');
+        return fail(409, 'payment_reconciliation_required', 'Требуется проверка предыдущей попытки оплаты');
+      }
+      if (!intent.receipt_snapshot) {
+        if (deps.receiptConfig === null) { logOf(deps)('Оплата: receipt_configuration_unavailable'); return fail(503, 'receipt_configuration_unavailable', 'Настройки чека временно недоступны'); }
+        if (deps.receiptConfig) { logOf(deps)('Оплата: receipt_snapshot_missing'); return fail(409, 'receipt_snapshot_missing', 'Требуется проверка предыдущей попытки оплаты'); }
+      }
       // Сетевой вызов ВНЕ транзакции (shared-resource-verification п.1). Ключ идемпотентности у ЮKassa — id намерения.
       const payment = await provider.createPayment({
         orderId: intent.id, amountMinor: intent.price_minor,
         returnUrl: new URL(`/upgrade/return?intent=${intent.id}`, deps.publicOrigin).href,
-        description: isCreditSku(intent.sku) ? `КлипМейкер: ${CREDIT_SKUS[intent.sku].title}, ${CREDIT_SKUS[intent.sku].credits} кредитов, 30 дней` : PAYMENT_DESCRIPTION,
+        description: intent.receipt_snapshot?.description ?? paymentDescription(intent.sku),
+        ...(intent.receipt_snapshot ? {receipt:intent.receipt_snapshot}:{}),
       });
       if (!payment.confirmationUrl) return fail(503, 'payment_provider_failed', 'Платёжный сервис не выдал форму оплаты. Повторите позже');
       if (!await deps.setIntentPayment(intent.id, payment.id)) {
@@ -148,7 +161,7 @@ export function createCheckoutHandler(deps: BillingDependencies) {
       // Намерение остаётся created: повтор с тем же ключом попадёт в него же.
       if (error instanceof PaymentProviderUnavailable) return fail(503, 'payment_provider_unavailable', 'Платёжный сервис временно недоступен. Повторите через минуту');
       if (error instanceof PaymentVerificationError) {
-        logOf(deps)(`Оплата: провайдер отклонил создание платежа (${error.message.slice(0, 120)})`);
+        logOf(deps)('Оплата: провайдер отклонил создание платежа');
         return fail(503, 'payment_provider_failed', 'Платёжный сервис отклонил платёж. Повторите позже');
       }
       throw error;

@@ -71,11 +71,34 @@ export function clipExpiry(clip: ClipExpiryInput): Date | null {
   return deadline;
 }
 
+/** Fiscal classification is explicit merchant configuration, never a default. */
+export interface ReceiptConfig {
+  readonly vatCode: number;
+  readonly paymentSubject: 'service' | 'intellectual_activity';
+  readonly paymentMode: 'full_payment';
+}
+export interface ReceiptSnapshot extends ReceiptConfig {
+  readonly email: string;
+  readonly description: string;
+}
+export function loadPaymentReceiptConfig(env: Environment): ReceiptConfig | null | undefined {
+  const vat = env.YOOKASSA_RECEIPT_VAT_CODE, subject = env.YOOKASSA_RECEIPT_PAYMENT_SUBJECT, mode = env.YOOKASSA_RECEIPT_PAYMENT_MODE;
+  if ([vat, subject, mode].every(value => value === undefined || value === '')) return undefined;
+  if (!vat || !/^(?:[1-9]|1[0-2])$/.test(vat)
+    || (subject !== 'service' && subject !== 'intellectual_activity') || mode !== 'full_payment') return null;
+  return Object.freeze({ vatCode: Number(vat), paymentSubject: subject, paymentMode: mode });
+}
+export function paymentDescription(sku: unknown): string {
+  return isCreditSku(sku)
+    ? `КлипМейкер: ${CREDIT_SKUS[sku].title}, ${CREDIT_SKUS[sku].credits} кредитов, 30 дней`
+    : `КлипМейкер: тариф ${PAID_PLAN_TITLE} на ${PAID_PLAN_DAYS} дней`;
+}
+
 export const PAYMENTS_MODES =['off', 'fake', 'live'] as const;
 export type PaymentsMode = typeof PAYMENTS_MODES[number];
 export type PaymentsConfig =
   | { readonly mode: 'off' } | { readonly mode: 'fake' }
-  | { readonly mode: 'live'; readonly shopId: string; readonly secretKey: string; readonly testMode: boolean };
+  | { readonly mode: 'live'; readonly shopId: string; readonly secretKey: string; readonly testMode: boolean; readonly receipt?: ReceiptConfig | null };
 
 const refuse = (name: string, why: string) => new Error(`${name} непригодна: ${why}`);
 
@@ -102,5 +125,5 @@ export function loadPaymentsConfig(env: Environment): PaymentsConfig {
   if (secretKey.trim() === '' || secretKey !== secretKey.trim() || secretKey.length > 512) throw refuse('YOOKASSA_SECRET_KEY', 'при N5_PAYMENTS_MODE=live обязателен секретный ключ магазина без краевых пробелов');
   // Режим магазина участвует в проверке подлинности платежа (поле test): угадывать его нельзя (донор N4).
   if (env.YOOKASSA_TEST_MODE !== 'true' && env.YOOKASSA_TEST_MODE !== 'false') throw refuse('YOOKASSA_TEST_MODE', 'обязан быть явным true или false: он участвует в проверке подлинности платежа');
-  return Object.freeze({ mode: 'live' as const, shopId, secretKey, testMode: env.YOOKASSA_TEST_MODE === 'true' });
+  return Object.freeze({ mode: 'live' as const, shopId, secretKey, testMode: env.YOOKASSA_TEST_MODE === 'true', receipt: loadPaymentReceiptConfig(env) });
 }

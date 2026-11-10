@@ -24,6 +24,7 @@ import {
   type VerifiedNotification,
 } from './provider';
 import { verifyYooKassaOrigin } from './origin';
+import { z } from 'zod';
 
 const API_BASE = 'https://api.yookassa.ru/v3';
 const REQUEST_TIMEOUT_MS = 5_000;
@@ -218,6 +219,15 @@ export function createYooKassaProvider(options: YooKassaOptions): PaymentProvide
       const value = formatMinor(input.amountMinor);
       const returnUrl = httpsUrl(input.returnUrl, 'returnUrl');
       verify(input.description.length > 0 && Array.from(input.description).length <= 128, 'описание обязано быть 1–128 символов');
+      const receipt = input.receipt;
+      verify(testMode || receipt !== undefined, 'receipt_required');
+      if (receipt !== undefined) {
+        verify(z.string().email().max(254).safeParse(receipt.email).success, 'receipt.email_invalid');
+        verify(typeof receipt.description === 'string' && Array.from(receipt.description).length > 0 && Array.from(receipt.description).length <= 128, 'receipt.description_invalid');
+        verify(Number.isInteger(receipt.vatCode) && receipt.vatCode >= 1 && receipt.vatCode <= 12, 'receipt.vat_code_invalid');
+        verify(receipt.paymentSubject === 'service' || receipt.paymentSubject === 'intellectual_activity', 'receipt.payment_subject_invalid');
+        verify(receipt.paymentMode === 'full_payment', 'receipt.payment_mode_invalid');
+      }
       const raw = await request('/payments', {
         method: 'POST',
         // Ключ идемпотентности — НАШ orderId: повтор запроса не создаёт второй платёж.
@@ -228,6 +238,11 @@ export function createYooKassaProvider(options: YooKassaOptions): PaymentProvide
           confirmation: { type: 'redirect', return_url: returnUrl },
           description: input.description,
           metadata: { order_id: input.orderId },
+          ...(receipt === undefined ? {} : { receipt: {
+            customer: { email: receipt.email },
+            items: [{ description: receipt.description, quantity: '1.000', amount: { value, currency: 'RUB' },
+              vat_code: receipt.vatCode, payment_subject: receipt.paymentSubject, payment_mode: receipt.paymentMode }],
+          } }),
         },
       });
       const payment = normalizePayment(raw, null);

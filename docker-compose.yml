@@ -71,6 +71,9 @@ services:
       YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID-}
       YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY-}
       YOOKASSA_TEST_MODE: ${YOOKASSA_TEST_MODE-}
+      YOOKASSA_RECEIPT_VAT_CODE: ${YOOKASSA_RECEIPT_VAT_CODE-}
+      YOOKASSA_RECEIPT_PAYMENT_SUBJECT: ${YOOKASSA_RECEIPT_PAYMENT_SUBJECT-}
+      YOOKASSA_RECEIPT_PAYMENT_MODE: ${YOOKASSA_RECEIPT_PAYMENT_MODE-}
     # порта на хосте НЕТ: единственная дверь — proxy; публикация рядом с прокси обходит лимит частоты
     depends_on:
       db:

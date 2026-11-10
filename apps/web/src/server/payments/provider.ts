@@ -1,3 +1,4 @@
+import type { ReceiptSnapshot } from '@clipmaker/shared/tariff';
 // из N6: projects/06-rag-sales-chatbase/apps/web/src/server/payments/provider.ts — перенесено без изменений логики (фича 30 payments, ADR-019).
 // из N4: projects/04-calorie-vision-cal-ai/apps/api/src/payments/provider.ts — перенесено (фича tariffs-and-interest, ADR-014 строка «провайдер ЮKassa», A-N6-040).
 // Граница с платёжным провайдером (`03_architecture.md`). Тот же приём, что у `ModelProvider`:
@@ -63,6 +64,7 @@ export interface CreatePaymentInput {
   readonly amountMinor: number;
   readonly returnUrl: string;
   readonly description: string;
+  readonly receipt?: ReceiptSnapshot;
 }
 
 export interface NotificationContext {
