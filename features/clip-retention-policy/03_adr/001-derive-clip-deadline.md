@@ -1,7 +1,7 @@
 # ADR-001: Вычислять срок клипа по первой готовности и оплаченной истории
 
 ## Status
-proposed; обратимо до миграции и первого удаления. Пересмотр при согласовании технических уточнений либо иной модели прав блогера. Checkpoint/acceptance не получены.
+Подготовлено к независимому checkpoint; технические решения конкретизированы в рамках поручения владельца, миграции/cleanup не выполнялись. Не означает успешный gate.
 
 ## Context
 FR-1, FR-2, FR-3, FR-7, FR-8 меняют 72 часа на 7 суток и вводят 30 суток после оплаты. Текущий effectivePlan отражает текущие возможности, но после окончания оплаты теряет вид paid. `retentionFromSql` уже использует сохранённую платную дату, однако время готовности привязано к video; частично готовые клипы и rerender требуют отдельного первого факта готовности. Исходники имеют отдельную отложенную политику (FR-6).
@@ -19,9 +19,9 @@ FR-1, FR-2, FR-3, FR-7, FR-8 меняют 72 часа на 7 суток и вв�
 | Только заменить 3 на 7 в текущем правиле | Самый малый diff, сохраняет API | Нет 30 суток paid; нет per-clip ready; не покрывает FR-2/FR-8 |
 
 ## Decision
-Предлагается второй вариант: расширить существующие `clipExpiry` в `packages/shared/src/tariff.ts` и SQL helpers в `packages/db/src/plan.ts`. Миграция `028_clip_retention.sql` добавляет clip.ready_at и признаки lifecycle; `publishRenderResult` устанавливает ready_at один раз. Исторический backfill использует min успешного non-rerender job_attempt.finished_at, затем помеченный video.finished_at fallback; неизвестную дату не заменять текущей.
+Выбран второй вариант: расширить существующие `clipExpiry` в `packages/shared/src/tariff.ts` и SQL helpers в `packages/db/src/plan.ts`. Миграция `028_clip_retention.sql` добавляет clip.ready_at и признаки lifecycle; `publishRenderResult` устанавливает ready_at один раз. Исторический backfill использует min успешного non-rerender job_attempt.finished_at, затем помеченный video.finished_at fallback; неизвестную дату не заменять текущей.
 
-Рекомендуемая формула для обычного конечного права: max(ready_at+7 суток, paid_end+30 суток). paid_end — сохранённый legacy account.plan_paid_until либо payment credit_grant entitlement_end, выбранные по согласованной области права и asOf. Базовые/trial/recovery credits не выдавать за оплату. Не менять effectivePlan ради хранения. Существующие явные operator/owner/showcase исключения оставить до отдельного решения. is_blogger не является исключением: обычные free/paid; индивидуальная retention policy предлагается отдельно и пока не реализуется. При равенстве deadline<=asOf доступ закрыт. Поля старого expires_at мигрировать только по установленной семантике; уже удалённое не воскресает.
+Формула для обычного конечного права: max(ready_at+7 суток, paid_end+30 суток). paid_end — сохранённый legacy account.plan_paid_until либо payment credit_grant entitlement_end, по всему аккаунту; payment grant участвует только с entitlement_start<=asOf, включая нулевой остаток минут. Trial/recovery credits не выдавать за оплату; подтверждённые payment base/addon учитываются. Не менять effectivePlan ради хранения. Существующие явные operator/owner/showcase исключения оставить до отдельного решения. is_blogger не является исключением: обычные free/paid; новые perks/override UI не входят в эту фичу. При равенстве deadline<=asOf доступ закрыт. Старый expires_at сохраняет cap: min с вычисленным сроком, даже у исключений. Пустые keys закрывают доступ без выдуманного media_deleted_at; уже удалённое не воскресает. Все сутки=24 часа, единый asOf UTC.
 
 ## Rationale
 Первый вариант сохраняет простые чтения ценой мутации всей истории при каждом платеже; второй сохраняет существующий принцип вычисления в SQL/TS и меняет только входные факты. Замена константы не покрывает согласованное платное окно. Неизвестная история требует диагностики, а не выдуманной точности.
@@ -29,7 +29,7 @@ FR-1, FR-2, FR-3, FR-7, FR-8 меняют 72 часа на 7 суток и вв�
 ## Consequences
 Плюс: одинаковое правило для UI, file/thumbnail, short link, guest, CTA/music и очистки. Минус: селекторы всех каналов меняются вместе; без parity теста SQL/TS могут разойтись. Митигируем сравнением на реальном PostgreSQL и точных границах. Неполная legacy-история после ops:set-plan free не восстанавливается из текущего журнала; это ограничение backfill.
 
-Follow-up ADR: ADR-002 — необратимая очистка; ADR-003 — почта. Область account-wide оплаты и будущие scheduled окна, конкретный blogger override — открытые решения в `technical-clarifications.md`, до их фиксации ADR не accepted. After-action review: владелец и разработчик через месяц после принятия, до массового удаления оценить unknown/backfill counts.
+Follow-up ADR: ADR-002 — необратимая очистка; ADR-003 — почта. Полный контракт account-wide/scheduled/блогера зафиксирован в `technical-clarifications.md`; future windows учитываются с начала, старые free/поздние новые клипы получают max. SQL/TS получают одинаковые факты. After-action review: владелец и разработчик через месяц после принятия, до массового удаления оценить unknown/backfill counts.
 
 ## Confirmation
 - Method: unit + PostgreSQL parity/integration.
