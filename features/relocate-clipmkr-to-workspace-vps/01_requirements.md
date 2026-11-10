@@ -26,7 +26,7 @@ Read-only состав хранилищ, текущая маршрутизаци
 ## OpenSpec
 Дельта: openspec/changes/relocate-clipmkr-to-workspace-vps/specs/server-relocation/spec.md; точный SHA приведён ниже и обновлён вместе с текущим уточнением.
 
-Точная SHA-256 дельты на09.11.2026: `c4fbc7c2ee658aca1115d73d7f24c902075ce5f6e0fbad6304cb165b8e3db76c`.
+Точная SHA-256 дельты на09.11.2026: `83995ab1ca3acc8fba6f493257883aa622345f153f99cd7f9ca94dc2b437678b`.
 
 ## Уточнение критериев сохранности после QCSD — qtest-03
 FR-1/FR-2 сравнивают повторный классифицированный private baseline с frozen manifest, а затем восстановленное состояние с тем же frozen manifest. Каждый manifest содержит время, dataset, защищённый ID/hash logical key, статус БД, HEAD/размер/ETag, проверенный checksum при наличии, multipart UploadId/parts и категорию результата. Поздний live source не заменяет frozen эталон.
@@ -56,3 +56,7 @@ FR-1/FR-2 сравнивают повторный классифицирован
 ## Уточнение FR-3/FR-4: QA callback guard, originating qe-primary-01
 
 Позднее verified source TEST payment/refund без точной локальной QA пары intent/provider ID MUST получить503 до payment_event/payment/grant writes; каждый повтор остаётся retryable. Local QA intent обрабатывается штатной идемпотентностью, включая drain после отзыва checkout allowance. Source/canonical production handler и финансовые consumers не меняются. Для этого разрешён узкий QA-only adapter/route зависимости `features/guard-relocation-test-webhook`, прямой target TEST путь без rewrite в canonical handler и отдельный immutable QA web image из source base `11a90aec9d26be56849ac06c9f12a98001739a28` + только4 child code targets. Это реализация уже принятого503 требования, а не новое разрешение source/merchant/DNS/charge. Полная изоляция/TEST creator fence и ручная смена merchant callback сохраняются. Child component tests не доказывают real merchant delivery; parent qe-primary-01 остаётся открытым до исходного независимого reviewer. Новый parent QE cycle не открывается до settled совокупного7-file patch и image/config admission.
+
+## Уточнение владельца: сначала базы, затем оплата
+
+09.11.2026 владелец явно установил порядок: «оплату надо тестировать когда все бд будут перенесены на этот vps». Безопасное копирование main/support и отдельной legacy истории продолжается независимо от исторической TEST аномалии. Приёмка оплаты следует за подготовкой перенесённых данных; запреты автоматического финансового исправления, слияния баз, двойного writer и несогласованного DNS сохраняются. Это не разрешение менять Cloud.ru и не объявление предварительных snapshots финальными.

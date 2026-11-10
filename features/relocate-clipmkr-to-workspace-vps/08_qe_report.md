@@ -130,3 +130,20 @@ Provider GET четырёх source намерений вернул3canceled и1s
 Read-only original-media check с нового VPS: единственный source clip с object_key полностью скачан из настоящего S3,23087439байт; SHA256 `509b52e10b50c857426968d3120158ec99001f333664c74e604b9e39969052c5`. ffprobe:H264/AAC,1080×1920,71сек. Chromium получил действительную подписанную S3 ссылку, currentTime0.96сек/error=null. Объекты не изменялись. Результат не распространяется на65 исходных done clips с NULLkeys. Приватный файл не коммитится.
 
 Production candidate подготовлен офлайн из исходных образов инастроек с заменой data bindings; наличие кандидата не означает разрешение запуска. Private mounts/resources ещё требуют конкретизации и independent review. Полные fleet assessment ифинальная приёмка не объявлены завершёнными.
+
+## Уточнение порядка и свежий перенос данных22:38UTC
+
+Владелец потребовал перенести необходимые базы до тестирования оплаты. Требования, план и OpenSpec обновлены с exact hash; strict OpenSpec validate exit0. Выполнены pinned recall→teach `teach:ee20a38d1bb5bf9e`→recall, урок реально найден. Нового native QE closure на изменённые нормативные bytes не заявляется; прежняя closure семи code targets остаётся исторической.
+
+В каждом source PostgreSQL открыт свой REPEATABLE READ READ ONLY exported snapshot, pg_dump использовал тот же snapshot, rows manifest вычислен до его закрытия. Main/legacy/helpdesk dumps переданы на target, SHA совпали. В существующем localPG создан NOLOGIN owner и три новые snapshotDB с PUBLIC CONNECT revoked; существующие DB не очищались. Restore exit0; полное равенство row manifests по27/27/57 таблицам. Это три согласованных внутри своих БД снимка, не атомарный cross-store final snapshot: writers не заморожены.
+
+Дополнительно сравнили первоначальные main/support imports с новым snapshot: support57/57 совпадает; main отличается в clip_link(66/66строк),growth_event(166→167),session(159→160). Это основание обязательной финальной синхронизации, а не разрешение включить старый import. Fresh proof находится в private fresh-transfer/.
+
+Production private candidate исправлен по независимому замечанию: сохранена exact source support log rotation; конкретизированы15mount/resource значений, all7services config render exit0. Первый saved render ошибочно исключал app profile; исправлен explicit production-cutover-NOT_READY и повторно проверен reviewer. Source images/business env сохранены; изменены только data bindings. Caps предварительные5.5GiB/8CPU, full-duration load NOT RUN, dirs пусты, activation не выполнялась.
+
+
+### Закрытие временного платёжного окна
+
+По указанию владельца проверка оплаты отложена до переноса данных и запуска перенесённого приложения. На старом сайте восстановлены исходные настройки web, включая прежнее персональное разрешение тестовых покупок; образ и остальные сервисы сохранены. Повторная фактическая проверка Docker: running healthy. Владелец подтвердил возврат URL уведомлений на старый домен. На QA оплата выключена, TEST callback закрыт. Финансовые записи не исправлялись, DNS не менялся.
+
+Независимый cross-model reviewer подтвердил свежий перенос: main27таблиц/994строки, legacy27/159, helpdesk57/138. Все111таблиц совпали по counts/digests; SHA трёх dump и трёх manifest совпали на обоих VPS. NOLOGIN/ACL и отсутствие иных клиентов проверены. Это предварительные снимки при работающем source, не финальная синхронизация и не готовность к DNS.
