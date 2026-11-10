@@ -1,0 +1,8 @@
+{
+  "ledger": {
+    "openspec/changes/yookassa-receipts/proposal.md": "5c18af660687cc48985f4844f55d11e55ecb5688ab281635ab6d7246047e2a9f",
+    "openspec/changes/yookassa-receipts/specs/payment-receipts/spec.md": "602408a5c39060083873894604ac3b2462807a814bb0c0eb669ded040896bb0d",
+    "openspec/changes/yookassa-receipts/design.md": "b3ea1ce56e9ce3f8856981d78bbe425559ee792a7b61f6ebdc4e2972652759c4"
+  },
+  "state": "Нормативная дельта generic receipt. Tasks — список исполнения, не требования; динамический QE/поставка в feature-adr. Налоговые значения владельцем не подтверждены, боевые списания не разрешены."
+}
