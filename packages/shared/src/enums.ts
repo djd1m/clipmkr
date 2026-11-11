@@ -77,7 +77,11 @@ export const SUPPORT_EMAIL_DELIVERY_STATE = ['pending','accepted','failed','unkn
 export type SupportEmailDeliveryState = typeof SUPPORT_EMAIL_DELIVERY_STATE[number];
 export const SUPPORT_AUDIT_ACTION = ['grant','revoke','list','search','card'] as const;
 export type SupportAuditAction = typeof SUPPORT_AUDIT_ACTION[number];
+export const BILLING_NOTICE_STATE = ['pending','sending','accepted','failed','unknown','superseded'] as const;
+export type BillingNoticeState = typeof BILLING_NOTICE_STATE[number];
 export const SQL_ENUMS = {
+  'billing_notice.state': BILLING_NOTICE_STATE,
+  'billing_notice.offset_days': ['1','3'],
   'support_email_token.purpose': SUPPORT_EMAIL_PURPOSE,
   'support_email_token.delivery_state': SUPPORT_EMAIL_DELIVERY_STATE,
   'support_mail_admission.purpose': SUPPORT_EMAIL_PURPOSE,

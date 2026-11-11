@@ -236,7 +236,7 @@ export function createYooKassaProvider(options: YooKassaOptions): PaymentProvide
         idempotenceKey: input.orderId,
         body: {
           amount: { value, currency: 'RUB' },
-          capture: true,
+          capture: true, save_payment_method: false,
           confirmation: { type: 'redirect', return_url: returnUrl },
           description: input.description,
           metadata: { order_id: input.orderId },

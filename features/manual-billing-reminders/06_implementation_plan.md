@@ -142,6 +142,32 @@ AM-4 (owner11.11 / migration guard inventory):031 state/offset CHECK имеют 
 Оферта/даты/notice и прежний exact-legal-copy — история поставленной one-time-offer; правок нет. No recurring/saved-method/новой UI/новых runtime dependencies. `SupportMailer`, credits/payment writers, existing queue constants60s, migration runner, test support/mail/diagnostics и старые source guards переиспользуются без edits, кроме явно названного config pin. `sourceRevision` dependency остаётся pending до TASK-0; actual source2 helper/QE не присвоены этой фиче.
 В EXPECTED_CODE_TARGETS только необходимые planned edits/создания. При принятии030, уже содержащей false guard и тест, coordinator удаляет лишний adapter/test target и обновляет actual pins до K2. Если тестовый файл приблизится к500 строкам, остановить рост и согласовать точный split через plan/K1 перед дополнительным новым файлом; production modules остаются двумя. Не обновлять closed core только ради нового статуса.
 
+## AM-9 — native erasure: уточнение реализации перед соответствующим кодом
+
+11.11.2026 при реализации подтверждён существующий контракт `apps/web/src/server/retention.ts#eraseAccount`: native стирание сохраняет строку `account`, переводя её в `status='deleted'` и обезличивая поля. Поэтому один FK `ON DELETE CASCADE` не удалит frozen email/payload в реальном пользовательском сценарии. Требование FR-6/FR-9 об удалении journal при erasure остаётся прежним; закрытая ideation относится к этому контракту и не объявляется новым циклом проверки кода.
+
+В уже разрешённой новой031 сохранить FK CASCADE для физического DELETE и добавить локальные SQL function `erase_billing_notice_on_account_erasure()` и trigger `billing_notice_on_account_erasure`: при native переходе account в deleted удалить относящиеся billing_notice в той же транзакции. Использовать существующий стиль triggers миграций008/022/030; без SECURITY DEFINER, новых production-модулей/экспортов и без изменения старых migrations или retention.ts. Не добавлять sender/HTTP/очередь в trigger. Конкуренция по account сохраняет порядок locks; уже committed dispatch имеет прежнее явно описанное ограничение.
+
+В существующем запланированном `tests/billing-notices.integration.test.ts` дополнить `billing_031_constraints_cascade_and_upgrade_preserve_rights` реальным вызовом native `eraseAccount`: после него account сохранён как deleted, journal с frozen адресом/payload отсутствует; отдельно подтвердить физический FK CASCADE и positive control живого account. Проверить rollback транзакции erasure, чтобы journal не исчезал при неуспешном стирании. Это уточнение TASK-1/3 в прежних24targets; K1 для новых command/module/export не расширяется, SQL-имена проверяются на отсутствие существующих определений. До trigger edit повторить настоящийK2, code-admission и полностью прочитать актуальный coder-context. SOURCE QE проверяет этот механизм на конечном снимке; закрытые receipts не переписываются.
+
+## AM-10 — неизменяемые контракты в снимке SOURCE QE
+
+Перед первым SOURCE prepare явно измерить перечисленные ниже существующие зависимости: они используются ledger, mailer, erasure и тестовой изоляцией. Это требование canonical Step8 к semantic dependencies. Область реализации остаётся прежней: **24 редактируемых source/test/config targets**. Следующие12 путей добавляются в declared block **только для чтения и проверки хешей**, изменения в них этим планом не разрешены: `packages/db/src/credits.ts`, `packages/db/src/quota.ts`, `packages/db/src/plan.ts`, `packages/db/src/support-email.ts`, `packages/db/src/migrate.ts`, `apps/web/src/server/retention-notices.ts`, `apps/web/src/server/support/mail.ts`, `apps/web/src/server/retention.ts`, `packages/shared/src/tariff.ts`, `scripts/test-db.mjs`, `packages/db/migrations/021_payments.sql`, `packages/db/migrations/022_credit_packages.sql`. Их bytes сверяются с accepted dependency source2af00157; прочие inventory pins также доступны проверяющим. Подмена фиксации зависимостей разрешением на их refactor запрещена. Новых тестов, новых циклов ideation или повторного общего прогона из-за добавления неизменённых hash-targets не требуется. До SOURCE prepare — повторить настоящийK2 и записать фактический checkpoint плана.
+
+## AM-11 — недоступность покупки: временный пропуск
+
+Уточнение до final source freeze: `checkoutAllowed=false` означает временный skip/defer из05, а не изменение статуса или адреса получателя. В claim отделить его от `recipient_unavailable`: при прежних правах и допустимом recipient сохранять pending/failed/unknown, key/payload/hash/attempts/first/last timestamps без HTTP. При восстановлении доступности использовать тот же event только в его прежнем окне, с прежними retry budgets и полной повторной проверкой. Terminal правила FR-6 для действительно недопустимого status/recipient, изменившегося tail/offset, истечения окна и исчерпания лимита сохраняются. Ни flagoff, ни недоступность магазина не дают права на отправку или создание платежа.
+
+Адресная проверка в уже запланированном `tests/billing-notices.integration.test.ts`: checkoutoff→0HTTP/attempts/state неизменны→checkouton в том же допустимом окне→один send того же event/key; отдельно retry после unknown сохраняет frozen bytes и прежние бюджеты. Существующие terminal cases остаются. Это уточняет имеющийся skip-контракт, не добавляет UI/состояний/экспортов/targets и не переписывает ideation history. Общий npmtest до уточнения ещё не запускался; повторно нужны только затронутые адресные проверки и сборка/native, использующие изменённый код.
+
+## AM-12 — точная привязка dependency ledger для поставки
+
+До первого SOURCE prepare закрепить два существующих sidecar-доказательства ниже: native producer измеряет этот06, но не произвольные `features/*` sidecars. Их добавление в EXPECTED запрещено правилом circular-review-target; вместо этого проверяющий и release operator сверяют bytes exact committed source по хешам, закреплённым здесь. Эти файлы фиксируют предшествующий accepted030/source2af recheck; их исторические статусы не объявляют новую поставку или выполненные тесты031. После реализации readonly AM-10 сохраняются byte-identical accepted2af независимо от включения в declared/native/changed set. Нормативные01/ADR/05/06 обязаны присутствовать в настоящем закрытом SOURCE manifest; его revision равен SHA-256 точного compact JSON manifest массива по протоколу native producer. Private release gate не вводит собственную альтернативную QE-историю.
+
+DEPENDENCY_PROOF_PINS:
+- features/manual-billing-reminders/requirements-revision.json sha256:0f3393cdc51e078fc612fb764d36a0f2c9b329026bfedeeeae822e130ffdf95c
+- features/manual-billing-reminders/dependency-recheck.md sha256:01490f87485ea2fafa4400bd8777f66d77ee74fc11481a7cc10969f8820ee4d5
+
 EXPECTED_CODE_TARGETS:
 - packages/db/migrations/031_billing_notice.sql
 - packages/db/src/billing-notice-ledger.ts
@@ -167,3 +193,15 @@ EXPECTED_CODE_TARGETS:
 - tests/yookassa-receipts.unit.test.ts
 - tests/test-webhook-route.test.ts
 - scripts/test-billing-notices-mutations.mjs
+- packages/db/src/credits.ts
+- packages/db/src/quota.ts
+- packages/db/src/plan.ts
+- packages/db/src/support-email.ts
+- packages/db/src/migrate.ts
+- apps/web/src/server/retention-notices.ts
+- apps/web/src/server/support/mail.ts
+- apps/web/src/server/retention.ts
+- packages/shared/src/tariff.ts
+- scripts/test-db.mjs
+- packages/db/migrations/021_payments.sql
+- packages/db/migrations/022_credit_packages.sql

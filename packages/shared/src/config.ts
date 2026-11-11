@@ -94,6 +94,8 @@ export function loadWebConfig(env: Environment) {
   }
   const checkout = env.N5_CHECKOUT_ENABLED ?? 'true';
   if (checkout !== 'true' && checkout !== 'false') throw new Error('N5_CHECKOUT_ENABLED: нужно true или false');
+  const billingReminders = env.N5_BILLING_REMINDERS_ENABLED ?? 'false';
+  if (billingReminders !== 'true' && billingReminders !== 'false') throw new Error('N5_BILLING_REMINDERS_ENABLED: нужно true или false');
   const billingMode = loadBillingMode(env);
   const payments = loadPaymentsConfig(env);
   const testCheckoutAccountId = env.N5_TEST_CHECKOUT_ACCOUNT_ID || null;
@@ -106,7 +108,7 @@ export function loadWebConfig(env: Environment) {
       throw new Error('N5_TEST_CHECKOUT_ACCOUNT_ID: исключение требует выключенного checkout, credits_v1 и TEST-магазина ЮKassa с test_ ключом');
     }
   }
-  return Object.freeze({ ...connections, limits, publicOrigin, sessionSecret, billingMode, checkoutEnabled: checkout === 'true', testCheckoutAccountId,
+  return Object.freeze({ ...connections, limits, publicOrigin, sessionSecret, billingMode, billingRemindersEnabled: billingReminders === 'true', checkoutEnabled: checkout === 'true', testCheckoutAccountId,
     s3: Object.freeze({ ...loadS3Config(env), publicEndpoint: loadS3PublicEndpoint(env) }),
     support: loadSupportConfig(env), mail: loadMailConfig(env),
     trustedProxyHops: loadTrustedProxyHops(env), payments });

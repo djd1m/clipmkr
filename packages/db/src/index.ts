@@ -28,3 +28,6 @@ export { getBloggerPolicy, setBloggerPolicy } from './blogger-policy.js';
 export { bloggerReport } from './blogger-report.js';
 
 export * from './payment-provenance.js';
+
+export { readBillingNoticeEligibility, prepareBillingNoticeBatch, claimBillingNotice, completeBillingNotice } from './billing-notice-ledger.js';
+export type { BillingNoticeEligibility, BillingNoticePayload, BillingNoticeClaim } from './billing-notice-ledger.js';

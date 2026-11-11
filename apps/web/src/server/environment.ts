@@ -45,6 +45,7 @@ export function readEnvironment() {
     // Оплата ЮKassa (фича 30): режим и ключи магазина читает только web.
     N5_BILLING_MODE: process.env.N5_BILLING_MODE,
     N5_CHECKOUT_ENABLED: process.env.N5_CHECKOUT_ENABLED,
+    N5_BILLING_REMINDERS_ENABLED: process.env.N5_BILLING_REMINDERS_ENABLED,
     N5_TEST_CHECKOUT_ACCOUNT_ID: process.env.N5_TEST_CHECKOUT_ACCOUNT_ID,
     N5_PAYMENTS_MODE: process.env.N5_PAYMENTS_MODE,
     YOOKASSA_SHOP_ID: process.env.YOOKASSA_SHOP_ID,

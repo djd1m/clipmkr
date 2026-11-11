@@ -1,0 +1,291 @@
+{
+  "schema": "clipmkr-reminders-source-1",
+  "sourceCodingBase": "224012e9d187abbf33576bda8b260d4baf4592de",
+  "coordinatorReportedHead": "816930e1ba3a99f60cecf9dc1a0e5f962ed5afa5",
+  "originalFeatureBase": "f701c605f7c7487b6f2d341568861cc19e5ffca1",
+  "acceptedDependency": "2af00157b2394b4af9ce5d131856f40a2f2714f2",
+  "sourceTreeSha256": "a47652f3fe48f35e3102bc34848b182273f81306e43ff6eeb417ce5b5bb26b82",
+  "treeHashMethod": "SHA256 compact JSON of sorted [path,sha256,readOnly] triples, UTF-8",
+  "editableCount": 24,
+  "readOnlyCount": 12,
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "76c95109fdcbd47d8ecc7fb0e1304f3bcba070a75409d2bf543b8f0c6cf349fe",
+      "bytes": 7017,
+      "lines": 128,
+      "readOnly": false
+    },
+    {
+      "path": "apps/web/src/server/billing-notices.ts",
+      "sha256": "34fee014d57b26e714fabf4c62d086dbdbd0f53f16dbfc47c025367ffa874d67",
+      "bytes": 4580,
+      "lines": 66,
+      "readOnly": false
+    },
+    {
+      "path": "apps/web/src/server/environment.ts",
+      "sha256": "20f8255007cee53b87753f2852c08f8a0972569b5fb7c5ec326017a6a46635f4",
+      "bytes": 3246,
+      "lines": 58,
+      "readOnly": false
+    },
+    {
+      "path": "apps/web/src/server/payments/yookassa.ts",
+      "sha256": "ceb2542deaaba69cc2767eb5c3aa2f796fa27cf6314a178449bf7e4eecf6cd57",
+      "bytes": 19615,
+      "lines": 306,
+      "readOnly": false
+    },
+    {
+      "path": "apps/web/src/server/queue-runtime.ts",
+      "sha256": "7ec7cf914022cf3324538d66dcf8ebf4eb2725ec9b1646509f22d501e46c7e3b",
+      "bytes": 2216,
+      "lines": 37,
+      "readOnly": false
+    },
+    {
+      "path": "apps/web/src/server/retention-notices.ts",
+      "sha256": "ee614923bbf95c260dfd73eaa272f1d914eda6180223046154dac4d5232c2cf5",
+      "bytes": 8495,
+      "lines": 120,
+      "readOnly": true
+    },
+    {
+      "path": "apps/web/src/server/retention.ts",
+      "sha256": "804427d35348f9ce07300086e3daade1c814d650cbf74a88c97b6641ef2ee77d",
+      "bytes": 10719,
+      "lines": 134,
+      "readOnly": true
+    },
+    {
+      "path": "apps/web/src/server/support/mail.ts",
+      "sha256": "3493af574090dd83bc6762232eca5c1ce500a9952b2759a0ad15077334b5d797",
+      "bytes": 8516,
+      "lines": 125,
+      "readOnly": true
+    },
+    {
+      "path": "apps/web/src/server/watchdog.ts",
+      "sha256": "3a80b6a924165316f89d785413c72ae957367ef252f8c5da5b998e8911ac61f8",
+      "bytes": 7948,
+      "lines": 109,
+      "readOnly": false
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "5845b6b32d9070939aaec09f743c8dddb109190b837516050e8139381c856e6a",
+      "bytes": 14015,
+      "lines": 296,
+      "readOnly": false
+    },
+    {
+      "path": "packages/db/migrations/021_payments.sql",
+      "sha256": "d1926825da1f828d6d0028beb4591ed27557c4f5f7560969cba0e258fff46dd6",
+      "bytes": 5076,
+      "lines": 63,
+      "readOnly": true
+    },
+    {
+      "path": "packages/db/migrations/022_credit_packages.sql",
+      "sha256": "60896c2ab95d9c882bc1ec02d86ef162937fdc57c1a152c3f0b9f8de2d49a786",
+      "bytes": 5687,
+      "lines": 73,
+      "readOnly": true
+    },
+    {
+      "path": "packages/db/migrations/031_billing_notice.sql",
+      "sha256": "5a45cd7807d4e420d1f27b83de1517415e8dcb885c1f9da14cf4c79be340f62a",
+      "bytes": 1892,
+      "lines": 37,
+      "readOnly": false
+    },
+    {
+      "path": "packages/db/src/billing-notice-ledger.ts",
+      "sha256": "34867f07da154e103de008d7c7166cbde0530a123adcb7819e45d4ad72e86c61",
+      "bytes": 12186,
+      "lines": 190,
+      "readOnly": false
+    },
+    {
+      "path": "packages/db/src/credits.ts",
+      "sha256": "e807af6d1e8264af81e51509301f3c1b5969014dd4649d01b89a18ee457eb161",
+      "bytes": 13041,
+      "lines": 154,
+      "readOnly": true
+    },
+    {
+      "path": "packages/db/src/index.ts",
+      "sha256": "e1e99f51ba6acf4f07a83ed2f9b972244fec8a5feadc95e2a1455ba3afd0ae77",
+      "bytes": 1393,
+      "lines": 33,
+      "readOnly": false
+    },
+    {
+      "path": "packages/db/src/migrate.ts",
+      "sha256": "811b03ea40ec002f99c872744eb8a45410c5d5ad508d2395e23078b4b29ab7a3",
+      "bytes": 2160,
+      "lines": 36,
+      "readOnly": true
+    },
+    {
+      "path": "packages/db/src/plan.ts",
+      "sha256": "cc738715a4db9f76c71d797be3c15d5b18556c89d3e7cff276d03dd41d07f5f9",
+      "bytes": 3904,
+      "lines": 48,
+      "readOnly": true
+    },
+    {
+      "path": "packages/db/src/quota.ts",
+      "sha256": "da1d10660fb84a78dbab490853230f0b00fe3267071b22ddfd8c6c1b3e3dd78e",
+      "bytes": 5507,
+      "lines": 75,
+      "readOnly": true
+    },
+    {
+      "path": "packages/db/src/support-email.ts",
+      "sha256": "9331ef138369d427219d5cbcd519f9a8ca2c083bcdc59949976be5ca3fbb2506",
+      "bytes": 8129,
+      "lines": 102,
+      "readOnly": true
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "sha256": "053c6337971faafa079616a1e7d983360863d385e8b0818b6692006475cb46d4",
+      "bytes": 15115,
+      "lines": 202,
+      "readOnly": false
+    },
+    {
+      "path": "packages/shared/src/enums.ts",
+      "sha256": "5773090e12fe4834e0f245b96b1637e29e4ad17fe4af4662aeb923a70a4b496c",
+      "bytes": 8154,
+      "lines": 106,
+      "readOnly": false
+    },
+    {
+      "path": "packages/shared/src/tariff.ts",
+      "sha256": "83c3f98ab452c4e89f8dbf83aea375454da768402c9414b2f8fa2d6e8a10b601",
+      "bytes": 10046,
+      "lines": 129,
+      "readOnly": true
+    },
+    {
+      "path": "scripts/test-billing-notices-mutations.mjs",
+      "sha256": "db164753f2cc00097f8998d2a3ddbd3026cec37083a4f6498920fb7f00f8bf46",
+      "bytes": 9642,
+      "lines": 91,
+      "readOnly": false
+    },
+    {
+      "path": "scripts/test-db.mjs",
+      "sha256": "4332b3c8f432fe18de7427ca088a74b3f2f7b70d32f2fb0c06ab8769b06ca394",
+      "bytes": 1478,
+      "lines": 26,
+      "readOnly": true
+    },
+    {
+      "path": "tests/billing-notices.integration.test.ts",
+      "sha256": "b10643b81a4efc2323c884f918f4701454334a9c8a7d83ebf5eea5e201d03465",
+      "bytes": 33049,
+      "lines": 358,
+      "readOnly": false
+    },
+    {
+      "path": "tests/browser/manual-billing-reminders-next.test.ts",
+      "sha256": "0cc486d2ce2965e3d43288f3ba9ab4c29b906885a72b15fec888246a2d08bd1e",
+      "bytes": 14236,
+      "lines": 156,
+      "readOnly": false
+    },
+    {
+      "path": "tests/config.test.ts",
+      "sha256": "e58262728191eb908672a65b9cc98202bfead3a1834d43b79aadea7fbacdd9c8",
+      "bytes": 7379,
+      "lines": 104,
+      "readOnly": false
+    },
+    {
+      "path": "tests/database.integration.test.ts",
+      "sha256": "4e86b5a1f0fdbf93123d74166912a1f377070c75a2544663c5a60fa857fe477e",
+      "bytes": 17199,
+      "lines": 205,
+      "readOnly": false
+    },
+    {
+      "path": "tests/enums.test.ts",
+      "sha256": "dd42c63f4279a0be37555b52f8d7232b69b630809887559d195fc8763916f077",
+      "bytes": 4830,
+      "lines": 63,
+      "readOnly": false
+    },
+    {
+      "path": "tests/fixtures/environment.ts",
+      "sha256": "30187822659a1caa60a00f72b7f649a1b4e44bd130fad163cba1c084d8bba77b",
+      "bytes": 13509,
+      "lines": 155,
+      "readOnly": false
+    },
+    {
+      "path": "tests/fixtures/payment-test-transport.mjs",
+      "sha256": "e3d73873d5f269dd289b22354b99a16349e7225f887a1345ffcdf182ec15d07c",
+      "bytes": 1971,
+      "lines": 26,
+      "readOnly": false
+    },
+    {
+      "path": "tests/preflight.test.ts",
+      "sha256": "1942f5ef2677e7eaba56a5ead91b9608b9c9c926d64d0f2a8bd44e784eb0da42",
+      "bytes": 2759,
+      "lines": 48,
+      "readOnly": false
+    },
+    {
+      "path": "tests/test-webhook-route.test.ts",
+      "sha256": "4ba11db03bd397ba8eb1ff6e72d948f43d58caef483965dbbe8ea55dc46a68f1",
+      "bytes": 19744,
+      "lines": 319,
+      "readOnly": false
+    },
+    {
+      "path": "tests/wiring.test.ts",
+      "sha256": "35fee0a3af3fd8b10f5a6824f9978e24ad21fa852117e9dcc65717a70e6922e5",
+      "bytes": 16424,
+      "lines": 218,
+      "readOnly": false
+    },
+    {
+      "path": "tests/yookassa-receipts.unit.test.ts",
+      "sha256": "180898d7e913578e33cea47b7293ed1a31b647973b651ae111e62b5c8a5771a3",
+      "bytes": 7872,
+      "lines": 87,
+      "readOnly": false
+    }
+  ],
+  "normativePins": [
+    {
+      "path": "features/manual-billing-reminders/01_requirements.md",
+      "sha256": "bbda4db15b0b32850cbffec55c7cb40150746dd1ba07b570bd20f4d080a44720"
+    },
+    {
+      "path": "features/manual-billing-reminders/03_adr/001-reuse-idempotent-mail-journal.md",
+      "sha256": "d80c03d0bbcd7a0873084ef13e293a2f69eda5d246c8747ab0084f814b09d342"
+    },
+    {
+      "path": "features/manual-billing-reminders/05_architecture.md",
+      "sha256": "5978b05d9b9db4ee3e06c65e413b4f6d16a3032a10f9a477ff3276b45b069252"
+    },
+    {
+      "path": "features/manual-billing-reminders/06_implementation_plan.md",
+      "sha256": "f5c781b62838cd16d9cd57e39359822a7c1b6cf7f8b927c52588fe5ccc7f0da6"
+    },
+    {
+      "path": "features/manual-billing-reminders/requirements-revision.json",
+      "sha256": "0f3393cdc51e078fc612fb764d36a0f2c9b329026bfedeeeae822e130ffdf95c"
+    },
+    {
+      "path": "features/manual-billing-reminders/dependency-recheck.md",
+      "sha256": "01490f87485ea2fafa4400bd8777f66d77ee74fc11481a7cc10969f8820ee4d5"
+    }
+  ]
+}
