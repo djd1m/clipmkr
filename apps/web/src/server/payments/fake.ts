@@ -73,6 +73,7 @@ export function createFakePaymentProvider(script: FakeScript = {}): FakePaymentP
 
   const provider: FakePaymentProvider = {
     name: 'fake',
+    identity: Object.freeze({ provider: 'fake', environment: 'test', merchantId: null }),
     script,
     __state: state,
 
@@ -99,6 +100,7 @@ export function createFakePaymentProvider(script: FakeScript = {}): FakePaymentP
 
       const fee = feeFor(input.amountMinor, script.feeBp ?? 300);
       const payment: RemotePayment = Object.freeze({
+        identity: Object.freeze({ provider: 'fake', environment: 'test', merchantId: null }),
         id: nextId('pay'),
         status: 'succeeded',
         amountMinor: input.amountMinor,

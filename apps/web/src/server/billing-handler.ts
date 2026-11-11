@@ -1,3 +1,4 @@
+import type { PaymentIdentity } from '@clipmaker/shared/payment-identity';
 // из N6: projects/06-rag-sales-chatbase/apps/web/src/server/billing-handler.ts — адаптировано (фича 30 payments, OWN-019,
 // ADR-019): платный план ОДИН, тело оформления — только {idempotency_key}; вход — обвязка N5 (`clientIp` по числу
 // доверенных хопов, `allowMutation`/`allowRead`, cookie `__Host-n5_session`); при выключенной оплате ВСЕ маршруты оплаты
@@ -12,14 +13,14 @@
 //                              блокировка платежа → применение). Недоступность ЮKassa — 503 без единой записи; повтор
 //                              проходит полным путём (урок N1: потерянная оплата).
 import { createHash } from 'node:crypto';
-import type { ApplyPaymentOutcome, CreateIntentResult, IntentView, PaymentEvent } from '@clipmaker/db';
+import type { ApplyPaymentOutcome, CreateIntentResult, IntentView, PaymentEvent, VerifiedPayment, IntentRow } from '@clipmaker/db';
 import type { PaymentProviderName } from '@clipmaker/shared/enums';
 import type { BillingMode } from '@clipmaker/shared/config';
 import { CREDIT_SKUS,isCreditSku,type CreditSku, PAID_PRICE_MINOR, effectivePlan, paymentDescription, type ReceiptConfig } from '@clipmaker/shared/tariff';
 import { readSessionCookie } from './auth-handler';
 import { clientIp } from './ip';
 import { verifyYooKassaOrigin } from './payments/origin';
-import { PaymentProviderUnavailable, PaymentVerificationError, type PaymentProvider } from './payments/provider';
+import { PaymentProviderUnavailable, PaymentVerificationError, type PaymentProvider, type RemotePayment } from './payments/provider';
 
 export const MAX_NOTIFICATION_BYTES = 64 * 1024;
 const MAX_CHECKOUT_BYTES = 1024;
@@ -39,11 +40,11 @@ export interface BillingDependencies {
   allowRead: (ip: string, account?: string) => Promise<boolean>;
   // null — оплата выключена (N5_PAYMENTS_MODE не задан или off): все маршруты оплаты — 404.
   provider: PaymentProvider | null;
-  createIntent: (input: { accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode; receiptConfig?: ReceiptConfig }) => Promise<CreateIntentResult>;
+  createIntent: (input: { identity: PaymentIdentity; accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode; receiptConfig?: ReceiptConfig }) => Promise<CreateIntentResult>;
   // false — у намерения уже ДРУГОЙ платёж: второй платёж по одному намерению — отказ, а не молчание.
-  setIntentPayment: (intentId: string, providerPaymentId: string) => Promise<boolean>;
+  setIntentPayment: (intentId: string, providerPaymentId: string, proof: VerifiedPayment) => Promise<boolean>;
   readIntent: (intentId: string, accountId: string) => Promise<IntentView | null>;
-  markCanceled: (intentId: string) => Promise<void>;
+  markCanceled: (intentId: string, proof: VerifiedPayment) => Promise<void>;
   applyPayment: (input: PaymentEvent) => Promise<ApplyPaymentOutcome>;
   recordRefund: (input: PaymentEvent) => Promise<ApplyPaymentOutcome>;
   log?: (line: string) => void;
@@ -55,8 +56,8 @@ const fail = (status: number, code: string, message: string) => json({ error: { 
 const notFound = () => fail(404, 'not_found', 'Не найдено');
 const logOf = (deps: BillingDependencies) => deps.log ?? ((line: string) => console.error(line));
 function run(deps: BillingDependencies, what: string, handler: () => Promise<Response>): Promise<Response> {
-  return handler().catch(() => {
-    logOf(deps)(`Оплата: ${what} не выполнено`);
+  return handler().catch((error: unknown) => {
+    logOf(deps)(error instanceof Error && error.name === 'PaymentProvenanceConflict' ? 'Оплата: payment_provenance_conflict' : `Оплата: ${what} не выполнено`);
     return fail(503, 'unavailable', 'Сервис временно недоступен. Повторите через минуту');
   });
 }
@@ -64,6 +65,15 @@ const providerName = (provider: PaymentProvider): PaymentProviderName => {
   if (provider.name === 'yookassa' || provider.name === 'fake') return provider.name;
   throw new Error('Неизвестный платёжный провайдер: платёж не записывается');
 };
+
+function matchesIdentity(intent: IntentRow, identity: PaymentIdentity): boolean {
+  return identity.environment !== 'unknown' && (intent.payment_environment === 'unknown' ||
+    (intent.payment_provider === identity.provider && intent.payment_environment === identity.environment && intent.payment_merchant_id === identity.merchantId));
+}
+function verifiedIntentRemote(intent: IntentRow, payment: RemotePayment, provider: PaymentProvider): void {
+  if (payment.id !== intent.provider_payment_id && intent.provider_payment_id !== null || payment.orderId !== intent.id || payment.amountMinor !== intent.price_minor ||
+    !matchesIdentity(intent, payment.identity) || payment.identity.provider !== provider.identity.provider || payment.identity.environment !== provider.identity.environment || payment.identity.merchantId !== provider.identity.merchantId) throw new PaymentVerificationError('payment_identity_mismatch');
+}
 
 async function readRawBody(request: Request, maxBytes: number): Promise<Uint8Array | null> {
   const reader = request.body?.getReader();
@@ -116,23 +126,27 @@ export function createCheckoutHandler(deps: BillingDependencies) {
     if (typeof key !== 'string' || !IDEMPOTENCY_KEY.test(key)) return fail(422, 'idempotency_key_required', 'Нужен ключ повтора: 8–128 латинских букв, цифр, «-» или «_»');
     const sku=credit ? (body as {sku:unknown}).sku : undefined;
     if (credit && (!isCreditSku(sku) || deps.billingMode!=='credits_v1')) return fail(422,'credit_sale_unavailable','Покупка этого пакета недоступна');
-    const created = await deps.createIntent({ accountId: entry.accountId, priceMinor: isCreditSku(sku)?CREDIT_SKUS[sku].priceMinor:PAID_PRICE_MINOR,
+    const created = await deps.createIntent({ identity: provider.identity, accountId: entry.accountId, priceMinor: isCreditSku(sku)?CREDIT_SKUS[sku].priceMinor:PAID_PRICE_MINOR,
       idempotencyKey: key,...(deps.receiptConfig ? {receiptConfig:deps.receiptConfig}:{}),...(isCreditSku(sku)?{sku,billingMode:deps.billingMode}:{}) });
     if (created.kind === 'account_inactive') return fail(401, 'unauthorized', 'Войдите, чтобы оплатить тариф');
     if (created.kind === 'conflict') return fail(409, 'idempotency_conflict', 'Этот ключ уже использован. Обновите страницу');
     const intent = created.intent;
+    if (!matchesIdentity(intent, provider.identity)) return fail(409, 'payment_identity_conflict', 'Требуется проверка предыдущей попытки оплаты');
     if (intent.status !== 'created') return json({ data: { intent_id: intent.id, redirect_url: null, status: intent.status } });
     try {
       // Платёж по намерению уже создан (ревью N6, находка 2): НЕ создавать второй — идемпотентность ЮKassa держит ключ
       // только 24 часа. Перезапросить сохранённый: ждёт оплаты — та же форма; отменён — намерение canceled.
       if (intent.provider_payment_id) {
         const existing = await provider.getPayment(intent.provider_payment_id);
+        verifiedIntentRemote(intent, existing, provider);
+        if (!await deps.setIntentPayment(intent.id, existing.id, existing)) return fail(409, 'intent_has_payment', 'Требуется проверка оплаты');
         if (existing.status === 'pending' && existing.confirmationUrl) {
           return json({ data: { intent_id: intent.id, redirect_url: existing.confirmationUrl, status: 'created' } }, 201);
         }
-        if (existing.status === 'canceled') { await deps.markCanceled(intent.id); return json({ data: { intent_id: intent.id, redirect_url: null, status: 'canceled' } }); }
+        if (existing.status === 'canceled') { await deps.markCanceled(intent.id, existing); return json({ data: { intent_id: intent.id, redirect_url: null, status: 'canceled' } }); }
         return json({ data: { intent_id: intent.id, redirect_url: null, status: 'created' } });
       }
+      if (intent.payment_environment === 'unknown') return fail(409, 'payment_reconciliation_required', 'Требуется проверка предыдущей попытки оплаты');
       const createdAt = intent.created_at instanceof Date ? intent.created_at.getTime() : NaN;
       const now = (deps.clock ?? (() => new Date()))().getTime();
       const age = now - createdAt;
@@ -151,8 +165,9 @@ export function createCheckoutHandler(deps: BillingDependencies) {
         description: intent.receipt_snapshot?.description ?? paymentDescription(intent.sku),
         ...(intent.receipt_snapshot ? {receipt:intent.receipt_snapshot}:{}),
       });
+      verifiedIntentRemote(intent, payment, provider);
       if (!payment.confirmationUrl) return fail(503, 'payment_provider_failed', 'Платёжный сервис не выдал форму оплаты. Повторите позже');
-      if (!await deps.setIntentPayment(intent.id, payment.id)) {
+      if (!await deps.setIntentPayment(intent.id, payment.id, payment)) {
         logOf(deps)('Оплата: у намерения уже другой платёж — второй не выдаётся');
         return fail(409, 'intent_has_payment', 'По этой оплате уже создан платёж. Обновите страницу');
       }
@@ -187,8 +202,10 @@ export function createCheckoutStatusHandler(deps: BillingDependencies) {
     // по-прежнему pending, а не отказ оплаты.
     if (status === 'pending' && view.provider_payment_id) {
       try {
+        if (!matchesIdentity(view, deps.provider.identity)) throw new PaymentVerificationError('payment_identity_mismatch');
         const remote = await deps.provider.getPayment(view.provider_payment_id);
-        if (remote.status === 'canceled') { await deps.markCanceled(view.id); status = 'canceled'; }
+        verifiedIntentRemote(view, remote, deps.provider);
+        if (remote.status === 'canceled') { await deps.markCanceled(view.id, remote); status = 'canceled'; }
       } catch (error) {
         if (!(error instanceof PaymentProviderUnavailable) && !(error instanceof PaymentVerificationError)) throw error;
       }
@@ -235,12 +252,12 @@ export function createPaymentWebhookHandler(deps: BillingDependencies) {
     const name = providerName(provider);
     const payloadSha256 = createHash('sha256').update(raw).digest('hex');
     const p = verified.payment;
-    const payment = { id: p.id, orderId: p.orderId, amountMinor: p.amountMinor, feeMinor: p.feeMinor, paidAt: p.paidAt };
+    const payment = { identity: p.identity, id: p.id, orderId: p.orderId, amountMinor: p.amountMinor, feeMinor: p.feeMinor, paidAt: p.paidAt };
     const outcome = verified.kind === 'refund_succeeded'
       ? await deps.recordRefund({ provider: name, eventKey: `refund_succeeded:${verified.refund.id}`, payloadSha256, payment })
       : await deps.applyPayment({ provider: name, eventKey: `payment_succeeded:${p.id}`, payloadSha256, payment });
-    // Разбор — дело оператора (OWN-019 п.3): строка журнала без персональных данных, id платежа провайдера — для поиска.
-    if (!outcome.applied && outcome.reason !== 'duplicate') logOf(deps)(`Оплата: платёж ${p.id} план не выдал (${outcome.reason}) — разбор оператором, payment.needs_review`);
+    // Разбор — дело оператора (OWN-019 п.3): только конечная причина, без идентификаторов или provider proof.
+    if (!outcome.applied && outcome.reason !== 'duplicate') logOf(deps)(`Оплата: план не выдан (${outcome.reason}) — разбор оператором, payment.needs_review`);
     return json({ data: outcome });
   });
 }

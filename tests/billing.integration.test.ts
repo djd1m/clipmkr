@@ -116,7 +116,7 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
       INSERT INTO partner_code(partner_id,code,status) SELECT id,$2,'active' FROM p RETURNING id`, [id, randomBytes(5).toString('hex')])).rows[0].id as string;
     const one = await makeCode(first.id), two = await makeCode(second.id), self = await makeCode(a.id);
     await pool.query("INSERT INTO attribution(account_id,partner_code_id,source,status) VALUES($1,$2,'cookie','pending')", [a.id, one]);
-    const create = (idempotencyKey: string) => createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey });
+    const create = (idempotencyKey: string) => createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey });
     const holder = await pool.connect();
     try {
       await holder.query('BEGIN');

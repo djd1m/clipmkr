@@ -1,0 +1,39 @@
+{
+  "command": "npm test -- --run --reporter=default",
+  "exitCode": 1,
+  "durationSeconds": 959.33,
+  "files": {
+    "failed": 8,
+    "passed": 151,
+    "skipped": 1
+  },
+  "tests": {
+    "failed": 20,
+    "passed": 1670,
+    "skipped": 16
+  },
+  "failedTitles": [
+    "tests/clip-card.test.ts > ClipCard markup > three actions with full accessible names; short visible texts",
+    "tests/clip-card.test.ts > ClipCard markup > «Гостю» is disabled without the guest form and for a clip that is not available",
+    "tests/clip-card.test.ts > ClipCard markup > partial render keeps its warning and stable player before actions",
+    "tests/clip-card.test.ts > ClipCard markup > order: frame → actions → title → score → retention/music → Pro",
+    "tests/clip-music-choice.test.ts > web requires rerender limit with its consequence and explicit wiring",
+    "tests/clip-music-choice.test.ts > worker-stt requires rerender limit with its consequence and explicit wiring",
+    "tests/clip-music-choice.test.ts > worker-llm requires rerender limit with its consequence and explicit wiring",
+    "tests/clip-music-review-fixes.test.ts > retention uses real clip prefix validation and erases every version without touching sibling",
+    "tests/clip-music-review-fixes.test.ts > known skipped choice rejects before quota, while screen shows rendered track and warning",
+    "tests/enums.test.ts > Закрытые перечисления > Каждый CHECK … IN (…) миграций объявлен в SQL_ENUMS (иначе страж выше его не видит)",
+    "tests/landing-demo.integration.test.ts > PostgreSQL showcase route > /c/ через 6 дней: клип витрины «ready», соседний клип той же записи — «expired»",
+    "tests/landing-demo.test.ts > маршрут витрины /api/showcase/{code}/file|thumbnail — третий путь к файлу > маршрут Next подписывает generateDownloadUrl и не проксирует байты через web",
+    "tests/landing-demo.test.ts > ретенция и /c/ не хоронят клип витрины > срок витрины одинаков в TS и SQL: clipExpiry без срока бесплатного тарифа, явный expires_at — всегда",
+    "tests/landing-demo.test.ts > ретенция и /c/ не хоронят клип витрины > /c/ клипа витрины после 3 суток бесплатного тарифа — «ready», соседний клип той же записи — «expired»",
+    "tests/payment-environments.integration.test.ts > payment environments real PG and canonical HTTP > checkout rejects client identity and remote merchant drift",
+    "tests/wiring.test.ts > Проверяемость проброса окружения > Полная конфигурация проходит, отсутствие потолка даёт находку",
+    "tests/wiring.test.ts > Проверяемость проброса окружения > Соседнему воркеру не приписываются переменные web",
+    "tests/wiring.test.ts > Проверяемость проброса окружения > Новая обязательная переменная config.ts не теряется в environment.ts",
+    "tests/wiring.test.ts > Проверяемость проброса окружения > classifies release revision as build-time and still detects broken build and runtime wiring",
+    "tests/wiring.test.ts > Проверяемость проброса окружения > wires S3_KEY_PREFIX to web and storage workers"
+  ],
+  "sourceSnapshotLimitation": "Run began before small static-log repair; current fresh affected tests passed; full result is not green or a clean final-source snapshot.",
+  "baselineLimitation": "Old revision controls were not executed by this author; failures outside changed targets are not proven baseline failures."
+}

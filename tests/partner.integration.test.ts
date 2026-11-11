@@ -147,10 +147,10 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
     await pool.query("UPDATE partner_code SET created_at='2020-01-01' WHERE id=$1", [codeId]);
     await service.createCode(owner, { code: 'LATER123' }); await apply();
     const intent = randomUUID(), provider = randomUUID();
-    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,referral_partner_code_id)
-      VALUES($1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,clock_timestamp(),$4)`, [intent, visitor, provider, codeId]);
-    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
-      VALUES($1,$2,'yookassa',$3,99000,clock_timestamp())`, [intent, visitor, provider]);
+    await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,referral_partner_code_id)
+      VALUES('yookassa','live','123456',$1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,clock_timestamp(),$4)`, [intent, visitor, provider, codeId]);
+    await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES('live','123456',$1,$2,'yookassa',$3,99000,clock_timestamp())`, [intent, visitor, provider]);
     const snapshot = async () => Promise.all(['partner_code','attribution','payment_intent','payment','growth_event'].map(async table =>
       (await pool.query(`SELECT * FROM ${table} ORDER BY id`)).rows));
     const before = await snapshot();
@@ -407,12 +407,12 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
     await pool.query("UPDATE attribution SET assigned_at='2026-09-20T00:00:00Z' WHERE account_id=$1", [visitor]);
     const pay = async (options: { provider?: string; status?: string; review?: boolean; old?: boolean; identity?: boolean; fulfilled?: boolean; amount?: number; paidOld?: boolean; intentStatus?: string } = {}) => {
       const intent = randomUUID(), providerId = randomUUID(), amount = options.amount ?? 99000;
-      await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
-        VALUES($1::uuid,$2,99000,$1::text,$3,$6,'start_v1','credits_v1_d00',18000,$4,$5,
+      await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+        VALUES('yookassa','live','123456',$1::uuid,$2,99000,$1::text,$3,$6,'start_v1','credits_v1_d00',18000,$4,$5,
           (SELECT partner_code_id FROM attribution WHERE account_id=$2 AND assigned_at<=$5::timestamptz))`,
       [intent, visitor, providerId, options.fulfilled === false ? null : new Date('2026-09-22'), new Date(options.old ? '2026-09-19' : '2026-09-21'), options.intentStatus ?? 'succeeded']);
-      await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [intent, visitor, options.provider ?? 'yookassa', options.identity === false ? randomUUID() : providerId,
+      await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
+        VALUES(CASE WHEN $3='fake' THEN 'test' ELSE 'live' END,CASE WHEN $3='fake' THEN NULL ELSE '123456' END,$1,$2,$3,$4,$5,$6,$7,$8,$9)`, [intent, visitor, options.provider ?? 'yookassa', options.identity === false ? randomUUID() : providerId,
         amount, options.status ?? 'succeeded', options.review ?? false, options.review ? 'amount_mismatch' : null, new Date(options.paidOld ? '2026-09-19' : '2026-09-22')]);
       return intent;
     };
@@ -428,16 +428,16 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
     expect((await service.dashboard(owner)).counters).toMatchObject({ purchases: 0, revenue_minor: 0 });
     expect((await service.dashboard(other)).counters).toMatchObject({ purchases: 1, revenue_minor: 99000 });
     const fresh = randomUUID(), providerId = randomUUID();
-    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
-      VALUES($1::uuid,$2,399000,$1::text,$3,'succeeded','pro_v1','credits_v1_d00',108000,clock_timestamp(),clock_timestamp(),$4)`, [fresh, visitor, providerId, codeId]);
-    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
-      VALUES($1,$2,'yookassa',$3,399000,clock_timestamp())`, [fresh, visitor, providerId]);
+    await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+      VALUES('yookassa','live','123456',$1::uuid,$2,399000,$1::text,$3,'succeeded','pro_v1','credits_v1_d00',108000,clock_timestamp(),clock_timestamp(),$4)`, [fresh, visitor, providerId, codeId]);
+    await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES('live','123456',$1,$2,'yookassa',$3,399000,clock_timestamp())`, [fresh, visitor, providerId]);
     expect((await service.dashboard(owner, codeId)).counters).toMatchObject({ purchases: 1, revenue_minor: 399000 });
     const addon = randomUUID(), addonProviderId = randomUUID();
-    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
-      VALUES($1::uuid,$2,149000,$1::text,$3,'succeeded','addon_v1','credits_v1_d00',36000,clock_timestamp(),clock_timestamp(),$4)`, [addon, visitor, addonProviderId, codeId]);
-    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
-      VALUES($1,$2,'yookassa',$3,149000,clock_timestamp())`, [addon, visitor, addonProviderId]);
+    await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+      VALUES('yookassa','live','123456',$1::uuid,$2,149000,$1::text,$3,'succeeded','addon_v1','credits_v1_d00',36000,clock_timestamp(),clock_timestamp(),$4)`, [addon, visitor, addonProviderId, codeId]);
+    await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES('live','123456',$1,$2,'yookassa',$3,149000,clock_timestamp())`, [addon, visitor, addonProviderId]);
     expect((await service.dashboard(owner)).counters).toMatchObject({ purchases: 2, revenue_minor: 548000 });
     expect((await service.dashboard(other)).counters).toMatchObject({ purchases: 1, revenue_minor: 99000 });
   });
@@ -449,16 +449,16 @@ describe.skipIf(!url)('PostgreSQL partner attribution', () => {
   it('verified payment survives provider clock skew and unknown attribution stays unknown', async () => {
     const intent = randomUUID(), providerId = randomUUID();
     await seed('cookie');
-    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
-      VALUES($1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,'2026-09-22T12:00:14Z','2026-09-22T12:00:14Z',$4)`, [intent, visitor, providerId, otherCode]);
-    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
-      VALUES($1,$2,'yookassa',$3,99000,'2026-09-22T12:00:00Z')`, [intent, visitor, providerId]);
+    await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+      VALUES('yookassa','live','123456',$1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,'2026-09-22T12:00:14Z','2026-09-22T12:00:14Z',$4)`, [intent, visitor, providerId, otherCode]);
+    await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES('live','123456',$1,$2,'yookassa',$3,99000,'2026-09-22T12:00:00Z')`, [intent, visitor, providerId]);
     await pool.query('DELETE FROM attribution WHERE account_id=$1', [visitor]);
     const unknown = randomUUID(), unknownProvider = randomUUID();
-    await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at)
-      VALUES($1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,'2026-09-22T12:00:14Z','2026-09-22T12:00:14Z')`, [unknown, visitor, unknownProvider]);
-    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
-      VALUES($1,$2,'yookassa',$3,99000,'2026-09-22T12:00:00Z')`, [unknown, visitor, unknownProvider]);
+    await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at)
+      VALUES('yookassa','live','123456',$1::uuid,$2,99000,$1::text,$3,'succeeded','start_v1','credits_v1_d00',18000,'2026-09-22T12:00:14Z','2026-09-22T12:00:14Z')`, [unknown, visitor, unknownProvider]);
+    await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES('live','123456',$1,$2,'yookassa',$3,99000,'2026-09-22T12:00:00Z')`, [unknown, visitor, unknownProvider]);
     await seed('cookie');
     expect((await service.dashboard(other)).counters).toMatchObject({ purchases: 1, revenue_minor: 99000 });
   });

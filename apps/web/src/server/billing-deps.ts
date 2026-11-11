@@ -31,9 +31,9 @@ export function createBillingDependencies(w: BillingWiring): BillingDependencies
     publicOrigin: w.publicOrigin, trustedProxyHops: w.trustedProxyHops, authenticate: w.authenticate,
     allowMutation: w.allowMutation, allowRead: w.allowRead, provider: w.provider, log: w.log,
     createIntent: (input) => createPaymentIntent(pool, input),
-    setIntentPayment: (intentId, paymentId) => setIntentProviderPayment(pool, intentId, paymentId),
+    setIntentPayment: (intentId, paymentId, proof) => setIntentProviderPayment(pool, intentId, paymentId, proof),
     readIntent: (intentId, accountId) => readPaymentIntent(pool, intentId, accountId),
-    markCanceled: (intentId) => markIntentCanceled(pool, intentId),
+    markCanceled: (intentId, proof) => markIntentCanceled(pool, intentId, proof),
     applyPayment: (input) => applyVerifiedPayment(pool, input),
     recordRefund: (input) => recordVerifiedRefund(pool, input),
   };

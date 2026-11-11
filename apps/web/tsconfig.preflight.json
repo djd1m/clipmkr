@@ -1,5 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": ".next/preflight", "declaration": false },
-  "include": ["src/preflight.ts", "src/server/environment.ts"]
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": ".next/preflight",
+    "declaration": false
+  },
+  "include": [
+    "src/preflight.ts",
+    "src/server/environment.ts",
+    "src/server/payments/ops-payment-provenance.ts"
+  ]
 }

@@ -5,6 +5,8 @@
 //
 // Подлинность уведомления проверяет web ДО вызова applyVerifiedPayment и ВНЕ транзакции (security-operation-order):
 // сюда приходит только перезапрошенный у ЮKassa платёж. Внутри транзакции нет сетевых вызовов.
+import type { PaymentIdentity } from '@clipmaker/shared/payment-identity';
+import { PaymentProvenanceConflict, reconcilePaymentProvenance } from './payment-provenance.js';
 import type { Pool, PoolClient } from 'pg';
 import { CREDIT_SKUS, CREDIT_OFFER_VERSION, isCreditSku, type CreditSku, PAID_PLAN_DAYS, paymentDescription, type ReceiptConfig, type ReceiptSnapshot } from '@clipmaker/shared/tariff';
 import type { PaymentProviderName } from '@clipmaker/shared/enums';
@@ -16,30 +18,30 @@ import type { BillingMode } from '@clipmaker/shared/config';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: unknown): value is string => typeof value === 'string' && UUID.test(value);
 
-export interface IntentRow { sku?: string; offer_version?: string; grant_seconds?: number; period_start?: Date | null; period_end?: Date | null; id: string; price_minor: number; status: 'created' | 'succeeded' | 'canceled'; provider_payment_id: string | null }
+export interface IntentRow { payment_provider: 'fake' | 'yookassa' | null; payment_environment: 'unknown' | 'test' | 'live'; payment_merchant_id: string | null; sku?: string; offer_version?: string; grant_seconds?: number; period_start?: Date | null; period_end?: Date | null; id: string; price_minor: number; status: 'created' | 'succeeded' | 'canceled'; provider_payment_id: string | null }
 export interface CheckoutIntentRow extends IntentRow { created_at: Date; receipt_snapshot: ReceiptSnapshot | null }
 export type CreateIntentResult = { kind: 'created' | 'existing'; intent: CheckoutIntentRow } | { kind: 'conflict' } | { kind: 'account_inactive' };
 
 // Намерение выдаётся ДО ухода к провайдеру (long-running-job): повтор с тем же ключом клиента — то же намерение.
 // «Вставить, иначе прочитать» атомарно: UNIQUE (account_id, idempotency_key) + ON CONFLICT DO NOTHING (донор N4/N6).
-export async function createPaymentIntent(pool: Pool, input: { accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode; receiptConfig?: ReceiptConfig }): Promise<CreateIntentResult> {
+export async function createPaymentIntent(pool: Pool, input: { identity: PaymentIdentity; accountId: string; priceMinor: number; idempotencyKey: string; sku?: CreditSku; billingMode?: BillingMode; receiptConfig?: ReceiptConfig }): Promise<CreateIntentResult> {
   const offer = input.sku ? CREDIT_SKUS[input.sku] : null;
   if (input.sku && (!isCreditSku(input.sku) || input.billingMode!=='credits_v1' || input.priceMinor!==offer?.priceMinor)) return {kind:'conflict'};
   return transaction(pool,async tx=>{
     const owner=(await tx.query<{status:string;email:string}>('SELECT status,email FROM account WHERE id=$1 FOR SHARE',[input.accountId])).rows[0];
     if(owner?.status!=='active') return {kind:'account_inactive'} as const;
   const receipt = input.receiptConfig ? { ...input.receiptConfig, email: owner.email, description: paymentDescription(input.sku) } : null;
-  const inserted = (await tx.query<CheckoutIntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,receipt_snapshot,referral_partner_code_id)
-    SELECT id, $2, $3, $4, $5, $6, $7, (SELECT a.partner_code_id FROM attribution a
+  const inserted = (await tx.query<CheckoutIntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id,referral_partner_code_id)
+    SELECT id, $2, $3, $4, $5, $6, $7, $8, $9, $10, (SELECT a.partner_code_id FROM attribution a
       JOIN partner_code c ON c.id=a.partner_code_id JOIN partner p ON p.id=c.partner_id
       WHERE a.account_id=account.id AND a.status IN ('pending','activated') AND p.account_id<>account.id)
     FROM account WHERE id = $1 AND status = 'active'
     AND NOT EXISTS (SELECT 1 FROM payment_intent WHERE account_id=$1 AND idempotency_key=$3)
     AND (($4='legacy_pro990_v1' AND billing_policy='legacy_daily_v1') OR ($4<>'legacy_pro990_v1' AND billing_policy='credits_v1'))
-    ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot`,
-  [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0,receipt])).rows[0];
+    ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id`,
+  [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0,receipt,input.identity.provider,input.identity.environment,input.identity.merchantId])).rows[0];
   if (inserted) return { kind: 'created', intent: inserted };
-  const existing = (await tx.query<CheckoutIntentRow>(`SELECT id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot FROM payment_intent
+  const existing = (await tx.query<CheckoutIntentRow>(`SELECT id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id FROM payment_intent
     WHERE account_id = $1 AND idempotency_key = $2`, [input.accountId, input.idempotencyKey])).rows[0];
   // Нет строки: аккаунт не активен (стирается) — намерение не создаётся. Тот же ключ с другой ценой — не повтор.
   if (!existing) return { kind: 'account_inactive' };
@@ -49,13 +51,22 @@ export async function createPaymentIntent(pool: Pool, input: { accountId: string
 }
 
 // false — у намерения уже ДРУГОЙ платёж (ревью N6 фичи 14, находка 2): расхождение не игнорируется молча.
-export async function setIntentProviderPayment(pool: Pool, intentId: string, providerPaymentId: string): Promise<boolean> {
-  const updated = await pool.query(`UPDATE payment_intent SET provider_payment_id = $2 WHERE id = $1 AND (provider_payment_id IS NULL OR provider_payment_id = $2)`,
-    [intentId, providerPaymentId]);
-  return updated.rowCount === 1;
+export async function setIntentProviderPayment(pool: Pool, intentId: string, providerPaymentId: string, proof: VerifiedPayment): Promise<boolean> {
+  if (proof.id !== providerPaymentId || proof.orderId !== intentId || proof.identity.provider === null) throw new PaymentProvenanceConflict();
+  await reconcilePaymentProvenance(pool, { provider: proof.identity.provider, payment: proof, intentId, mode: 'bind', apply: true });
+  return true;
 }
-export async function markIntentCanceled(pool: Pool, intentId: string): Promise<void> {
-  await pool.query(`UPDATE payment_intent SET status = 'canceled' WHERE id = $1 AND status = 'created'`, [intentId]);
+export async function markIntentCanceled(pool: Pool, intentId: string, proof: VerifiedPayment): Promise<void> {
+  if (proof.orderId !== intentId || proof.identity.provider === null) throw new PaymentProvenanceConflict();
+  await transaction(pool, async tx => {
+    await lockPayment(tx, proof.identity.provider!, proof.id);
+    const candidate = (await tx.query('SELECT account_id FROM payment_intent WHERE id=$1', [intentId])).rows[0];
+    if (!candidate) throw new PaymentProvenanceConflict();
+    await tx.query('SELECT id FROM account WHERE id=$1 FOR NO KEY UPDATE', [candidate.account_id]);
+    const intent = (await tx.query('SELECT * FROM payment_intent WHERE id=$1 FOR UPDATE', [intentId])).rows[0];
+    validateIntentProof(intent, proof, proof.identity.provider!);
+    await tx.query(`UPDATE payment_intent SET status='canceled' WHERE id=$1 AND status='created'`, [intentId]);
+  });
 }
 
 export interface IntentView extends IntentRow { effective_plan?: 'free'|'paid'; account_plan: string; plan_source: string; plan_paid_until: string | null }
@@ -63,13 +74,13 @@ export interface IntentView extends IntentRow { effective_plan?: 'free'|'paid'; 
 export async function readPaymentIntent(pool: Pool, intentId: string, accountId: string): Promise<IntentView | null> {
   if (!isUuid(intentId) || !isUuid(accountId)) return null;
   const row = (await pool.query<IntentRow & { account_plan: string; plan_source: string; plan_paid_until: Date | null }>(`SELECT i.id, i.price_minor, i.status,
-      i.provider_payment_id,i.sku,i.offer_version,i.grant_seconds,i.period_start,i.period_end,${effectivePlanSql('a')} AS effective_plan, a.plan AS account_plan, a.plan_source, a.plan_paid_until
+      i.provider_payment_id,i.payment_provider,i.payment_environment,i.payment_merchant_id,i.sku,i.offer_version,i.grant_seconds,i.period_start,i.period_end,${effectivePlanSql('a')} AS effective_plan, a.plan AS account_plan, a.plan_source, a.plan_paid_until
     FROM payment_intent i JOIN account a ON a.id = i.account_id WHERE i.id = $1 AND i.account_id = $2`, [intentId, accountId])).rows[0];
   if (!row) return null;
   return { ...row, plan_paid_until: row.plan_paid_until?.toISOString() ?? null };
 }
 
-export interface VerifiedPayment { id: string; orderId: string | null; amountMinor: number; feeMinor: number | null; paidAt: string | null }
+export interface VerifiedPayment { identity: PaymentIdentity; id: string; orderId: string | null; amountMinor: number; feeMinor: number | null; paidAt: string | null }
 export type ApplyPaymentOutcome =
   | { applied: true; plan: 'paid'; paidUntil: string }
   | { applied: false; reason: 'duplicate' | 'amount_mismatch' | 'unknown_intent' | 'refunded' | 'refund_recorded' | 'account_erasing' | 'intent_already_fulfilled' | 'payment_identity_mismatch' };
@@ -89,60 +100,58 @@ async function lockPayment(tx: PoolClient, provider: PaymentProviderName, paymen
 
 export interface PaymentEvent { provider: PaymentProviderName; eventKey: string; payloadSha256: string; payment: VerifiedPayment }
 
-// Успешная оплата → план. Перестановочно (incoming-webhooks «перестановка»): срок — GREATEST(срок, now()) + 30 дней;
-// две оплаты в любом порядке дают один итог (OWN-019 п.2: продление от большего из текущего срока и сейчас).
+function validateKnownIdentity(row: { payment_environment: string; payment_merchant_id: string | null; payment_provider?: string | null; provider?: string }, payment: VerifiedPayment, provider: PaymentProviderName): void {
+  if (payment.identity.environment === 'unknown' || payment.identity.provider !== provider ||
+    (row.payment_environment !== 'unknown' && (row.payment_environment !== payment.identity.environment || row.payment_merchant_id !== payment.identity.merchantId || (row.payment_provider ?? row.provider) !== provider))) throw new PaymentProvenanceConflict();
+}
+function validateIntentProof(intent: IntentRow & {account_id: string}, payment: VerifiedPayment, provider: PaymentProviderName): void {
+  if (!intent || payment.orderId !== intent.id || payment.amountMinor !== intent.price_minor || (intent.provider_payment_id && intent.provider_payment_id !== payment.id)) throw new PaymentProvenanceConflict();
+  validateKnownIdentity(intent, payment, provider);
+}
+
 export function applyVerifiedPayment(pool: Pool, input: PaymentEvent): Promise<ApplyPaymentOutcome> {
   const { payment } = input;
   return transaction(pool, async (tx) => {
-    if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;
     await lockPayment(tx, input.provider, payment.id);
-    // Возврат приехал РАНЬШЕ оплаты (перестановка): платёж уже записан refunded на разбор — план по нему не выдаётся.
-    const prior = (await tx.query<{ status: string }>(`SELECT status FROM payment WHERE provider = $1 AND provider_payment_id = $2`,
-      [input.provider, payment.id])).rows[0];
-    if (prior?.status === 'refunded') return { applied: false, reason: 'refunded' } as const;
-    // One provider payment is one financial fact, including a payload rebound to another order.
-    if (prior?.status === 'succeeded') return { applied: false, reason: 'duplicate' } as const;
+    const candidate = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2', [input.provider, payment.id])).rows[0];
+    const lockedIntentId = candidate ? candidate.intent_id : payment.orderId;
+    const owned = isUuid(lockedIntentId) ? (await tx.query('SELECT account_id FROM payment_intent WHERE id=$1', [lockedIntentId])).rows[0] : undefined;
+    const accountId = candidate?.account_id ?? owned?.account_id;
+    const owner = accountId ? (await tx.query('SELECT status FROM account WHERE id=$1 FOR NO KEY UPDATE', [accountId])).rows[0] : undefined;
+    const intent = owned ? (await tx.query<IntentRow & {account_id: string;sku: string;grant_seconds: number;fulfilled_at: Date | null}>(`SELECT * FROM payment_intent WHERE id=$1 FOR UPDATE`, [lockedIntentId])).rows[0] : undefined;
+    const prior = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2 FOR UPDATE', [input.provider, payment.id])).rows[0];
+    if (prior) {
+      validateKnownIdentity(prior, payment, input.provider);
+      if (prior.amount_minor !== payment.amountMinor || (prior.intent_id && (prior.intent_id !== payment.orderId || prior.account_id !== intent?.account_id))) throw new PaymentProvenanceConflict();
+      if (prior.intent_id) validateIntentProof(intent!, payment, input.provider);
+      if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;
+      return { applied: false, reason: prior.status === 'refunded' ? 'refunded' : 'duplicate' } as const;
+    }
+    if (payment.identity.environment === 'unknown' || payment.identity.provider !== input.provider) throw new PaymentProvenanceConflict();
+    if (intent) {
+      validateKnownIdentity(intent, payment, input.provider);
+      if (intent.provider_payment_id && intent.provider_payment_id !== payment.id) throw new PaymentProvenanceConflict();
+    }
+    if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;
     const paidAt = payment.paidAt ?? new Date().toISOString();
     const record = (intentId: string | null, accountId: string | null, review: string | null) => tx.query(`INSERT INTO payment
-        (intent_id, account_id, provider, provider_payment_id, amount_minor, fee_minor, needs_review, review_reason, paid_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (provider, provider_payment_id) DO NOTHING`,
-    [intentId, accountId, input.provider, payment.id, payment.amountMinor, payment.feeMinor, review !== null, review, paidAt]);
-    // ПОРЯДОК БЛОКИРОВОК account → payment_intent — тот же, что у стирания аккаунта (retention.eraseAccount: account FOR
-    // UPDATE → DELETE payment_intent) и у запроса удаления. Обратный порядок давал взаимоблокировку (ревью фичи 30, круг 2,
-    // находка 1). Владелец намерения читается без блокировки, затем блокируется аккаунт, затем намерение перечитывается.
-    const owned = isUuid(payment.orderId)
-      ? (await tx.query<{ account_id: string }>('SELECT account_id FROM payment_intent WHERE id = $1', [payment.orderId])).rows[0]
-      : undefined;
-    // Платёж без нашего намерения: деньги реальны — записываются на разбор, план не выдаётся никому.
-    if (!owned) { await record(null, null, 'unknown_intent'); return { applied: false, reason: 'unknown_intent' } as const; }
-    const owner = (await tx.query<{ status: string }>('SELECT status FROM account WHERE id = $1 FOR NO KEY UPDATE', [owned.account_id])).rows[0];
-    const intent = (await tx.query<{ id: string; account_id: string; price_minor: number; sku: string; grant_seconds: number; fulfilled_at: Date | null; provider_payment_id: string | null }>(`SELECT id,account_id,price_minor,sku,grant_seconds,fulfilled_at,provider_payment_id FROM payment_intent
-      WHERE id = $1 FOR UPDATE`, [payment.orderId])).rows[0];
-    // Намерение исчезло, пока ждали аккаунт: его стёрло удаление аккаунта — деньги на разбор, план не выдаётся.
-    if (!intent) { await record(null, null, 'account_erasing'); return { applied: false, reason: 'account_erasing' } as const; }
-    // Сумма ≠ цене намерения: платёж принят, план НЕ выдан — разбирает оператор (OWN-019 п.3).
-    if (payment.amountMinor !== intent.price_minor) { await record(payment.orderId, intent.account_id, 'amount_mismatch'); return { applied: false, reason: 'amount_mismatch' } as const; }
-    // Аккаунт уже стирается (FR-AUTH-003, AC-9): деньги реальны — платёж записан на разбор, план НЕ выдаётся. Статус
-    // прочитан под блокировкой строки аккаунта — запрос удаления (UPDATE account … erasing) и оплата сериализуются.
-    if (owner?.status !== 'active') { await record(payment.orderId, intent.account_id, 'account_erasing'); return { applied: false, reason: 'account_erasing' } as const; }
-    if (intent.fulfilled_at) {
-      await record(payment.orderId,intent.account_id,'intent_already_fulfilled');
-      return {applied:false,reason:'intent_already_fulfilled'} as const;
-    }
-    if (intent.provider_payment_id && intent.provider_payment_id!==payment.id) {
-      await record(payment.orderId,intent.account_id,'payment_identity_mismatch');
-      return {applied:false,reason:'payment_identity_mismatch'} as const;
-    }
-    await tx.query('UPDATE payment_intent SET provider_payment_id=COALESCE(provider_payment_id,$2) WHERE id=$1',[payment.orderId,payment.id]);
-    await record(payment.orderId, intent.account_id, null);
+      (intent_id,account_id,provider,provider_payment_id,amount_minor,fee_minor,needs_review,review_reason,paid_at,payment_environment,payment_merchant_id)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [intentId,accountId,input.provider,payment.id,payment.amountMinor,payment.feeMinor,review !== null,review,paidAt,payment.identity.environment,payment.identity.merchantId]);
+    if (!owned) { await record(null,null,'unknown_intent'); return {applied:false,reason:'unknown_intent'} as const; }
+    if (!intent) { await record(null,null,'account_erasing'); return {applied:false,reason:'account_erasing'} as const; }
+    if (intent.price_minor !== payment.amountMinor) { await record(intent.id,intent.account_id,'amount_mismatch'); return {applied:false,reason:'amount_mismatch'} as const; }
+    if (owner?.status !== 'active') { await record(intent.id,intent.account_id,'account_erasing'); return {applied:false,reason:'account_erasing'} as const; }
+    if (intent.fulfilled_at) { await record(intent.id,intent.account_id,'intent_already_fulfilled'); return {applied:false,reason:'intent_already_fulfilled'} as const; }
+    if (intent.status !== 'created') throw new PaymentProvenanceConflict();
+    await tx.query(`UPDATE payment_intent SET provider_payment_id=COALESCE(provider_payment_id,$2),payment_provider=$3,payment_environment=$4,payment_merchant_id=$5 WHERE id=$1`, [intent.id,payment.id,input.provider,payment.identity.environment,payment.identity.merchantId]);
+    await record(intent.id,intent.account_id,null);
     if (isCreditSku(intent.sku)) {
       const period=await fulfillCreditIntentTx(tx,{...intent,sku:intent.sku},new Date(paidAt));
       return {applied:true,plan:'paid',paidUntil:period.end.toISOString()} as const;
     }
-    // «Успех» на экране возврата — только когда план ВЫДАН (несовпадение суммы оставляет намерение created).
-    await tx.query(`UPDATE payment_intent SET status = 'succeeded',fulfilled_at=now() WHERE id = $1`, [payment.orderId]);
-    const paidUntil = await grantPaidPlan(tx, intent.account_id);
-    return { applied: true, plan: 'paid', paidUntil } as const;
+    await tx.query(`UPDATE payment_intent SET status='succeeded',fulfilled_at=now() WHERE id=$1`, [intent.id]);
+    const paidUntil=await grantPaidPlan(tx,intent.account_id);
+    return {applied:true,plan:'paid',paidUntil} as const;
   });
 }
 
@@ -163,23 +172,32 @@ async function grantPaidPlan(tx: PoolClient, accountId: string): Promise<string>
 export function recordVerifiedRefund(pool: Pool, input: PaymentEvent): Promise<ApplyPaymentOutcome> {
   const { payment } = input;
   return transaction(pool, async (tx) => {
-    if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;
     await lockPayment(tx, input.provider, payment.id);
-    const owned = isUuid(payment.orderId)
-      ? (await tx.query<{ account_id: string }>('SELECT account_id FROM payment_intent WHERE id = $1', [payment.orderId])).rows[0]
-      : undefined;
-    // Тот же порядок account → payment_intent, что у оплаты и стирания (ревью, круг 2, находка 1): иначе FK-проверка
-    // вставки платежа держит намерение и ждёт аккаунт, а стирание — наоборот. Намерение перечитывается после блокировки.
-    if (owned) await tx.query('SELECT 1 FROM account WHERE id = $1 FOR NO KEY UPDATE', [owned.account_id]);
-    const intent = owned
-      ? (await tx.query<{ account_id: string }>('SELECT account_id FROM payment_intent WHERE id = $1 FOR KEY SHARE', [payment.orderId])).rows[0]
-      : undefined;
-    await tx.query(`INSERT INTO payment (intent_id, account_id, provider, provider_payment_id, amount_minor, fee_minor, status, needs_review, review_reason, paid_at)
-      VALUES ($1, $2, $3, $4, $5, $6, 'refunded', true, 'refund', $7)
-      ON CONFLICT (provider, provider_payment_id) DO UPDATE SET status = 'refunded', needs_review = true, review_reason = 'refund'`,
-    [intent ? payment.orderId : null, intent?.account_id ?? null, input.provider, payment.id, payment.amountMinor, payment.feeMinor,
-      payment.paidAt ?? new Date().toISOString()]);
-    return { applied: false, reason: 'refund_recorded' } as const;
+    const candidate = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2', [input.provider,payment.id])).rows[0];
+    // An erased/unlinked tombstone never acquires a new order, even if metadata now names one.
+    const lockedIntentId = candidate ? candidate.intent_id : payment.orderId;
+    const owned = isUuid(lockedIntentId) ? (await tx.query('SELECT account_id FROM payment_intent WHERE id=$1',[lockedIntentId])).rows[0] : undefined;
+    const accountId = candidate?.account_id ?? owned?.account_id;
+    if (accountId) await tx.query('SELECT id FROM account WHERE id=$1 FOR NO KEY UPDATE',[accountId]);
+    const intent = owned ? (await tx.query('SELECT * FROM payment_intent WHERE id=$1 FOR UPDATE',[lockedIntentId])).rows[0] : undefined;
+    const prior = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2 FOR UPDATE',[input.provider,payment.id])).rows[0];
+    if (payment.identity.environment === 'unknown' || payment.identity.provider !== input.provider) throw new PaymentProvenanceConflict();
+    if (prior) {
+      validateKnownIdentity(prior,payment,input.provider);
+      if (prior.amount_minor !== payment.amountMinor) throw new PaymentProvenanceConflict();
+      if (prior.intent_id) {
+        validateIntentProof(intent,payment,input.provider);
+        if (prior.intent_id !== intent.id || prior.account_id !== intent.account_id) throw new PaymentProvenanceConflict();
+      }
+    } else if (intent) validateIntentProof(intent,payment,input.provider);
+    if (!await claimEvent(tx,input.provider,input.eventKey,input.payloadSha256)) return {applied:false,reason:'duplicate'} as const;
+    if (prior) await tx.query(`UPDATE payment SET status='refunded',needs_review=true,review_reason='refund' WHERE id=$1`,[prior.id]);
+    else {
+      if (intent?.payment_environment === 'unknown' && intent.status === 'created') await tx.query(`UPDATE payment_intent SET payment_provider=$2,payment_environment=$3,payment_merchant_id=$4,provider_payment_id=COALESCE(provider_payment_id,$5) WHERE id=$1`,[intent.id,input.provider,payment.identity.environment,payment.identity.merchantId,payment.id]);
+      await tx.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,fee_minor,status,needs_review,review_reason,paid_at,payment_environment,payment_merchant_id)
+        VALUES($1,$2,$3,$4,$5,$6,'refunded',true,'refund',$7,$8,$9)`,[intent?.id ?? null,intent?.account_id ?? null,input.provider,payment.id,payment.amountMinor,payment.feeMinor,payment.paidAt ?? new Date().toISOString(),payment.identity.environment,payment.identity.merchantId]);
+    }
+    return {applied:false,reason:'refund_recorded'} as const;
   });
 }
 

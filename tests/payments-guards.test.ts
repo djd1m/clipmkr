@@ -65,13 +65,21 @@ describe('порядок операций вебхука (security-operation-ord
   it('в маршрутах оплаты нет транзакций: сеть ЮKassa никогда не держит соединение пула', () => {
     expect(handler).not.toMatch(/transaction\(|BEGIN|pool\.connect/);
   });
-  it('внутри транзакции оплаты: ключ повторности ПЕРВЫМ, затем блокировка платежа; сетевых вызовов нет', () => {
+  it('payment provenance guards reject removal of locking and verification', () => {
     const db = readFileSync('packages/db/src/payments.ts', 'utf8');
-    for (const fn of ['export function applyVerifiedPayment', 'export function recordVerifiedRefund']) {
-      const body = db.slice(db.indexOf(fn), db.indexOf('\n}\n', db.indexOf(fn)));
-      expect(body.indexOf('claimEvent(')).toBeGreaterThan(0);
-      expect(body.indexOf('claimEvent(')).toBeLessThan(body.indexOf('lockPayment('));
-      expect(body).not.toMatch(/fetch\(|getPayment|verifyNotification/);
+    const assertContract = (code: string) => {
+      for (const fn of ['export function applyVerifiedPayment', 'export function recordVerifiedRefund']) {
+        const body = code.slice(code.indexOf(fn), code.indexOf('\n}\n', code.indexOf(fn)));
+        const order = ['await lockPayment(', 'FOR NO KEY UPDATE', 'FOR UPDATE', 'validateKnownIdentity(', 'claimEvent('].map(token => body.indexOf(token));
+        expect(order.every(index => index >= 0)).toBe(true);
+        expect(order).toEqual([...order].sort((a,b) => a-b));
+        expect(body).not.toMatch(/fetch\(|getPayment|verifyNotification/);
+      }
+      expect(code).toContain('throw new PaymentProvenanceConflict()');
+    };
+    assertContract(db);
+    for (const token of ['await lockPayment(', 'FOR NO KEY UPDATE', 'validateKnownIdentity(']) {
+      expect(() => assertContract(db.replaceAll(token, 'REMOVED('))).toThrow();
     }
     expect(db).toMatch(/GREATEST\(COALESCE\(plan_paid_until, now\(\)\), now\(\)\) \+ make_interval\(days => \$2\)/);
   });

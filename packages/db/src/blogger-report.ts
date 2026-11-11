@@ -1,3 +1,4 @@
+import { verifiedLivePaymentSql } from './payment-provenance.js';
 import type { Pool } from 'pg';
 import { transaction } from './quota.js';
 import { hasOwnerUnlimited } from './owner-entitlement.js';
@@ -69,8 +70,7 @@ export async function bloggerReport(pool: Pool, actorAccountId: string, month: s
         FROM payment p JOIN payment_intent i ON i.id=p.intent_id AND i.account_id=p.account_id
           AND i.provider_payment_id=p.provider_payment_id AND i.price_minor=p.amount_minor
         JOIN codes c ON c.code_id=i.referral_partner_code_id AND c.account_id<>p.account_id CROSS JOIN bounds b
-        WHERE p.provider='yookassa' AND p.status='succeeded' AND p.needs_review=false
-          AND i.status='succeeded' AND i.fulfilled_at IS NOT NULL
+        WHERE ${verifiedLivePaymentSql('p','i')}
           AND i.sku IN ('start_v1','pro_v1','addon_v1')
           AND p.paid_at>=b.lo AND p.paid_at<b.hi
       ), sales AS (
