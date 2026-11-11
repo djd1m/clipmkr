@@ -30,7 +30,7 @@
 - **THEN** нет payment POST и после reload продление выключено
 
 ### Requirement: Единственный платёж и честный исход
-Система SHALL иметь один durable renewal intent/key/request на account/T, сохранять receipt snapshot и existing verified fulfillment. Unknown без ID SHALL повторяться только тем же запросом при действующем согласии и возрасте <23h; далее STOP без нового ключа. Terminal failure SHALL приостанавливать продление без скрытого нового списания.
+Система SHALL хранить один renewal intent/key/request на account/T и existing receipt/fulfillment. Unknown без ID SHALL восстанавливаться только same-key при действующем согласии и возрасте <23h, затем STOP без нового ключа. Terminal failure SHALL приостанавливать продление без скрытого нового списания.
 
 #### Scenario: Ответ потерян
 - **WHEN** provider принял POST, ответ потерян и worker перезапущен
@@ -40,12 +40,23 @@
 - **WHEN** provider вернул confirmation либо исход неизвестен
 - **THEN** UI показывает действие по существующей оплате или проверку, не ложный отказ и не вторую оплату
 
+### Requirement: Письмо о подтверждённом отказе
+Система SHALL атомарно фиксировать confirmed renewal failure, pause связанного current consent и durable notice с unique intent/kind. Unknown/pending SHALL не создавать failure notice. Duplicate observation и crash SHALL не терять и не дублировать событие; отсутствие sender сохраняет outbox до восстановления, после bounded exhaustion остаются UI/оператор без обещания доставки.
+
+#### Scenario: Подтверждённый отказ и сбой почты
+- **WHEN** renewal canceled подтверждён canonical GET, затем процесс падает или mail provider недоступен
+- **THEN** committed failed имеет один durable failure notice; restart/recovery отправляет его по тому же событию/key, pending/unknown payment такого письма не создают
+
 ### Requirement: Напоминания ручной покупки
-Система SHALL направлять по одному reminder за 3 дня и сутки до T без active/pending продления. Журнал SHALL revalidate срок/согласие/почту, иметь frozen payload/key, bounded retry <23h и не удерживать SQL-lock на сети.
+Система SHALL направлять по одному reminder за 3 дня и сутки до T без active/pending продления. Identity SHALL быть account/T/offset независимо от адреса. До первого dispatch адрес заменяется в той же записи; после accepted нового send нет, после sending/unknown смена адреса прекращает retries без нового события/key. In-flight письмо не отзывается. Журнал SHALL revalidate, freeze payload/key после первого claim, ограничивать retry <23h и не держать SQL-lock на сети.
 
 #### Scenario: Ручная покупка меняет срок
 - **WHEN** срок изменился после создания reminder и до claim
 - **THEN** старое письмо superseded, актуальное планируется по новому сроку
+
+#### Scenario: Адрес изменён после начала напоминания
+- **WHEN** reminder уже accepted, sending или unknown и подтверждён другой email
+- **THEN** тот же account/T/offset не создаёт второе событие; accepted не повторяется, дальнейшие sends на прежний адрес подавляются
 
 ### Requirement: Совместимость и условия
 Система SHALL сохранять цены/кредиты/30 суток, ordinary live checkout/webhooks и addon; recurring flag off SHALL блокировать только новые recurring actions. Оферта SHALL отражать добровольность, предупреждение, отключение и in-flight границу.
@@ -53,3 +64,14 @@
 #### Scenario: Магазин без recurring capability
 - **WHEN** обычные live продажи разрешены, но recurring не активирован
 - **THEN** manual оплата с обязательным receipt работает, продление не включается
+
+### Requirement: Возврат и удаление аккаунта прекращают новые списания
+Система SHALL под account lock требовать active account и отсутствие unresolved verified base refund review при каждом dispatch/retry и новом opt-in. Полный и partial base refund SHALL паузить consent, suppress периодические billing notices, сохраняя native grants/T до операторского решения. После review права/T перечитываются, manual доступен по existing политике; auto требует нового согласия. Это инженерный default.
+
+#### Scenario: Возврат или erasing раньше dispatch
+- **WHEN** verified base refund review либо erasing committed первым
+- **THEN** новый payment POST запрещён; при erasing/deleted late success даёт только native financial review без grant/new PII/token
+
+#### Scenario: Dispatch committed раньше запрета
+- **WHEN** refund или erasing следует за durable authorization
+- **THEN** ранее разрешённый in-flight может завершиться; новых retries нет, результат сверяется native ledger без реактивации consent

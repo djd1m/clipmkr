@@ -1,6 +1,6 @@
 # Архитектура добровольного продления
 
-Статус: proposed, AR-20261111-1. Архитектура до QCSD, макетов и K1/K2 не разрешает coding. ADR-001..003 — авторитетные решения; OpenSpec хранит requirement delta. Существующий продукт может отдельно принимать обычные live-платежи; recurring default off.
+Статус: proposed, AR-20261111-2. Макет утверждён по owner-authority; незакрытые QCSD conditions и K1/K2 пока запрещают coding. ADR-001..003 — авторитетные решения; OpenSpec хранит requirement delta. Ordinary live checkout существующего артефакта включён отдельно, покупка владельцем не проверена; recurring default off.
 
 ## C4 Context
 
@@ -26,7 +26,7 @@ graph LR
  T --> P
 ```
 
-Нет новых containers/services/queues. Browser недоверенный, webhook тоже; provider adapter проверяет merchant/test/amount/order, а saved method принимается только из canonical GET. Redis не хранит финансовую truth. Watchdog внутренняя функция web, стрелка не новый сетевой hop.
+Новых services/queues нет. Browser/webhook недоверенные; adapter проверяет merchant/test/amount/order, saved method только из canonical GET. Redis не financial truth; watchdog — existing функция web.
 
 ## C4 Component и targets
 
@@ -46,7 +46,7 @@ graph TD
  F --> C[existing credit_grant + referral]
 ```
 
-Предлагаемые маленькие модули: `apps/web/src/server/renewal-handler.ts`, `renewal-tick.ts`, `billing-notices.ts`; `packages/db/src/billing-consent.ts`, `renewals.ts`. Existing provider/handler/deps/runtime/config/environment/watchdog меняются только в точках wiring и typed contracts. `billing-handler` guard вынести для shared use при необходимости, новый monolith не создавать. Native `nextCreditBaseStart` разложить в один projection: unclamped `paid_base_tail` и `purchase_start=max(now,tail)`. T=tail, не purchase_start: после T значение now не должно сдвигать renewal identity. Tail NULL — цикла нет. Один SQL для worker/UI, addon исключён. Mail transport нейтрально переименовать с совместимостью retention API, не копировать fetch. Имена пока proposed: K1 проверит availability перед планом.
+Proposed до K1: `server/renewal-handler.ts`, `renewal-tick.ts`, `billing-notices.ts`; `db/billing-consent.ts`, `renewals.ts`. Existing handler/deps/runtime/config/watchdog — wiring, shared guards без monolith. Один credit projection возвращает unclamped paid_base_tail=T и purchase_start=max(now,tail); tail NULL — цикла нет, addon исключён. Existing Resend transport переиспользуется через совместимое нейтральное имя, fetch не копируется.
 
 ## Sequence: согласие и успешное продление
 
@@ -98,11 +98,17 @@ sequenceDiagram
 
 ## Data & storage
 
-Две необходимые новые таблицы: `billing_consent` хранит независимое согласие/отзыв и token; `billing_notice` хранит mail acceptance/idempotency. Renewal использует `payment_intent`, новый invoice/payment ledger не создаётся. Схема и transitions — `04_domain_model.md`. В начальном checkout consent указывает на source_intent; `payment_intent.consent_id` заполняется только у renewal, поэтому циклических FK при создании initial payment нет. IDs и строки создаются в одной транзакции. Snapshot immutability проверяется DB CHECK+trigger; NULL/JSON null/лишние поля не обходят ограничения.
+Две новые таблицы consent/notice и existing payment_intent extension — `04_domain_model.md`. Initial consent→source_intent; обратный consent_id только у renewal, циклического FK нет. Один SQL commit; CHECK/trigger запрещают смену snapshot и обходы NULL/JSON null/extra fields.
 
-Новые mutation/dispatch берут account FOR NO KEY UPDATE, чтобы сериализоваться друг с другом и existing fulfillment. Общий порядок write-lock: account → consent → payment_intent либо notice → existing credit lock/grant. Native payment-event/advisory порядок сохраняется без обратного запроса того же advisory из account-held нового пути. Candidate scan без lock, claim перечитывает всё под account lock; два workers не полагаются на in-process guard. Result CAS содержит attempt number + lease token, stale results не перезаписывают terminal факт; canonical success всё равно проходит existing fulfillment.
+Write-lock: account FOR NO KEY UPDATE → consent → intent/notice → native credit lock/grant. Existing payment-event/advisory порядок не инвертировать. Candidate scan без lock; claim всё перечитывает, multiworker safety в PG. Result CAS содержит attempt+lease token; stale result не меняет terminal state, canonical success проходит existing fulfillment.
 
-Нет caching финансовых decisions. T вычисляется из committed base grants, не из уменьшающегося credit balance. Для исходной попытки T берётся до создания нового периода; renewal intent сохраняет T навсегда. Новый base success до dispatch меняет T и supersedes notice; после dispatch existing fulfillment сериализует последовательные периоды. Paused consent не возобновляется от GET/webhook.
+T — unclamped committed base tail; account lock сериализует manual fulfillment, refund, erasure и dispatch. Refund-first (любой verified полный/partial base refund, native needs_review) паузит pending/active consent и suppress precharge/manual notices; auto/opt-in запрещены до операторского review-resolution. Grants/T не удаляются и не масштабируются автоматически; после решения перечитываются. Manual работает по existing политике. Dispatch-first допускает одну ранее разрешённую попытку; late result идёт в native ledger, consent не оживает. Новый auto только через новое согласие. Это инженерный fail-closed default, не правовой вывод о возврате.
+
+Erasing-first запрещает новый dispatch и любое retry-решение. Dispatch-first не отменяет in-flight; erasure не ждёт HTTP. После erasing/deletion late payment — native financial review без grant/activation/новых token или PII; recovery не восстанавливает удалённые строки.
+
+Canonical confirmed canceled renewal в общей terminal transaction сохраняет failed, pause связанного current consent и unique failure notice(intent_id,kind). Все GET/webhook terminal observers используют её; ошибка INSERT откатывает transition. Crash после commit оставляет outbox для existing tick, повтор observation дедуплицируется. Unknown/pending не создают failure notice. No sender — запись ждёт, transport attempts не расходуются; восстановление запускает bounded same-key send. После лимита retry UI+оператор, доставки не обещаем.
+
+Mail identity/recipient переходы — ADR-003/DDD. Manual reminder UNIQUE(account,T,offset); смена email только до first dispatch обновляет ту же запись. После accepted — без resend; sending/unknown→suppressed при смене email, без нового key. In-flight result сохраняет receipt с fencing, но не возвращает suppressed в отправляемое состояние. Два claims сериализуются account+notice lock; смена T создаёт другое событие. Failure notice сообщает факт прошлой попытки и переживает cancel/manual purchase; каждый send всё равно требует active/verified recipient.
 
 ## API design
 
@@ -116,13 +122,13 @@ Status/return existing intent остаются каноническими. Provi
 
 Один proposed `N5_AUTORENEW_ENABLED` (false по умолчанию; invalid значение ошибка соответствующего config): отличается для сред и включается операционно после merchant confirmation. Трасса `environment.ts → shared/config.ts → runtime → billing deps + watchdog` проверяется seam-тестом. Никакой связи flag с отключением existing manual checkout/webhook/health. Mail unavailable блокирует charge и объясняет pause, но не обычную продажу.
 
-Перед новым/повторным POST сверяются merchant/test scope, enable flag, consent validity, immutable request и `0≤now−created_at<23h`; после async work cutoff перепроверяется непосредственно перед fetch. Допущение внешнего окна: ошибка clocks+process pause+remote delivery <1h; при известном нарушении времени автоматика STOP. Bound GET остаётся доступен без cutoff, но только в том же merchant namespace. Token/PII никогда не выбираются public API; логи — только bounded reason, internal intent/consent IDs. Выключение не превращает исходный request body и не теряет уже состоявшийся платёж.
+Решение каждого нового dispatch/retry под account FOR NO KEY UPDATE требует status=active и отсутствие unresolved base refund review. Erasing/missing account запрещает POST; предыдущий authorized in-flight может завершиться. Перед новым/повторным POST сверяются merchant/test scope, enable flag, consent validity, immutable request и `0≤now−created_at<23h`; после async work cutoff перепроверяется непосредственно перед fetch. Допущение внешнего окна: ошибка clocks+process pause+remote delivery <1h; при известном нарушении времени автоматика STOP. Bound GET остаётся доступен без cutoff, но только в том же merchant namespace. Token/PII никогда не выбираются public API; логи — только bounded reason, internal intent/consent IDs. Выключение не превращает исходный request body и не теряет уже состоявшийся платёж.
 
 ## Observability
 
-INFO: consent activated/revoked, renewal dispatched/succeeded, notice accepted (IDs + bounded state, без адреса/token/body). WARN: paused_notice, method_unsaved, offer_changed, pending_action, lease_unknown, cutoff_review, merchant_mismatch. ERROR: DB/transport wiring failure с очищенным reason; тело провайдера и секреты не логируются. Счётчики из existing logs/SQL: due renewals без результата; due precharge без accepted receipt; failures/review по причинам. Новая monitoring платформа не требуется.
+INFO: consent/renewal/notice transitions; WARN: pause, unknown, cutoff/refund review, merchant mismatch; ERROR: очищенный wiring/DB/transport reason. Только internal IDs/bounded state, без token/email/body. Existing logs/SQL считают due-unresolved renewal, due-unaccepted notice, failed/suppressed notices. Новая monitoring платформа не нужна.
 
-Внешний симптом: кабинет показывает «ожидает подключения», «проверяем оплату» или конкретную паузу с CTA; неуспех — транзакционное письмо, если transport доступен. Пользователь видит состояние; оператор видит WARN/review backlog штатными журналами и read-only запросом. При provider outage не выдумывается success/decline. Отдельный live support runbook до включения должен назвать ответственного оператора и способ сверки order_id в YooKassa; этот проект не утверждает, что операция уже выполнена.
+Пользователь видит pending/paused/«проверяем» и фактический исход; failure mail следует durable policy ADR-003, accepted не означает delivery. Оператор видит review/backlog в штатных logs/read-only SQL. Перед live recurring назначаются ответственный и порядок order_id сверки; операция ещё не выполнена.
 
 ## Дискриминирующие оракулы для QCSD и будущего плана
 
@@ -140,13 +146,21 @@ INFO: consent activated/revoked, renewal dispatched/succeeded, notice accepted (
 | QT-8 FR-6,7 | Два настоящих PG clients: observe blocker wait; cancel-first 0 POST, dispatch-first 1 разрешённый POST; cancel completes пока socket held | SQL-lock на HTTP; неатомарный check/claim; lease даёт второй identity |
 | QT-9 FR-7 | Socket фиксирует accepted POST до drop; kill/restart handler/worker; сравнить bytes/key, snapshot после изменения config/email/offer; 1 provider ID | Rebuild payload или fresh key; test только mocked fetch не считается |
 | QT-10 FR-7 | Отдельный unbound intent для 23h−1ms/exact/+1ms/24h/future/NaN; positive ранний POST не связывает следующий fixture; bound GET после cutoff | `>=`→`>`; cutoff удалён; new key на review |
-| QT-11 FR-8 | Webhook/GET duplicate, success/refund permutation, concurrent manual/renewal successes: 1 grant/payment, periods non-overlap, referral snapshot неизменен | Удаление existing unique event/grant guard или перезапись attribution |
-| QT-12 FR-9,12 | canceled/permission_revoked → 0 новых POST на следующих ticks; pending/confirmation/expired pending → own continuation/GET-review; price/consent changed → pause | Hidden retry после decline, новый confirmation intent, silent amount change |
-| QT-13 FR-10,11 | PG+Resend socket: accepted/drop/restart, same key/payload, ≤3 attempts,<23h, clock windows; cancel/manual purchase/email changed между generate и claim | Новый key для unknown; stale notice отправляется до claim revalidation |
-| QT-14 FR-11,NFR-4 | Реальный erase со строками consent/notice/token snapshot; account erasing vs late payment; DB connection остаётся доступен при held mail socket | Token/PII сирота, grant erasing аккаунту, блокировка account на send |
+| QT-11 FR-8 | PG barriers: полный/partial refund source/другого base до dispatch ⇒ 0 POST/paused; dispatch-first ⇒ ≤1 authorized POST+late verified result. Native grants/T не меняются автоматически. После operator review-resolution manual positive; auto без нового consent не возобновляется. Duplicate/permuted payment/refund:1 grant/payment, unchanged referral | Удаление refund-review guard; без-refund positive обязан сделать POST; concurrent successes теряют/накладывают периоды |
+| QT-12 FR-9,12 | Confirmed canceled/permission_revoked: 1 failure notice+pause, 0 новых payment POST; crash before/after terminal commit+restart и duplicate observations дают 1 событие. Mail outage→recovery: запись сохранена, socket accepted один key; exhaustion остаётся в UI. Unknown/pending:0 failure notices; confirmation тот же intent, offer drift pause | Неатомарный failure outbox; неверное unknown=decline; removal dedup; hidden payment retry. Positive terminal/mail path должен реально достичь socket |
+| QT-13 FR-10,11 | PG+mail socket: смена email до claim обновляет одну строку и sends новый адрес; accepted→смена:0 extra sends; sending/unknown→смена:0 retries/new keys, in-flight ≤1 logical event. Concurrent claims с observed lock:одна identity; неизменный email+unknown positive retry same bytes/key (<23h,≤3) | Recipient в UNIQUE создаёт второе событие; suppressed revive; freeze/CAS bypass. Смена T — positive нового события |
+| QT-14 FR-7,11,NFR-4 | Real PG barriers erasing-first vs dispatch/retry ⇒ 0 POST; dispatch-first+held socket: erasure завершается, ≤1 authorized POST. Restart, actual erase, late success: financial review без grant/new token/PII; active positive делает POST | Удаление active guard на initial или retry; token-row recreation; SQL-lock на HTTP/mail. Existing erase удаляет consent/notice/request PII |
 | QT-15 FR-8,13 | Existing receipt tests + runtime wiring/config/guard negative suites; live missing receipt 0 POST, manual save=false, optin true boolean, unknown legacy не дооснащается | Новый recurring ввод обходит receipt/live guard или выключает manual |
 | QT-16 NFR-1,5 | UI keyboard/mobile/error/reload, wrong-session 404, cross-origin/rate/extra fields, logs API scan synthetic token/email sentinel | Утечка token/PII, inactive consent выглядит active, cancel теряется после reload |
 
-Acceptance до кода: independent QCSD должен оспорить эти оракулы и границы cancellation/receipt/time. После кода: targeted RED/GREEN mutations для unique renewal, accepted gate, consent guard, 23h cutoff и base-tail query; один зелёный happy path не считается. Проверки boundaries проводят через реальные функции и PG/socket, не source-string assertions. Fault model: crash before/after dispatch commit, accepted POST+lost response, after GET before DB commit, duplicate/reordered callback, stale lease worker, simultaneous cancel/manual fulfillment, deadline/email/price changes, provider pending/decline, downtime clock jump.
+До кода — originating QCSD verification. После — RED/GREEN mutations unique renewal, accepted/current consent, active-account/refund guards, failure outbox, mail identity, cutoff и base-tail. Тестируется поведение real PG/socket, не source strings. Fault model: crash до/после commit/remote accept/GET, stale lease, duplicate/reordered callback, cancel/refund/erase/manual races, email/offer/time drift, outage.
 
-Регрессии: `billing.integration`, `billing.unit`, `payments-guards`, `yookassa-receipts.unit/integration`, `credit-packages.integration/UI`, `retention-notices.integration`, `legal-pages`, browser billing. Финальные `typecheck`, `lint`, `build`, полный релевантный `npm test`, независимое review/fleet и anti-drift запускаются по плану. Отсутствующий DATABASE_URL/skip — NOT RUN, не PASS. Provider TEST интеграция и ручная owner acceptance потребуются после разрешённой поставки; локальные sockets не доказывают включённую merchant capability.
+Регрессии: billing unit/integration/guards, receipts unit/integration, credit packages, retention notices, legal и browser. Финальные typecheck/lint/build, релевантный полный test run, independent review/fleet и anti-drift — по плану. DB skip=NOT RUN. Provider TEST и ручная приёмка после разрешённой поставки; local sockets не доказывают merchant capability.
+
+## E2E-1: связанный пользовательский путь (AR-T-2)
+
+Обязателен `tests/browser/autorenew.e2e.test.ts` через реально запущенный Next app, реальные routes/auth/runtime и изолированный PG schema/*_test; YooKassa и Resend — localhost socket fixtures с captured requests. Production endpoints/credentials заблокированы в тестовом harness; synthetic email. Existing DI передаётся только тестовой сборке процесса, без нового runtime-сервиса или production API-base env. Clock DI/данные сроков сдвигаются test harness, не публичной debug route. Static SSR и page.route mock бизнес-API не заменяют E2E.
+
+Независимые аккаунты: (A) вход UI→unchecked/reload→manual checkout→synthetic provider confirmation/webhook→return→1 grant, consent off, save=false. (B) verified вход→opt-in→initial provider/verified callback→active после reload→tick precharge→captured accepted receipt→T→renewal→1 дополнительный последовательный grant→reload→cancel→off→следующий due tick без POST. SQL и socket counters проверяют один initial и один renewal financial identity; actual duplicate callback не увеличивает права.
+
+(C) unknown accepted POST/drop/restart через app: UI «проверяем», ни ложного success, ни нового key/платежа/повторной base покупки; canonical recovery даёт один grant. (D) terminal declined renewal: UI paused, captured failure mail/outbox,0 grant и0 новых payment POST следующих ticks. Сбой mail даёт durable pending/unknown, не обещание доставки. Удаление consent/accepted/dedup/active-account guard должно нарушить соответствующий count/state oracle. Это future acceptance, NOT RUN; narrow PG/socket negative tests сохраняются.

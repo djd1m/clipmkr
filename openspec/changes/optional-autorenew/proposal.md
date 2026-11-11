@@ -12,4 +12,4 @@
 - `billing-autorenew`: согласие, автоматическое продление и напоминания.
 
 ## Impact
-Existing billing/provider/credits/watchdog/Resend/UI/legal; 2 новые таблицы (consent/notice), existing payment_intent extension. Нет новых runtime/dependencies. Source/test targets и gates — `features/optional-autorenew/`. Макеты и код ещё не утверждены; обычные live-продажи включаются владельцем отдельно от recurring capability.
+Existing billing/provider/credits/watchdog/Resend/UI/legal; 2 новые таблицы (consent/notice), existing payment_intent extension. Нет новых runtime/dependencies. Source/test targets и gates — `features/optional-autorenew/`. Макет утверждён по owner-authority, coding gates ещё не закрыты; обычные live-продажи включаются владельцем отдельно от recurring capability.

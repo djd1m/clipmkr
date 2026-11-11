@@ -1,22 +1,23 @@
 {
-  "revision": "AR-20261111-1",
+  "revision": "AR-20261111-2",
   "date": "2026-11-11",
   "ledger": {
     "openspec/changes/optional-autorenew/.openspec.yaml": "b8f20def63a86ae4075c5499ff9ed413265d8704692a8493712424dc3f28d8e3",
-    "openspec/changes/optional-autorenew/design.md": "1c55cee25c903cda0c4dca91dbbe4ad5d6a1bceaa8b34ba0951c3d2374a14557",
-    "openspec/changes/optional-autorenew/proposal.md": "0295848a7bd392a3c50ef786b1272d9ae59f5ab0d2751f78bab0a87d11c71a2e",
-    "openspec/changes/optional-autorenew/specs/billing-autorenew/spec.md": "d98a74671af81d0ece05333716d366f0e0fd10c7f4518b1578d07ef27a1e5111",
-    "openspec/changes/optional-autorenew/tasks.md": "44ba7ca350d8d0ce7af52dcb41e542e8740e5a164fa04864209816c313d22855"
+    "openspec/changes/optional-autorenew/design.md": "fbae194cdda4521cb675b2a38918f7f121109c25dc132adf97811fb614dd59d9",
+    "openspec/changes/optional-autorenew/proposal.md": "7e83e6752b78b5f302e2e3e5506405cd5537c39cbb10c726378a69e31a3eee0e",
+    "openspec/changes/optional-autorenew/specs/billing-autorenew/spec.md": "d968821100de1d843996dfc1004072ff970b7dbc9bc7002d4355074f4ececa70"
   },
   "feature_artifacts": {
-    "features/optional-autorenew/01_requirements.md": "eb19e8a04cfc0aa810b56a68dba10e7fcfc46cc5a3888d95152d1da21b71cfbf",
-    "features/optional-autorenew/04_domain_model.md": "a74a313f2ee64855d7107942b855d864888c24ad43931cdfd3996884d31ab4aa",
-    "features/optional-autorenew/05_architecture.md": "3efa38b56226d47ee5bea91ecdd6bcb456ea09f2cd722e1128f3329c485e8f91",
-    "features/optional-autorenew/03_adr/001-reuse-native-renewal-intents.md": "c8fe1ad0c42b43739cae70aed13bbd4ecaf736657e68682736e1d046006172a3",
-    "features/optional-autorenew/03_adr/002-bind-consent-to-verified-method.md": "37239cfa6e518ed5262feeb301ff2fcf5e58ab5824f562a9b40de94077f34826",
-    "features/optional-autorenew/03_adr/003-gate-renewal-on-accepted-notice.md": "bfec925c03d4fb133fd01013cbd8a1c2277b3704411c4cb19e60c2b9d520853d"
+    "features/optional-autorenew/01_requirements.md": "fb6e8b18c9e52e9cb744e49374c4d9be20d4120ac10e211e2d90e0a4ab093f9f",
+    "features/optional-autorenew/04_domain_model.md": "43ffe83c31cb40a91147cfbdaa599790739a03bb30ccadea86205cc6503ab1ac",
+    "features/optional-autorenew/05_architecture.md": "0c4b1545e5327504ebd57966fd7c7d1b00311351ffd4975e814a2b9bb588fb69",
+    "features/optional-autorenew/03_adr/001-reuse-native-renewal-intents.md": "c1111b47c173ad2b9031d01dfdb29ffa542725b3ef39c55ff4844cf5c1e42532",
+    "features/optional-autorenew/03_adr/002-bind-consent-to-verified-method.md": "f5d406fc9f3763dc6190fd1de15df3cc02c3e33d2a8ebdf49076c9f033609db4",
+    "features/optional-autorenew/03_adr/003-gate-renewal-on-accepted-notice.md": "a71cbf82039f2414ef62a47e38a5ede8537d1c3999ea9ba7da9c2f384143eb75",
+    "features/optional-autorenew/02_research.md": "e5c2c7f14ff2c577e751c9160838caf5e9621761daf3cd6f5114e8d33a883adb",
+    "features/optional-autorenew/02_reuse_inventory.md": "03c527ab40a0a42411edcf6fe2a91fcecc95c8e1d2cd4a58716134f293a41255"
   },
-  "state": "Предложение для независимого QCSD и согласования макетов. Scope владельца подтверждён owner-authority.md; инженерные defaults не являются UI approval. Gates/K1/K2/implementation/QE NOT RUN. Ordinary live activation — отдельный блок; recurring capability не подтверждена.",
+  "state": "Редакция AR-20261111-2 после авторского design repair AR-Q-1/Q-2/R-1/R-2/T-1/T-2; originating verification ещё требуется. UI approved: docs/design/2026-11-11-optional-autorenew.html SHA256 0ad97e1808eb2e5820ceced07be5ceba25931ff882fc6913b320f6867949f05e, основание owner-authority.md. Обычный live checkout существующего артефакта включён координатором; покупка владельцем ещё не проверена. Recurring default off, merchant capability не подтверждена. K1/K2/implementation/QE не выполнены.",
   "validation": {
     "openspec": "Node22 + pinned openspec validate optional-autorenew --strict: exit0, valid; только структура",
     "runtime_tests": "NOT RUN: документация до coding gates",

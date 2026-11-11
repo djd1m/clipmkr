@@ -1,0 +1,27 @@
+{
+  "addressed": [
+    "AR-Q-1",
+    "AR-Q-2",
+    "AR-R-1",
+    "AR-R-2",
+    "AR-T-1",
+    "AR-T-2"
+  ],
+  "changedScope": [
+    "features/optional-autorenew/01_requirements.md",
+    "features/optional-autorenew/02_research.md",
+    "features/optional-autorenew/03_adr/001-reuse-native-renewal-intents.md",
+    "features/optional-autorenew/03_adr/002-bind-consent-to-verified-method.md",
+    "features/optional-autorenew/03_adr/003-gate-renewal-on-accepted-notice.md",
+    "features/optional-autorenew/04_domain_model.md",
+    "features/optional-autorenew/05_architecture.md"
+  ],
+  "classification": "structural",
+  "delta": "DESIGN ONLY, AR-20261111-2. Q-1: confirmed renewal failure/pause и unique failure notice(intent,kind) атомарны в PG; pending/unknown не decline, outage/recovery/exhaustion определены. Q-2: manual reminder identity account/T/offset не включает email; до dispatch меняется та же запись, после accepted/sending/unknown новое событие запрещено, retry на сменившийся адрес подавлен. R-1: native verified полный/partial base refund с needs_review паузит auto/новое opt-in и периодические notices; grants/T автоматически не меняются; после операторского review перечитываются, auto требует нового согласия. R-2: active account под account lock требуется при каждом initial/retry authorization; erasing-first запрещает POST, ранее authorized in-flight допускается, late success без grant/new PII/token. T-1: все ADR имеют точные Decision/Confirmation. T-2: E2E-1 требует actual Next app/routes/auth/runtime, isolated PG и localhost payment/mail sockets, manual/opt-in/accepted notice/renewal/reload/cancel и unknown/decline counters. UI approval закреплён фактическим owner-authority и неизменным SHA; обычный live switch отделён от recurring. ChangedScope также включает прежний host-pending процессный pin-fix 01/02_research до первого review: tasks исключён из normative ledger, research pointer связан с hash inventory; эта правка не скрыта и теперь охвачена author delta.",
+  "evidence": "Прочитаны полностью 03.5-quality.md, 03.5-risk.md, 03.5-testability.md. Трасса: Q-1→01 FR-9/ADR-003 Decision/04 renewal+notice/05 QT-12 и новый OpenSpec requirement «Письмо о подтверждённом отказе»; Q-2→FR-10/11, ADR-003,04,QT-13,OpenSpec manual email scenario; R-1→FR-8,ADR-001,04,05 Data+QT-11,OpenSpec refund; R-2→FR-7,ADR-001/002,04,05 Configuration+QT-14,OpenSpec erasing; T-1→3 ADR exact headings; T-2→05 E2E-1. Обновлены OpenSpec proposal/design/spec и requirements-revision pins; tasks не pinned. Pinned Node22 openspec validate optional-autorenew --strict: exit0 valid. Hash/pointer/UI SHA и whitespace verification PASS; git diff --check exit0. Реальный buildCoderContext на actual 01 + 3 ADR извлёк 6 секций, partialBlock 22466 bytes; status=incomplete только из-за намеренно отсутствующего 06, complete handoff НЕ заявлен. Нормативное ядро 56226 bytes (<55KiB). DB/socket/browser runtime tests NOT RUN: код не менялся. Макет/host receipts/reviewer reports/source/tests/runtime/git index не изменялись. Предложение автора не закрывает originating conditions.",
+  "newRisks": {
+    "assessment": "Выбран fail-closed engineering default: unresolved base refund, в том числе partial, может приостановить auto до операторского решения; это не правовой вывод об отзыве согласия и не изменение native грантов. At-most-once manual event при unknown и смене email жертвует повторной доставкой на новый адрес; in-flight письмо не отзывается. Bounded failure-mail retries могут исчерпаться: остаются durable состояние и UI/оператор, доставки не обещаем. Existing one-time продажи и manual policy сохранены, новых runtime/dependencies/services нет. Дополнительных самостоятельных существенных условий сверх шести рассматриваемых IDs автор не заявляет; независимая verification обязательна.",
+    "evidence": "ADR-001 Decision и QT-11/14 задают обе PG очередности и положительные controls без refund/на active account, а также manual после review. ADR-003 Decision/QT-12/13 задают atomic outbox, transport recovery, неизменный-recipient same-key positive control и смену адреса до/после dispatch. E2E-1 требует фактический app/network/SQL путь; static SSR не доказательство. Ни результаты этих future tests, ни выводы reviewer не подменены author delta.",
+    "conditions": []
+  }
+}
