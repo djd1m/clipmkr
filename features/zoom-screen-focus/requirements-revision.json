@@ -1,14 +1,18 @@
 {
-  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
-  "status": "author-baseline-v1-not-approved",
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "status": "design-r3-ux04-author-rework-pending-origin-verification",
+  "authority": "R2 first10 conditions independently verified at snapshot0795744b; root requested narrow UX-04 correction of draft retention until matching authoritative publication. Existing owner selector approval and01 requirements unchanged; no new gate/code approval claimed",
+  "featureRequirementsSha256": "5464fbeaf78cb01e21440186e89d683903837a4043e7580f30e7937496bd0219",
   "files": [
     {
       "path": "openspec/changes/zoom-screen-focus/proposal.md",
-      "sha256": "b276225f2d89aec0dc836ee12fe3af31eaa835fe862cf638020e86bbd0f630f8"
+      "sha256": "e75bdb2005639a300c8bc7816fc85ef833e7d00296e2b90b22546f4ffa47df9c"
     },
     {
       "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
-      "sha256": "9b16c1aae1306f768a228da0bce4ee78e4ccd9f685b30d1b992cf061af20aef2"
+      "sha256": "d976032b60c8d5204de33121eb517bbfce4e5eeccfe792a423ee34bb27a854c3"
     }
-  ]
+  ],
+  "r1RequirementsRevisionSha256": "a07c57a27c9090d8782827f02efa32a068aae54545ca15f06d9112dbbfc468cc",
+  "r2RequirementsRevisionSha256": "b817eb5a56bb7fc5fc40cdedc6ab0287739d8d16e7b08002813f0526a7fe320d"
 }

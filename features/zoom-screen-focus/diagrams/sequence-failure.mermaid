@@ -1,0 +1,14 @@
+sequenceDiagram
+  participant UI
+  participant API
+  participant DB
+  participant Worker
+  UI->>API: apply(key)
+  API->>DB: atomic accept and commit
+  API--xUI: network timeout
+  UI->>API: retry same key
+  API->>DB: replay lookup
+  DB-->>UI: same accepted operation, no charge
+  Worker->>DB: old fence result
+  DB-->>Worker: stale, zero adopted rows
+  Note over UI,DB: Published old MP4 remains until accepted success

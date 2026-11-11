@@ -1,0 +1,43 @@
+{
+  "sourceNonce": "0226529f-7134-4088-946e-bc6c7a30a6da",
+  "sourceRevision": "0795744bd1c936b14cd94ee5296261d49286baf728c8827b6ec33f54170e7a70",
+  "scope": "Only documents to change for UX-04 plus prior pins/dossier; no recursive R1 archive copy",
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+      "sha256": "429b5e04d6429b4d05ff6ff3d4df60097b1469a8cca7e2b9d998be587e5f0586"
+    },
+    {
+      "path": "features/zoom-screen-focus/04_domain_model.md",
+      "sha256": "475503633552bf048f198fc021a8fca54fc7e26a8c4cb7dee19a949420b3daca"
+    },
+    {
+      "path": "features/zoom-screen-focus/05_architecture.md",
+      "sha256": "7b39d3f14b2be2b8ed9bd907bd9853075968578deb133edbbb89a28a364a874d"
+    },
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "d0f2cb18b14f129e78c9d8609259c937ccedd286032fc7bef9cad7327234d998"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "aa2c280f57a0396238dff4f7c68236e6c3d4bcb4c8733ab49bf8792ffc005f18"
+    },
+    {
+      "path": "features/zoom-screen-focus/requirements-revision.json",
+      "sha256": "b817eb5a56bb7fc5fc40cdedc6ab0287739d8d16e7b08002813f0526a7fe320d"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "af59cbaa378c93e76861309426b1857014fa96f639276fbc4ad9bf5b8a604d01"
+    },
+    {
+      "path": "features/zoom-screen-focus/source-pins.json",
+      "sha256": "361d560176cd04afccdf9e0e2651a04b2468e93cd0b1d3398f6a2968d3286b07"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-dossier.json",
+      "sha256": "2e0d9c7ae13a26f19822d788e2aa558655d25c9c0f3e5868d18bf50382375a3c"
+    }
+  ]
+}

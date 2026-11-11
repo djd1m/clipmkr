@@ -49,3 +49,16 @@ action/camera ROI, стабильные области на весь выбра�
 
 Предыдущий private макет SHA256 `93619144752c9f3e57630b9d7710fa2ee4632f5fb1884896eab09969f36df625`
 — дизайн-референс одного состояния. Новых private GET/рендеров в этом потоке не было.
+
+## Дополнение архитектора11.11.2026
+
+`apps/web/src/lib/rpc.ts:1` содержит closed `RpcMethod` union; новые prepare/layoutInfo/apply должны попасть туда, иначе UI не проходит typecheck. Это обязательный thin consumer, добавлен в targets. Existing `tests/clip-music-choice.test.ts:65` привязан к `rpc<...>('clip.list')` в VideoDetail; тонкая интеграция не удаляет прежний poll. Новый shared sourceRevision helper согласуется с Original, чтобы worker не импортировал web/server.
+
+
+## R2: проверенные native решения для QCSD
+
+- Повторно используем `ClipMusicChoice.tsx` draft/dirty, `lib/upload-resume.ts` closed schema/sessionStorage read-back и `Uploader.tsx` beforeunload lifecycle. Upload-specific key/data не копируются: небольшой private layout envelope живёт в уже планируемом Choice; новый persistence service/router не нужен. accountScope добавляется в уже планируемый owner layoutInfo DTO, берётся из session.
+- Повторно используем `packages/s3/src/client.ts`/`presign.ts`: existing client factory поддерживает signing endpoint, generateDownloadUrl учитывает notAfter/namespace. Worker подписывает только внутренний configured endpoint, не browser S3_PUBLIC_ENDPOINT; изменения package.json/новая библиотека presigner не нужны.
+- Native FFmpeg8.1.3 `max_redirects=0` существует и на установленном ffmpeg, и ffprobe; механизм отказа до follow-up connect проверен по закреплённому http.c. HTTPS TLS verification также native. Нового Range proxy нет. Exact source/raw hashes — `amendments/r2-source-evidence.json`.
+- Existing AttemptJob — только TS interface. Закрытый parser в уже планируемом queues.ts валидирует wire shape до dispatch; native validation не требует зависимости. Legacy render producer сохраняет пять прежних identity полей. Existing lifecycle SQL/retention/fence helpers — authority.
+- Source guards/mutation anchors,18 исходных source pins, font/ONNX SHA не переписываются. Native capability reads не запускают worker jobs, media fixture, DB или S3. Остальные40 editable/19 read-only targets из scope-inventory остаются прежними.

@@ -1,0 +1,22 @@
+[
+  {
+    "path": "features/zoom-screen-focus/selector-mockup.html",
+    "sha256": "76acda5003083138245031f5e96c6697e74844a8b5324e1007d397ac993eb1f0"
+  },
+  {
+    "path": "features/zoom-screen-focus/screenshots/selector-closed-390.png",
+    "sha256": "365e1249fb1cb1c43194443622a867613e5e7204be33f39e750dc429944650e3"
+  },
+  {
+    "path": "features/zoom-screen-focus/screenshots/selector-closed-1440.png",
+    "sha256": "ae4c582b96c81e9a1de15ac150a9162feda6dddde64f32d655f96f94241fbe8c"
+  },
+  {
+    "path": "features/zoom-screen-focus/screenshots/selector-open-1440.png",
+    "sha256": "06708f79a99421c607bd4b271c4612b534132bdd6952caed0ec325e151021da4"
+  },
+  {
+    "path": "features/zoom-screen-focus/screenshots/selector-open-390.png",
+    "sha256": "41f83ef2d96c78a8ee16a416ee7be45e67f65e737be32d64dbf14b9d8db00b62"
+  }
+]

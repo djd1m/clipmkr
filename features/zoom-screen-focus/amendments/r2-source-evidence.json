@@ -1,0 +1,229 @@
+{
+  "status": "read-only-capability-evidence-not-runtime-qe",
+  "fetchedAtUtc": "2026-11-11T16:41:30.282031+00:00",
+  "upstream": {
+    "tag": "n8.1.3",
+    "tagObject": "23151b11c75aa44d9ab8db796a53c76acf00f6c0",
+    "commit": "1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7",
+    "issuerSignatureIndependentlyVerified": false,
+    "sources": [
+      {
+        "id": "ffmpeg-http-c",
+        "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.1.3/libavformat/http.c",
+        "finalUrl": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.1.3/libavformat/http.c",
+        "status": 200,
+        "sha256": "e4f4bd2b58dc717600da3ac3a43af2693d07bcbc8de516eed856f2fb1d87f013",
+        "bytes": 79972,
+        "fetchedAtUtc": "2026-11-11T16:36:02.563130+00:00"
+      },
+      {
+        "id": "ffmpeg-protocols-texi",
+        "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.1.3/doc/protocols.texi",
+        "finalUrl": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.1.3/doc/protocols.texi",
+        "status": 200,
+        "sha256": "18361f433cd11591615b87a5f80bffb19ebb988ee3da6e1a1253070b41320210",
+        "bytes": 74000,
+        "fetchedAtUtc": "2026-11-11T16:36:02.845637+00:00"
+      },
+      {
+        "id": "ffmpeg-tag",
+        "url": "https://api.github.com/repos/FFmpeg/FFmpeg/git/ref/tags/n8.1.3",
+        "finalUrl": "https://api.github.com/repos/FFmpeg/FFmpeg/git/ref/tags/n8.1.3",
+        "status": 200,
+        "sha256": "72266ad636a4941eb6f1597a746fdcc6d9c027e80e5fba7c436fb2d1f4131230",
+        "bytes": 325,
+        "fetchedAtUtc": "2026-11-11T16:36:03.199651+00:00"
+      },
+      {
+        "id": "ffmpeg-http-commit",
+        "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7/libavformat/http.c",
+        "finalUrl": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7/libavformat/http.c",
+        "status": 200,
+        "sha256": "e4f4bd2b58dc717600da3ac3a43af2693d07bcbc8de516eed856f2fb1d87f013",
+        "bytes": 79972,
+        "fetchedAtUtc": "2026-11-11T16:40:58.027107+00:00"
+      },
+      {
+        "id": "ffmpeg-tls-commit",
+        "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7/libavformat/tls_openssl.c",
+        "finalUrl": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7/libavformat/tls_openssl.c",
+        "status": 200,
+        "sha256": "c9d763ab417dcfb10757fd8522f76a14514c8a6e95dceb3fe4d5e0b7cdb2147a",
+        "bytes": 31386,
+        "fetchedAtUtc": "2026-11-11T16:40:58.230017+00:00"
+      },
+      {
+        "id": "ffmpeg-protocols-commit",
+        "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7/doc/protocols.texi",
+        "finalUrl": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/1041abdc962f4cc4f394aa8de9dc5236c0c3b9e7/doc/protocols.texi",
+        "status": 200,
+        "sha256": "18361f433cd11591615b87a5f80bffb19ebb988ee3da6e1a1253070b41320210",
+        "bytes": 74000,
+        "fetchedAtUtc": "2026-11-11T16:40:58.444868+00:00"
+      }
+    ]
+  },
+  "runtime": {
+    "image": "sha256:34abe462e4880dac27c644d8c7302fc95aeedfcd8be85cbc80e7b2ac718f9e09",
+    "commands": [
+      {
+        "argv": [
+          "docker",
+          "inspect",
+          "--format",
+          "{{.Image}}",
+          "clipmkr-stage-20261028-worker-video-1"
+        ],
+        "exitCode": 0,
+        "outputSha256": "ebcb2460c680be3029f39a7e38d14932fc19100e19572a26b269b9867a3377db"
+      },
+      {
+        "argv": [
+          "docker",
+          "exec",
+          "clipmkr-stage-20261028-worker-video-1",
+          "ffmpeg",
+          "-version"
+        ],
+        "exitCode": 0,
+        "outputSha256": "5a70deac7f490a91bcf64f59cbdaffe8ee5f4f61a1d184c9cb800d06df681724"
+      },
+      {
+        "argv": [
+          "docker",
+          "exec",
+          "clipmkr-stage-20261028-worker-video-1",
+          "ffprobe",
+          "-version"
+        ],
+        "exitCode": 0,
+        "outputSha256": "30037b2f0e795e577aa77a7e85e1339d1e2bf3c8a5bdeec3bdeaa46f00f4f3bf"
+      },
+      {
+        "argv": [
+          "docker",
+          "exec",
+          "clipmkr-stage-20261028-worker-video-1",
+          "ffmpeg",
+          "-hide_banner",
+          "-h",
+          "protocol=http"
+        ],
+        "exitCode": 0,
+        "outputSha256": "7e9c65590848d4fd868712a1d797f9f2b9f21a53611ce61fd1a4d1603015de81"
+      },
+      {
+        "argv": [
+          "docker",
+          "exec",
+          "clipmkr-stage-20261028-worker-video-1",
+          "ffprobe",
+          "-hide_banner",
+          "-h",
+          "protocol=http"
+        ],
+        "exitCode": 0,
+        "outputSha256": "c9a2a1b4c7374ebea5d1081010f1966709a79aa2df62284c6f48fb3ac67c8da5"
+      },
+      {
+        "argv": [
+          "docker",
+          "exec",
+          "clipmkr-stage-20261028-worker-video-1",
+          "ffmpeg",
+          "-hide_banner",
+          "-h",
+          "protocol=https"
+        ],
+        "exitCode": 0,
+        "outputSha256": "8bbc1bf43bef427acad4726cb867a4762758fa9085a5d5b9f318a44974cc5f43"
+      },
+      {
+        "argv": [
+          "docker",
+          "exec",
+          "clipmkr-stage-20261028-worker-video-1",
+          "ffmpeg",
+          "-hide_banner",
+          "-h",
+          "protocol=tls"
+        ],
+        "exitCode": 0,
+        "outputSha256": "18e378656843c5a261e98a4ebce934ea1e23d6dfd86c3c1c8b4f66fbe22a651d"
+      }
+    ],
+    "httpMaxRedirectsOptionObservedIn": [
+      "ffmpeg",
+      "ffprobe"
+    ],
+    "rawPath": "/root/.config/clipmkr/zoom-screen-focus-20261111/r2-runtime-capability-readonly.json",
+    "rawSha256": "51962c73a7a107d2fb379f2825c0e4810cb644a63a9bbd84505ae1607b44d8c3"
+  },
+  "limits": [
+    "Only version/help/inspect commands; no media/job/network fixture run",
+    "Source confirms option/branch mechanism; final worker image and controlled redirect/TLS/canary tests remain implementation QE",
+    "protocols.texi has stale general OpenSSL hostname note; n8.1.3 tls_openssl.c specifies hostname/IP verification"
+  ],
+  "localReuseSources": [
+    {
+      "path": "packages/s3/src/client.ts",
+      "sha256": "26cacf63dc70d341668ab849ad2b45461c259ce48ccf1045ada5685482bfc754"
+    },
+    {
+      "path": "packages/s3/src/presign.ts",
+      "sha256": "c3a0adff02383a264556bd4e59998cbb756ed4cccef35482c264f37343b3df3e"
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "sha256": "053c6337971faafa079616a1e7d983360863d385e8b0818b6692006475cb46d4"
+    },
+    {
+      "path": "apps/worker/package.json",
+      "sha256": "c83d6d14a8849369f59ee5476cecb4c00c18e6929e9fe0f4102ae54c71a3604b"
+    },
+    {
+      "path": "packages/s3/package.json",
+      "sha256": "560721e0ce049cdb52fddfb536fec38e6e5825a073263c1fa046efe230d012c5"
+    },
+    {
+      "path": "apps/web/src/lib/upload-resume.ts",
+      "sha256": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864"
+    },
+    {
+      "path": "apps/web/src/app/upload/Uploader.tsx",
+      "sha256": "0fe093d40de2f829b36755690a234c2ac112d7a8b8d1b49a383aa68079f08722"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipMusicChoice.tsx",
+      "sha256": "6255b32c320366535ac0446567a9bd36e53a16b806429c58c2f0ce65dcd3c729"
+    },
+    {
+      "path": "packages/queue/src/queues.ts",
+      "sha256": "33d9fb6b833677aa31f473bf4203c47dff7c851d244a9f8ea319079a3b8958e7"
+    },
+    {
+      "path": "apps/worker/src/workers/render.ts",
+      "sha256": "edb48ae12d515440c0e094a744b75b9f56541f1c32c2df1f4db47e87b48b3ffd"
+    },
+    {
+      "path": "apps/worker/src/render/faces.ts",
+      "sha256": "a557399d9cc4550b5ddbb277707114439d8571ac421f887e8ee6e54c07933fea"
+    },
+    {
+      "path": "apps/worker/assets/scripts/detect_faces.py",
+      "sha256": "e13b51a438f332ba3b9887478941be1a22e453b948972d6f291c81c0c96dc8e0"
+    },
+    {
+      "path": "packages/db/src/render.ts",
+      "sha256": "81a35ce7131d2f88cbbfaadb102071844942f6d42c4827b699c5b140a86156a0"
+    },
+    {
+      "path": "apps/web/src/server/clip-music.ts",
+      "sha256": "8031bf790fe20cdd97416ba2f8948658a04bed518cdc88473a3510be1674f759"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "de1e085275a78268c5b61c767588fc021cd874d0c146cb9e82935a2befb115f9"
+    }
+  ]
+}

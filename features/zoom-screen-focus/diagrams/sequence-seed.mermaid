@@ -1,0 +1,22 @@
+sequenceDiagram
+  actor User
+  participant UI
+  participant API
+  participant DB
+  participant Queue
+  participant Worker
+  User->>UI: Explicit screen-face mode
+  UI->>API: prepareLayout(clip, sourceRevision)
+  API->>DB: authorized cache lookup
+  alt Cache ready / unavailable / pending
+    DB-->>UI: existing state, no new logical operation
+  else Absent
+    API->>DB: ensure pending seed
+    API->>Queue: deterministic seed identity, priority1024
+    Queue->>Worker: claim seed
+    Worker->>DB: CAS lease epoch, max2 attempts
+    Worker->>Worker: native FFmpeg / YuNet, deadline30s
+    Worker->>DB: final CAS ready / unavailable
+  end
+  UI->>API: read-only layoutInfo
+  API-->>UI: seed proposal or explained fallback

@@ -1,0 +1,154 @@
+{
+  "status": "frozen-design-candidate-for-qcsd",
+  "frozenAtUtc": "2026-11-11T15:13:10.316423+00:00",
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "workingTreeSnapshot": true,
+  "runtimeChanges": false,
+  "candidateTier": "XL",
+  "score": 16,
+  "expectedCodeTargets": 40,
+  "uiApproval": "ui-approval.md",
+  "pending": [
+    "actualStep3.5",
+    "finalStep6",
+    "K1",
+    "K2",
+    "rootCodeGO",
+    "implementation",
+    "runtimeQE"
+  ],
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/00_complexity_assessment.md",
+      "sha256": "b1e0bfff540b8305008f7b16bf47b50a08b9315632baa6ff9f056d120ab0d635"
+    },
+    {
+      "path": "features/zoom-screen-focus/01_requirements.md",
+      "sha256": "0e2760a12f490ef3c5fbeeaf882afd9f5862d5f5ec858e97e252366ac418f137"
+    },
+    {
+      "path": "features/zoom-screen-focus/02_research.md",
+      "sha256": "35acaf4a9f4a5fcad9bfdb591043134a01122dd6eb2b1c6907541218f8df13e9"
+    },
+    {
+      "path": "features/zoom-screen-focus/02_reuse_inventory.md",
+      "sha256": "b7f28a87cf461de253ade32dff49e39eeced3cc09e3a54398515957972498c25"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/001-compose-confirmed-source-regions.md",
+      "sha256": "6b21963a028c968f7a77d93fde94a91355e61b9ff4428b2a18592984ee9fa2d8"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/002-persist-fenced-layout-intents.md",
+      "sha256": "92f83aa54c70be194b90b695b4db70a89fdbeb69c0db10012a7e9a2d451975c5"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+      "sha256": "10a125b6a2ada359e038696457cbaa6cf8740afbe9a1150ee03ecc621990ecbb"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/004-cache-bounded-camera-seeds.md",
+      "sha256": "2638195603f75fc41efa66bc7277aef7eec4468f26c8d9c0357663d1df51dc25"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_candidate_decisions.md",
+      "sha256": "907eeceea9843efbbc06724e6b2bbfd2c2c58e12f2878e93d720c8f76ba64419"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_shift_left.md",
+      "sha256": "908a516daaf03b552f30936df4294ed88d6e046af7dacf2cebc7cf7bf330884a"
+    },
+    {
+      "path": "features/zoom-screen-focus/04_domain_model.md",
+      "sha256": "f3d824ea2b7afc1b4bcc0fecff7501cccaf9d110d8d0092c300025bc93669c0d"
+    },
+    {
+      "path": "features/zoom-screen-focus/05_architecture.md",
+      "sha256": "0bef5c14bb176b50928c553af47f9fa130e42f7b90f40ba0aaab2957190b5f72"
+    },
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "7bb76b26cc7d5c045f97123903d5d907f331a839031bc6ab19ba22468612b65a"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "sha256": "8509fa23b23123c5981e86a9e15ed026ee036d4dd5a0fe192a046a6383258b66"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "sha256": "75618eb9d64130edc8761dbba2c84bb7640320ad0731d8ada58dac209d75523b"
+    },
+    {
+      "path": "features/zoom-screen-focus/browser-probe.json",
+      "sha256": "5598e0bae361c3317ced4775adbf51d6e96509f76048d73d363d3c0378df130e"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "5f787919de0bce67f5fe066d1bd702f9b67e2a26410756680a230f1c1512f57f"
+    },
+    {
+      "path": "features/zoom-screen-focus/diagrams/architecture-c4.mermaid",
+      "sha256": "431a44d9a86b852ab8d127f105bd4328fab210e49e6a61c1c760c46cec8476a6"
+    },
+    {
+      "path": "features/zoom-screen-focus/diagrams/sequence-apply.mermaid",
+      "sha256": "2aef19eaf3eb9edc18c4e744612babb23e9f501cb7873fc708f1a144b50a9427"
+    },
+    {
+      "path": "features/zoom-screen-focus/diagrams/sequence-failure.mermaid",
+      "sha256": "a7ea1be2f169a5c1526d9eb3fe10cf08da03b3967683a797e6f02def86926f86"
+    },
+    {
+      "path": "features/zoom-screen-focus/diagrams/sequence-seed.mermaid",
+      "sha256": "f4b4636bc3f47918582f88afafb83ca8dbecf42a83aa61c7b2ba3d121fbed067"
+    },
+    {
+      "path": "features/zoom-screen-focus/mockup-hashes.json",
+      "sha256": "ecd1571c82e203e1f266ff6cb1f07868e45f64cd3d26997651e8f369108fb8bc"
+    },
+    {
+      "path": "features/zoom-screen-focus/mockup-review.md",
+      "sha256": "b647246576c92563faddef83411ec31a4ae8b6c06110bec1d1bcde927492097c"
+    },
+    {
+      "path": "features/zoom-screen-focus/planner-handoff.md",
+      "sha256": "45ee4a0e33e365755a68b9a1ac9ea1f27ad6b095dc71553c158f1f7eea2f9389"
+    },
+    {
+      "path": "features/zoom-screen-focus/requirements-revision.json",
+      "sha256": "a07c57a27c9090d8782827f02efa32a068aae54545ca15f06d9112dbbfc468cc"
+    },
+    {
+      "path": "features/zoom-screen-focus/research-source-fetches.json",
+      "sha256": "acbeb3472bb8f325df1308c9fef391f8ac7d5f42c99fb5fcb8cb738e0ba25a37"
+    },
+    {
+      "path": "features/zoom-screen-focus/scope-inventory.json",
+      "sha256": "a51984aad553a7abb83a01116db1b86f8b29c2371dd1dddbb7c2e51d1b4b1034"
+    },
+    {
+      "path": "features/zoom-screen-focus/selector-mockup.html",
+      "sha256": "76acda5003083138245031f5e96c6697e74844a8b5324e1007d397ac993eb1f0"
+    },
+    {
+      "path": "features/zoom-screen-focus/source-pins.json",
+      "sha256": "361d560176cd04afccdf9e0e2651a04b2468e93cd0b1d3398f6a2968d3286b07"
+    },
+    {
+      "path": "features/zoom-screen-focus/ui-approval.md",
+      "sha256": "de35177d75b82ddbc52bb2699ff54a870c3c66ae23921b33df157d6589a648ca"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/proposal.md",
+      "sha256": "07c7de084e3e1432377a5ece41642ebb1ccaf2bdab2e3a98b5ecce186ceb7ca6"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "b5f3bf31336a55cfba5aaf2ab16bf3ecf29aee2f80fa44cb16ab5e355d84d83c"
+    }
+  ],
+  "supersedesManifestSha256": "a21252bacc9fd4a802d1610dde1714aa707bef68e33af96bcc3e67d22491a70c",
+  "refreezeReason": "Root fixed canonical server-only Original helper and accepted conservative XL; editable/read-only scope separated, no product behavior changes",
+  "tierDecision": "root accepted conservative XL; score16 is L band; quick decision tree40 editable files is XL; checkpoint pending",
+  "readOnlyTargets": 19
+}

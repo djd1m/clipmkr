@@ -1,0 +1,190 @@
+{
+  "status": "document-integrity-only",
+  "checkedAtUtc": "2026-11-11T16:46:30.065196+00:00",
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "checks": [
+    {
+      "check": "R1 archive bytes",
+      "result": "pass",
+      "files": 33
+    },
+    {
+      "check": "source-pins.json current source equality",
+      "result": "pass",
+      "files": 18
+    },
+    {
+      "check": "design-source-pins.json current source equality",
+      "result": "pass",
+      "files": 26
+    },
+    {
+      "check": "Approved selector, four PNG, approval, routing and scope inventory unchanged",
+      "result": "pass"
+    },
+    {
+      "check": "requirements/OpenSpec current hashes",
+      "result": "pass"
+    },
+    {
+      "check": "Literal trailing measured targets",
+      "result": "pass",
+      "measured": 59,
+      "editable": 40,
+      "readOnly": 19
+    },
+    {
+      "check": "Changed Markdown whitespace including untracked ADRs",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --no-index --check <R1-archive-path> <current-path> for each changed Markdown",
+      "result": "changed files, no whitespace diagnostics",
+      "details": [
+        {
+          "path": "features/zoom-screen-focus/02_reuse_inventory.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/architecture-handoff.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/06_implementation_plan.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/01_requirements.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/04_domain_model.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/05_architecture.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/03_adr/004-cache-bounded-camera-seeds.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/03_adr/001-compose-confirmed-source-regions.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "openspec/changes/zoom-screen-focus/proposal.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        }
+      ]
+    },
+    {
+      "command": "npm run openspec -- validate zoom-screen-focus --strict",
+      "exitCode": 127,
+      "meaning": "worktree lacks node_modules/.bin; command not found, not a validation result"
+    },
+    {
+      "command": "PATH=/home/clipmkr/node_modules/.bin:$PATH npm run openspec -- validate zoom-screen-focus --strict",
+      "exitCode": 0,
+      "stdout": "Change 'zoom-screen-focus' is valid",
+      "binaryVersion": "1.15.0",
+      "reasonForRetry": "Reuse installed project-pinned version1.15.0 after command-not-found; no install and no source changes"
+    },
+    {
+      "check": "Targeted final oracle clarification",
+      "result": "pass",
+      "reason": "Explicitly require visible nonempty camera/B/blank pixels under positive observations to prevent vacuous always-hidden pass; only ADR001 and amendment changed",
+      "paths": [
+        "features/zoom-screen-focus/03_adr/001-compose-confirmed-source-regions.md",
+        "features/zoom-screen-focus/amendments/qcsd-r2-design.md"
+      ],
+      "gitDiffCheckExitCode": 0,
+      "openspecRerun": "unnecessary: OpenSpec bytes unchanged since strict exit0"
+    }
+  ],
+  "inputFiles": [
+    {
+      "path": "features/zoom-screen-focus/01_requirements.md",
+      "sha256": "5464fbeaf78cb01e21440186e89d683903837a4043e7580f30e7937496bd0219"
+    },
+    {
+      "path": "features/zoom-screen-focus/02_reuse_inventory.md",
+      "sha256": "6c162631cf9cb1c33c2df96adcc1affc11826b970cd01a1583a552547bb56899"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/001-compose-confirmed-source-regions.md",
+      "sha256": "1130c07890eb4643e4ed724204bb7d06f4cc3e89fdd569ffeb5f29b1f4811583"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+      "sha256": "429b5e04d6429b4d05ff6ff3d4df60097b1469a8cca7e2b9d998be587e5f0586"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/004-cache-bounded-camera-seeds.md",
+      "sha256": "03dab088aafb6ee22fe8fa60de68a5b6574f6250233f21ab5f2a1d69c0502f8b"
+    },
+    {
+      "path": "features/zoom-screen-focus/04_domain_model.md",
+      "sha256": "475503633552bf048f198fc021a8fca54fc7e26a8c4cb7dee19a949420b3daca"
+    },
+    {
+      "path": "features/zoom-screen-focus/05_architecture.md",
+      "sha256": "7b39d3f14b2be2b8ed9bd907bd9853075968578deb133edbbb89a28a364a874d"
+    },
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "d0f2cb18b14f129e78c9d8609259c937ccedd286032fc7bef9cad7327234d998"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "sha256": "a3d31a80dc460a10d68d6c34447f4dc68166bdf11900cb7765e72ba986ee11a9"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "af59cbaa378c93e76861309426b1857014fa96f639276fbc4ad9bf5b8a604d01"
+    },
+    {
+      "path": "features/zoom-screen-focus/requirements-revision.json",
+      "sha256": "b817eb5a56bb7fc5fc40cdedc6ab0287739d8d16e7b08002813f0526a7fe320d"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/proposal.md",
+      "sha256": "e75bdb2005639a300c8bc7816fc85ef833e7d00296e2b90b22546f4ffa47df9c"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "aa2c280f57a0396238dff4f7c68236e6c3d4bcb4c8733ab49bf8792ffc005f18"
+    }
+  ],
+  "limits": [
+    "No K1/K2 or convergence gate was run",
+    "No product tests, DB/S3 requests, private media or runtime seed jobs",
+    "Independent verification belongs to the six originating roles"
+  ]
+}

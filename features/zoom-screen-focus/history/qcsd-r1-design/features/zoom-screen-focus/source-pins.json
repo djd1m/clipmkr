@@ -1,0 +1,79 @@
+{
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "purpose": "Входной снимок до кода, не новое одобрение dependency",
+  "files": [
+    {
+      "path": "apps/worker/src/render/format.ts",
+      "sha256": "492b13ab405bb98afcb796cc837e118e7910e2fa40f803ef570bf763eaaa77f1"
+    },
+    {
+      "path": "apps/worker/src/render/ffmpeg.ts",
+      "sha256": "9a0d8a32a043726a2f33cefbf4915e77412fbed170006da1693cf6eeca2205e9"
+    },
+    {
+      "path": "apps/worker/src/render/framing-plan.ts",
+      "sha256": "cb173f98cc2e69416c7f4cbe875411090bd62eb2f698177bb238b605e495384c"
+    },
+    {
+      "path": "apps/worker/src/render/faces.ts",
+      "sha256": "a557399d9cc4550b5ddbb277707114439d8571ac421f887e8ee6e54c07933fea"
+    },
+    {
+      "path": "apps/worker/assets/scripts/detect_faces.py",
+      "sha256": "e13b51a438f332ba3b9887478941be1a22e453b948972d6f291c81c0c96dc8e0"
+    },
+    {
+      "path": "apps/worker/src/workers/render.ts",
+      "sha256": "edb48ae12d515440c0e094a744b75b9f56541f1c32c2df1f4db47e87b48b3ffd"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "sha256": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "sha256": "7a450be39c1b8e393db424bb20a3e97ac56799b339d5e08212fab393162ce9b4"
+    },
+    {
+      "path": "apps/web/src/server/clip-music.ts",
+      "sha256": "8031bf790fe20cdd97416ba2f8948658a04bed518cdc88473a3510be1674f759"
+    },
+    {
+      "path": "packages/db/src/render.ts",
+      "sha256": "81a35ce7131d2f88cbbfaadb102071844942f6d42c4827b699c5b140a86156a0"
+    },
+    {
+      "path": "packages/db/src/attempts.ts",
+      "sha256": "1ea18327be1e2f2b405576b5b8a3dc3f5a518dcd4131a93652816c77b7181855"
+    },
+    {
+      "path": "packages/db/src/quota.ts",
+      "sha256": "da1d10660fb84a78dbab490853230f0b00fe3267071b22ddfd8c6c1b3e3dd78e"
+    },
+    {
+      "path": "packages/shared/src/watermark.ts",
+      "sha256": "21776cb12282dbd090d63b0697926c03ae1af236818fb96a4c54516f2f0fc603"
+    },
+    {
+      "path": "packages/shared/src/watermark-metrics.json",
+      "sha256": "2fa9dc3a7ef8859f087daaf939696139e59fa31b88ef2ece85946747e47226e0"
+    },
+    {
+      "path": "apps/worker/assets/fonts/ClipMakerNarrow-Bold.ttf",
+      "sha256": "43f6f10c6a265edfb4f34e64b1a60743610ab58c748e25eb4ef9bb54e388c38f"
+    },
+    {
+      "path": "apps/worker/assets/models/face_detection_yunet.onnx",
+      "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4"
+    },
+    {
+      "path": "scripts/test-framing-mutations.mjs",
+      "sha256": "206f79b0a3b6c3f1b15c1256b239af7ba2661805b60323a16a0059359044c89d"
+    },
+    {
+      "path": "tests/render.test.ts",
+      "sha256": "8f889ed4d3da628545205544d631d11b34affb09e06f1cb17388e36dcf25961d"
+    }
+  ],
+  "renderFontPin": "43f6f10c6a265edfb4f34e64b1a60743610ab58c748e25eb4ef9bb54e388c38f"
+}

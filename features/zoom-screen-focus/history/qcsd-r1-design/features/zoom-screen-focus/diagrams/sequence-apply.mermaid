@@ -1,0 +1,21 @@
+sequenceDiagram
+  actor User
+  participant UI
+  participant API
+  participant DB
+  participant Queue
+  participant Worker
+  participant S3
+  User->>UI: Просмотрел и подтвердил clip layout
+  UI->>API: setLayout(key, versions, config)
+  API->>DB: owner locks, replay lookup
+  alt Exact replay
+    DB-->>API: same accepted operation
+  else New valid request
+    API->>DB: quota + intent + lease commit
+    API->>Queue: attempt identity
+    Queue->>Worker: existing render
+    Worker->>S3: create-only versioned objects
+    Worker->>DB: fenced keys + published layout
+  end
+  API-->>UI: status / polling published version

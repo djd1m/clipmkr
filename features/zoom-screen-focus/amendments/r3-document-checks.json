@@ -1,0 +1,114 @@
+{
+  "status": "R3-UX04-document-integrity-only",
+  "checkedAtUtc": "2026-11-11T16:56:49.340965+00:00",
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "checks": [
+    {
+      "check": "R2 limited archive equality",
+      "result": "pass",
+      "files": 9
+    },
+    {
+      "check": "00/01/ADR002, approved HTML/PNG/approval, scope unchanged",
+      "result": "pass"
+    },
+    {
+      "check": "source-pins.json current equality",
+      "files": 18,
+      "result": "pass"
+    },
+    {
+      "check": "design-source-pins.json current equality",
+      "files": 26,
+      "result": "pass"
+    },
+    {
+      "check": "Requirements/OpenSpec pins",
+      "result": "pass"
+    },
+    {
+      "check": "59 measured targets unchanged;40 editable19 read-only",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --no-index --check <R2 archive file> <current file> for changed Markdown",
+      "result": "no whitespace diagnostics",
+      "details": [
+        {
+          "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/04_domain_model.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/05_architecture.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "features/zoom-screen-focus/06_implementation_plan.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        },
+        {
+          "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+          "exitCode": 1,
+          "meaning": "files differ; no whitespace diagnostics"
+        }
+      ]
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "PATH=/home/clipmkr/node_modules/.bin:$PATH npm run openspec -- validate zoom-screen-focus --strict",
+      "binaryVersion": "1.15.0",
+      "exitCode": 0,
+      "stdout": "Change 'zoom-screen-focus' is valid"
+    }
+  ],
+  "inputFiles": [
+    {
+      "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+      "sha256": "8af1603968eac40106712e9bffcbbc48dab855392a4a0c43eef21d9e5ee1c3ef"
+    },
+    {
+      "path": "features/zoom-screen-focus/04_domain_model.md",
+      "sha256": "fc60cec149fd9312ed9afb12fa0a2d8d4863557479662d26ad263531189eb718"
+    },
+    {
+      "path": "features/zoom-screen-focus/05_architecture.md",
+      "sha256": "2daa5b4b8b14146b02bea42ab954561c82fbed9e8acbfe0260a27fdc47e592a8"
+    },
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "9c8f4f0f7eef9c9b4553dc512100f70a81ecd4040277e2ab794a8eb4dcac383b"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "d976032b60c8d5204de33121eb517bbfce4e5eeccfe792a423ee34bb27a854c3"
+    },
+    {
+      "path": "features/zoom-screen-focus/requirements-revision.json",
+      "sha256": "5f5be3a9c21609634df8079ece73c4833dfeb944c57d3ed2142f6cd35078013f"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "4b8e1a6ca3ba9fa965f536bada5250d97e5abec9cf9c649643895300b175aa6d"
+    },
+    {
+      "path": "features/zoom-screen-focus/amendments/qcsd-r3-ux04.md",
+      "sha256": "1281fa3ea9636c6ee82eab950bf96cea8de2ffb94364f707621d39944c0161e3"
+    }
+  ],
+  "limits": [
+    "No new full test cycle; only changed document checks",
+    "No product code/tests, source admission, runtime, DB/S3, K1/K2 or gate mutations",
+    "Origin verification remains root/reviewer responsibility"
+  ]
+}
