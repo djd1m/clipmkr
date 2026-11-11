@@ -1,0 +1,14 @@
+{
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "status": "author-baseline-v1-not-approved",
+  "files": [
+    {
+      "path": "openspec/changes/zoom-screen-focus/proposal.md",
+      "sha256": "b276225f2d89aec0dc836ee12fe3af31eaa835fe862cf638020e86bbd0f630f8"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "9b16c1aae1306f768a228da0bce4ee78e4ccd9f685b30d1b992cf061af20aef2"
+    }
+  ]
+}

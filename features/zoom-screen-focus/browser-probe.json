@@ -1,0 +1,36 @@
+[
+  {
+    "width": 390,
+    "closed": true,
+    "layouts": [
+      "01",
+      "02",
+      "03"
+    ],
+    "confirmDisabledBeforeReview": true,
+    "draftAfterCancel": "03",
+    "horizontal": {
+      "document": 390,
+      "viewport": 390
+    },
+    "errors": [],
+    "externalRequests": 0
+  },
+  {
+    "width": 1440,
+    "closed": true,
+    "layouts": [
+      "01",
+      "02",
+      "03"
+    ],
+    "confirmDisabledBeforeReview": true,
+    "draftAfterCancel": "03",
+    "horizontal": {
+      "document": 1440,
+      "viewport": 1440
+    },
+    "errors": [],
+    "externalRequests": 0
+  }
+]
