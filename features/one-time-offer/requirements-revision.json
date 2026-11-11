@@ -1,0 +1,19 @@
+{
+  "status": "owner-authorized-exact-copy-correction",
+  "revision": "2026-11-11-r1",
+  "normativeSources": [
+    {
+      "path": "openspec/changes/one-time-offer/proposal.md",
+      "sha256": "ec9f65373079185cdad36ee1ad9f2f0ba26e4923a11b1fba3b18443406ebb779"
+    },
+    {
+      "path": "openspec/changes/one-time-offer/specs/one-time-offer/spec.md",
+      "sha256": "c86a38e28439c1fa35dda8071b39180cfba7b5b352d48f9fa1aa6fb77b419b7f"
+    },
+    {
+      "path": "openspec/changes/one-time-offer/.openspec.yaml",
+      "sha256": "b8f20def63a86ae4075c5499ff9ed413265d8704692a8493712424dc3f28d8e3"
+    }
+  ],
+  "excludedMutableLedger": "openspec/changes/one-time-offer/tasks.md"
+}
