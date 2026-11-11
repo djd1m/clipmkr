@@ -1,34 +1,22 @@
-# Передача финального плана Zoom после QCSD
+# Передача Zoom: checkpoint перед Phase B
 
-WORK_UNIT_ID: zoom-screen-focus-final-step6-20261111
+WORK_UNIT_ID: zoom-screen-focus-phase-b-readiness-20261111
 TRACE_PATH: /home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/architecture-handoff.md
-Status: plan-ready-task0-blocks-code-admission
-Планировщик `gpt-6-astra xhigh`, будущий автор кода `gpt-6.1-sol high`. Документ Step6 готов; workflow stage/checkpoint, K1/K2 и code GO автором не создавались.
+Status: phaseB-gates-complete-literal-read-and-root-GO-pending
+Планировщик gpt-6-astra xhigh; автор PhaseA gpt-6.1-sol high. Это фактическое обновление execution plan, не новая QCSD/design acceptance.
 
-## Установленное закрытие и текущий снимок
+Original SOURCE closed rounds2: revision3258a156402c6770b3c9d9446534205dc3a822faa6ee348727b7429b8c83628d, nonce30a1c508-14fb-44e3-a78a-81e9c1d67b5e. Accepted commit98e647e2cf4ee83eb38f2f5557fb8fc024386294, integrated merge c66b9ef4227580adad8fb5664c6a7650764518f1. Root receipt подтверждает83 Git blobs; файловая сверка текущего WT видит82 exact и ожидаемый vitest delta (accepted aliases+две прежниеPhaseA). Exact proof paths/SHA — snapshot. Это не новый Git/runtime прогон планировщика.
 
-Actual root R3 evaluate: exit0/closed, revision `e66723874cc112533766c6896c800786109567d430efd4f5a7ff1b30382acfdd`, nonce `0276c1f3-2f7b-4e38-96c4-10258020aca1`, unresolved/reasons[]. Все6 origin reports R3 существуют; UX-04 и первые10 условий имеют собственные verification. Raw result: `/root/.config/clipmkr/zoom-screen-focus-20261111/ideation-evaluate-r3.raw.json`.
+Canonical `packages/shared/src/server/original-source.ts` экспортирует `originalSourceRevision(videoId:string, objectKey:string, uploadId:string|null|undefined, actualBytes:string|bigint|number)`; import `@clipmaker/shared/server/original-source`, browser root re-export отсутствует. Accepted route экспортирует GET/HEAD; server original-file выдаёт metadata/sourceRevision и Range; OriginalSource смонтирован в VideoDetail. Его onPlay паузит sibling media в workspace-ready. TASK-5 ещё реализует/проверяет симметричную координацию трёх media. Zoom не получает write authority на Original leaf/route/OriginalSource; Original accepted23 editable — отдельная история.
 
-Core9 (00/01/02 research/ADR001–004/04/05) и OpenSpec не менялись при финализации. `design-dossier.json` сохранён побайтно как **исторический R3 design snapshot**, не новый manifest изменившегося06. Его копия и точные прежние06/handoff/README лежат в `history/ideation-r3-closed-plan/` (четыре файла, без рекурсивного архива). Новый `step6-plan-snapshot.json` отдельно фиксирует post-ideation plan SHA/status/пределы. Финальный06 не объявляется отдельно проверенным шестью origin reviewers.
+PhaseA шесть файлов есть; после early critique выполнен авторский rework,23 tests/types/lint PASS до merge. Пять файлов root сохранил побайтно; vitest merged aliases. Author reworkR2 исправил unused-focus01/02:25 checks/types/lint PASS, root freeze подтверждён; originating focused R2 завершён: exact counterexample исправлен, no new scoped findings; это не Source QE. Не выдавать прежний PASS за postmerge/full QE. Snapshot отделяет evidence от будущего fix.
 
-## TASK-0 — что ещё нужно до K1/K2 и кода
+PhaseB расширяет прежние40 editable ровно двумя existing producers: probe.ts для достоверного SAR/ADR-001 fallback и enums.ts для SQL_ENUMS миграции032. Tests/enums.test.ts — новый read-only measured guard; canonical catch-all/legacy exceptions не ослаблять.42 editable+20 read-only=62, XL;9 TASK/12 AM/11 IDs прежние. Source pins обновлены только для evidenced VideoDetail и design vitest integration delta; новые producer/guard hashes отдельно в snapshot. Остальные source/font/model pins сохранены.
 
-Независимая SOURCE-приёмка Original и интеграция принятой ревизии остаются **PENDING**. Наличие candidate кода и сообщённый Cloud/native Next E2E16/16 не доказывают итоговый accepted artifact после исправлений long-request/GC/default-timeout lifecycle. Чужой runtime результат Zoom не присваивается.
+Семантические requirements/4ADR/architecture/OpenSpec/approved UI не менялись. Historical R3 dossier сохранён. Все12 AM/test names, source privacy/retention/quota, mutation guards, independent QE/deployment/owner acceptance обязательны.
 
-Root должен получить genuine SOURCE QE/acceptance финального Original SHA, последовательно интегрировать его canonical server-only shared leaf, Original route, OriginalSource и VideoDetail, записать actual resulting revision/hashes и проверить sourceRevision/metadata/Range/media seam. Точный список — TASK-0 в06. В `step6-plan-snapshot.json` dependency proof пока явно null/pending; source pins обновляются после настоящей интеграции. Candidate из `/home/clipmkr-original-video` не импортируется и не считается accepted dependency.
+Reliable resume point: текущий06 + snapshot, HEAD по root integration proof c66b9ef4. Owner resumed; root-confirmed A freeze получен, current B gate package допускается. B K1/K2/admission/context/plan checkpoint прошли; full literal read прежним Sol и root GO pending, B writer не авторизован. Root завершает A finding/fix/recheck, сверяет current hashes и scope, выполняет actual supported B gates/context. Планировщик не запускает новые проверки, исходный код, Git, QE, receipts или runtime. Предыдущие7 документов сохранены в history/step6-before-phase-b-readiness/.
 
-Canonical helper: `packages/shared/src/server/original-source.ts`, export `originalSourceRevision`, import `@clipmaker/shared/server/original-source`; root re-export в browser index запрещён. Предоставленная root tentative сигнатура `(videoId:string, objectKey:string, uploadId:string|null|undefined, actualBytes:string|bigint|number)` должна быть сверена на принятом интегрированном source, не служит proof сама по себе. Дубликат helper/source route не создаётся.
+Текущее продолжение: `phase-b-readiness.md`; K1 только новыеB names. PhaseA/Original reuse не считать новым collision. Модель/кодер прежние, полного текущего context не усекать.
 
-Media seam проверяется на реальном интегрированном Original: native play capture в существующем Zoom parent либо тонкий callback обеспечивает каждый play preview/published/Original. Реализация относится к TASK-5 после допуска. Original16 editable targets не расширяются ради Zoom, дополнительные controls/pages не нужны. При выявлении реального нового contract issue — сообщить root до admission; закрытый core9 самостоятельно не переписывать.
-
-## Полнота плана и UI
-
-Финальный06 сохраняет TASK-0…8, AM-1…12, все11 condition IDs и non-vacuous test oracles, включая accepted→reload→failed recovery и cleanup только matching published draftVersion. EXPECTED_CODE_TARGETS содержит прежние59 уникальных путей:40 editable +19 read-only. Измерение read-only не разрешает их изменение; scope/XL не расширены.
-
-Согласованный selector SHA256 `76acda5003083138245031f5e96c6697e74844a8b5324e1007d397ac993eb1f0`, PNG и ui-approval сохранены.03 default,01/02 advanced и explicit confirmation прежние. Нормативные plaintext states R2 в существующих preview/status/confirmation областях не изменены и не объявлены отдельно просмотренными владельцем; их фактическая UI/screen-reader/wholeclip приёмка остаётся впереди.
-
-## Проверки и следующий переход
-
-Проверены только document integrity: closed core9 hashes, неизменность OpenSpec/UI/R3 dossier, trailing59 targets, сохранность11 conditions/AM и oracle markers, whitespace/docdiff и новые metadata hashes. Это не root K1/K2, source admission, независимый review финального06 или runtime PASS. Product code/tests/DB/S3/commit/push не выполнялись.
-
-Следующее действие root: genuine TASK-0→actual dependency proof/pins→supported stage/checkpoint/K1/K2→отдельный code GO. После реализации сохраняются один общий прогон stable revision, targeted repeats по риску, independent QE/fleet и human acceptance перед production boundary.
+Current package: `phase-b-readiness.md`; полный literal96 236B, SHA359c84b4f793311462c8a300d32c4e30402783a7e9282bd11316b63d90ecb7a2. Чтение предыдущего96262-byte context не переносится на эту редакцию. Future additional public names требуют K1 до объявления; source/architecture scope прежний.

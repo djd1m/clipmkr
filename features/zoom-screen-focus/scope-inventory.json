@@ -1,9 +1,9 @@
 {
   "meaning": "Планируемые editable targets отдельно от явно названных read-only dependencies/regression files; остальные исследовательские чтения не являются targets",
-  "editableCount": 40,
-  "editableExistingCount": 26,
-  "editableNewCount": 14,
-  "readOnlyCount": 19,
+  "editableCount": 42,
+  "editableExistingCount": 33,
+  "editableNewCount": 9,
+  "readOnlyCount": 20,
   "editable": [
     "packages/shared/src/screen-layout.ts",
     "packages/shared/src/cut-timeline.ts",
@@ -44,7 +44,9 @@
     "tests/queue-redis.integration.test.ts",
     "scripts/test-framing-mutations.mjs",
     "vitest.config.ts",
-    "vitest.browser.config.ts"
+    "vitest.browser.config.ts",
+    "apps/worker/src/render/probe.ts",
+    "packages/shared/src/enums.ts"
   ],
   "readOnly": [
     "apps/web/src/server/clip-music.ts",
@@ -65,7 +67,8 @@
     "tests/framing-media.test.ts",
     "tests/render-failure.test.ts",
     "tests/render-storage.test.ts",
-    "tests/render.integration.test.ts"
+    "tests/render.integration.test.ts",
+    "tests/enums.test.ts"
   ],
   "originalOwnedDependency": {
     "path": "packages/shared/src/server/original-source.ts",
@@ -78,6 +81,21 @@
     "score": 16,
     "scoreBand": "L",
     "quickDecisionTree": "XL because editable files >=30",
-    "rootDecision": "Use conservative XL; real checkpoints remain pending"
+    "rootDecision": "XL retained; current PhaseB gates pending; historical PhaseA admission retained in execution snapshot"
+  },
+  "existenceCountBasis": "Current integrated working tree; five originally new PhaseA files now exist. Initial design creation classes preserved in history.",
+  "phaseBReadinessDelta": {
+    "at": "2026-11-11T18:55:11.520744+00:00",
+    "integratedRevision": "c66b9ef4227580adad8fb5664c6a7650764518f1",
+    "addedEditable": [
+      "apps/worker/src/render/probe.ts",
+      "packages/shared/src/enums.ts"
+    ],
+    "addedReadOnly": [
+      "tests/enums.test.ts"
+    ],
+    "reason": "Existing ADR-001 SAR producer and migration032 canonical CHECK enums coverage; catch-all guard remains unchanged",
+    "tier": "XL",
+    "phaseBCodeAdmission": false
   }
 }

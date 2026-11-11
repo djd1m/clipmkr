@@ -1,0 +1,322 @@
+{
+  "status": "post-ideation-step6-phaseA-gates-pending-phaseB-task0-blocked",
+  "createdAtUtc": "2026-11-11T17:09:44.460654+00:00",
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "planner": "gpt-6-astra xhigh",
+  "coder": "gpt-6.1-sol high",
+  "stage6DocumentReady": true,
+  "stage6Checkpoint": "pending-root-supported-command",
+  "codeAdmission": false,
+  "gates": {
+    "Task0": "pending-actual-Original-SOURCE-acceptance-and-integration-before-PhaseB",
+    "K1": "pending-before-PhaseA",
+    "K2": "pending-before-PhaseA",
+    "rootCodeGO": "not-issued"
+  },
+  "ideation": {
+    "nonce": "0276c1f3-2f7b-4e38-96c4-10258020aca1",
+    "revision": "e66723874cc112533766c6896c800786109567d430efd4f5a7ff1b30382acfdd",
+    "evaluateVerdict": "closed",
+    "rootReportedExitCode": 0,
+    "unresolved": [],
+    "rawResultPath": "/root/.config/clipmkr/zoom-screen-focus-20261111/ideation-evaluate-r3.raw.json",
+    "rawResultSha256": "ce82fdcc673fa033cc2218d820c32f3e081112c78d903e9bb176990035944c5b",
+    "hostPath": "features/zoom-screen-focus/.fa-state/review-convergence-ideation-host.json",
+    "reviewPath": "features/zoom-screen-focus/.fa-state/review-convergence-ideation-review.json",
+    "conditions": [
+      "ACC-01",
+      "ACC-02",
+      "ACC-03",
+      "RISK-01",
+      "SEC-01",
+      "SEC-02",
+      "TST-01",
+      "UX-01",
+      "UX-02",
+      "UX-03",
+      "UX-04"
+    ],
+    "scope": "Closed core9; final06 is a later planner artifact, not separately independently reviewed by six origins"
+  },
+  "canonicalIdeationReport": {
+    "path": "features/zoom-screen-focus/03.5_ideation_report.md",
+    "owner": "root",
+    "mutationByPlanner": false,
+    "note": "Root-authored canonical Step3.5 report; excluded from planner-owned freeze while root prepares it"
+  },
+  "closedCoreManifest": [
+    {
+      "path": "features/zoom-screen-focus/00_complexity_assessment.md",
+      "digest": "b1e0bfff540b8305008f7b16bf47b50a08b9315632baa6ff9f056d120ab0d635"
+    },
+    {
+      "path": "features/zoom-screen-focus/01_requirements.md",
+      "digest": "5464fbeaf78cb01e21440186e89d683903837a4043e7580f30e7937496bd0219"
+    },
+    {
+      "path": "features/zoom-screen-focus/02_research.md",
+      "digest": "35acaf4a9f4a5fcad9bfdb591043134a01122dd6eb2b1c6907541218f8df13e9"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/001-compose-confirmed-source-regions.md",
+      "digest": "1130c07890eb4643e4ed724204bb7d06f4cc3e89fdd569ffeb5f29b1f4811583"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/002-persist-fenced-layout-intents.md",
+      "digest": "92f83aa54c70be194b90b695b4db70a89fdbeb69c0db10012a7e9a2d451975c5"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+      "digest": "8af1603968eac40106712e9bffcbbc48dab855392a4a0c43eef21d9e5ee1c3ef"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/004-cache-bounded-camera-seeds.md",
+      "digest": "03dab088aafb6ee22fe8fa60de68a5b6574f6250233f21ab5f2a1d69c0502f8b"
+    },
+    {
+      "path": "features/zoom-screen-focus/04_domain_model.md",
+      "digest": "fc60cec149fd9312ed9afb12fa0a2d8d4863557479662d26ad263531189eb718"
+    },
+    {
+      "path": "features/zoom-screen-focus/05_architecture.md",
+      "digest": "2daa5b4b8b14146b02bea42ab954561c82fbed9e8acbfe0260a27fdc47e592a8"
+    }
+  ],
+  "historicalDesignDossier": {
+    "path": "features/zoom-screen-focus/design-dossier.json",
+    "sha256": "eadcae9e104befc6a2808aa6539ac948e6002f9ebdc125454edc85c558c03654",
+    "archivedPath": "features/zoom-screen-focus/history/ideation-r3-closed-plan/features/zoom-screen-focus/design-dossier.json",
+    "note": "Preserved R3 historical snapshot; not a live manifest of final06"
+  },
+  "priorPlanArchive": {
+    "path": "features/zoom-screen-focus/history/ideation-r3-closed-plan/snapshot.json",
+    "sha256": "4a53e3ff4bf977d0d1aeef0c3b0c99e95c1a034ee77a722d9d3437dcd3783e46",
+    "files": 4
+  },
+  "task0DependencyProof": {
+    "state": "pending",
+    "originalSourceAcceptanceReceipt": null,
+    "acceptedOriginalRevision": null,
+    "integratedRevision": null,
+    "integratedSourceHashes": null,
+    "rootDependencyCheck": null,
+    "todo": [
+      "Obtain actual independent SOURCE acceptance of final Original artifact after last lifecycle fixes",
+      "Integrate that accepted revision including canonical leaf/route/OriginalSource/VideoDetail",
+      "Record exact resulting revision and hashes, verify unchanged sourceRevision/metadata/Range/server-only import/media seam",
+      "Update actual proof/source pins after accepted integration; root reruns current PhaseB admission/context. PhaseA has separate genuine checkpoint/K1/K2/admission/full-context/root-GO prerequisites."
+    ],
+    "originalExpectedPaths": [
+      "packages/shared/src/server/original-source.ts",
+      "apps/web/src/app/api/videos/[videoId]/original/route.ts",
+      "apps/web/src/app/videos/[videoId]/OriginalSource.tsx",
+      "apps/web/src/app/videos/[videoId]/VideoDetail.tsx"
+    ],
+    "tentativeWorktreeNotAccepted": "/home/clipmkr-original-video",
+    "candidateE2ENotAcceptance": true,
+    "originalEditableAuthorityNotExpanded": 16,
+    "blocksPhase": "B"
+  },
+  "measuredTargets": 59,
+  "editableTargets": 40,
+  "readOnlyTargets": 19,
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "85339c04e8afb53ee45bccb782b64de97e17945f0b61d7a3cc67dee8677964d4"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "sha256": "901ab427798111bff96a20bb62092f988bd1815b34ec7acfe52d9713d1f0991f"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "sha256": "cd40740e84730707a3e2353142adf80c088e9e460ed9e5d0084f37a1b8b03c17"
+    },
+    {
+      "path": "features/zoom-screen-focus/requirements-revision.json",
+      "sha256": "5f5be3a9c21609634df8079ece73c4833dfeb944c57d3ed2142f6cd35078013f"
+    },
+    {
+      "path": "features/zoom-screen-focus/source-pins.json",
+      "sha256": "361d560176cd04afccdf9e0e2651a04b2468e93cd0b1d3398f6a2968d3286b07"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "4b8e1a6ca3ba9fa965f536bada5250d97e5abec9cf9c649643895300b175aa6d"
+    },
+    {
+      "path": "features/zoom-screen-focus/scope-inventory.json",
+      "sha256": "a51984aad553a7abb83a01116db1b86f8b29c2371dd1dddbb7c2e51d1b4b1034"
+    }
+  ],
+  "checks": {
+    "terminal": "PARALLEL PURE PLAN INTEGRITY AND READINESS PASS",
+    "exitCode": 0,
+    "core9Unchanged": true,
+    "OpenSpecUnchanged": true,
+    "approvedUiUnchanged": true,
+    "historicalDossierUnchanged": true,
+    "taskCount": 9,
+    "amendmentCount": 12,
+    "preservedConditionCount": 11,
+    "amendmentOraclesUnchanged": true,
+    "measuredTargets": 59,
+    "editable": 40,
+    "readOnly": 19,
+    "gitDiffCheckExitCode": 0,
+    "noIndexDiffMeaning": "exit1 means changed files; no whitespace diagnostics",
+    "notRun": [
+      "K1",
+      "K2",
+      "SOURCE admission",
+      "product tests",
+      "DB/S3/runtime",
+      "commit/push"
+    ],
+    "OpenSpecStrictRerun": "not needed: spec bytes unchanged from R3 strict exit0",
+    "wordingCompression": "12AM rows and raw59-target block exact; full requirements/ADR Decision/Confirmation plus current plan in complete literal94937bytes",
+    "phaseAAllowlistSubsetOfExistingEditable": true,
+    "phaseAAllowlistCount": 6,
+    "phaseAImplemented": false,
+    "phaseBTask0StillPending": true,
+    "phaseOrderingOnlyCore9Unchanged": true,
+    "docDiffWhitespaceChecks": [
+      {
+        "path": "06_implementation_plan.md",
+        "exitCode": 1,
+        "whitespaceDiagnostics": []
+      },
+      {
+        "path": "README.md",
+        "exitCode": 1,
+        "whitespaceDiagnostics": []
+      },
+      {
+        "path": "architecture-handoff.md",
+        "exitCode": 1,
+        "whitespaceDiagnostics": []
+      }
+    ]
+  },
+  "wordingRevisionAtUtc": "2026-11-11T17:36:12.103519+00:00",
+  "instrumentalPlanRevision": {
+    "classification": "Engineering phase ordering plus repeated-prose compression; core9 contracts unchanged",
+    "previousPlanBytes": 19302,
+    "currentPlanBytes": 16453,
+    "previousPlanArchive": {
+      "path": "features/zoom-screen-focus/history/step6-before-parallel-pure/snapshot.json",
+      "sha256": "e2dae015227068345e3791a4d49aaadc456374747b9c8080bfd261169d1a7d09"
+    },
+    "tasks": 9,
+    "exactAmendmentRowsPreserved": 12,
+    "preservedConditionIds": 11,
+    "targets": {
+      "measured": 59,
+      "editable": 40,
+      "readOnly": 19
+    },
+    "readinessOnly": true,
+    "sourcePreflight": {
+      "command": "node /home/clipmkr/.agents/skills/feature-adr/scripts/check-code-targets.mjs --repo /home/clipmkr-zoom-screen-focus --feature /home/clipmkr-zoom-screen-focus/features/zoom-screen-focus",
+      "status": "admitted",
+      "exitCode": 0,
+      "reusableCodeAdmission": false
+    },
+    "coderContext": {
+      "command": "node /home/clipmkr/.agents/skills/feature-adr/scripts/build-coder-context.mjs /home/clipmkr-zoom-screen-focus/features/zoom-screen-focus --tier=XL",
+      "status": "complete",
+      "exitCode": 0,
+      "promptBytes": 94937,
+      "limitBytes": 98304,
+      "requestedMaximumBytes": 95000,
+      "headroomBytes": 3367,
+      "promptSha256": "f9af98e928cb9e084b492cd90d272a807d4ab8a1df9d3aca7df597039208f6ab",
+      "contextDigest": "e47022a12b4145353d1f9d6e76436961bf581c08c085c8ec2b9ab76f3b79e211",
+      "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/readiness-parallel-pure.prompt.md",
+      "rawPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/readiness-parallel-pure-context.raw.json",
+      "diagnostics": [],
+      "literalTruncated": false,
+      "limitRaised": false
+    },
+    "helperHashes": {
+      "check-code-targets.mjs": "bfbad12b54508d5d4c71de640c5e19b3d19317f660e2986d02338ef502f8007e",
+      "build-coder-context.mjs": "19c3991bfb5e88205c9ff6d4d44037c136a190581bab199d3928196e4616fe15"
+    },
+    "readinessResultsPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/readiness-parallel-pure-results.json",
+    "gateBoundary": "PhaseA gates/root GO pending; PhaseB additionally requires genuine Task0 and fresh admission/context"
+  },
+  "phaseOrderingRevisionAtUtc": "2026-11-11T18:00:23.665170+00:00",
+  "phaseOrdering": {
+    "reason": "Root-requested engineering dependency optimization after independent delivery-time audit; no core9 requirement or architecture change",
+    "PhaseA": {
+      "status": "gates-pending",
+      "codeWritten": false,
+      "codeAdmission": false,
+      "allowedFiles": [
+        "packages/shared/src/screen-layout.ts",
+        "packages/shared/src/cut-timeline.ts",
+        "apps/worker/src/render/screen-layout.ts",
+        "tests/screen-layout.test.ts",
+        "tests/screen-layout-media.test.ts",
+        "vitest.config.ts"
+      ],
+      "partTasks": [
+        "TASK-1A",
+        "TASK-4A"
+      ],
+      "requiredBeforeCode": [
+        "actual supported stages/checkpoints",
+        "genuine K1",
+        "genuine K2",
+        "actual source admission",
+        "full actual coder context",
+        "explicit root PhaseA GO"
+      ],
+      "scope": "Pure values/geometry; unchanged timing extraction with read-only parity; isolated FFmpeg graph with controlled observations; local synthetic unit/media tests; vitest aliases only",
+      "forbidden": [
+        "legacy wiring including compaction re-export",
+        "DB/RPC/queue/publish/UI/Original leaf changes",
+        "S3/PG/HTTP/jobs/model or detector calls"
+      ],
+      "testLimit": "Pure/isolated checks do not establish seed/detector/integration/publish or whole-feature coverage"
+    },
+    "PhaseB": {
+      "status": "blocked-on-Task0",
+      "requires": [
+        "actual final Original SOURCE acceptance",
+        "integration of accepted Original and exact proof/pins",
+        "fresh current phase admission/context and root authorization"
+      ],
+      "tasks": [
+        "TASK-1B",
+        "TASK-2",
+        "TASK-3",
+        "TASK-4B",
+        "TASK-5",
+        "TASK-6",
+        "TASK-7",
+        "TASK-8"
+      ],
+      "task4LateOnly": [
+        "DB input",
+        "camera detector/veto integration",
+        "fence",
+        "publish",
+        "legacy FFmpeg/teaser/render-worker wiring"
+      ]
+    },
+    "dag": "gates→1A→4A parallel Original/0; {0,1A}→1B→2; {1B,2}→3; {0,1B,2,4A}→4B; {0,1B,2,3}→5;4B→6;{3,4B,5,6}→7→8",
+    "priorPlanArchive": {
+      "path": "features/zoom-screen-focus/history/step6-before-parallel-pure/snapshot.json",
+      "sha256": "e2dae015227068345e3791a4d49aaadc456374747b9c8080bfd261169d1a7d09"
+    },
+    "taskCountUnchanged": 9,
+    "scopeUnchanged": {
+      "editable": 40,
+      "readOnly": 19,
+      "measured": 59,
+      "tier": "XL"
+    }
+  }
+}

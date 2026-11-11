@@ -84,7 +84,7 @@
     },
     {
       "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
-      "sha256": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da"
+      "sha256": "80031dfc619466da8aaaa036f27bea50faf9a4f34629731056473c554185b4d2"
     },
     {
       "path": "tests/render.test.ts",
@@ -100,7 +100,7 @@
     },
     {
       "path": "vitest.config.ts",
-      "sha256": "0f477caafa30da594689d6e8e3864697945a0fd9a495ed880f808b6dbb014019"
+      "sha256": "f24957a363183aff6dde4b6338d3ea0dea5ea613200484254b3edfe0218ea75d"
     },
     {
       "path": "vitest.browser.config.ts",
@@ -172,5 +172,37 @@
   ],
   "runtimePolicyEvidence": "features/zoom-screen-focus/amendments/r2-source-evidence.json",
   "r3ReadOnlyConfirmedAtUtc": "2026-11-11T16:56:21.359347+00:00",
-  "r3ScopeNote": "UX-04 document-only correction;26 existing source pins unchanged; tentative Original implementation is not imported or added as accepted source"
+  "r3ScopeNote": "Historical R3 read-only check preserved above; current accepted Original integration changes are separately recorded in originalIntegrationUpdate.",
+  "originalIntegrationUpdate": {
+    "at": "2026-11-11T18:55:11.520744+00:00",
+    "acceptedCommit": "98e647e2cf4ee83eb38f2f5557fb8fc024386294",
+    "integratedRevision": "c66b9ef4227580adad8fb5664c6a7650764518f1",
+    "sourceReceipt": {
+      "path": "/root/.config/clipmkr/original-video-access-20261111/source-qe-closed.raw.json",
+      "sha256": "d2ccc2d5d9d9e77be561427cbd9ef385aab2e122b19cd7906c8df10bcc842040"
+    },
+    "integrationProof": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/original-integration/integration-result.private.json",
+      "sha256": "87dabcfd925a0cb15ed5947711c11c818d0372b3779f1165cdf2eb8c8a2e7f0e"
+    },
+    "previousPins": {
+      "path": "features/zoom-screen-focus/history/step6-before-phase-b-readiness/features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "4b8e1a6ca3ba9fa965f536bada5250d97e5abec9cf9c649643895300b175aa6d"
+    },
+    "changed": [
+      {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "before": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da",
+        "after": "80031dfc619466da8aaaa036f27bea50faf9a4f34629731056473c554185b4d2",
+        "basis": "accepted Original SOURCE"
+      },
+      {
+        "path": "vitest.config.ts",
+        "before": "0f477caafa30da594689d6e8e3864697945a0fd9a495ed880f808b6dbb014019",
+        "after": "f24957a363183aff6dde4b6338d3ea0dea5ea613200484254b3edfe0218ea75d",
+        "basis": "root integration: accepted Original aliases plus unchanged PhaseA aliases; not byte-identical Original SOURCE config"
+      }
+    ],
+    "unrelatedPinsPreserved": true
+  }
 }

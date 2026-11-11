@@ -1,0 +1,27 @@
+{
+  "purpose": "Preserve19302-byte plan and Step6 metadata before dependency-only parallel pure PhaseA revision",
+  "createdAtUtc": "2026-11-11T17:56:37.371100+00:00",
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "bytes": 19302,
+      "sha256": "94464019af8f483ee5996de09b7529c88a76630968eb70cfbbdfcc1d2b1df836"
+    },
+    {
+      "path": "features/zoom-screen-focus/step6-plan-snapshot.json",
+      "bytes": 9502,
+      "sha256": "cfe86e29a7475b9e2bb8906c966e48a49d507daf3466deb5ff645691dd671f0f"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "bytes": 3196,
+      "sha256": "4d4c2d674db637422b3e336b00975ce606cf565a93eb94297f1f400ec62eccb8"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "bytes": 6030,
+      "sha256": "e40ea0335610280810cff7ce015208a39b26de5569ffe16cad1154eae56a681e"
+    }
+  ],
+  "core9MustRemainUnchanged": true
+}

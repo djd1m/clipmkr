@@ -1,0 +1,41 @@
+{
+  "purpose": "Preserve pre-integration Step6/pins/scope before factual PhaseB readiness update",
+  "createdAtUtc": "2026-11-11T18:52:35.777014+00:00",
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "bytes": 16453,
+      "sha256": "85339c04e8afb53ee45bccb782b64de97e17945f0b61d7a3cc67dee8677964d4"
+    },
+    {
+      "path": "features/zoom-screen-focus/step6-plan-snapshot.json",
+      "bytes": 12890,
+      "sha256": "f304ab37b007a1023e628586c2bc4d607ecb4076002ff50ccc757b0031e91b84"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "bytes": 3826,
+      "sha256": "cd40740e84730707a3e2353142adf80c088e9e460ed9e5d0084f37a1b8b03c17"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "bytes": 7732,
+      "sha256": "901ab427798111bff96a20bb62092f988bd1815b34ec7acfe52d9713d1f0991f"
+    },
+    {
+      "path": "features/zoom-screen-focus/source-pins.json",
+      "bytes": 2955,
+      "sha256": "361d560176cd04afccdf9e0e2651a04b2468e93cd0b1d3398f6a2968d3286b07"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "bytes": 6601,
+      "sha256": "4b8e1a6ca3ba9fa965f536bada5250d97e5abec9cf9c649643895300b175aa6d"
+    },
+    {
+      "path": "features/zoom-screen-focus/scope-inventory.json",
+      "bytes": 3321,
+      "sha256": "a51984aad553a7abb83a01116db1b86f8b29c2371dd1dddbb7c2e51d1b4b1034"
+    }
+  ]
+}
