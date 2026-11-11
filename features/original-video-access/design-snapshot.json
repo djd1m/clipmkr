@@ -1,0 +1,432 @@
+{
+  "schema": "original-video-design-snapshot-1",
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "worktreeHead": "3603be73ba4fc32d43f611885a4ac89faeaaa80d",
+  "authorSession": "/root/original_video_final_plan",
+  "modelRequested": "gpt-6-astra",
+  "reasoningRequested": "xhigh",
+  "purpose": "Post-ideation final Step 6 handoff; documentary updates after actual R2 closure and accepted-base integration; this is not the reviewed R2 snapshot",
+  "artifacts": [
+    {
+      "path": "openspec/changes/original-video-access/proposal.md",
+      "sha256": "83d8b4cb37fdedb0aad89b445b406b23e361c52b2f6f41a99c29ac95ed8da5f3"
+    },
+    {
+      "path": "openspec/changes/original-video-access/specs/original-video-access/spec.md",
+      "sha256": "87dd40a3cb7ae5975dd25385a01808137011cb2fe694b829ec8ce04ee35ac77f"
+    },
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "959179ee8f7a515535c4fdfec0ee99b6e4a0b2f040a580e638e169f2d2609ad9"
+    },
+    {
+      "path": "features/original-video-access/02_reuse_inventory.md",
+      "sha256": "6c5d458318ca41084e3b14866169094bff53ca4702374357b1c00cd93bb09952"
+    },
+    {
+      "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+      "sha256": "23c59360d4c9d93e9f72fb347561261921aae652de9457ac354064ee2aab9fbd"
+    },
+    {
+      "path": "features/original-video-access/03_shift_left_validation.md",
+      "sha256": "7aab7e154e0a436449e3eaf4491aa3794b0751486b21bc3392505c9bcb200717"
+    },
+    {
+      "path": "features/original-video-access/05_architecture.md",
+      "sha256": "179fe241dcda4f1b14d4ff8a24bc09d991fc4b5f03c81e204f54dc8c74443a78"
+    },
+    {
+      "path": "features/original-video-access/06_implementation_plan.md",
+      "sha256": "578f2b173ad8d5513a10b1804fd69c3c3bbcf13697e9bc0c05620c29c579b9ea"
+    },
+    {
+      "path": "docs/research/original-video-access/mockup.html",
+      "sha256": "ddfedb3cf797237955f044c22d5663cb07af8663771ed7c9cf03fc675484c174"
+    },
+    {
+      "path": "docs/research/original-video-access/states.html",
+      "sha256": "6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953"
+    },
+    {
+      "path": "features/original-video-access/requirements-pin.json",
+      "sha256": "73543640d627d7a31d47a779751728b1cbcb888d84b23a9b07ae7d594b06889d"
+    },
+    {
+      "path": "features/original-video-access/README.md",
+      "sha256": "d92babfbee2c1aae7000d0f886d4d68d2c50e0de36fcabf9a6781ba3b0aaf73f"
+    },
+    {
+      "path": "features/original-video-access/planning-handoff.md",
+      "sha256": "d612093758edb8bdd8740b9b2a444f127ca8e23ebd7cb33e7dc1915a802d565e"
+    },
+    {
+      "path": "docs/research/original-video-access/states/README.md",
+      "sha256": "1523d9209cfd2c766a50643e41847f8ab481c4fdd8b0286797ab0ee9ff8f3a3e"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-dark-1440.png",
+      "sha256": "2183421930fa8599ed5032ee51493d6444fc072a387cfaa0af27e70d150388eb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-dark-390.png",
+      "sha256": "799a4d662bab07be1f83fc9d8f23ba6bc82113df58da38089f996d8d311bc2f8"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-light-1440.png",
+      "sha256": "216663e9beec3bded676acb2fd8a4a22a40793dc9e35225ffa712f6fac4d6932"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-light-390.png",
+      "sha256": "f8fbadf8f103a26f3fcfcd8f083e45be1c1d3d3d3e0ce54093d2e8268c2b3a7d"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-dark-1440.png",
+      "sha256": "eebe8512d3d806138059599dc0231ffca28d01406a4ee7a442481ac472a140ba"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-dark-390.png",
+      "sha256": "4baeb8df3e55cba699551a0be36b0b062893aebe5346818b1e0bce0ef93a9ae1"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-light-1440.png",
+      "sha256": "ba6efe666a849d8203755b71141f946189be312c4541cfde8b1577a608bc20ce"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-light-390.png",
+      "sha256": "9b3801232cbeaab0efa268aa658349ba7716960a007b94d5eaf966449e2324d3"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-dark-1440.png",
+      "sha256": "efa6a6fd68d00b1dd149ae6164ddb52fbdada4fbc5f89f992e146447f93a59a0"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-dark-390.png",
+      "sha256": "f4c9d7709d2dbff1045a8fe048ef80c4907e1f344d12df3f7371beda0520ebe1"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-light-1440.png",
+      "sha256": "bc415ed5276def82f426f7e7788d35ae66841372dc11ef3e654afd97a57813be"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-light-390.png",
+      "sha256": "624f60063cf9f1728e061c8a7a00c858022320033393444ffccf1d2c0b266a66"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-dark-1440.png",
+      "sha256": "2497aa12916fbb4d040959669622be55614e459e7862211a021d4e5265267c16"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-dark-390.png",
+      "sha256": "75d6e1b238f44f284a5ba0822c8569553bab649f9e3c2de774dc9b520f996a87"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-light-1440.png",
+      "sha256": "1d0ed67d8e9156857b802ca8f582407f2f13b809822264fa04ce3aa5ce63f252"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-light-390.png",
+      "sha256": "edd068cf9c97fbf43aead615cd0bd026e5d0487598f235786b67fd1dc21377e5"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-dark-1440.png",
+      "sha256": "75954e02aac5500643ef1bacef0ca8b6255c6aa024bfecc811ee9f07c32b6295"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-dark-390.png",
+      "sha256": "f3bb79b6eafc1add889c1d35ab174b34ffd6c4e089f7b5a2e35744297be3875c"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-light-1440.png",
+      "sha256": "ee3a4e7508184e305dec4804ccb4f02ac0c297a425a1ab3a7809d752da5a3839"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-light-390.png",
+      "sha256": "b35532dde71186a54b4f1d9dbb8169ec2fb656adc56e2a061841bdfb27a580e2"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-dark-1440.png",
+      "sha256": "37df19613c21cd9d8b2e2d7c8b97432ded1d14f21092ca5c4e181f8bb56e8307"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-dark-390.png",
+      "sha256": "7b71e38dd1871235261392723df81ef922618fb584fc658df776b0e47b55ba94"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-light-1440.png",
+      "sha256": "5d4ed757fa1afbcae4404a466615c3ad31a05a57b466bbb483843d7896688684"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-light-390.png",
+      "sha256": "4c5fe4fa9ea39eeb72974d29116280fa7291d59bc5294c90fc6b9122faddb5cb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-dark-1440.png",
+      "sha256": "c41b0159142b18a5b3d356c7a946afedb5a58837a103f33139fd69a1f119570b"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-dark-390.png",
+      "sha256": "416083bb330133e9aa2fc16dbcaa5de471cab83d860fb68ba7c5ea3ba2e0cbb9"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-light-1440.png",
+      "sha256": "68a12fa0771deb742b17eb4c64d5a2df9ea30bd278e9defa7b2774ac8f24fa06"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-light-390.png",
+      "sha256": "8fdefb5900b603fc39d240e164130ae9200b05faa11030c8b3277d3920801af9"
+    },
+    {
+      "path": "docs/research/original-video-access/states/probe-result.json",
+      "sha256": "3151e98cd926b6b261e10fc56bd6e18942d7289f6291ddd8438c38faf5436474"
+    },
+    {
+      "path": "docs/research/original-video-access/states/probe.cjs",
+      "sha256": "01071fc579b67d3f659b67ddf8f7cb8db11cb00b82f8ca228fcba941a2979be8"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-dark-1440.png",
+      "sha256": "c9f02ea18a40e20ffd78bc9b384a34ecd2d1cd8adfa7e66365e8d005a15a3af9"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-dark-390.png",
+      "sha256": "f7138efb3b7eb8390e4d1fed70cb8df7614309688b2ed3bcbb2f609c68ef810b"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-light-1440.png",
+      "sha256": "6f5267d286e8d27d940b61af4aeec468a92f3ce4ac258046b3096850dce41a2f"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-light-390.png",
+      "sha256": "315f2c67f966b3a440d0c0b0dad01fb2440aeaf9a526e0767d583c1a24053739"
+    },
+    {
+      "path": "features/original-video-access/03.5_ideation_report.md",
+      "sha256": "705b99eecf1751e9fe2d58ca0c90aa5dfd7a2dbd0b28420707cb92988482fd9b"
+    },
+    {
+      "path": "features/original-video-access/dependency-recheck.md",
+      "sha256": "7953730d27459a5a66ddc61d2cf31de8287930710864ba3c7d2285a7c6fe34b4"
+    },
+    {
+      "path": "features/original-video-access/reviews/qcsd-quality-r2.md",
+      "sha256": "de8c8806713827eb544633586e1b209d30c9e63b3ead63266eb3bc33ab66311e"
+    },
+    {
+      "path": "features/original-video-access/reviews/qcsd-risk-r2.md",
+      "sha256": "bce6ac999e17180eba8f0e451bed4d17b22354252a3fa261b258ec58e38da1b5"
+    },
+    {
+      "path": "features/original-video-access/reviews/qcsd-testability-r2.md",
+      "sha256": "e2e173dacbe5f1a885c2d51dca21482bc9b7d99efb02ff39b738f66ce8a8127a"
+    },
+    {
+      "path": "features/original-video-access/history/step6-before-final/06_implementation_plan.md",
+      "sha256": "79425cc3e573b11faa4235860b6735cf493a6bc1cbb8249e748fde43b91b6cee"
+    },
+    {
+      "path": "features/original-video-access/history/step6-before-final/requirements-pin.json",
+      "sha256": "93e15d0420f4cf9bd724bdf10cce53fcc7f25b2d88175bf0d42350f6dca768e5"
+    },
+    {
+      "path": "features/original-video-access/history/step6-before-final/design-snapshot.json",
+      "sha256": "0138da0500ed1c7b64c83398d56727fba2fd6ff66dd73517a1b8e49eab56d4f5"
+    },
+    {
+      "path": "features/original-video-access/ui-approval.md",
+      "sha256": "38bcb0c3efcb5dcedfb9530de97f526371b9705b0728fd3f06d4f03064cc9ed9"
+    },
+    {
+      "path": "features/original-video-access/history/step6-before-ui-approval/06_implementation_plan.md",
+      "sha256": "51d6a247537c40b3a895c7df5ca7f5749d4b6a3a3437a9e6a8491fc6092ccf3d"
+    },
+    {
+      "path": "features/original-video-access/history/step6-before-ui-approval/requirements-pin.json",
+      "sha256": "9ee1e1ebd0f33083e7e1363ea2129b758c027bcc24f548d25f8a20ecb1758706"
+    },
+    {
+      "path": "features/original-video-access/history/step6-before-ui-approval/design-snapshot.json",
+      "sha256": "6550ac613901ac307db2c69fcb43f985afedf4b7e7facfe1eda8c5894deac33f"
+    }
+  ],
+  "readOnlyDependencies": [
+    {
+      "path": "apps/web/src/server/clip-file.ts",
+      "sha256": "8ebe2f60c96bc6b29d41df26370c0a97315fa2a8cb56824755480cf56d34a23d"
+    },
+    {
+      "path": "apps/web/src/server/guest-file.ts",
+      "sha256": "19bd437dfd3b53dca0611a95cca8eac23639c2fe9a872de8289b61dacae07590"
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "sha256": "af1203f377673acf8da11044834d2efcef870acca8a4a5d423a237cc34a8ffe3"
+    },
+    {
+      "path": "apps/web/src/server/media-type.ts",
+      "sha256": "898fa78965975961dec0e208966a4dbc5f795f4e7406b07b344c2097cd59d15b"
+    },
+    {
+      "path": "apps/web/src/server/video.ts",
+      "sha256": "3a533a0339722f8d90e985108877a24621e0b1d070ae0648602457135378862c"
+    },
+    {
+      "path": "apps/web/src/server/upload-runtime.ts",
+      "sha256": "60f4132a35b2301cdcc87838e4aad1c1d683e27cb35bdedec865a3cb920ccdd6"
+    },
+    {
+      "path": "apps/web/src/server/retention.ts",
+      "sha256": "804427d35348f9ce07300086e3daade1c814d650cbf74a88c97b6641ef2ee77d"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "sha256": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "sha256": "7a450be39c1b8e393db424bb20a3e97ac56799b339d5e08212fab393162ce9b4"
+    },
+    {
+      "path": "packages/s3/src/client.ts",
+      "sha256": "26cacf63dc70d341668ab849ad2b45461c259ce48ccf1045ada5685482bfc754"
+    },
+    {
+      "path": "packages/s3/src/operations.ts",
+      "sha256": "ecf5a0a284d6f3b833cf31adb48d15ee344dca0db1823a1eb69ba686bdb5e0fe"
+    },
+    {
+      "path": "packages/s3/src/presign.ts",
+      "sha256": "c3a0adff02383a264556bd4e59998cbb756ed4cccef35482c264f37343b3df3e"
+    },
+    {
+      "path": "packages/db/migrations/001_init.sql",
+      "sha256": "96e64cf44ca9e1842b524f4047344406e647b150e3eb4f628d83b8bdae79a107"
+    },
+    {
+      "path": "tests/fixtures/environment.ts",
+      "sha256": "30187822659a1caa60a00f72b7f649a1b4e44bd130fad163cba1c084d8bba77b"
+    },
+    {
+      "path": "tests/browser/ux-simplification.test.ts",
+      "sha256": "5d787d03d7de502580bde10f7a87623706e9d6c0b7f7b8447420fcde135e8c30"
+    },
+    {
+      "path": "scripts/test-retention-mutations.mjs",
+      "sha256": "3fe8eda659c526c975481b5797c8d7916f9a01f1f4aac0dde168738462a750c8"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "0f477caafa30da594689d6e8e3864697945a0fd9a495ed880f808b6dbb014019"
+    },
+    {
+      "path": "vitest.browser.config.ts",
+      "sha256": "7094074a8c9e642184fd7f1fa4335ebd46d96b8eb6a1fad1d210329f23128b2c"
+    },
+    {
+      "path": "packages/shared/package.json",
+      "sha256": "35e7ce2656f89f998cfd2079549f5f20a53782a2786a2f5fa86f9be8e9b3cc64"
+    },
+    {
+      "path": "packages/shared/src/index.ts",
+      "sha256": "e02a74b6c350ec2989cd9538d24399ed39df84553e99bfdd407e53d00ed4f8d6"
+    },
+    {
+      "path": "packages/shared/tsconfig.json",
+      "sha256": "f0b29eb4cf66109ddaa38cf326692a9db2a6109e68a2709ec214f9a3fb700a2c"
+    }
+  ],
+  "acceptedBaseRevision": "2b61adeea68f9fa7d316969db7738e5754dec8f8",
+  "architectureAuthorSession": "/root/original_video_architecture",
+  "status": "post-ideation-final-step6-ui-approved-awaiting-code-entry-gates",
+  "reviewedR2": {
+    "snapshotPath": "features/original-video-access/history/step6-before-final/design-snapshot.json",
+    "snapshotSha256": "0138da0500ed1c7b64c83398d56727fba2fd6ff66dd73517a1b8e49eab56d4f5",
+    "requirementsPinPath": "features/original-video-access/history/step6-before-final/requirements-pin.json",
+    "requirementsPinSha256": "93e15d0420f4cf9bd724bdf10cce53fcc7f25b2d88175bf0d42350f6dca768e5",
+    "planPath": "features/original-video-access/history/step6-before-final/06_implementation_plan.md",
+    "planSha256": "79425cc3e573b11faa4235860b6735cf493a6bc1cbb8249e748fde43b91b6cee"
+  },
+  "ideationClosure": {
+    "phase": "ideation",
+    "verdict": "closed",
+    "revision": "d7b8009a27a9111aa6478d38483595af4e8f865212973671d46c169936a284e0",
+    "nonce": "813cb2be-355a-43a6-8d5c-7199290984c5",
+    "unresolved": [],
+    "reasons": [],
+    "report": "features/original-video-access/03.5_ideation_report.md",
+    "rawSha256": "e158e80a61d0a356c5f88be80c2e8eb8364c972ab3fe0f0ee25057d6f0d24cd1",
+    "scope": "reviewed R2 design only; no implementation, UI approval or code-entry gate claim"
+  },
+  "measuredCoreFiles": [
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "959179ee8f7a515535c4fdfec0ee99b6e4a0b2f040a580e638e169f2d2609ad9"
+    },
+    {
+      "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+      "sha256": "23c59360d4c9d93e9f72fb347561261921aae652de9457ac354064ee2aab9fbd"
+    },
+    {
+      "path": "features/original-video-access/05_architecture.md",
+      "sha256": "179fe241dcda4f1b14d4ff8a24bc09d991fc4b5f03c81e204f54dc8c74443a78"
+    }
+  ],
+  "uiAdditionalStatesApproval": "approved-owner",
+  "codeEntryGates": "root canonical pinned K1 exit 0 (13 free names / 486 files); K2 passed prior plan, rerun required on current plan; checkpoints/context admission/code GO remain root responsibility",
+  "finalization": {
+    "reason": "Actual R2 ideation closure, accepted-base dependency recheck and Step 6 authorship/code-entry scope; no architectural or OpenSpec change",
+    "changedArtifacts": [
+      {
+        "path": "features/original-video-access/06_implementation_plan.md",
+        "sha256": "578f2b173ad8d5513a10b1804fd69c3c3bbcf13697e9bc0c05620c29c579b9ea"
+      },
+      {
+        "path": "features/original-video-access/requirements-pin.json",
+        "sha256": "73543640d627d7a31d47a779751728b1cbcb888d84b23a9b07ae7d594b06889d"
+      },
+      {
+        "path": "features/original-video-access/README.md",
+        "sha256": "d92babfbee2c1aae7000d0f886d4d68d2c50e0de36fcabf9a6781ba3b0aaf73f"
+      },
+      {
+        "path": "features/original-video-access/planning-handoff.md",
+        "sha256": "d612093758edb8bdd8740b9b2a444f127ca8e23ebd7cb33e7dc1915a802d565e"
+      },
+      {
+        "path": "features/original-video-access/dependency-recheck.md",
+        "sha256": "7953730d27459a5a66ddc61d2cf31de8287930710864ba3c7d2285a7c6fe34b4"
+      }
+    ],
+    "preservedAmendments": [
+      "AM-1",
+      "AM-2",
+      "AM-3",
+      "AM-4",
+      "AM-5",
+      "AM-6",
+      "AM-7"
+    ],
+    "expectedCodeTargets": 16,
+    "uiAuthorityUpdate": "Actual owner answer in ui-approval.md; no architecture, normative core4, OpenSpec, targets or behavioral change"
+  },
+  "uiApproval": {
+    "status": "approved-owner",
+    "path": "features/original-video-access/ui-approval.md",
+    "sha256": "38bcb0c3efcb5dcedfb9530de97f526371b9705b0728fd3f06d4f03064cc9ed9",
+    "receivedAt": "2026-11-11T16:33:19.977685+00:00",
+    "questionId": "call_7d57dd079fe542ad83e6ac0fd1f6170a",
+    "answer": "Да, реализовать эти состояния",
+    "statesSha256": "6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953"
+  },
+  "previousPostIdeationSnapshot": {
+    "path": "features/original-video-access/history/step6-before-ui-approval/design-snapshot.json",
+    "sha256": "6550ac613901ac307db2c69fcb43f985afedf4b7e7facfe1eda8c5894deac33f"
+  }
+}

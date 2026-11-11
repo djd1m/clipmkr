@@ -1,0 +1,187 @@
+{
+  "schema": "original-video-design-snapshot-1",
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "worktreeHead": "440105c9d70b9732da2bc85fe451d819034af0e7",
+  "authorSession": "/root/original_video_architecture",
+  "modelRequested": "gpt-6-astra",
+  "reasoningRequested": "xhigh",
+  "purpose": "Frozen candidate for independent ideation; no gate outcome",
+  "artifacts": [
+    {
+      "path": "openspec/changes/original-video-access/proposal.md",
+      "sha256": "83d8b4cb37fdedb0aad89b445b406b23e361c52b2f6f41a99c29ac95ed8da5f3"
+    },
+    {
+      "path": "openspec/changes/original-video-access/specs/original-video-access/spec.md",
+      "sha256": "1bbef92de58997e1d50fa59b85a4697740a7932b8a9e25bfce541d55dc3e6654"
+    },
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "849cc533ace4b676cf3aed847bae70614600030e8d74470ddba57511475e7778"
+    },
+    {
+      "path": "features/original-video-access/02_reuse_inventory.md",
+      "sha256": "6c5d458318ca41084e3b14866169094bff53ca4702374357b1c00cd93bb09952"
+    },
+    {
+      "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+      "sha256": "7f2e0e95882ba746b71d30bf4daba6e1a26fc3b62060dd1ec34cccc64edb3446"
+    },
+    {
+      "path": "features/original-video-access/03_shift_left_validation.md",
+      "sha256": "a0f4e7956a48d138da7bde1c1886c0b90fc837918993f488923deedd394aae76"
+    },
+    {
+      "path": "features/original-video-access/05_architecture.md",
+      "sha256": "c1831c449c40ec9d7245b0ffa92cddffa960feb36303d0c9f857bce7e5a08435"
+    },
+    {
+      "path": "features/original-video-access/06_implementation_plan.md",
+      "sha256": "b215de5576dd630e5f7618a7963dfef1c6be4da1b3a130a32b7b9275a545f119"
+    },
+    {
+      "path": "docs/research/original-video-access/mockup.html",
+      "sha256": "ddfedb3cf797237955f044c22d5663cb07af8663771ed7c9cf03fc675484c174"
+    },
+    {
+      "path": "docs/research/original-video-access/states.html",
+      "sha256": "f8b2b570fb96db123408f91f53e206826a2f2ed5d7e0fe3dedbbd433cf013bc8"
+    },
+    {
+      "path": "features/original-video-access/requirements-pin.json",
+      "sha256": "179f83c50c26474e9fe58c2f3e156e90182c6cc1b6ce6572adb77e990d381aec"
+    },
+    {
+      "path": "features/original-video-access/README.md",
+      "sha256": "d6ea13782df1b5912cf6ae990b9aa83437e0ad8f32f8f93382c86d60d02f1dba"
+    },
+    {
+      "path": "features/original-video-access/planning-handoff.md",
+      "sha256": "a1a121e2efbb3839c2d50d19804559aad67d67982290736527b9b698fc7d7f96"
+    }
+  ],
+  "readOnlyDependencies": [
+    {
+      "path": "apps/web/src/server/clip-file.ts",
+      "sha256": "8ebe2f60c96bc6b29d41df26370c0a97315fa2a8cb56824755480cf56d34a23d"
+    },
+    {
+      "path": "apps/web/src/server/guest-file.ts",
+      "sha256": "19bd437dfd3b53dca0611a95cca8eac23639c2fe9a872de8289b61dacae07590"
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "sha256": "af1203f377673acf8da11044834d2efcef870acca8a4a5d423a237cc34a8ffe3"
+    },
+    {
+      "path": "apps/web/src/server/media-type.ts",
+      "sha256": "898fa78965975961dec0e208966a4dbc5f795f4e7406b07b344c2097cd59d15b"
+    },
+    {
+      "path": "apps/web/src/server/video.ts",
+      "sha256": "3a533a0339722f8d90e985108877a24621e0b1d070ae0648602457135378862c"
+    },
+    {
+      "path": "apps/web/src/server/upload-runtime.ts",
+      "sha256": "60f4132a35b2301cdcc87838e4aad1c1d683e27cb35bdedec865a3cb920ccdd6"
+    },
+    {
+      "path": "apps/web/src/server/retention.ts",
+      "sha256": "804427d35348f9ce07300086e3daade1c814d650cbf74a88c97b6641ef2ee77d"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "sha256": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "sha256": "7a450be39c1b8e393db424bb20a3e97ac56799b339d5e08212fab393162ce9b4"
+    },
+    {
+      "path": "packages/s3/src/client.ts",
+      "sha256": "26cacf63dc70d341668ab849ad2b45461c259ce48ccf1045ada5685482bfc754"
+    },
+    {
+      "path": "packages/s3/src/operations.ts",
+      "sha256": "ecf5a0a284d6f3b833cf31adb48d15ee344dca0db1823a1eb69ba686bdb5e0fe"
+    },
+    {
+      "path": "packages/s3/src/presign.ts",
+      "sha256": "c3a0adff02383a264556bd4e59998cbb756ed4cccef35482c264f37343b3df3e"
+    },
+    {
+      "path": "packages/db/migrations/001_init.sql",
+      "sha256": "96e64cf44ca9e1842b524f4047344406e647b150e3eb4f628d83b8bdae79a107"
+    },
+    {
+      "path": "tests/fixtures/environment.ts",
+      "sha256": "30187822659a1caa60a00f72b7f649a1b4e44bd130fad163cba1c084d8bba77b"
+    },
+    {
+      "path": "tests/browser/ux-simplification.test.ts",
+      "sha256": "5d787d03d7de502580bde10f7a87623706e9d6c0b7f7b8447420fcde135e8c30"
+    },
+    {
+      "path": "scripts/test-retention-mutations.mjs",
+      "sha256": "3fe8eda659c526c975481b5797c8d7916f9a01f1f4aac0dde168738462a750c8"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "0f477caafa30da594689d6e8e3864697945a0fd9a495ed880f808b6dbb014019"
+    },
+    {
+      "path": "vitest.browser.config.ts",
+      "sha256": "7094074a8c9e642184fd7f1fa4335ebd46d96b8eb6a1fad1d210329f23128b2c"
+    },
+    {
+      "path": "packages/shared/package.json",
+      "sha256": "35e7ce2656f89f998cfd2079549f5f20a53782a2786a2f5fa86f9be8e9b3cc64"
+    },
+    {
+      "path": "packages/shared/src/index.ts",
+      "sha256": "e02a74b6c350ec2989cd9538d24399ed39df84553e99bfdd407e53d00ed4f8d6"
+    },
+    {
+      "path": "packages/shared/tsconfig.json",
+      "sha256": "f0b29eb4cf66109ddaa38cf326692a9db2a6109e68a2709ec214f9a3fb700a2c"
+    }
+  ],
+  "refreeze": {
+    "reason": "root engineering decision: canonical backend-only shared leaf; unchanged v1 formula and browser DTO",
+    "previousSnapshot": "features/original-video-access/history/design-r1/design-snapshot.json",
+    "changedArtifacts": [
+      {
+        "path": "features/original-video-access/00_complexity_assessment.md",
+        "sha256": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18"
+      },
+      {
+        "path": "features/original-video-access/02_reuse_inventory.md",
+        "sha256": "6c5d458318ca41084e3b14866169094bff53ca4702374357b1c00cd93bb09952"
+      },
+      {
+        "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+        "sha256": "7f2e0e95882ba746b71d30bf4daba6e1a26fc3b62060dd1ec34cccc64edb3446"
+      },
+      {
+        "path": "features/original-video-access/05_architecture.md",
+        "sha256": "c1831c449c40ec9d7245b0ffa92cddffa960feb36303d0c9f857bce7e5a08435"
+      },
+      {
+        "path": "features/original-video-access/06_implementation_plan.md",
+        "sha256": "b215de5576dd630e5f7618a7963dfef1c6be4da1b3a130a32b7b9275a545f119"
+      },
+      {
+        "path": "features/original-video-access/planning-handoff.md",
+        "sha256": "a1a121e2efbb3839c2d50d19804559aad67d67982290736527b9b698fc7d7f96"
+      },
+      {
+        "path": "features/original-video-access/requirements-pin.json",
+        "sha256": "179f83c50c26474e9fe58c2f3e156e90182c6cc1b6ce6572adb77e990d381aec"
+      }
+    ]
+  }
+}

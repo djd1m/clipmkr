@@ -1,0 +1,13 @@
+# Доступ к исходнику — финальный план до кода
+
+[План Step 6](06_implementation_plan.md) финализирован после настоящего QCSD R2. Архитектура и первоначальный план: `/root/original_video_architecture`; финализация: `/root/original_video_final_plan`, запрошенная `gpt-6-astra xhigh`; будущий кодер — `gpt-6.1-sol high`. Сохранены AM-1…AM-7, 16 целей изменений и минимальное переиспользование существующих seams.
+
+[Отчёт root](03.5_ideation_report.md) фиксирует реальный native evaluate exit 0, `closed`, revision `d7b8009a27a9111aa6478d38483595af4e8f865212973671d46c169936a284e0`, nonce `813cb2be-355a-43a6-8d5c-7199290984c5`. Три независимые R2-роли `gpt-6.1-terra xhigh` проверили условия и дельту. Это closure дизайна; код и тесты пока не выполнены.
+
+Принятый main `2b61adeea68f9fa7d316969db7738e5754dec8f8` интегрирован root в HEAD `3603be73ba4fc32d43f611885a4ac89faeaaa80d`. [Dependency recheck](dependency-recheck.md) подтвердил неизменность всех 16 целей относительно исходной базы `e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1` и всех 21 зависимостей reviewed R2.
+
+[Routing](00_complexity_assessment.md), [требования](01_requirements.md), [reuse](02_reuse_inventory.md), [ADR](03_adr/001-serve-original-through-owned-route.md), [shift-left](03_shift_left_validation.md), [архитектура](05_architecture.md) и OpenSpec сохранены побайтно. Их прежние статусы pending описывают момент заморозки. Текущий исход ideation задан actual evaluate/03.5, не ретроспективной правкой этих входов. [Исторический reviewed R2 snapshot](history/step6-before-final/design-snapshot.json) сохранён вместе с прежними планом и pins; [новый snapshot](design-snapshot.json) явно относится к post-ideation Step 6 и не выдаётся за reviewed R2.
+
+Владелец фактически согласовал восемь состояний: «Да, реализовать эти состояния», вопрос `call_7d57dd079fe542ad83e6ac0fd1f6170a`; [ui-approval.md](ui-approval.md) фиксирует timestamp и `states.html` SHA256 `6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953`. Normal «Смотреть/Скачать» были одобрены ранее. Root завершил canonical pinned K1 exit 0; K2 предыдущего06 прошёл и повторяется на этой редакции. Supported checkpoints, current target/context admission и root code GO остаются обязательными. После них TASK-4 доступен по зависимостям плана без ожидания нового UI approval. Переходы — в [handoff](planning-handoff.md).
+
+Эта финализация меняет только разрешённые плановые документы и сохраняет их историю. Код, тесты приложения, БД/S3, runtime, commit/push и deployment здесь не выполнялись. Проверку приложения и поставку проводят следующие назначенные роли по действующим gates; готовность продукта не заявляется.

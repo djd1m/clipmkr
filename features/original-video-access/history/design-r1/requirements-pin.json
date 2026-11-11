@@ -1,0 +1,54 @@
+{
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "worktreeHead": "440105c9d70b9732da2bc85fe451d819034af0e7",
+  "status": "frozen-candidate-awaiting-qcsd",
+  "historicalPin": "features/original-video-access/history/design-r0/requirements-pin.json",
+  "engineeringDecision": "root message 2026-11-11 to /root/original_video_architecture: same-origin source stream; browser bearer removed",
+  "uiAdditionalStatesApproval": "pending-owner",
+  "files": [
+    {
+      "path": "openspec/changes/original-video-access/proposal.md",
+      "sha256": "83d8b4cb37fdedb0aad89b445b406b23e361c52b2f6f41a99c29ac95ed8da5f3"
+    },
+    {
+      "path": "openspec/changes/original-video-access/specs/original-video-access/spec.md",
+      "sha256": "1bbef92de58997e1d50fa59b85a4697740a7932b8a9e25bfce541d55dc3e6654"
+    },
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "de5982d947bce19e7d3bdc9d45c110695d94ac922cc31ee544792a80b6c418e3"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "849cc533ace4b676cf3aed847bae70614600030e8d74470ddba57511475e7778"
+    },
+    {
+      "path": "features/original-video-access/02_reuse_inventory.md",
+      "sha256": "1eacf35b324ad9cff912ffd76f2e8615ff094b05a340bbf9d57794b63e2debc0"
+    },
+    {
+      "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+      "sha256": "76bf3ae30e9a1f6e1ef36fb70b015325c73a852967f37d2b354d3d4b10abfdc5"
+    },
+    {
+      "path": "features/original-video-access/03_shift_left_validation.md",
+      "sha256": "a0f4e7956a48d138da7bde1c1886c0b90fc837918993f488923deedd394aae76"
+    },
+    {
+      "path": "features/original-video-access/05_architecture.md",
+      "sha256": "f06e055157bfe855181afa95ec341e3a16d830f0d4f1acd8a0e5a1e11aa577b3"
+    },
+    {
+      "path": "features/original-video-access/06_implementation_plan.md",
+      "sha256": "97bfe1a40f6b2563ce365c640a35798853f26d6cf1e7ecc35a4e1ce54eeb5d51"
+    },
+    {
+      "path": "docs/research/original-video-access/mockup.html",
+      "sha256": "ddfedb3cf797237955f044c22d5663cb07af8663771ed7c9cf03fc675484c174"
+    },
+    {
+      "path": "docs/research/original-video-access/states.html",
+      "sha256": "f8b2b570fb96db123408f91f53e206826a2f2ed5d7e0fe3dedbbd433cf013bc8"
+    }
+  ]
+}
