@@ -1,0 +1,12 @@
+flowchart LR
+  Request["Raw Cookie header"] --> Page
+  Page --> Read["readReferralPrefill"]
+  Read --> Parser["readReferral"]
+  Read --> Find["PartnerLandingService.find"]
+  Find --> Pool["Runtime singleton pool"]
+  Page -->|"public code only"| Landing
+  Landing --> AuthForm
+  AuthForm --> Apply["code.apply"]
+  Apply --> Pool
+  Apply -->|"Attribution + applied_code or null"| AuthForm
+  AuthForm --> AuthFlow
