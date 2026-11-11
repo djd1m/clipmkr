@@ -1,0 +1,121 @@
+{
+  "status": "R2 author frozen; root independent SOURCE review/native repair pending",
+  "base": "ac83c7fc2df9a3d0a249d3a089d05648d05550e4",
+  "editable": [
+    "apps/web/src/lib/support-client.ts",
+    "tests/support-widget-ui.test.ts",
+    "tests/browser/support-chat-closure.test.ts",
+    "tests/browser/support-widget-readiness.test.ts"
+  ],
+  "readonly": [
+    "apps/web/src/app/support/SupportPanel.tsx",
+    "tests/support-ui.test.ts"
+  ],
+  "sha256": {
+    "apps/web/src/lib/support-client.ts": "34402b86e435fc3ccc74b99078451ef10b842875da5d565c8a2a021e8a073c95",
+    "tests/support-widget-ui.test.ts": "c3fba8826aa5cd460817f6eb395cb37c055c432211b1f21524cba45d01d6ceb1",
+    "tests/browser/support-chat-closure.test.ts": "c6682aa6effcf2605871e606ec163b763d37b1b836ba56120dd6aae60610fe55",
+    "tests/browser/support-widget-readiness.test.ts": "fe7262f1e47b275bd1c99e2c6aa4bcab7ad75eb3895878d5941618997bf24fe5",
+    "apps/web/src/app/support/SupportPanel.tsx": "c7bcf6b6bf13eb55ecb2d146b4343f57156888bd6e5b4c4e15c5152f3b2ef010",
+    "tests/support-ui.test.ts": "64c81827529dacfdbf9b26e109a71eab52aaeaa5cdd587f61ba0edde6e2c09c4"
+  },
+  "documentSha256": {
+    "features/support-widget-readiness/00_complexity_assessment.md": "b7fda168fe13407e69759760d5b16218e3804d3c96a1af330e6eecf13c429565",
+    "features/support-widget-readiness/01_requirements.md": "957424ff8e377655e9c851e8994e340209eee0349518127776c71fc160dc33d4",
+    "features/support-widget-readiness/02_reuse_inventory.md": "52a0758fa8f1260025cf4dc586880b77cb0e0e676dcc88970e43aa2a31f6f22c",
+    "features/support-widget-readiness/06_implementation_plan.md": "4ca1d965fcdbc537a39f19295153b3e10dbe770703e02175e3c03b096cd0f5cb",
+    "features/support-widget-readiness/owner-authority.md": "556108e59220eabba0f38dfdab96913e346467abbbc2c713f2f72a686fca277e",
+    "features/support-widget-readiness/requirements-revision.json": "a157c943c55b5ba72e0418a3f0a1e226ccd5ceeb0f041818819bba3f1dccfee7",
+    "openspec/changes/support-widget-readiness/specs/support-widget/spec.md": "5c5133410db6bd3f86e460b2ebbef6a8f9dbeaf0da3bf996ddc8a5b307c7f6a2"
+  },
+  "commands": {
+    "units": {
+      "argv": "./node_modules/.bin/vitest run tests/support-widget-ui.test.ts tests/support-ui.test.ts",
+      "exit": 0,
+      "result": "28/28;0skip;1.04s"
+    },
+    "browser": {
+      "argv": "./node_modules/.bin/vitest run --config vitest.browser.config.ts tests/browser/support-widget-readiness.test.ts tests/browser/support-chat-closure.test.ts",
+      "exit": 0,
+      "result": "18/18;0skip;22.77s"
+    },
+    "privacyBaseline": {
+      "cwd": "/tmp/clipmkr-readiness-r2-privacy-baseline",
+      "argv": "./node_modules/.bin/vitest run --config vitest.browser.config.ts tests/browser/support-widget-readiness.test.ts -t 'cold anonymous clears persisted|warm anonymous reset retires|cold identified B'",
+      "exit": 1,
+      "result": "6 selected privacy cases RED;4unselected skipped;12.32s",
+      "loaderSha256": "02bd981b82ff001a1f290c0d94e7f0f943b43ab701790d35898b97f1869e191a"
+    },
+    "mutations": {
+      "cwdPattern": "/tmp/clipmkr-readiness-r2-mutant-{source,origin,type}",
+      "argv": "./node_modules/.bin/vitest run tests/support-widget-ui.test.ts -t 'first click waits beyond script load'",
+      "source": {
+        "exit": 1,
+        "assertionLine": 118
+      },
+      "origin": {
+        "exit": 1,
+        "assertionLine": 117
+      },
+      "type": {
+        "exit": 1,
+        "assertionLine": 116
+      },
+      "result": "each1selectedfailed/22unselectedskipped; no mutation score claimed"
+    },
+    "strictTypes": {
+      "argv": "./node_modules/.bin/tsc --noEmit --target ES2022 --lib ES2022,DOM --module ESNext --moduleResolution Bundler --jsx react-jsx --esModuleInterop --skipLibCheck --strict --noUncheckedIndexedAccess --types node apps/web/src/lib/support-client.ts apps/web/src/app/support/SupportPanel.tsx tests/support-widget-ui.test.ts tests/support-ui.test.ts tests/browser/support-widget-readiness.test.ts tests/browser/support-chat-closure.test.ts",
+      "exit": 0
+    },
+    "spec": {
+      "argv": "npm run openspec -- validate support-widget-readiness --strict",
+      "exit": 0
+    },
+    "diff": {
+      "argv": "git diff --check",
+      "exit": 0
+    }
+  },
+  "authorAssessment": {
+    "addressed": [
+      "QER-1"
+    ],
+    "changedScope": [
+      "apps/web/src/lib/support-client.ts",
+      "tests/support-widget-ui.test.ts",
+      "tests/browser/support-chat-closure.test.ts",
+      "tests/browser/support-widget-readiness.test.ts",
+      "features/support-widget-readiness/00_complexity_assessment.md",
+      "features/support-widget-readiness/01_requirements.md",
+      "features/support-widget-readiness/02_reuse_inventory.md",
+      "features/support-widget-readiness/06_implementation_plan.md",
+      "features/support-widget-readiness/owner-authority.md",
+      "features/support-widget-readiness/requirements-revision.json",
+      "openspec/changes/support-widget-readiness/specs/support-widget/spec.md"
+    ],
+    "classification": "structural",
+    "delta": "R2 strengthens async negative assertions; fresh SDK bootstrap clears persisted native identity before SESSION_DATA on both anonymous and explicit identify. Anonymous reset retires an existing exact native child with logout/destroy, deletes only its old global reference and reuses public initLibredesk before canonical fresh-ready. Pending cleanup is inside the bounded8s envelope; epoch, hide-only close/reopen and fail-closed guards retained.",
+    "evidence": "Author units28/28; real React/cross-origin browsers18/18 at1440/390; R1 owned-copy privacy baseline6/6 selected RED on A reads/late history; source/origin/type removal mutants all RED at distinct async assertions; strict types/diff/OpenSpec valid. Exact commands/hashes and private logs in this handoff. Independent SOURCE/native closure is pending root.",
+    "newRisks": {
+      "assessment": "Confirmed CRITICAL privacy risk QER-2 is submitted for legitimate originating qe-primary adoption and independent verification; author does not mark it addressed or closed.",
+      "evidence": "Actual owned QA at published58e72ab: native identifyA→full/dashboard SDKundefined+vendorcookieA retained→native UIlogoutA200/loginB200→support consentfalse primaryanonymousopen showed both A markers and nativeauth/me A under B appsession; no manualcookie/JWT/newmessages. Private proof /root/.config/clipmkr/libredesk-completion-20261111/qa-fixtures/cold-switch-privacy-r2/proof.private.json SHA256853e4f4e6c4a32a4f8836946b94070b0bbb679c724c67592f0073aed7d05eeb7.",
+      "conditions": [
+        {
+          "id": "QER-2",
+          "owner": "qe-primary",
+          "severity": "CRITICAL",
+          "classification": "structural",
+          "requirement": "FR-3: cold account A logout with SDK absent, B login and anonymous open must neither reuse A native identity nor read/display A history; reset must precede child auth/history/bootstrap display and stale old child callbacks must not restore A.",
+          "scope": [
+            "apps/web/src/lib/support-client.ts",
+            "tests/support-widget-ui.test.ts",
+            "tests/browser/support-widget-readiness.test.ts"
+          ],
+          "evidence": "Actual owned QA at published58e72ab: native identifyA→full/dashboard SDKundefined+vendorcookieA retained→native UIlogoutA200/loginB200→support consentfalse primaryanonymousopen showed both A markers and nativeauth/me A under B appsession; no manualcookie/JWT/newmessages. Private proof /root/.config/clipmkr/libredesk-completion-20261111/qa-fixtures/cold-switch-privacy-r2/proof.private.json SHA256853e4f4e6c4a32a4f8836946b94070b0bbb679c724c67592f0073aed7d05eeb7."
+        }
+      ]
+    }
+  },
+  "privateLogs": "/root/.config/clipmkr/support-widget-readiness-20261111/r2-author",
+  "runtimeOps": "none; containment remains root owned; no prepare/evaluate/commit/push/deploy"
+}

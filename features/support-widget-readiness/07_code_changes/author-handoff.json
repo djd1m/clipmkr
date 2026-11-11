@@ -1,0 +1,58 @@
+{
+  "status": "author implementation frozen; independent SOURCE QE pending",
+  "base": "ac83c7fc2df9a3d0a249d3a089d05648d05550e4",
+  "editable": [
+    "apps/web/src/lib/support-client.ts",
+    "tests/support-widget-ui.test.ts",
+    "tests/browser/support-chat-closure.test.ts",
+    "tests/browser/support-widget-readiness.test.ts"
+  ],
+  "readonly": [
+    "apps/web/src/app/support/SupportPanel.tsx",
+    "tests/support-ui.test.ts"
+  ],
+  "sha256": {
+    "apps/web/src/lib/support-client.ts": "02bd981b82ff001a1f290c0d94e7f0f943b43ab701790d35898b97f1869e191a",
+    "tests/support-widget-ui.test.ts": "053f3842e3de45112e3c69bf2768a5a59cbcd5817f7652991f0ce1018ed53a9f",
+    "tests/browser/support-chat-closure.test.ts": "c7b30d9bc76f4044e0a4155e60bb1a118cc64edc1149488ba01dd90a07748070",
+    "tests/browser/support-widget-readiness.test.ts": "983fc93950c30a8d752fcccaff24cfeb15019f483add53cb07a6cc5ad1b74cd8",
+    "apps/web/src/app/support/SupportPanel.tsx": "c7bcf6b6bf13eb55ecb2d146b4343f57156888bd6e5b4c4e15c5152f3b2ef010",
+    "tests/support-ui.test.ts": "64c81827529dacfdbf9b26e109a71eab52aaeaa5cdd587f61ba0edde6e2c09c4"
+  },
+  "commands": {
+    "units": {
+      "command": "./node_modules/.bin/vitest run tests/support-widget-ui.test.ts tests/support-ui.test.ts",
+      "exit": 0,
+      "outcome": "24/24 PASS; 0 skipped; 1.02s",
+      "scope": "product loader + both unit files unchanged after this run"
+    },
+    "browser": {
+      "command": "./node_modules/.bin/vitest run --config vitest.browser.config.ts tests/browser/support-widget-readiness.test.ts tests/browser/support-chat-closure.test.ts",
+      "exit": 0,
+      "outcome": "12/12 PASS; 0 skipped; 10.80s; 1440/390"
+    },
+    "baseline": {
+      "command": "/home/clipmkr/node_modules/.bin/vitest run --config vitest.browser.config.ts tests/browser/support-widget-readiness.test.ts -t 'cold first identify'",
+      "cwd": "/tmp/clipmkr-readiness-baseline-snapshot-20261111",
+      "exit": 1,
+      "outcome": "2 selected cold tests failed exchange0 expected1; 2 unselected skipped, not passes; 6.24s",
+      "source": "git show ac83c7f:apps/web/src/lib/support-client.ts; final browser fixture bytes"
+    },
+    "strictTypes": {
+      "command": "./node_modules/.bin/tsc --noEmit --target ES2022 --lib ES2022,DOM --module ESNext --moduleResolution Bundler --jsx react-jsx --esModuleInterop --skipLibCheck --strict --noUncheckedIndexedAccess --types node apps/web/src/lib/support-client.ts apps/web/src/app/support/SupportPanel.tsx tests/support-widget-ui.test.ts tests/support-ui.test.ts tests/browser/support-widget-readiness.test.ts tests/browser/support-chat-closure.test.ts",
+      "exit": 0
+    },
+    "openSpec": {
+      "command": "npm run openspec -- validate support-widget-readiness --strict",
+      "exit": 0,
+      "outcome": "valid"
+    },
+    "diff": {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  },
+  "privateLogs": "/root/.config/clipmkr/support-widget-readiness-20261111",
+  "requirementsSha256": "08712c4653a7fd566880f10248fd85974c63ac04dae9b945e8b485d4565d6d17",
+  "planSha256": "9482144c5c2bd07d62bc332398a58a75459c20c4a527f2de1995ba9456b751f8"
+}

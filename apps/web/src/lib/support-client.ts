@@ -2,7 +2,7 @@ export type PublicSupport = { mode: 'disabled' | 'test' | 'libredesk'; baseURL: 
 export type SupportAccount = { id: string; email: string; verified: boolean } | null;
 export type SafeContext = { accountId?: string; videoId?: string; status?: string; failureCode?: string; at: string };
 export type WidgetAPI = { show(): void; hide?(): void; setUser(jwt: string): void; logout(): void; destroy?(): void };
-declare global { interface Window { Libredesk?: WidgetAPI; n5SupportUnavailable?: boolean; LibredeskSettings?: { baseURL: string; inboxID: string; hideLauncher: boolean }; } }
+declare global { interface Window { Libredesk?: WidgetAPI; initLibredesk?: (settings: { baseURL: string; inboxID: string; hideLauncher: boolean }) => WidgetAPI; n5SupportUnavailable?: boolean; LibredeskSettings?: { baseURL: string; inboxID: string; hideLauncher: boolean }; } }
 export class SupportError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
 }
@@ -24,63 +24,112 @@ export function takeFragmentToken(location: Pick<Location, 'hash' | 'pathname' |
   return /^[A-Za-z0-9_-]{43}$/.test(token) ? token : '';
 }
 export const validPassword = (password: string) => password.length >= 8 && new TextEncoder().encode(password).length <= 72;
-export function clearSupportIdentity(): Promise<boolean> {
-  if (typeof window === 'undefined') return Promise.resolve(true);
-  const failed = () => {
-    window.n5SupportUnavailable = true;
-    try { window.Libredesk?.destroy?.(); } catch {}
-    delete window.Libredesk;
-    return false;
-  };
+function failSupportCleanup(): false {
+  window.n5SupportUnavailable = true;
+  try { window.Libredesk?.destroy?.(); } catch {}
+  delete window.Libredesk;
+  return false;
+}
+function clearNativeSupportIdentity(): Promise<boolean> {
   let cleanup: void;
   try {
     try { if (window.Libredesk) closeSupportWidget(null); }
     finally { cleanup = window.Libredesk?.logout(); }
   }
-  catch { failed(); }
+  catch { failSupportCleanup(); }
+  // Official SDKs may return a promise even though older APIs declare logout as void.
+  return Promise.resolve(cleanup).then(() => !window.n5SupportUnavailable, failSupportCleanup);
+}
+export function clearSupportIdentity(): Promise<boolean> {
+  if (typeof window === 'undefined') return Promise.resolve(true);
+  try { return clearNativeSupportIdentity(); }
   finally {
     delete window.LibredeskSettings;
     window.dispatchEvent(new Event('n5:support-clear'));
   }
-  // Official SDKs may return a promise even though older APIs declare logout as void.
-  return Promise.resolve(cleanup).then(() => !window.n5SupportUnavailable, failed);
 }
-export function loadSupportWidget(settings: PublicSupport): Promise<WidgetAPI> {
+const readySupportFrames = new WeakSet<HTMLIFrameElement>();
+export function loadSupportWidget(settings: PublicSupport, anonymousCleanup?: Promise<boolean>): Promise<WidgetAPI> {
   if (settings.mode === 'disabled' || !settings.baseURL || !settings.inboxID) return Promise.reject(new Error('Чат поддержки пока не подключён.'));
   if (window.n5SupportUnavailable) return Promise.reject(new Error('Не удалось очистить чат. Перезагрузите страницу перед новым обращением.'));
   return new Promise((resolve, reject) => {
-    const script = window.Libredesk ? null : document.createElement('script');
+    let script: HTMLScriptElement | null = null;
+    const initialAPI = window.Libredesk;
+    let cleanedAPI = initialAPI, bootstrapPending = false, canStart = !anonymousCleanup, retired = false;
     const baseURL = new URL(settings.baseURL!);
     let settled = false;
     const cleanup = () => {
-      clearTimeout(timer); observer.disconnect();
+      clearTimeout(timer); observer.disconnect(); window.removeEventListener('message', onMessage);
       if (script) { script.onload = null; script.onerror = null; }
     };
-    const fail = () => {
+    const fail = (cleanupFailure = false) => {
       if (settled) return; settled = true; cleanup();
       script?.remove(); delete window.LibredeskSettings;
-      reject(new Error('Не удалось загрузить чат. Используйте доступный способ связи ниже.'));
+      reject(new Error(cleanupFailure ? 'Не удалось очистить чат. Перезагрузите страницу перед новым обращением.' : 'Не удалось загрузить чат. Используйте доступный способ связи ниже.'));
     };
-    const ready = () => {
+    const ready = (event?: MessageEvent) => {
       if (settled) return;
       const api = window.Libredesk, frame = document.getElementById(`libredesk-widget-${settings.inboxID}`);
-      if (!api || typeof api.show !== 'function' || typeof api.setUser !== 'function' || typeof api.logout !== 'function'
-        || frame?.tagName !== 'IFRAME' || !frame.isConnected) return;
-      // The SDK creates its iframe asynchronously after loading widget.js; show() is a no-op before that.
+      if (!canStart || !api || typeof api.show !== 'function' || typeof api.setUser !== 'function' || typeof api.logout !== 'function') return;
+      // A fresh SDK must clear persisted host cookies before VUE_APP_READY reads them,
+      // including explicit identify: setUser's remote acknowledgement arrives later.
+      if (api !== cleanedAPI) {
+        cleanedAPI = api; bootstrapPending = true;
+        void clearNativeSupportIdentity().then(clean => {
+          if (settled) return;
+          if (!clean) { fail(true); return; }
+          bootstrapPending = false; ready();
+        });
+      }
+      if (frame?.tagName !== 'IFRAME' || !frame.isConnected) return;
+      // Attachment precedes the native child listener; setUser() does not queue its postMessage.
       let source: URL;
       try { source = new URL((frame as HTMLIFrameElement).src); } catch { return; }
       if (source.origin !== baseURL.origin || source.pathname !== '/widget' || source.searchParams.get('inbox_id') !== settings.inboxID) return;
+      const iframe = frame as HTMLIFrameElement;
+      if (event?.source === iframe.contentWindow && event.origin === baseURL.origin && event.data?.type === 'WIDGET_LOADED') readySupportFrames.add(iframe);
+      if (bootstrapPending || !readySupportFrames.has(iframe)) return;
       settled = true; cleanup(); resolve(api);
     };
-    const observer = new MutationObserver(ready);
+    const onMessage = (event: MessageEvent) => ready(event);
+    const observer = new MutationObserver(() => ready());
     const timer = setTimeout(fail, 8000);
+    window.addEventListener('message', onMessage);
     observer.observe(document.documentElement, { childList: true, subtree: true });
-    ready();
-    if (script && !settled) {
-      window.LibredeskSettings = { baseURL: settings.baseURL!, inboxID: settings.inboxID!, hideLauncher: true };
-      script.src = new URL('/widget.js', settings.baseURL!).href; script.async = true; script.referrerPolicy = 'no-referrer';
-      script.onload = ready; script.onerror = fail; document.head.append(script);
-    }
+    const start = () => {
+      if (settled) return;
+      canStart = true;
+      if (!window.Libredesk) {
+        window.LibredeskSettings = { baseURL: settings.baseURL!, inboxID: settings.inboxID!, hideLauncher: true };
+        if (retired) {
+          try { window.initLibredesk!(window.LibredeskSettings); }
+          catch { failSupportCleanup(); fail(true); return; }
+        } else {
+          script = document.createElement('script');
+          script.src = new URL('/widget.js', settings.baseURL!).href; script.async = true; script.referrerPolicy = 'no-referrer';
+          script.onload = () => ready(); script.onerror = () => fail(); document.head.append(script);
+        }
+      }
+      ready();
+    };
+    if (anonymousCleanup) {
+      const oldFrame = document.getElementById(`libredesk-widget-${settings.inboxID}`);
+      // A prior child's delayed identity callbacks have no correlated reset ACK.
+      // Retire that child; native destroy keeps remote conversations intact.
+      if (initialAPI && oldFrame?.tagName === 'IFRAME' && oldFrame.isConnected) {
+        try {
+          if (!initialAPI.destroy || !window.initLibredesk) throw new Error('Native reset unavailable');
+          initialAPI.destroy();
+          if (window.Libredesk === initialAPI) delete window.Libredesk;
+          retired = true;
+        } catch { failSupportCleanup(); fail(true); }
+      }
+      void anonymousCleanup.then(clean => {
+        if (settled) return;
+        if (!clean) { fail(true); return; }
+        start();
+      }, () => { if (!settled) { failSupportCleanup(); fail(true); } });
+    } else start();
   });
 }
 
@@ -89,12 +138,16 @@ export async function openAnonymousSupport(settings: PublicSupport, epoch: { cur
   const cleanup = clearSupportIdentity();
   // The synchronous clear event resets opt-in and advances the epoch intentionally.
   const version = epoch.current;
-  if (!await cleanup) throw new Error('Не удалось очистить чат. Перезагрузите страницу перед новым обращением.');
-  if (epoch.current !== version) return false;
-  const widget = await loadSupportWidget(settings);
-  if (epoch.current !== version) return false;
-  widget.show();
-  return true;
+  // Keep an asynchronous logout inside the same bounded load/reset envelope.
+  try {
+    const widget = await loadSupportWidget(settings, cleanup.then(clean => clean && epoch.current === version));
+    if (epoch.current !== version) return false;
+    widget.show();
+    return true;
+  } catch (cause) {
+    if (epoch.current !== version) return false;
+    throw cause;
+  }
 }
 
 // Hide only: the vendor retains the current conversation and unsent draft.

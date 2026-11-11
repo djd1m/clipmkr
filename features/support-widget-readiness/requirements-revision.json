@@ -1,0 +1,24 @@
+{
+  "status": "R2 amended root GO; exact pre-code init/cleanup clarification applied",
+  "requirementsSha256": "957424ff8e377655e9c851e8994e340209eee0349518127776c71fc160dc33d4",
+  "planSha256": "4ca1d965fcdbc537a39f19295153b3e10dbe770703e02175e3c03b096cd0f5cb",
+  "openSpecPath": "openspec/changes/support-widget-readiness/specs/support-widget/spec.md",
+  "openSpecSha256": "5c5133410db6bd3f86e460b2ebbef6a8f9dbeaf0da3bf996ddc8a5b307c7f6a2",
+  "authorityPath": "features/support-widget-readiness/owner-authority.md",
+  "routingSha256": "b7fda168fe13407e69759760d5b16218e3804d3c96a1af330e6eecf13c429565",
+  "servedSdkSha256": "6ae92d2ba1e8b0ffedd32089cc415dd3d774271281bdafc3655110a868cc0782",
+  "servedSdkPrivateSource": "/root/.config/clipmkr/support-chat-close-20261111/vendor-widget.private.js",
+  "diagnosticSha256": "1e0a3c333c72c2bd3343bf17629e8a4ebcb0644ae445ed694c36f943b9890a5b",
+  "runtimeSource": "58e72ab",
+  "helpdeskImageRootWitnessed": "sha256:e7aa3bac149323d21e8e130adc8d9dd83b2c4fc85f83bb3b08b544ffa3c7d201",
+  "helpdeskImageEvidence": "root actual read /etc/clipmkr/backup/runtime-binding.json; relayed 2026-11-11 13:24 UTC",
+  "priorR1": {
+    "requirementsSha256": "08712c4653a7fd566880f10248fd85974c63ac04dae9b945e8b485d4565d6d17",
+    "planSha256": "9482144c5c2bd07d62bc332398a58a75459c20c4a527f2de1995ba9456b751f8",
+    "routingSha256": "979023724d4f5390a136d5cbd69308d8cd11db9acb80e698d749a6e09114f425",
+    "openSpecSha256": "a143cd2641b5c1c0bec61fa3e153960b1b51086e47eb57f474fcb94e1fd1aee0"
+  },
+  "privacyProofSha256": "853e4f4e6c4a32a4f8836946b94070b0bbb679c724c67592f0073aed7d05eeb7",
+  "childSdkSha256": "43a865dd62c2eaac74faeba4b77875c69ced6c4f1aa7efc870939c6a42a19817",
+  "openSpecR2Clarification": "root authorized fresh bootstrap isolation also for cold explicitly identified B; narrowed prose to pass strict OpenSpec length validation"
+}
