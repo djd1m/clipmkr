@@ -1,0 +1,331 @@
+{
+  "status": "pass",
+  "scope": "synthetic HTML UI only; not app/S3/codec playback",
+  "browser": "148.0.7778.96",
+  "cases": [
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "incomplete",
+      "screenshot": "incomplete-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "missing",
+      "screenshot": "missing-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "loading",
+      "screenshot": "loading-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "error",
+      "screenshot": "error-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "unsupported",
+      "screenshot": "unsupported-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "audio",
+      "screenshot": "audio-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "incomplete",
+      "screenshot": "incomplete-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "missing",
+      "screenshot": "missing-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "loading",
+      "screenshot": "loading-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "error",
+      "screenshot": "error-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "unsupported",
+      "screenshot": "unsupported-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "audio",
+      "screenshot": "audio-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "incomplete",
+      "screenshot": "incomplete-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "missing",
+      "screenshot": "missing-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "loading",
+      "screenshot": "loading-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "error",
+      "screenshot": "error-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "unsupported",
+      "screenshot": "unsupported-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "audio",
+      "screenshot": "audio-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "incomplete",
+      "screenshot": "incomplete-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "missing",
+      "screenshot": "missing-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "loading",
+      "screenshot": "loading-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "error",
+      "screenshot": "error-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "unsupported",
+      "screenshot": "unsupported-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "audio",
+      "screenshot": "audio-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    }
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "hashes": [
+    {
+      "path": "docs/research/original-video-access/states.html",
+      "sha256": "f8b2b570fb96db123408f91f53e206826a2f2ed5d7e0fe3dedbbd433cf013bc8"
+    },
+    {
+      "path": "docs/research/original-video-access/states/probe.cjs",
+      "sha256": "86892fc4bfd0f593446bbaa1ea642b65af023debba919aecd4feb2bf592a4afb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-dark-390.png",
+      "sha256": "1e869710b34c597282fd9f85b90d77be094bf7fa36c92d3861e642a51c22db61"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-dark-390.png",
+      "sha256": "e0765d8d78a02eba18ce14a51f0819a0a47f2d8ddf5113f17d6b08455cc1b534"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-dark-390.png",
+      "sha256": "78cee3588b4286d5169c000811a4a347ffe0f93b6efa0b0b4724bf006474d765"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-dark-390.png",
+      "sha256": "4f8cc48bf37e80ab08d3a0226a8a9c44d5d3d3c92a55e17170a371cea0d327f4"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-dark-390.png",
+      "sha256": "b03884c38168b84aa794381fa3738671f5cbf0b92d08db6248deddf09ad19356"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-dark-390.png",
+      "sha256": "954bf9d65c5caebf5700ac330792e8f809df65dd14d6ef39598c978e3bf66572"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-light-390.png",
+      "sha256": "c4fa92a788d9e1716feec82896a6b1e244b0070ece9ec7e68790e50b5ce93003"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-light-390.png",
+      "sha256": "7690bb6faee002dfe36c4ebb071ed3788e4b2ee37831d36cab8f04c437f42fca"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-light-390.png",
+      "sha256": "6964775b5fb44c36b13c78255999f0e8452cc02c51a421a24b8eb642b27599eb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-light-390.png",
+      "sha256": "eeb106a27b11c0f4abcfb9823ac03bdf52ae4fa8db58085e73cd4da39d1f5270"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-light-390.png",
+      "sha256": "97de0b554135bf708c9a6218465401c0ac4aa3cc2305754983258a7ea2b5c128"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-light-390.png",
+      "sha256": "3c34ce05eadf30ed9b83d7f2de215da50d1fad4939bdff8c0d22a64b8441e6ee"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-dark-1440.png",
+      "sha256": "00ad3e3cc6bae2a9e6461dee2629592a99ff09ba0abf735dbee648819b483cb5"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-dark-1440.png",
+      "sha256": "71cd6af93f46c1d4db46147130cade28e22183a18c467897430e02d96eea5cbd"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-dark-1440.png",
+      "sha256": "b99710d03335d49d28b93ecbdf3bc664031da30362dfa2e356e1111feccdadc4"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-dark-1440.png",
+      "sha256": "bd91d2a11bd5a80817c91382258d793a6ba1e3131b20947adc152f1be90ff94e"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-dark-1440.png",
+      "sha256": "ed466a2cdf2313ac0142a95c239b2c0c7020efe3383b28da6ca5a4f2efc687b0"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-dark-1440.png",
+      "sha256": "745d7a4fd5e59eab35a4cc2a7b5d53e9d09570a0f66f6b85b28658f49a155c53"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-light-1440.png",
+      "sha256": "656845d7a00436374a3246b14a2161c3e957d44b428296476416209cac8fad7d"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-light-1440.png",
+      "sha256": "2416d399dcc7164b170b4f04c1ad3002bfeaa9e697cbba27d2966c21d1574ff5"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-light-1440.png",
+      "sha256": "ba85c3e0c005aef62b2c3fdbf538a1698efef51c04cd3724f2a2395eeffaf147"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-light-1440.png",
+      "sha256": "1bba3b7abfdceb3b3b6761f7093fe17c710ed7d171d56edd754ac4867c7bdbb2"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-light-1440.png",
+      "sha256": "9794daa02a3309b2e274d2c45a8265209ee3e3a3b7c16147717c243ab5b92bbb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-light-1440.png",
+      "sha256": "f7b7b55cbc1410c13931a19f9b2987b01ccbd4affdf921300fe9951fd19e2a8e"
+    }
+  ]
+}
