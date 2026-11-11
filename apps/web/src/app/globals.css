@@ -551,3 +551,7 @@ html:has(.public-entry), body:has(.public-entry) { background:var(--workspace-pa
  .auth-flow-notice { width: min(73.75rem, calc(100% - 3rem)); margin: 1.5rem auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; border: 1px solid var(--line); border-left: 3px solid var(--green); border-radius: 0; background: var(--surface); color: var(--ink); font-size: .875rem; }
 .workspace-shell .auth-flow-notice { width: 100%; }
 .auth-flow-notice button { flex-shrink: 0; min-width: 44px; min-height: 44px; padding: 0; background: transparent; color: inherit; border: 0; font-size: 1.4rem; }
+
+.public-entry .public-referral-notice { padding: .8rem; margin: 0 0 1rem; border-left: 3px solid var(--workspace-accent); background: var(--workspace-surface); font-size: .82rem; }
+.public-entry .public-referral-notice p { margin: .4rem 0 0; color: var(--workspace-muted); font-size: .76rem; }
+.auth-flow-referral-code { display: block; margin-top: .3rem; overflow-wrap: anywhere; }

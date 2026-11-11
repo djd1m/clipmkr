@@ -22,7 +22,7 @@ beforeAll(async () => {
         if (id === entry) return `import {createElement as h} from 'react';import {createRoot} from 'react-dom/client';import {Landing} from '/apps/web/src/app/Landing.tsx';
           import {AuthFlowProvider,AuthFlowNotice} from '/apps/web/src/app/AuthFlow.tsx';import {RecoveryForm} from '/apps/web/src/app/support/RecoveryForm.tsx';import {usePathname} from 'next/navigation';
           window.pushes=[];window.refreshes=0;window.signupCalls=0;window.fixturePath='/';let root=createRoot(document.getElementById('root'));
-          const View=()=>usePathname()==='/forgot'?h(RecoveryForm,{mode:'forgot',mailAvailable:false}):h(Landing,{theme:document.documentElement.dataset.theme,creditMode:!new URLSearchParams(location.search).has('legacyBilling')});const render=()=>root.render(h(AuthFlowProvider,null,h(AuthFlowNotice),h(View)));
+          const View=()=>usePathname()==='/forgot'?h(RecoveryForm,{mode:'forgot',mailAvailable:false}):h(Landing,{theme:document.documentElement.dataset.theme,creditMode:!new URLSearchParams(location.search).has('legacyBilling'),referralCode:new URLSearchParams(location.search).get('referral')});const render=()=>root.render(h(AuthFlowProvider,null,h(AuthFlowNotice),h(View)));
           window.remount=()=>{root.unmount();root=createRoot(document.getElementById('root'));render()};render();`;
       }, configureServer(vite) { vite.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith('/fixture.html')) { next(); return; }
@@ -291,3 +291,46 @@ it('existing redirect retry never applies referral', async () => fixture(async p
   await submit(page); await expect.poll(() => page.evaluate(() => (window as unknown as Observations).refreshes)).toBe(2);
   expect(s.calls).toEqual([]); expect(await page.evaluate(() => (window as unknown as Observations).signupCalls)).toBe(0);
 }));
+
+it('referral untouched expiry submits empty input', async () => fixture(async page => {
+  const s = await transport(page); const code = page.locator('[name=partner_code]');
+  expect(await code.inputValue()).toBe('CODE123'); expect(await code.getAttribute('readonly')).toBeNull();
+  expect(await page.locator('.public-partner').getAttribute('open')).not.toBeNull();
+  await page.getByText('Код из приглашения заполнен. Вводить его не нужно', { exact: true }).waitFor();
+  await fill(page); await submit(page); await expect.poll(() => s.payloads.length).toBe(1);
+  expect(s.payloads).toEqual([{}]);
+}, '?referral=CODE123'));
+it('referral manual intent survives edits and mode changes', async () => {
+  for (const value of ['OTHER12', 'CODE123', '']) await fixture(async page => {
+    const s = await transport(page), field = page.locator('[name=partner_code]');
+    await field.fill('temporary'); await field.fill(value);
+    expect(await page.locator('.public-referral-notice').count()).toBe(0);
+    await login(page).click(); await register(page).click(); expect(await field.inputValue()).toBe(value);
+    await fill(page); await submit(page); await expect.poll(() => s.payloads.length).toBe(1);
+    expect(s.payloads).toEqual([value ? { code: value } : {}]);
+  }, '?referral=CODE123');
+});
+it('referral notice requires confirmed attribution', async () => {
+  const valid = { id: 'persisted-id', partner_code_id: 'persisted-code-id', source: 'cookie', status: 'pending', reject_reason: null, applied_code: 'OTHER12' };
+  for (const reply of [valid, { ...valid, status: 'activated' }, null, {}, [], { ...valid, applied_code: undefined }, { ...valid, applied_code: 'invalid!' }, { ...valid, status: 'rejected' }, { ...valid, status: 'partner_deleted' }, { ...valid, reject_reason: 'self_referral' }, { ...valid, partner_code_id: '' }, { ...valid, source: 'forged' }]) {
+    await fixture(async page => {
+      await page.route('**/api/auth/register', route => route.fulfill({ json: { ok: true, registration: 'created' } }));
+      await page.route('**/api/trpc/code.apply', route => route.fulfill({ json: { result: { data: { data: reply } } } }));
+      await fill(page); await submit(page); await page.locator('.auth-flow-notice').waitFor();
+      const confirmed = reply === valid || !!(reply && 'status' in reply && reply.status === 'activated');
+      expect(await page.locator('.auth-flow-notice').textContent()).toContain(confirmed ? 'Аккаунт создан. Приглашение применено.' : 'Аккаунт создан. Вы вошли.');
+      expect(await page.locator('.auth-flow-referral-code').count()).toBe(confirmed ? 1 : 0);
+      if (confirmed) { expect(await page.locator('.auth-flow-referral-code').textContent()).toBe('Регистрация по коду OTHER12 учтена.'); expect(await page.locator('.auth-flow-notice').textContent()).not.toContain('CODE123'); }
+    }, '?referral=CODE123');
+  }
+});
+it('referral notice and editable prefill preserve responsive controls', async () => {
+  const webkitBrowser = await webkit.launch();
+  try { for (const engine of [browser, webkitBrowser]) for (const width of [390, 1440]) for (const theme of ['dark', 'light']) await fixture(async page => {
+    await page.evaluate(() => scrollTo(0, 0));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const field = page.locator('[name=partner_code]'); await field.focus(); expect(await field.evaluate(el => el === document.activeElement)).toBe(true);
+    expect(await field.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+    for (const selector of ['.public-partner summary', '[name=partner_code]', '#auth button[type=submit]']) expect(await page.locator(selector).evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  }, `?referral=CODE123&theme=${theme}`, engine, width); } finally { await webkitBrowser.close(); }
+}, 60000);
