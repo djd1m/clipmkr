@@ -33,7 +33,10 @@ export function clearSupportIdentity(): Promise<boolean> {
     return false;
   };
   let cleanup: void;
-  try { cleanup = window.Libredesk?.logout(); }
+  try {
+    try { if (window.Libredesk) closeSupportWidget(null); }
+    finally { cleanup = window.Libredesk?.logout(); }
+  }
   catch { failed(); }
   finally {
     delete window.LibredeskSettings;

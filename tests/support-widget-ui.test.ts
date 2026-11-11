@@ -32,7 +32,7 @@ describe('official widget API-shaped synthetic fixture', () => {
     expect(createElement).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
   });
   it('uses configured official widget.js and anonymous settings; separate A/B identities clear', async () => {
-    const calls: string[] = [], api = { show: () => calls.push('show'), setUser: (jwt: string) => calls.push(jwt), logout: () => calls.push('logout') };
+    const calls: string[] = [], api = { hide: vi.fn(), show: () => calls.push('show'), setUser: (jwt: string) => calls.push(jwt), logout: () => calls.push('logout') };
     const browser: FakeBrowser = { dispatchEvent: vi.fn() }, script: FakeScript = { remove: vi.fn() };
     vi.stubGlobal('window', browser);
     const dom = widgetDOM(script, () => { browser.Libredesk = api; queueMicrotask(() => { dom.insert(); script.onload?.(); }); });
@@ -49,7 +49,7 @@ describe('official widget API-shaped synthetic fixture', () => {
     await expect(loadSupportWidget(settings)).rejects.toThrow('Не удалось загрузить чат'); expect(script.remove).toHaveBeenCalled(); expect(browser.LibredeskSettings).toBeUndefined();
   });
   it('vendor logout exception still clears local identity and broadcasts invalidation', () => {
-    const browser: FakeBrowser = { Libredesk: { show: vi.fn(), setUser: vi.fn(), logout: () => { throw new Error(); } }, LibredeskSettings: {}, dispatchEvent: vi.fn() }; vi.stubGlobal('window', browser);
+    const browser: FakeBrowser = { Libredesk: { hide: vi.fn(), show: vi.fn(), setUser: vi.fn(), logout: () => { throw new Error(); } }, LibredeskSettings: {}, dispatchEvent: vi.fn() }; vi.stubGlobal('window', browser);
     expect(() => clearSupportIdentity()).not.toThrow(); expect(browser.LibredeskSettings).toBeUndefined(); expect(browser.dispatchEvent).toHaveBeenCalled();
   });
   it('SSR never loads SDK or requests JWT and leaves opt-in/copy unchecked', () => {
@@ -62,7 +62,7 @@ describe('official widget API-shaped synthetic fixture', () => {
 describe('identified to anonymous transition', () => {
   it('logs out identified A, clears opt-in and then shows anonymous without requesting JWT', async () => {
     const calls: string[] = [], epoch = { current: 0 }; let identity: string | null = 'A', optedIn = true;
-    const api: WidgetAPI = { setUser: vi.fn(), logout: () => { calls.push('logout'); identity = null; }, show: () => { calls.push('show'); expect(identity).toBeNull(); } };
+    const api: WidgetAPI = { hide: vi.fn(), setUser: vi.fn(), logout: () => { calls.push('logout'); identity = null; }, show: () => { calls.push('show'); expect(identity).toBeNull(); } };
     const browser: FakeBrowser = { Libredesk: api, LibredeskSettings: {}, dispatchEvent: vi.fn(() => { epoch.current++; optedIn = false; }) };
     const fetch = vi.fn(); vi.stubGlobal('window', browser); vi.stubGlobal('fetch', fetch); widgetDOM().insert();
     expect(await openAnonymousSupport(settings, epoch)).toBe(true);
@@ -70,7 +70,7 @@ describe('identified to anonymous transition', () => {
   });
   it('refuses show and success after an asynchronous logout failure', async () => {
     const show = vi.fn(), epoch = { current: 0 };
-    const browser: FakeBrowser = { Libredesk: { setUser: vi.fn(), logout: () => Promise.reject(new Error('vendor cleanup failed')), show }, LibredeskSettings: {}, dispatchEvent: vi.fn(() => { epoch.current++; }) };
+    const browser: FakeBrowser = { Libredesk: { hide: vi.fn(), setUser: vi.fn(), logout: () => Promise.reject(new Error('vendor cleanup failed')), show }, LibredeskSettings: {}, dispatchEvent: vi.fn(() => { epoch.current++; }) };
     vi.stubGlobal('window', browser);
     await expect(openAnonymousSupport(settings, epoch)).rejects.toThrow('Не удалось очистить чат');
     expect(show).not.toHaveBeenCalled(); expect(browser.LibredeskSettings).toBeUndefined();
@@ -78,7 +78,7 @@ describe('identified to anonymous transition', () => {
   it('cancels when another authority event occurs while official logout is pending', async () => {
     let finish: (() => void) | undefined; const epoch = { current: 0 }, show = vi.fn();
     const cleanup = new Promise<void>(resolve => { finish = resolve; });
-    vi.stubGlobal('window', { Libredesk: { setUser: vi.fn(), logout: () => cleanup, show }, dispatchEvent: () => { epoch.current++; } });
+    vi.stubGlobal('window', { Libredesk: { hide: vi.fn(), setUser: vi.fn(), logout: () => cleanup, show }, dispatchEvent: () => { epoch.current++; } });
     const opening = openAnonymousSupport(settings, epoch); epoch.current++; finish?.();
     expect(await opening).toBe(false); expect(show).not.toHaveBeenCalled();
   });
@@ -110,7 +110,7 @@ describe('asynchronous vendor iframe readiness', () => {
   });
   it('cached API waits for delayed iframe and preserves epoch cancellation', async () => {
     vi.useFakeTimers(); const epoch = { current: 0 }, show = vi.fn();
-    vi.stubGlobal('window', { Libredesk: { show, setUser: vi.fn(), logout: vi.fn() }, dispatchEvent: vi.fn() });
+    vi.stubGlobal('window', { Libredesk: { hide: vi.fn(), show, setUser: vi.fn(), logout: vi.fn() }, dispatchEvent: vi.fn() });
     const dom = widgetDOM(); const opening = openAnonymousSupport(settings, epoch);
     await vi.advanceTimersByTimeAsync(0); expect(show).not.toHaveBeenCalled();
     epoch.current++; dom.insert(); expect(await opening).toBe(false);
@@ -129,6 +129,35 @@ describe('asynchronous vendor iframe readiness', () => {
     expect(browser.LibredeskSettings).toBeUndefined();
     dom.insert(); expect(api.show).not.toHaveBeenCalled();
     if (!cached) { expect(script.remove).toHaveBeenCalledTimes(1); expect(script.onload).toBeNull(); expect(script.onerror).toBeNull(); }
+  });
+});
+
+describe('identity cleanup synchronizes native visibility', () => {
+  it('hides before logout and before the authority event removes controls', async () => {
+    const calls: string[] = []; let nativeVisible = true;
+    const browser: FakeBrowser = { Libredesk: {
+      hide() { calls.push('hide'); nativeVisible = false; },
+      logout() { expect(nativeVisible).toBe(false); calls.push('logout'); },
+      show: vi.fn(), setUser: vi.fn(),
+    }, LibredeskSettings: {}, dispatchEvent: vi.fn(() => {
+      expect(nativeVisible).toBe(false); calls.push('clear');
+    }) };
+    vi.stubGlobal('window', browser);
+    expect(await clearSupportIdentity()).toBe(true);
+    expect(calls).toEqual(['hide', 'logout', 'clear']);
+    expect(browser.LibredeskSettings).toBeUndefined();
+  });
+  it.each(['missing', 'throwing'] as const)('still logs out and fails closed when hide is %s', async mode => {
+    const logout = vi.fn(), destroy = vi.fn();
+    const browser: FakeBrowser & { n5SupportUnavailable?: boolean } = { Libredesk: {
+      ...(mode === 'throwing' ? { hide() { throw new Error('vendor hide failed'); } } : {}),
+      logout, destroy, show: vi.fn(), setUser: vi.fn(),
+    }, LibredeskSettings: {}, dispatchEvent: vi.fn() };
+    vi.stubGlobal('window', browser);
+    expect(await clearSupportIdentity()).toBe(false);
+    expect(logout).toHaveBeenCalledTimes(1); expect(destroy).toHaveBeenCalledTimes(1);
+    expect(browser.n5SupportUnavailable).toBe(true); expect(browser.Libredesk).toBeUndefined();
+    expect(browser.LibredeskSettings).toBeUndefined(); expect(browser.dispatchEvent).toHaveBeenCalledTimes(1);
   });
 });
 

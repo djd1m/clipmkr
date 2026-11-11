@@ -1,0 +1,63 @@
+{
+  "schema": "clipmkr-support-close-author-handoff-1",
+  "recordedAt": "2026-11-11T12:39:40.221059+00:00",
+  "status": "source-frozen; author targeted checks passed; independent native SOURCE QE pending",
+  "worktree": "/tmp/clipmkr-support-chat-closure-20261111",
+  "branch": "fix/support-chat-closure-20261111",
+  "baseRevision": "717b55d7e265095541a7b5b5d7f2612026cdf99a",
+  "runtimeRevisionUnchanged": "2af00157b2394b4af9ce5d131856f40a2f2714f2",
+  "targetSha256": {
+    "apps/web/src/lib/support-client.ts": "e405a4cb4fa15d44000a634b0648526dfe1f98b69cceff5abc7fdb0f17873961",
+    "tests/support-widget-ui.test.ts": "aa7a0aff44cb5a52bf31bb8aee506de05f37ca834508042b1d2b25fa95ff978f",
+    "tests/browser/support-chat-closure.test.ts": "6522ed8b07f16035e33987a7ab095c11e643884da5cf787a417e496263dccf0d"
+  },
+  "normSha256": {
+    "features/support-chat-closure/00_complexity_assessment.md": "10e78508b1661cb0f10c4443eac5b0169486b657fdfaaa744a1d4c941ff2fa5b",
+    "features/support-chat-closure/01_requirements.md": "7d6d2e89aa41d57055ef3ac5e9fe143c89397a257acf1deaa0bc1d439b23241d",
+    "features/support-chat-closure/06_implementation_plan.md": "19100c5589ac2b78da3bbfdbdc3bc05d03b83dc94d2456a79b6b00499906737d",
+    "features/support-chat-closure/owner-authority.md": "de407b2c24aac73ab95dee03ab9777a9382f616ab6e8f0a9219c2c31baa2de93",
+    "openspec/changes/support-chat-closure/specs/support-widget/spec.md": "a93e03e114309e13cd37ba8bb0e330885e6465988886e5658773d1cc46de5fe2"
+  },
+  "tests": {
+    "baselineBrowser": {
+      "exit": 1,
+      "failed": 6,
+      "passed": 2,
+      "failureType": "behavioral visible iframe before authority reset",
+      "durationSeconds": 5.51
+    },
+    "finalUnits": {
+      "exit": 0,
+      "passed": 23,
+      "skipped": 0,
+      "durationSeconds": 1.09
+    },
+    "finalBrowser": {
+      "exit": 0,
+      "passed": 8,
+      "skipped": 0,
+      "durationSeconds": 5.95
+    },
+    "focusedTypes": {
+      "exit": 0
+    },
+    "gitDiffCheck": {
+      "exit": 0
+    }
+  },
+  "newPublicUI": false,
+  "newDependencies": false,
+  "runtimeApplied": false,
+  "committed": false,
+  "pushed": false,
+  "nativePreparePerformedByAuthor": false,
+  "assignedAuthorModel": "gpt-6.1-sol high (root assignment)",
+  "independentReviewHost": "root / fresh Astra",
+  "limitations": [
+    "Local faithful cross-origin fixture, not live vendor/history E2E",
+    "History/JWT activation and A-to-B provider authorization are separate root scope",
+    "Parent Escape only; no cross-origin key interception",
+    "Full build/npm test intentionally not run for localized helper diff",
+    "No borrowed main/Wm .next/dist/build changes"
+  ]
+}

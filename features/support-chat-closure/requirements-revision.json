@@ -1,0 +1,8 @@
+{
+  "status": "exact-reviewed requirements plus matching OpenSpec delta; no semantic expansion",
+  "requirementsSha256": "7d6d2e89aa41d57055ef3ac5e9fe143c89397a257acf1deaa0bc1d439b23241d",
+  "planSha256": "19100c5589ac2b78da3bbfdbdc3bc05d03b83dc94d2456a79b6b00499906737d",
+  "openSpecPath": "openspec/changes/support-chat-closure/specs/support-widget/spec.md",
+  "openSpecSha256": "a93e03e114309e13cd37ba8bb0e330885e6465988886e5658773d1cc46de5fe2",
+  "authorityPath": "features/support-chat-closure/owner-authority.md"
+}
