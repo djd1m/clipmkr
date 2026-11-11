@@ -46,6 +46,14 @@ describe('Закрытые перечисления', () => {
     expect([...declared].filter(key => !(key in e.SQL_ENUMS) && !legacy.includes(key))).toEqual([]);
     expect(declared.has('video.cta_kind')).toBe(true);
   });
+  it('billing_notice_check_constraints_are_declared_and_mutation_sensitive', () => {
+    const sql = migrations();
+    expect(e.SQL_ENUMS['billing_notice.state']).toEqual(e.BILLING_NOTICE_STATE);
+    expect(e.SQL_ENUMS['billing_notice.offset_days']).toEqual(['1','3']);
+    checkSqlEnums(sql);
+    expect(() => checkSqlEnums(sql.replace("offset_days IN (1,3)),\n  state text NOT NULL DEFAULT", "offset_days IN (1,7)),\n  state text NOT NULL DEFAULT"))).toThrow();
+    expect(() => checkSqlEnums(sql.replace("DEFAULT 'pending' CHECK (state IN ('pending','sending','accepted','failed','unknown','superseded'))", "DEFAULT 'pending' CHECK (state IN ('pending','sending','accepted','failed','unknown'))"))).toThrow();
+  });
   it('Мутация CHECK обнаруживается стражем', () => {
     const sql = migrations();
     expect(() => checkSqlEnums(sql.replace("'free', 'paid'", "'free', 'premium'"))).toThrow();

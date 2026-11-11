@@ -1,0 +1,27 @@
+{
+  "addressed": [
+    "QUALITY-01",
+    "RISK-01"
+  ],
+  "changedScope": [
+    "features/manual-billing-reminders/01_requirements.md",
+    "features/manual-billing-reminders/03_adr/001-reuse-idempotent-mail-journal.md",
+    "features/manual-billing-reminders/05_architecture.md",
+    "features/manual-billing-reminders/requirements-revision.json",
+    "openspec/changes/manual-billing-reminders/design.md",
+    "openspec/changes/manual-billing-reminders/specs/manual-billing-reminders/spec.md",
+    "features/manual-billing-reminders/author-delta.json",
+    "features/manual-billing-reminders/02_reuse_inventory.md",
+    "features/manual-billing-reminders/owner-authority.md",
+    "openspec/changes/manual-billing-reminders/proposal.md",
+    "openspec/changes/manual-billing-reminders/tasks.md"
+  ],
+  "classification": "structural",
+  "delta": "QUALITY-01 (wording): subject/body и FR-7/OpenSpec называют дату концом текущего непрерывного периода доступа по пакетам, сохраняя индивидуальные сроки и бессрочные кредиты. RISK-01 (structural): relevant refund/review/неполный LIVE proof временно defer существующий pending/failed/unknown без HTTP, attempt или нового key; frozen payload/hash/key, attempts и first/last timestamps сохраняются. После сверки разрешён claim того же event только при прежнем end/offset, действующем окне и полной eligibility/verified LIVE, с прежними max3/1h/<23h после первой попытки. Изменённый tail/offset, expired/exhausted или недопустимый status/recipient, включая смену email после attempt, остаются terminal superseded; accepted/superseded не открываются, erasure удаляет journal. Новых states/services нет. 01/ADR/05 и OpenSpec описывают будущий сквозной сценарий до first attempt и после unknown: review→0HTTP/attempt delta0→cleared same end/window→одна отправка same event/key; expired/exhausted/email-change→no resume.",
+  "evidence": "Исходные условия прочитаны в 03.5-quality.md, 03.5-risk.md и неизменном host snapshot revision 131251b6467532b3d09314ae1fded5039292cdc111ce4749d4ff7a9acf9e034d; 03.5-testability.md прочитан как затронутый QCSD-вход. Требования/переходы/планируемые проверки изменены в 01 FR-5/6/7 и AC-A/B, ADR Decision/Consequences/Confirmation, 05 Права/Journal п.2–3/Контент/Проверка, OpenSpec design и spec. Ревизия pins: 2026-11-11-r2-qcsd-repair-1. Фактически выполнено из рабочего каталога: /tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin/node /home/clipmkr/node_modules/@fission-ai/openspec/bin/openspec.js validate manual-billing-reminders --strict --no-interactive. Первый exit1: требование >500 символов; после разделения требования и сценариев повтор exit0: Change manual-billing-reminders is valid. Python SHA-сверка подтверждает 10 manifest pins и 5 requirements pins; FR-1/2/3/4/8/9, journal schema/state enum и блок нагрузки/часов сохранены. ChangedScope включает все изменённые документы/author handoff и затронутые неизменные reuse/authority/proposal/tasks. Реальные PG/HTTP/Next и сквозной сценарий NOT RUN. Автор не утверждает закрытие условий: его устанавливают исходные независимые роли на новом host snapshot.",
+  "newRisks": {
+    "assessment": "Новых серьёзных рисков при проверке этой документальной дельты не выявлено. Разрешение возобновления могло бы сбросить дедупликацию или retry budget; в исправленном контракте это явно запрещено. Вывод ограничен дизайном и не доказывает поведение реализации.",
+    "evidence": "05 п.2 сохраняет existing event/state/key/attempts/timestamps и требует повторной проверки под account→credit→notice locks; п.3 сохраняет max3/1h/<23h и immutable bytes, terminal события не открываются. Полная LIVE qualification остаётся обязательной; права, сроки 3/1 и 72h/24h, lease2min, 20s/4HTTP/2concurrent, erasure и delivery gates не ослаблены. Future verification описывает положительное resume и запрет после expired/exhausted/email-change. Final dependency sourceRevision остаётся null; candidate не объявлен accepted. Reviewer reports и .fa-state не изменялись; независимая focused verification ещё требуется.",
+    "conditions": []
+  }
+}

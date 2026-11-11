@@ -23,7 +23,7 @@ describe('portable TEST callback fragment and IP contracts', () => {
     for (const [path, expected] of Object.entries({
       'apps/web/src/server/billing-handler.ts': '65e7bff02d517c0e20dbc82b9ee3d6c43c16e2389237ff4042a1dc802754b75b',
       'apps/web/src/server/ip.ts': 'af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301',
-      'packages/shared/src/config.ts': 'd66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f',
+      'packages/shared/src/config.ts': '053c6337971faafa079616a1e7d983360863d385e8b0818b6692006475cb46d4',
     })) {
       const bytes = readFileSync(resolve(path));
       expect(digest(bytes)).toBe(expected);

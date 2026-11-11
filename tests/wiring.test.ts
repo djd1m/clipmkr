@@ -18,6 +18,28 @@ describe('Проверяемость проброса окружения', () =>
     delete config.services.web!.environment.N5_LIMIT_USER_UPLOAD_REFUNDS;
     expect(checkWiring(config)).toEqual(['web: N5_LIMIT_USER_UPLOAD_REFUNDS']);
   });
+  it('billing_reminders_flag_reaches_web_only', () => {
+    const config = compose(); expect(checkWiring(config)).toEqual([]);
+    for (const role of ['worker-stt', 'worker-llm', 'worker-video']) delete config.services[role]!.environment.N5_BILLING_REMINDERS_ENABLED;
+    expect(checkWiring(config)).toEqual([]);
+    delete config.services.web!.environment.N5_BILLING_REMINDERS_ENABLED;
+    expect(checkWiring(config)).toContain('web: N5_BILLING_REMINDERS_ENABLED');
+    const dir = mkdtempSync(path.join(tmpdir(), 'billing-wiring-'));
+    try {
+      for (const folder of ['apps/web/src', 'apps/worker', 'packages/shared/src', 'packages/queue/src', 'packages/db/src', 'packages/s3/src']) cpSync(folder, path.join(dir, folder), { recursive: true });
+      for (const file of ['Dockerfile', 'package.json', 'apps/web/package.json']) cpSync(file, path.join(dir, file));
+      expect(checkWiring(compose(), dir)).toEqual([]);
+      const adapter = path.join(dir, 'apps/web/src/server/environment.ts'), source = readFileSync(adapter, 'utf8');
+      writeFileSync(adapter, source.replace('N5_BILLING_REMINDERS_ENABLED: process.env.N5_BILLING_REMINDERS_ENABLED,', ''));
+      expect(checkWiring(compose(), dir)).toContain('web environment.ts: N5_BILLING_REMINDERS_ENABLED');
+      writeFileSync(adapter, source); expect(checkWiring(compose(), dir)).toEqual([]);
+      const actual = composeConfig({ ...process.env, ...environment(), N5_DB_APP_PASSWORD: 'fixture', REDIS_PASSWORD: 'fixture' });
+      expect(actual.status, actual.stderr).toBe(0);
+      const services = JSON.parse(actual.stdout).services;
+      expect(services.web.environment.N5_BILLING_REMINDERS_ENABLED).toBe('false');
+      for (const role of ['worker-stt', 'worker-llm', 'worker-video']) expect(services[role].environment).not.toHaveProperty('N5_BILLING_REMINDERS_ENABLED');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
   it('Соседнему воркеру не приписываются переменные web', () => {
     const config = compose();
     for (const name of ['worker-stt', 'worker-llm', 'worker-video']) delete config.services[name]!.environment.SESSION_SECRET;

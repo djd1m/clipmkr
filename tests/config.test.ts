@@ -94,3 +94,11 @@ it.each(['worker-stt', 'worker-llm'] as const)('%s subprocess refuses missing re
   expect(result.stderr).toContain('N5_LIMIT_USER_RERENDERS');
   expect(result.stderr).toContain('смена музыки останется без потолка перерендеров');
 });
+
+it('billing_reminders_flag_defaults_false_without_mail', () => {
+  const env = environment(); delete env.N5_BILLING_REMINDERS_ENABLED;
+  expect(loadWebConfig(env)).toMatchObject({ billingRemindersEnabled: false, mail: { mode: 'disabled' } });
+  for (const value of ['false', 'true']) expect(loadWebConfig({ ...env, N5_BILLING_REMINDERS_ENABLED: value }).billingRemindersEnabled).toBe(value === 'true');
+  for (const value of ['', '1', 'TRUE', ' false']) expect(() => loadWebConfig({ ...env, N5_BILLING_REMINDERS_ENABLED: value })).toThrow('N5_BILLING_REMINDERS_ENABLED');
+  for (const role of ['worker-stt', 'worker-llm', 'worker-video'] as const) expect(loadWorkerConfig(role, { ...env, N5_BILLING_REMINDERS_ENABLED: 'invalid' })).not.toHaveProperty('billingRemindersEnabled');
+});

@@ -26,7 +26,7 @@ describe('YooKassa receipts', () => {
     expect(config).toMatchObject({ mode: 'live', testMode: true });
     expect('receipt' in config && config.receipt).toBeUndefined();
   });
-  it('receipt payload uses one exact RUB item for every offer', async () => {
+  it('manual_checkout_always_sends_save_payment_method_false', async () => {
     const yk = await startFakeYooKassa();
     try {
       const seen: Record<string, unknown>[] = [];
@@ -38,6 +38,9 @@ describe('YooKassa receipts', () => {
         await provider.createPayment({ orderId: randomUUID(), amountMinor, returnUrl: 'https://test.invalid/return', description, receipt });
         const body = seen.at(-1)!;
         const value = `${Math.floor(amountMinor / 100)}.${String(amountMinor % 100).padStart(2, '0')}`;
+        expect(body.save_payment_method).toBe(false);
+        expect(body).not.toHaveProperty('payment_method_id'); expect(body).not.toHaveProperty('payment_method_data');
+        expect(body.capture).toBe(true);
         expect(body.amount).toEqual({ value, currency: 'RUB' });
         expect(body.receipt).toEqual({ customer: { email: snapshot.email }, items: [{ description, quantity: '1.000', amount: body.amount,
           vat_code: 1, payment_subject: 'service', payment_mode: 'full_payment' }] });

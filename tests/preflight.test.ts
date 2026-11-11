@@ -37,3 +37,12 @@ it('preflight build includes isolated provenance CLI entry', () => {
   expect(result.output).toContain('Payment provenance operation failed');
   expect(readFileSync(preflight,'utf8')).not.toContain('ops-payment-provenance');
 });
+
+it('billing_reminders_missing_flag_and_mail_do_not_block_preflight', () => {
+  const env = environment(); delete env.N5_BILLING_REMINDERS_ENABLED;
+  env.N5_MAIL_MODE = 'disabled'; env.DATABASE_URL = 'postgresql://unreachable@127.0.0.1:1/not_connected';
+  for (const enabled of [undefined, 'true']) {
+    if (enabled) env.N5_BILLING_REMINDERS_ENABLED = enabled;
+    const result = subprocess([preflight], env, 5000); expect(result.status, result.output).toBe(0);
+  }
+});

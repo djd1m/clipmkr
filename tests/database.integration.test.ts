@@ -31,8 +31,8 @@ describe.skipIf(!databaseUrl)('PostgreSQL: ограничения, миграц�
   });
   it('Миграция идемпотентна; все 15 сущностей и 4 таблицы оплаты присутствуют', async () => {
     const result = await pool.query('SELECT tablename FROM pg_tables WHERE schemaname = $1 AND tablename <> $2', [schema, '_schema_migration']);
-    // 27 CREATE TABLE в текущих миграциях001…028, включая четыре support-таблицы023.
-    expect(result.rowCount).toBe(27);
+    // 28 CREATE TABLE в миграциях001…031, включая billing_notice.
+    expect(result.rowCount).toBe(28);
     expect(result.rows.map((r: { tablename: string }) => r.tablename)).toEqual(expect.arrayContaining(['payment_intent', 'payment_event', 'payment', 'operator_action', 'support_mail_admission']));
     const used = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name='quota_counter'", [schema]);
     expect(used.rows.map((r: { column_name: string }) => r.column_name)).not.toContain('limit');

@@ -1,0 +1,60 @@
+{
+  "commands": [],
+  "commandReason": "Новых dz/npm commands нет. Mutation runner запускается node по файлу; production tick использует существующий watchdog.",
+  "modules": [
+    {
+      "basename": "billing-notice-ledger",
+      "path": "packages/db/src/billing-notice-ledger.ts",
+      "exports": [
+        "readBillingNoticeEligibility",
+        "prepareBillingNoticeBatch",
+        "claimBillingNotice",
+        "completeBillingNotice",
+        "BillingNoticeEligibility",
+        "BillingNoticePayload",
+        "BillingNoticeClaim"
+      ]
+    },
+    {
+      "basename": "billing-notices",
+      "path": "apps/web/src/server/billing-notices.ts",
+      "exports": [
+        "billingNoticesTick"
+      ]
+    },
+    {
+      "basename": "billing-notices.integration.test",
+      "path": "tests/billing-notices.integration.test.ts",
+      "exports": []
+    },
+    {
+      "basename": "manual-billing-reminders-next.test",
+      "path": "tests/browser/manual-billing-reminders-next.test.ts",
+      "exports": []
+    },
+    {
+      "basename": "test-billing-notices-mutations",
+      "path": "scripts/test-billing-notices-mutations.mjs",
+      "exports": []
+    }
+  ],
+  "newExportsInExistingModules": [
+    {
+      "path": "packages/shared/src/enums.ts",
+      "exports": [
+        "BILLING_NOTICE_STATE",
+        "BillingNoticeState"
+      ],
+      "reason": "Проверять только новые exported identifiers; basename enums уже существует и не заявляется свободным. SQL_ENUMS расширяется двумя entries; offset_days использует string literals без нового export."
+    }
+  ],
+  "reexports": {
+    "path": "packages/db/src/index.ts",
+    "source": "./billing-notice-ledger.js",
+    "reason": "Те же DB names, не вторые определения; сборка проверит конфликты re-export."
+  },
+  "cli": "npm run dz -- name-check --project /tmp/clipmkr-manual-billing-reminders-20261111 --module <new basename> --export <comma-separated exports when nonempty> --json",
+  "existingModuleCli": "npm run dz -- name-check --project /tmp/clipmkr-manual-billing-reminders-20261111 --export BILLING_NOTICE_STATE,BillingNoticeState --json",
+  "status": "proposed inventory; actual K1 NOT RUN. Координатор выполняет полный project-pinned scan только после TASK-0 accepted030 merge/recheck/final dependency pins. Exit2/пустой sweep не является PASS. Любые дополнительные module/export names требуют обновления inventory и фактического K1 до ввода.",
+  "scope": "Два новых production TS modules +031 SQL migration. Test modules/runner перечислены отдельно для глобального basename sweep; существующий mailer/transaction/creditAccountLock не переименовываются и не дублируются."
+}
