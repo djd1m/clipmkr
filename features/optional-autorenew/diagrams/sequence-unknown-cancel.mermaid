@@ -1,0 +1,14 @@
+sequenceDiagram
+ participant W as Worker
+ participant P as PostgreSQL
+ participant Y as YooKassa
+ actor U as User
+ W->>P: dispatch authorized, commit
+ W->>Y: POST intent key
+ Y--xW: response lost / process crash
+ U->>P: revoke consent, commit
+ W->>P: restart, lease expired → unknown
+ Note over W,P: consent revoked: no further POST, no second key
+ W->>Y: GET only if provider ID known
+ Y-->>W: verified late success
+ W->>P: grant once; consent stays revoked

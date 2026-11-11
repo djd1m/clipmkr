@@ -1,0 +1,6 @@
+graph LR
+ U[Пользователь] -->|сессия и отдельное согласие| C[Clipmkr]
+ O[Владелец / оператор] -->|сверка неизвестных платежей| C
+ C -->|server credentials, HTTPS| Y[YooKassa]
+ Y -->|недоверенный webhook, затем canonical GET| C
+ C -->|server credentials, HTTPS| R[Resend]

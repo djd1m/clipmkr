@@ -1,0 +1,13 @@
+graph TD
+ UI[Upgrade / Return UI] --> H[Billing routes + renewal-handler]
+ H --> G[Shared mutation guards]
+ H --> DB[db/payments + db/billing-consent]
+ W[watchdog] --> S[renewal-tick]
+ W --> N[billing-notices]
+ S --> Q[db/renewals + canonical credit schedule]
+ S --> A[existing payments/yookassa adapter]
+ N --> J[billing_notice journal]
+ N --> M[existing SupportMailer transport]
+ A --> F[existing verified payment fulfillment]
+ F --> DB
+ F --> C[existing credit_grant + referral]

@@ -1,0 +1,8 @@
+graph LR
+ B[Browser] -->|same-origin API| W[Existing Next.js web]
+ W --> P[(PostgreSQL 16)]
+ W --> D[(Existing Redis rate limits)]
+ W --> Y[YooKassa HTTPS API]
+ W --> R[Resend HTTPS API]
+ W --> T[Existing minute watchdog]
+ T --> P

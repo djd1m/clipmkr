@@ -1,0 +1,22 @@
+sequenceDiagram
+ actor U as User
+ participant H as API
+ participant P as PostgreSQL
+ participant Y as YooKassa
+ participant W as Watchdog
+ participant R as Resend
+ U->>H: checkout + opt-in revision
+ H->>P: account lock, source intent + pending consent + snapshots
+ P-->>H: commit
+ H->>Y: initial payment, save=true, intent key
+ Y-->>H: webhook signal
+ H->>Y: canonical GET
+ H->>P: verified fulfillment + activate current pending consent
+ W->>P: claim current precharge notice at T-72h
+ W->>R: frozen message/key outside transaction
+ R-->>W: accepted + receipt
+ W->>P: store accepted_at and receipt
+ W->>P: at T revalidate, unique renewal intent + dispatch commit
+ W->>Y: same intent key, payment_method_id + receipt
+ W->>Y: canonical GET / webhook verification
+ W->>P: existing fulfillment once, next period

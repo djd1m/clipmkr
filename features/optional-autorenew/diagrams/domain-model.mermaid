@@ -1,0 +1,7 @@
+graph LR
+ I[Identity] -->|customer-supplier| B[Billing consent/intent]
+ B -->|existing fulfillment| C[Credits]
+ C -->|shared schedule| B
+ B -->|notice journal| N[Notifications]
+ B -->|anti-corruption adapter| Y[YooKassa]
+ N --> R[Resend]
