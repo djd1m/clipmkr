@@ -76,7 +76,7 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
   const status = (a: { token: string }, id: string, deps = wire()) => createCheckoutStatusHandler(deps)(new Request(`${PUBLIC}/api/checkout/${id}`, { headers: headers(a.token) }), id);
   const notify = (id: string, deps = wire()) => createPaymentWebhookHandler(deps)(new Request(`${PUBLIC}/api/webhooks/yookassa`, { method: 'POST', headers: { 'x-forwarded-for': '185.71.76.10,10.0.0.2,10.0.0.3' }, body: yk.notification(id) }));
   async function intent(a: { id: string }, key = randomUUID(), receiptConfig: ReceiptConfig | undefined = fiscal) {
-    const result = await createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey: key, receiptConfig });
+    const result = await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: key, receiptConfig });
     if (result.kind !== 'created' && result.kind !== 'existing') throw new Error('expected intent'); return result.intent;
   }
   async function waitForBlocker(pid: number) {
@@ -134,9 +134,9 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
     const firstPool = { connect: async () => holder } as unknown as Pool;
     try {
       const pid = (await query('SELECT pg_backend_pid() AS pid')).rows[0].pid as number;
-      const first = createPaymentIntent(firstPool, { accountId: a.id, priceMinor: 99000, idempotencyKey: key, receiptConfig: fiscal });
+      const first = createPaymentIntent(firstPool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: key, receiptConfig: fiscal });
       await inserted;
-      const second = createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey: key, receiptConfig: { ...fiscal, vatCode: 12 } });
+      const second = createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: key, receiptConfig: { ...fiscal, vatCode: 12 } });
       await waitForBlocker(pid); release();
       const [one, two] = await Promise.all([first, second]);
       expect(one.kind).toBe('created'); expect(two.kind).toBe('existing');
@@ -162,7 +162,7 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
   });
   it('receipt snapshot immutable trigger preserves allowed updates', async () => {
     const a = await account(), saved = await intent(a);
-    const result = await createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey: randomUUID() });
+    const result = await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: randomUUID() });
     if (!('intent' in result)) throw new Error('expected legacy'); const legacy = result.intent;
     for (const value of [{ ...sample, email: 'changed@test.invalid' }, null]) await expect(pool.query('UPDATE payment_intent SET receipt_snapshot=$2 WHERE id=$1', [saved.id, value])).rejects.toThrow('immutable payment offer');
     await expect(pool.query('UPDATE payment_intent SET receipt_snapshot=$2 WHERE id=$1', [legacy.id, sample])).rejects.toThrow('immutable payment offer');
@@ -181,7 +181,7 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
     expect((await pool.query('SELECT account_id,intent_id FROM payment WHERE provider_payment_id=$1', [paymentId])).rows).toEqual([{ account_id: null, intent_id: null }]);
   });
   it('unbound legacy intent is not retrofitted with receipt', async () => {
-    const a = await account(), key = randomUUID(); await createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey: key }); const before = countPosts();
+    const a = await account(), key = randomUUID(); await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: key }); const before = countPosts();
     const response = await checkout(a, key); expect(response.status).toBe(409); expect((await response.json()).error.code).toBe('receipt_snapshot_missing'); expect(countPosts()).toBe(before);
   });
   it('bound intent retry uses GET without a new receipt', async () => {
@@ -200,7 +200,7 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
       expect(config.payments.receipt).toBeNull();
       for (const time of ['expired', 'later', 'future', 'clock-invalid', 'missing', 'timestamp-invalid'] as const) {
         const a = await account(), key = randomUUID(), deps = wire(config.payments.receipt);
-        const result = await createPaymentIntent(pool, { accountId: a.id, priceMinor: 99000, idempotencyKey: key });
+        const result = await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: key });
         if (!('intent' in result)) throw new Error('expected legacy intent'); const saved = result.intent;
         expect(saved.receipt_snapshot).toBeNull();
         deps.clock = () => new Date(saved.created_at.getTime() + (time === 'expired' ? T : time === 'later' ? 24 * 3600_000 : time === 'future' ? -1 : time === 'clock-invalid' ? NaN : 0));

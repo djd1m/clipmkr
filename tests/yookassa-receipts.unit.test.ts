@@ -72,10 +72,10 @@ describe('YooKassa receipts', () => {
   });
   it('receipt failures never expose buyer email or provider secrets', async () => {
     const marker = 'synthetic-private-raw-secret@test.invalid', logs: string[] = [];
-    const provider = { name: 'yookassa', createPayment: vi.fn(async () => { throw new PaymentVerificationError(marker); }), getPayment: vi.fn(), verifyNotification: vi.fn() };
+    const provider = { identity: {provider:'yookassa' as const,environment:'live' as const,merchantId:'123456'}, name: 'yookassa', createPayment: vi.fn(async () => { throw new PaymentVerificationError(marker); }), getPayment: vi.fn(), verifyNotification: vi.fn() };
     const deps: BillingDependencies = { checkoutAllowed: () => true, publicOrigin: 'https://test.invalid', trustedProxyHops: 1,
       provider, authenticate: async () => ({ account_id: randomUUID() }), allowMutation: async () => true, allowRead: async () => true,
-      createIntent: async () => ({ kind: 'created', intent: { id: randomUUID(), price_minor: 99000, status: 'created', provider_payment_id: null, created_at: new Date(), receipt_snapshot: snapshot } }),
+      createIntent: async () => ({ kind: 'created', intent: { payment_provider:'yookassa',payment_environment:'live',payment_merchant_id:'123456',id: randomUUID(), price_minor: 99000, status: 'created', provider_payment_id: null, created_at: new Date(), receipt_snapshot: snapshot } }),
       setIntentPayment: async () => true, readIntent: async () => null, markCanceled: async () => {}, applyPayment: vi.fn(), recordRefund: vi.fn(), log: line => logs.push(line) };
     const response = await createCheckoutHandler(deps)(new Request('https://test.invalid/api/checkout', { method: 'POST', headers: { origin: 'https://test.invalid', cookie: '__Host-n5_session=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG', 'x-forwarded-for': '198.51.100.1,10.0.0.1', 'content-type': 'application/json' }, body: JSON.stringify({ idempotency_key: 'synthetic-key' }) }));
     expect(response.status).toBe(503); expect(provider.createPayment).toHaveBeenCalledOnce();

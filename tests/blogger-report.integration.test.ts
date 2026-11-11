@@ -46,14 +46,14 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
   const pay = async (account = visitor, options: PayOptions = {}) => {
     const intent = randomUUID(), providerId = randomUUID();
     await pool.query(`INSERT INTO payment_intent
-      (id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
-      VALUES($1::uuid,$2,99000,$1::text,$3,$4,$5,$6,$7,$8,$9,
+      (payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+      VALUES('yookassa','live','123456',$1::uuid,$2,99000,$1::text,$3,$4,$5,$6,$7,$8,$9,
         (SELECT partner_code_id FROM attribution WHERE account_id=$2 AND assigned_at<=$9::timestamptz AND status IN ('pending','activated')))`, [intent, options.intentAccount ?? account, providerId,
       options.intentStatus ?? 'succeeded', options.legacy ? 'legacy_pro990_v1' : 'start_v1',
       options.legacy ? 'legacy_v1' : 'credits_v1_d00', options.legacy ? 0 : 18000,
       options.fulfilled === false ? null : paid, options.created ?? paid]);
-    await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [intent, account, options.provider ?? 'yookassa',
+    await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
+      VALUES(CASE WHEN $3='fake' THEN 'test' ELSE 'live' END,CASE WHEN $3='fake' THEN NULL ELSE '123456' END,$1,$2,$3,$4,$5,$6,$7,$8,$9)`, [intent, account, options.provider ?? 'yookassa',
       options.identity === false ? randomUUID() : providerId, options.amount ?? 99000,
       options.status ?? 'succeeded', options.review ?? false, options.review ? 'amount_mismatch' : null, options.at ?? paid]);
     return intent;
@@ -70,11 +70,11 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
       const intent = randomUUID(), provider = randomUUID(), who = opts.account ?? visitor;
       const sku = amount === 99000 ? 'start_v1' : amount === 149000 ? 'addon_v1' : 'pro_v1';
       const seconds = amount === 99000 ? 18000 : amount === 149000 ? 36000 : 108000;
-      await pool.query(`INSERT INTO payment_intent(id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
-        VALUES($1::uuid,$2,$3,$1::text,$4,$5,$6,'credits_v1_d00',$7,$8,'2029-12-01',$9)`,
+      await pool.query(`INSERT INTO payment_intent(payment_provider,payment_environment,payment_merchant_id,id,account_id,price_minor,idempotency_key,provider_payment_id,status,sku,offer_version,grant_seconds,fulfilled_at,created_at,referral_partner_code_id)
+        VALUES('yookassa','live','123456',$1::uuid,$2,$3,$1::text,$4,$5,$6,'credits_v1_d00',$7,$8,'2029-12-01',$9)`,
         [intent, who, amount, provider, opts.intentStatus ?? 'succeeded', sku, seconds, opts.fulfilled === false ? null : start, link]);
-      await pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
-        VALUES($1,$2,'yookassa',$3,$4,$5,$6,$7,$8)`, [intent, who, provider, amount, opts.status ?? 'succeeded', opts.review ?? false, opts.review ? 'amount_mismatch' : null, opts.at ?? start]);
+      await pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,status,needs_review,review_reason,paid_at)
+        VALUES('live','123456',$1,$2,'yookassa',$3,$4,$5,$6,$7,$8)`, [intent, who, provider, amount, opts.status ?? 'succeeded', opts.review ?? false, opts.review ? 'amount_mismatch' : null, opts.at ?? start]);
       return intent;
     };
     await sale(code, 99000, { at: start });
@@ -138,8 +138,8 @@ describe.skipIf(!url)('ежемесячный отчёт блогеров Postgr
       .toMatchObject({ paying_users: 1, payments: 1, revenue_minor: 99000 });
     // Уникальный provider ID не допускает повторной записи того же события.
     const existing = (await pool.query('SELECT * FROM payment WHERE intent_id=$1', [accepted])).rows[0];
-    await expect(pool.query(`INSERT INTO payment(intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
-      VALUES($1,$2,'yookassa',$3,99000,$4)`, [accepted, visitor, existing.provider_payment_id, paid])).rejects.toMatchObject({ code: '23505' });
+    await expect(pool.query(`INSERT INTO payment(payment_environment,payment_merchant_id,intent_id,account_id,provider,provider_payment_id,amount_minor,paid_at)
+      VALUES('live','123456',$1,$2,'yookassa',$3,99000,$4)`, [accepted, visitor, existing.provider_payment_id, paid])).rejects.toMatchObject({ code: '23505' });
     await pool.query("UPDATE payment SET status='refunded' WHERE intent_id=$1", [accepted]);
     expect((await report()).bloggers.find(row => row.account_id === blogger)?.counters)
       .toMatchObject({ paying_users: 0, payments: 0, revenue_minor: 0 });

@@ -100,20 +100,20 @@ describe('цена и действующий план (OWN-019, AC-11)', () => {
     expect(effectivePlanSql('a')).toBe("(CASE WHEN (a.owner_unlimited=true AND a.status='active') OR (a.plan='paid' AND (a.plan_source IN ('none','operator') OR (a.plan_source='payment' AND a.plan_paid_until > now())) OR EXISTS (SELECT 1 FROM credit_grant cg WHERE cg.account_id=a.id AND cg.source='payment' AND cg.entitlement_start<=now() AND cg.entitlement_end>now())) THEN 'paid' ELSE 'free' END)");
     expect(effectivePlanSql('a', '$4')).toContain('plan_paid_until > $4');
     expect(() => effectivePlanSql('a; DROP', 'now()')).toThrow(); expect(() => effectivePlanSql('a', 'now() OR true')).toThrow();
-    expect(retentionFromSql('v', 'a')).toContain('GREATEST(v.finished_at, a.plan_paid_until, (SELECT max(cg.entitlement_end)');
+    expect(retentionFromSql('v', 'a')).toContain('GREATEST(a.plan_paid_until, (SELECT max(cg.entitlement_end)');
   });
   it('срок хранения: от готовности, но не раньше конца оплаты; явный expires_at сильнее', () => {
     const finished = new Date('2026-09-01T00:00:00Z');
     const clipId = '11111111-1111-4111-8111-111111111111';
     const expiry = (expiresAt: Date | null, plan: unknown, retentionFrom: Date | null) => clipExpiry({ clipId, expiresAt, plan, retentionFrom });
-    expect(expiry(null, 'free', finished)?.toISOString()).toBe('2026-09-04T00:00:00.000Z');
-    expect(expiry(null, 'paid', finished)).toBeNull();
+    expect(expiry(null, 'free', finished)?.toISOString()).toBe('2026-09-08T00:00:00.000Z');
+    expect(expiry(null, 'paid', finished)?.toISOString()).toBe('2026-09-08T00:00:00.000Z');
     expect(expiry(null, 'free', null)).toBeNull();
     for (const bad of [null, undefined, '', 'PAID', ' paid', 'premium', 0, true]) expect(expiry(null, bad, finished), String(bad)).not.toBeNull();
     const explicit = new Date('2026-09-02T00:00:00Z');
     expect(expiry(explicit, 'paid', finished)).toBe(explicit);
   });
-  // BACKLOG §5а (ревью Opus 28.09, находка 2): правило «бесплатный клип = retention_from + 3 сут, витрина — без срока»
+  // BACKLOG §5а (ревью Opus 28.09, находка 2): правило «бесплатный клип = ready_at + 7 сут, витрина — без срока»
   // жило в шести местах, исключение витрины — в двух. Теперь число и исключение — ровно в tariff.ts (TS) и plan.ts (SQL).
   it('срок бесплатного клипа и исключение витрины записаны ровно в одном месте на язык', () => {
     const files: string[] = [];
@@ -125,9 +125,9 @@ describe('цена и действующий план (OWN-019, AC-11)', () => {
     for (const root of ['apps/web/src', 'apps/worker/src', 'packages/db/src', 'packages/shared/src', 'packages/queue/src', 'packages/s3/src']) walk(root);
     expect(files.length).toBeGreaterThan(50);
     const offenders = (pattern: RegExp) => files.filter(file => pattern.test(readFileSync(file, 'utf8'))).sort();
-    // Формула срока: 3 суток любым написанием — только определение константы (72 ч удаления аккаунта — другое правило, erasure.ts).
-    expect(offenders(/\b3\s*\*\s*86_?400(_?000)?\b|'72 hours'|interval '3 days?'|\b259_?200(_?000)?\b/))
-      .toEqual(['packages/shared/src/tariff.ts']);
+    // Формула срока: 7 суток любым написанием — только определение константы (72 ч удаления аккаунта — другое правило, erasure.ts).
+    expect(offenders(/\b7\s*\*\s*86_?400(_?000)?\b|'168 hours'|interval '7 days?'|\b604_?800(_?000)?\b/))
+      .toEqual(['apps/web/src/server/erasure-receipt.ts', 'packages/db/src/support-email.ts', 'packages/shared/src/tariff.ts']);
     expect(offenders(/FREE_RETENTION_MS/)).toEqual(['packages/db/src/plan.ts', 'packages/shared/src/tariff.ts']);
     // Исключение витрины из срока: TS — clipExpiry, SQL — clipAliveSql. Никаких собственных копий в чтениях и ретенции.
     expect(offenders(/isShowcaseClip\(|SHOWCASE_CLIP_IDS/)).toEqual(['packages/db/src/plan.ts', 'packages/shared/src/showcase.ts', 'packages/shared/src/tariff.ts']);
@@ -204,7 +204,7 @@ describe('порядок входа маршрутов оплаты', () => {
   const PUBLIC = 'https://clipmkr.test.invalid';
   const TOKEN = 'A'.repeat(43);
   const XFF = (client: string) => `${client}, 10.0.0.2, 10.0.0.3`;
-  const unused: PaymentProvider = { name: 'fake', createPayment: async () => { throw new Error('нет'); }, getPayment: async () => { throw new Error('нет'); },
+  const unused: PaymentProvider = { name: 'fake', identity: {provider:'fake',environment:'test',merchantId:null}, createPayment: async () => { throw new Error('нет'); }, getPayment: async () => { throw new Error('нет'); },
     verifyNotification: async () => { throw new Error('нет'); } };
   function deps(calls: string[], over: Partial<BillingDependencies> = {}): BillingDependencies {
     const touch = (name: string) => async () => { calls.push(name); throw new Error(`${name} не должен вызываться`); };
@@ -386,7 +386,7 @@ it('test checkout SSR and POST agree for allowed and other sessions', async () =
     auth: { authenticate: async () => accountId ? { account_id: accountId } : null } }) }));
   vi.doMock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'private-test-session' }) }), headers: async () => new Headers() }));
   vi.doMock('next/navigation', () => ({ redirect: (path: string) => { throw new Error(`REDIRECT ${path}`); }, useRouter: () => ({ refresh() {}, push() {} }) }));
-  const provider: PaymentProvider = { name: 'yookassa', createPayment: vi.fn(), getPayment: vi.fn(), verifyNotification: vi.fn() };
+  const provider: PaymentProvider = { name: 'yookassa', identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, createPayment: vi.fn(), getPayment: vi.fn(), verifyNotification: vi.fn() };
   const deps = { publicOrigin: 'https://test.invalid', trustedProxyHops: 1, provider,
     authenticate: async () => accountId ? { account_id: accountId } : null, allowMutation: async () => true,
     billingPolicy: async () => 'credits_v1', checkoutAllowed: (id: string, policy: string | null) => checkoutAllowedForAccount(config, id, policy, ready),

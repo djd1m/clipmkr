@@ -1,11 +1,12 @@
 import { beforeAll, expect, it } from 'vitest';
 import { subprocess } from './fixtures/subprocess';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { LIMIT_NAMES } from '../packages/shared/src/config';
 import { environment } from './fixtures/environment';
 
 beforeAll(() => {
   expect(subprocess(['node_modules/typescript/bin/tsc', '-p', 'packages/shared/tsconfig.json']).status).toBe(0);
+  expect(subprocess(['node_modules/typescript/bin/tsc', '-p', 'packages/db/tsconfig.json']).status).toBe(0);
   expect(subprocess(['node_modules/typescript/bin/tsc', '-p', 'apps/web/tsconfig.preflight.json']).status).toBe(0);
 });
 const preflight = 'apps/web/.next/preflight/preflight.js';
@@ -26,4 +27,13 @@ it('Оба production entrypoint запускают preflight до Next', () => 
   expect(pkg.scripts.start).toBe('node .next/preflight/preflight.js && next start');
   const docker = readFileSync('Dockerfile', 'utf8').split(' AS web')[1]!.split(' AS worker')[0]!;
   expect(docker).toContain('node apps/web/.next/preflight/preflight.js && exec node node_modules/next/dist/bin/next start apps/web');
+});
+
+it('preflight build includes isolated provenance CLI entry', () => {
+  const cli = 'apps/web/.next/preflight/server/payments/ops-payment-provenance.js';
+  expect(existsSync(cli)).toBe(true);
+  const result = subprocess([cli], {NODE_ENV:'test'}, 5000);
+  expect(result.status).toBe(1);
+  expect(result.output).toContain('Payment provenance operation failed');
+  expect(readFileSync(preflight,'utf8')).not.toContain('ops-payment-provenance');
 });

@@ -1,0 +1,88 @@
+{
+  "phase": "source-qe-r1-author-repair",
+  "author": "gpt-6.1-sol high",
+  "node": "v22.23.4",
+  "previousManifestSha256": "04ee1d7914a5822d73e4713b81e908864079941c4b20e03a6304490ed18aec87",
+  "changedPaths": [
+    "packages/db/src/payment-provenance.ts",
+    "apps/web/src/server/billing-handler.ts",
+    "tests/payment-environments.integration.test.ts",
+    "tests/browser/payment-environments-next.test.ts",
+    "tests/test-webhook-route.test.ts",
+    "tests/fixtures/fake-yookassa-server.ts"
+  ],
+  "commands": [
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "r1-repair-build.private.log",
+      "logSha256": "f65d7eff82b136373b293e1f4ca8bfc721bded0e3a8c0880f36bc3af0c962240"
+    },
+    {
+      "command": "npm test -- --run tests/payment-environments.integration.test.ts tests/billing.integration.test.ts tests/billing.unit.test.ts tests/credit-packages.integration.test.ts tests/payments-guards.test.ts tests/test-webhook-route.test.ts tests/yookassa-receipts.integration.test.ts tests/relocation-test-webhook.integration.test.ts",
+      "exitCode": 0,
+      "filesPassed": 8,
+      "testsPassed": 132,
+      "durationSeconds": 31.59,
+      "log": "r1-repair-affected.private.log",
+      "logSha256": "7ad2b14b6f6e374f41ace8f4aceb30b63aea3dbb8acb648f1767b46e78134c74"
+    },
+    {
+      "command": "npm test -- --run --config vitest.browser.config.ts tests/browser/payment-environments-next.test.ts",
+      "exitCode": 0,
+      "filesPassed": 1,
+      "testsPassed": 2,
+      "durationSeconds": 17.3,
+      "log": "r1-repair-native.private.log",
+      "logSha256": "1594ed99b7030f9cd60c0e9183f4a28bbb53d2b20e34e7789b09541939bb1365"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "log": "r1-repair-typecheck.private.log",
+      "logSha256": "1b4b658aae5b9ff1fab2830785a99fb6149f6727dcfc8485f493c745a36ffc13"
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "log": "r1-repair-lint.private.log",
+      "logSha256": "03d26c6ef0841b6eac1a8fb620e782e15d97a1f4467dc4566747082c86361443"
+    }
+  ],
+  "limitations": [
+    "Author assessment, not originating reviewer verification or native gate closure.",
+    "No second full160-file run. Prior full run remains non-green; independent qe-testing R1 reproduced all19 outside-feature failures on exact5c5130d.",
+    "Synthetic LIVE loopback fixture only; no production, real provider/money or actual VPS cutover."
+  ],
+  "compiledArtifacts": [
+    {
+      "path": "apps/web/.next/preflight/server/payments/ops-payment-provenance.js",
+      "sha256": "397c03488ce9d936a08e9c29db372e881ee3e1705d4d222e7916ac011997993f"
+    },
+    {
+      "path": "apps/web/.next/preflight/server/payments/yookassa.js",
+      "sha256": "ad09a828908e3d8e43a42a4c9bb4e45fca4cf02b643ac02669c830e9baf133c3"
+    },
+    {
+      "path": "apps/web/.next/BUILD_ID",
+      "sha256": "480d28118ea2f3df63a98dee3028de3f47f3568ca96a1f7688a2f7e323f8c05e"
+    }
+  ],
+  "coordinatorStatusUpdates": [
+    {
+      "path": "openspec/changes/payment-environments/tasks.md",
+      "sha256": "fcd615dc862cea7b31cc62a1ea8c1a038127865613864d41ea7a8f8812068e1b",
+      "kind": "checkbox-only mutable OpenSpec task ledger status",
+      "checked": [
+        "1.1",
+        "2.1",
+        "2.2",
+        "3.1"
+      ],
+      "unchecked": [
+        "3.2"
+      ],
+      "assessment": "Coordinator-only ledger status update: openspec/changes/payment-environments/tasks.md marks actual QCSD/K1/K2, implementation and PG/HTTP/API/render/targeted-mutation work (1.1/2.1/2.2/3.1) complete; independent final source QE/delivery3.2 remains unchecked. This is not an author code fix, production backfill, final QE closure or delivery claim; the30-source manifest and build/test snapshot are unchanged."
+    }
+  ]
+}

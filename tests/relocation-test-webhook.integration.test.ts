@@ -73,7 +73,7 @@ describe('QA TEST callback admission на настоящем PostgreSQL', () => 
   async function localIntent() {
     const id = randomUUID();
     await pool.query("INSERT INTO account(id,email,password_hash,billing_policy) VALUES($1,$2,'x','credits_v1')", [id, `${id}@test.invalid`]);
-    const result = await createPaymentIntent(pool, { accountId: id, priceMinor: 99000, idempotencyKey: randomUUID(), sku: 'start_v1', billingMode: 'credits_v1' });
+    const result = await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: id, priceMinor: 99000, idempotencyKey: randomUUID(), sku: 'start_v1', billingMode: 'credits_v1' });
     if (result.kind !== 'created') throw new Error('expected created intent');
     return { account: id, intent: result.intent.id };
   }
@@ -86,7 +86,7 @@ describe('QA TEST callback admission на настоящем PostgreSQL', () => 
 
   it('foreign TEST payment and refund retries return 503 before any ledger write', async () => {
     const mismatch = await localIntent(), unbound = await localIntent();
-    await setIntentProviderPayment(pool, mismatch.intent, randomUUID());
+    await pool.query('UPDATE payment_intent SET provider_payment_id=$2 WHERE id=$1',[mismatch.intent,randomUUID()]);
     const payments = [await remote(), await remote(mismatch.intent), await remote(unbound.intent)];
     const w = wire();
     const observations: Array<{ event: string; statuses: number[]; unchanged: boolean }> = [];
@@ -145,7 +145,7 @@ describe('QA TEST callback admission на настоящем PostgreSQL', () => 
 
   it('SELECT failure returns retryable 503 before either consumer', async () => {
     const local = await localIntent(), id = await remote(local.intent);
-    await setIntentProviderPayment(pool, local.intent, id);
+    await setIntentProviderPayment(pool, local.intent, id, await provider().getPayment(id));
     const w = wire(qaConfig(), provider(), true), before = await snapshot();
     for (const raw of [yk.notification(id), yk.refundNotification(yk.refund(id))]) expect((await w.notify(raw)).status).toBe(503);
     expect(w.select).toHaveBeenCalledTimes(2); expectNoConsumers(w); expect(await snapshot()).toEqual(before);
@@ -158,7 +158,7 @@ describe('QA TEST callback admission на настоящем PostgreSQL', () => 
     expect(w.deps.checkoutAllowed(local.account, 'credits_v1')).toBe(true);
     expect((await w.notify(yk.notification(id))).status).toBe(503);
     expect(await snapshot()).toEqual(before); expectNoConsumers(w);
-    await setIntentProviderPayment(pool, local.intent, id);
+    await setIntentProviderPayment(pool, local.intent, id, await provider().getPayment(id));
     const drain = wire(qaConfig({ DATABASE_URL: 'postgresql://n5_relocation_qa@clipmkr-stage-20261028-db-1/n5_relocation_qa_test',
       REDIS_URL: 'redis://clipmkr-stage-20261028-redis-1/4' }));
     expect(drain.deps.checkoutAllowed(local.account, 'credits_v1')).toBe(false);
@@ -176,7 +176,7 @@ describe('QA TEST callback admission на настоящем PostgreSQL', () => 
   it('known refund ordering and repeat deliveries retain canonical behavior', async () => {
     for (const refundFirst of [false, true]) {
       const local = await localIntent(), id = await remote(local.intent);
-      await setIntentProviderPayment(pool, local.intent, id);
+      await setIntentProviderPayment(pool, local.intent, id, await provider().getPayment(id));
       const w = wire(), refund = yk.refundNotification(yk.refund(id));
       if (!refundFirst) expect((await w.notify(yk.notification(id))).status).toBe(200);
       const burst = await Promise.all(Array.from({ length: 20 }, () => w.notify(refund)));

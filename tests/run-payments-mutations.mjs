@@ -16,8 +16,10 @@ const cases = [
     "      await deps.applyPayment({ provider: 'yookassa', eventKey: 'x', payloadSha256: '', payment: { id: '', orderId: null, amountMinor: 1, feeMinor: null, paidAt: null } }).catch(() => undefined);\n      verified = await provider.verifyNotification(", guards, 'режим → сырые байты'],
   ['unavailable-as-value', handler, "return fail(503, 'provider_unavailable', 'Источник истины недоступен');",
     "return json({ data: { applied: false, reason: 'provider_unavailable' } });", billing, 'AC-6 недоступность'],
-  ['no-advisory-lock', db, "    if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;\n    await lockPayment(tx, input.provider, payment.id);\n    // Возврат приехал",
-    "    if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;\n    // Возврат приехал", billing, 'AC-7 блокировка'],
+  ['no-advisory-lock', db, "    await lockPayment(tx, input.provider, payment.id);\n    const candidate = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2', [input.provider, payment.id])).rows[0];",
+    "    const candidate = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2', [input.provider, payment.id])).rows[0];", guards, 'payment provenance guards'],
+  ['live-provenance-guard', 'packages/db/src/payment-provenance.ts', "AND ${p}.payment_environment='live' AND ${i}.payment_environment='live'", '', 'tests/payment-environments.integration.test.ts', 'financial reports preserve'],
+  ['merchant-provenance-guard', 'packages/db/src/payment-provenance.ts', 'AND ${p}.payment_merchant_id IS NOT NULL AND ${p}.payment_merchant_id=${i}.payment_merchant_id', '', 'tests/payment-environments.integration.test.ts', 'financial reports preserve'],
   ['now-plus-30', db, 'plan_paid_until = GREATEST(COALESCE(plan_paid_until, now()), now()) + make_interval', 'plan_paid_until = now() + make_interval', billing, 'AC-7 перестановка'],
   ['fake-in-production', 'packages/shared/src/tariff.ts', "if (env.NODE_ENV === 'production') throw refuse('N5_PAYMENTS_MODE'", "if (false) throw refuse('N5_PAYMENTS_MODE'", unit, 'fake разрешён'],
   ['compose-colon-off', 'docker-compose.yml', 'N5_PAYMENTS_MODE: ${N5_PAYMENTS_MODE-off}', 'N5_PAYMENTS_MODE: ${N5_PAYMENTS_MODE:-off}', guards, 'compose подставляет off'],
@@ -39,13 +41,13 @@ const cases = [
   // AC-13, AC-9, AC-8
   ['operator-keeps-remainder', 'packages/db/src/ops-set-plan.ts', "plan_paid_until = CASE WHEN $2 = 'free' THEN NULL ELSE plan_paid_until END", 'plan_paid_until = plan_paid_until', paid, 'AC-13 оператор'],
   ['erasing-gets-plan', db, "    if (owner?.status !== 'active') {", '    if (false) {', billing, 'AC-9 оплата'],
-  ['amount-mismatch-grants', db, '    if (payment.amountMinor !== intent.price_minor) {', '    if (false) {', billing, 'AC-8 сумма'],
+  ['amount-mismatch-grants', db, '    if (intent.price_minor !== payment.amountMinor) {', '    if (false) {', billing, 'AC-8 сумма'],
   // Ревью, круг 1: находки 1–3
   ['guest-download-all-offer', 'apps/web/src/server/guest-page.ts', "querySelectorAll('.clips a[download]')", "querySelectorAll('a.download')", guards, 'гостевая страница при включённой'],
   ['quota-plan-lock', 'packages/db/src/quota.ts', 'AS plan FROM account a WHERE a.id::text = $1`', 'AS plan FROM account a WHERE a.id::text = $1 FOR SHARE`', guards, 'списание минут читает план'],
   // Ревью, круг 2, находка 1: намерение раньше аккаунта — взаимоблокировка со стиранием
-  ['intent-before-account', db, "('SELECT account_id FROM payment_intent WHERE id = $1', [payment.orderId])).rows[0]\n      : undefined;\n    // Платёж без",
-    "('SELECT account_id FROM payment_intent WHERE id = $1 FOR UPDATE', [payment.orderId])).rows[0]\n      : undefined;\n    // Платёж без", billing, 'AC-9 гонка'],
+  ['intent-before-account', db, "? (await tx.query('SELECT account_id FROM payment_intent WHERE id=$1', [lockedIntentId])).rows[0] : undefined;",
+    "? (await tx.query('SELECT account_id FROM payment_intent WHERE id=$1 FOR UPDATE', [lockedIntentId])).rows[0] : undefined;", billing, 'AC-9 гонка'],
   ['return-next-lost', 'apps/web/src/lib/payment-return.ts', '|\\/return\\?intent=', '|\\/nowhere\\?intent=', unit, 'next — только'],
 ];
 const selected = process.argv.slice(2), results = [];

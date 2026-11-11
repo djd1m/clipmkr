@@ -1,3 +1,4 @@
+import type { PaymentIdentity } from '@clipmaker/shared/payment-identity';
 import type { ReceiptSnapshot } from '@clipmaker/shared/tariff';
 // из N6: projects/06-rag-sales-chatbase/apps/web/src/server/payments/provider.ts — перенесено без изменений логики (фича 30 payments, ADR-019).
 // из N4: projects/04-calorie-vision-cal-ai/apps/api/src/payments/provider.ts — перенесено (фича tariffs-and-interest, ADR-014 строка «провайдер ЮKassa», A-N6-040).
@@ -32,6 +33,7 @@ export class PaymentVerificationError extends Error {
 export type RemotePaymentStatus = 'pending' | 'waiting_for_capture' | 'succeeded' | 'canceled';
 
 export interface RemotePayment {
+  readonly identity: PaymentIdentity;
   readonly id: string;
   readonly status: RemotePaymentStatus;
   readonly amountMinor: number;
@@ -76,6 +78,7 @@ export interface NotificationContext {
 }
 
 export interface PaymentProvider {
+  readonly identity: PaymentIdentity;
   readonly name: string;
   createPayment(input: CreatePaymentInput): Promise<RemotePayment>;
   getPayment(id: string): Promise<RemotePayment>;

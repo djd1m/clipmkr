@@ -17,6 +17,8 @@ export interface FakeYooKassa {
   payments: Map<string, Payment>;
   created: number;
   createKeys: string[];
+  /** Every received HTTP method, including idempotent POST, failed auth and unmatched routes. */
+  requestMethods: string[];
   readCalls: number;
   holdNextCreates(expected: number): { arrived: Promise<void>; release(): void };
   // Управление: 5xx на чтение платежа; подмена суммы в ответе перезапроса; платёж создаётся уже оплаченным.
@@ -27,7 +29,7 @@ export interface FakeYooKassa {
   forgetIdempotence(): void;
   pay(paymentId: string): void;
   cancel(paymentId: string): void;
-  refund(paymentId: string): string;
+  refund(paymentId: string, value?: string): string;
   notification(paymentId: string): string;
   refundNotification(refundId: string): string;
   byOrder(orderId: string): Payment | undefined;
@@ -47,7 +49,7 @@ export async function startFakeYooKassa(options: { test?: boolean } = {}): Promi
   const byKey = new Map<string, string>();
   let barrier: { enter(): Promise<void> } | null = null;
   const state: Omit<FakeYooKassa, 'apiBase' | 'close'> = {
-    payments: new Map(), refunds: new Map(), created: 0, createKeys: [], readCalls: 0, failReads: false, readAmountOverride: null,
+    payments: new Map(), refunds: new Map(), created: 0, createKeys: [], requestMethods: [], readCalls: 0, failReads: false, readAmountOverride: null,
     holdNextCreates(expected) {
       if (barrier || !Number.isInteger(expected) || expected < 2) throw new Error('Invalid create barrier');
       let seen = 0, arrive!: () => void, release!: () => void;
@@ -59,10 +61,10 @@ export async function startFakeYooKassa(options: { test?: boolean } = {}): Promi
     forgetIdempotence() { byKey.clear(); },
     pay(id) { const p = state.payments.get(id)!; p.status = 'succeeded'; p.paid = true; p.captured_at = stamp(); p.income_amount = { value: p.amount.value, currency: 'RUB' }; },
     cancel(id) { const p = state.payments.get(id)!; p.status = 'canceled'; },
-    refund(paymentId) {
+    refund(paymentId, value) {
       const p = state.payments.get(paymentId)!;
       const id = randomUUID();
-      state.refunds.set(id, { id, payment_id: paymentId, status: 'succeeded', amount: p.amount, created_at: stamp() });
+      state.refunds.set(id, { id, payment_id: paymentId, status: 'succeeded', amount: value ? {value,currency:'RUB'} : p.amount, created_at: stamp() });
       return id;
     },
     notification(id) { return JSON.stringify({ type: 'notification', event: 'payment.succeeded', object: state.payments.get(id) }); },
@@ -70,6 +72,7 @@ export async function startFakeYooKassa(options: { test?: boolean } = {}): Promi
     byOrder(orderId) { return [...state.payments.values()].find((p) => p.metadata.order_id === orderId); },
   };
   const server: Server = createServer((req, res) => {
+    state.requestMethods.push(req.method ?? 'UNKNOWN');
     void (async () => {
       const auth = req.headers.authorization ?? '';
       if (auth !== `Basic ${Buffer.from(`${SHOP_ID}:${SECRET}`).toString('base64')}`) return send(res, 401, { type: 'error', code: 'invalid_credentials' });

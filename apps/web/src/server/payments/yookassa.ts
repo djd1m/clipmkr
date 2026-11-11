@@ -169,6 +169,7 @@ export function createYooKassaProvider(options: YooKassaOptions): PaymentProvide
     const incomeMinor = raw.income_amount === undefined ? null : parseRubAmount(raw.income_amount, 'payment.income_amount');
 
     return Object.freeze({
+      identity: Object.freeze({ provider: 'yookassa' as const, environment: raw.test ? 'test' as const : 'live' as const, merchantId: shopId }),
       id,
       status: raw.status as RemotePaymentStatus,
       amountMinor,
@@ -213,6 +214,7 @@ export function createYooKassaProvider(options: YooKassaOptions): PaymentProvide
 
   return Object.freeze({
     name: 'yookassa',
+    identity: Object.freeze({ provider: 'yookassa' as const, environment: testMode ? 'test' as const : 'live' as const, merchantId: shopId }),
 
     async createPayment(input: CreatePaymentInput): Promise<RemotePayment> {
       verify(UUID_V4.test(input.orderId), 'orderId обязан быть каноническим UUID');

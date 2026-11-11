@@ -1,0 +1,38 @@
+{
+  "addressed": [
+    "PRIMARY-01",
+    "PRIMARY-02",
+    "PRIMARY-03",
+    "TEST-01",
+    "TEST-02"
+  ],
+  "changedScope": [
+    "packages/db/src/payment-provenance.ts",
+    "apps/web/src/server/billing-handler.ts",
+    "tests/payment-environments.integration.test.ts",
+    "tests/browser/payment-environments-next.test.ts",
+    "tests/test-webhook-route.test.ts",
+    "tests/fixtures/fake-yookassa-server.ts",
+    "packages/db/src/payments.ts",
+    "apps/web/src/server/billing-deps.ts",
+    "apps/web/src/server/payments/ops-payment-provenance.ts",
+    "apps/web/src/server/payments/yookassa.ts",
+    "packages/db/migrations/030_payment_environments.sql",
+    "apps/web/tsconfig.preflight.json",
+    "tests/billing.integration.test.ts",
+    "tests/billing.unit.test.ts",
+    "tests/credit-packages.integration.test.ts",
+    "tests/payments-guards.test.ts",
+    "tests/yookassa-receipts.integration.test.ts",
+    "tests/relocation-test-webhook.integration.test.ts",
+    "openspec/changes/payment-environments/tasks.md"
+  ],
+  "classification": "structural",
+  "delta": "PRIMARY-01: ordinary bind promotes only the eligible pending intent; existing unknown payment is classified exclusively in backfill mode. Real checkout retry preserves refunded legacy payment history, then explicit canonical GET+CAS classifies it without financial changes. PRIMARY-02/TEST-01: cutover uses a separate real native pre030 schema, old native checkout/create/bind and canonical HTTP callback positive controls, held inflight transaction with normal COMMIT, actual server.close drain/zero sessions, a guard rejecting actual migrate/start calls before drain, observed030 application after drain and separate pending completion exactly once by fresh Next. No COMMIT monkeypatch remains. PRIMARY-03: all non-applied outcome logs retain finite reasons but omit payment/order/shop/key identifiers; normal LIVE/TEST refund log assertions verify this. TEST-02: HTTP method ledger records every request before auth/routes; idempotent POST and POST404 negative controls demonstrate why created count was insufficient; operator and compiled-child phases assert zero POST delta and real GET. Coordinator-only ledger status update: openspec/changes/payment-environments/tasks.md marks actual QCSD/K1/K2, implementation and PG/HTTP/API/render/targeted-mutation work (1.1/2.1/2.2/3.1) complete; independent final source QE/delivery3.2 remains unchecked. This is not an author code fix, production backfill, final QE closure or delivery claim; the30-source manifest and build/test snapshot are unchanged.",
+  "evidence": "07_code_changes/r1-repair-evidence.json records exact commands and log/artifact hashes: one final npm build exit0;8 affected suites132/132 PASS; native Next2/2 PASS (including both browser engines and actual pre030 cutover); npm typecheck/lint exit0. All sources were stable through these runs. Original reviews/host/nonce/history were not rewritten; initial findings are acknowledged and this is the author assessment only, requiring originating focused verification. Actual checkbox-only diff read by the author; it corresponds to the recorded results, with3.2 left open.",
+  "newRisks": {
+    "assessment": "No additional runtime risk outside the addressed conditions was found in this bounded repair. Existing terminal unknown provenance now stays unknown during ordinary bind; verified pending completion still works. The cutover test proves only the isolated procedure and requires deployment-time ownership/inventory/drain independently. Method ledger is test-only and stores no URLs/IDs/credentials. No new runtime API, environment setting, export, command, dependency or service was introduced.",
+    "evidence": "Real PG legacy terminal checkout/backfill financial invariance regression, existing callback-before-bind/locks/refund matrix and credits/receipt/relocation regressions all passed; real pre030 old/native HTTP positive control, held transaction and guarded migration/start passed; raw-method negative controls and compiled-child GET-only assertion passed. Production and real merchant operations were not executed.",
+    "conditions": []
+  }
+}

@@ -21,7 +21,7 @@ describe('portable TEST callback fragment and IP contracts', () => {
   });
   it('keeps the three application owners bound and rejects spoofed or missing hops', () => {
     for (const [path, expected] of Object.entries({
-      'apps/web/src/server/billing-handler.ts': '006829ba5c6dfa94a03a02a806522e8938bedd651949a8e657021cb461c3054f',
+      'apps/web/src/server/billing-handler.ts': '65e7bff02d517c0e20dbc82b9ee3d6c43c16e2389237ff4042a1dc802754b75b',
       'apps/web/src/server/ip.ts': 'af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301',
       'packages/shared/src/config.ts': 'd66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f',
     })) {

@@ -1,3 +1,4 @@
+import { verifiedLivePaymentSql } from '@clipmaker/db';
 import type { Pool } from '@clipmaker/db';
 import { z } from 'zod';
 import { moscowDay } from '@clipmaker/shared/upload';
@@ -146,8 +147,7 @@ export class PartnerService {
         AND i.provider_payment_id=p.provider_payment_id AND i.price_minor=p.amount_minor
       JOIN partner_code pc ON pc.id=i.referral_partner_code_id JOIN partner pt ON pt.id=pc.partner_id
       WHERE i.referral_partner_code_id=ANY($1::uuid[]) AND pt.account_id<>p.account_id
-        AND p.provider='yookassa' AND p.status='succeeded' AND p.needs_review=false
-        AND i.status='succeeded' AND i.fulfilled_at IS NOT NULL
+        AND ${verifiedLivePaymentSql('p','i')}
         AND i.sku IN ('start_v1','pro_v1','addon_v1')`, [ids])).rows[0]!;
     const purchases = Number(financial.purchases), revenue_minor = Number(financial.revenue_minor);
     return { codes: codes.filter(c => !codeId || c.id === codeId), counters: { visits, registrations, uploaded, shared, guests, purchases, revenue_minor }, statuses };

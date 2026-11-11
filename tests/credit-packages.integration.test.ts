@@ -54,9 +54,9 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     return transaction(pool,async tx=>{await lockCreditAccountForVideo(tx,id);await tx.query('SELECT id FROM video WHERE id=$1 FOR UPDATE',[id]);await tx.query("UPDATE video SET status='failed' WHERE id=$1",[id]);await finalizeVideoCreditsTx(tx,id,at);});
   }
   async function buy(id:string,sku:'start_v1'|'pro_v1'|'addon_v1',at=now) {
-    const i=await createPaymentIntent(pool,{accountId:id,sku,billingMode:'credits_v1',priceMinor:CREDIT_SKUS[sku].priceMinor,idempotencyKey:key()});
+    const i=await createPaymentIntent(pool,{identity:{provider:'fake',environment:'test',merchantId:null},accountId:id,sku,billingMode:'credits_v1',priceMinor:CREDIT_SKUS[sku].priceMinor,idempotencyKey:key()});
     if(i.kind!=='created') throw new Error('intent not created');
-    const p={provider:'fake' as const,eventKey:key(),payloadSha256:'a'.repeat(64),payment:{id:key(),orderId:i.intent.id,amountMinor:i.intent.price_minor,feeMinor:null,paidAt:at.toISOString()}};
+    const p={provider:'fake' as const,eventKey:key(),payloadSha256:'a'.repeat(64),payment:{identity:{provider:'fake' as const,environment:'test' as const,merchantId:null},id:key(),orderId:i.intent.id,amountMinor:i.intent.price_minor,feeMinor:null,paidAt:at.toISOString()}};
     return {i,p};
   }
   it('20 same-email signups create one no-expiry trial and one session, legacy creates none',async()=>{
@@ -76,7 +76,7 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
       const old=await account('legacy_daily_v1');await pool.query("UPDATE account SET plan='paid',plan_source=$2,plan_paid_until=now()+interval '1 day' WHERE id=$1",[old,source]);
       expect(await optInCredits(pool,{...input,accountId:old})).toBe(false);
     }
-    const pending=await account('legacy_daily_v1');await createPaymentIntent(pool,{accountId:pending,priceMinor:99000,idempotencyKey:key()});
+    const pending=await account('legacy_daily_v1');await createPaymentIntent(pool,{identity:{provider:'fake',environment:'test',merchantId:null},accountId:pending,priceMinor:99000,idempotencyKey:key()});
     expect(await optInCredits(pool,{...input,accountId:pending})).toBe(false);
   });
   it('20 last-balance reservations remain nonnegative and preserve video identity across retries',async()=>{
@@ -104,8 +104,8 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
       const results=await Promise.all(Array.from({length:20},()=>applyVerifiedPayment(pool,{...p,eventKey:key()})));
       expect(results.filter(r=>r.applied)).toHaveLength(1);
       expect((await pool.query('SELECT sum(total_seconds)::int n FROM credit_grant WHERE account_id=$1',[id])).rows[0].n).toBe(CREDIT_SKUS[sku].seconds);
-      expect(await applyVerifiedPayment(pool,{...p,eventKey:key(),payment:{...p.payment,id:key()}})).toMatchObject({applied:false,reason:'intent_already_fulfilled'});
-      expect(await createPaymentIntent(pool,{accountId:id,sku:sku==='start_v1'?'pro_v1':'start_v1',billingMode:'credits_v1',priceMinor:sku==='start_v1'?399000:99000,idempotencyKey:(await pool.query('SELECT idempotency_key FROM payment_intent WHERE id=$1',[i.intent.id])).rows[0].idempotency_key})).toEqual({kind:'conflict'});
+      await expect(applyVerifiedPayment(pool,{...p,eventKey:key(),payment:{...p.payment,id:key()}})).rejects.toThrow('payment_provenance_conflict');
+      expect(await createPaymentIntent(pool,{identity:{provider:'fake',environment:'test',merchantId:null},accountId:id,sku:sku==='start_v1'?'pro_v1':'start_v1',billingMode:'credits_v1',priceMinor:sku==='start_v1'?399000:99000,idempotencyKey:(await pool.query('SELECT idempotency_key FROM payment_intent WHERE id=$1',[i.intent.id])).rows[0].idempotency_key})).toEqual({kind:'conflict'});
       await expect(pool.query("UPDATE payment_intent SET grant_seconds=1 WHERE id=$1",[i.intent.id])).rejects.toThrow('immutable');
     }
   });
@@ -122,8 +122,8 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     expect((await pool.query(`SELECT ${effectivePlanSql('a','$2')} plan FROM account a WHERE id=$1`,[id,new Date(now.getTime()+115*day)])).rows[0].plan).toBe('free');
   });
   it('old 990 intent remains legacy daily after late payment; no credit grant',async()=>{
-    const id=await account('legacy_daily_v1'),i=await createPaymentIntent(pool,{accountId:id,priceMinor:99000,idempotencyKey:key()});if(i.kind!=='created')throw new Error();
-    expect(await applyVerifiedPayment(pool,{provider:'fake',eventKey:key(),payloadSha256:'a'.repeat(64),payment:{id:key(),orderId:i.intent.id,amountMinor:99000,feeMinor:null,paidAt:now.toISOString()}})).toMatchObject({applied:true});
+    const id=await account('legacy_daily_v1'),i=await createPaymentIntent(pool,{identity:{provider:'fake',environment:'test',merchantId:null},accountId:id,priceMinor:99000,idempotencyKey:key()});if(i.kind!=='created')throw new Error();
+    expect(await applyVerifiedPayment(pool,{provider:'fake',eventKey:key(),payloadSha256:'a'.repeat(64),payment:{identity:{provider:'fake' as const,environment:'test' as const,merchantId:null},id:key(),orderId:i.intent.id,amountMinor:99000,feeMinor:null,paidAt:now.toISOString()}})).toMatchObject({applied:true});
     expect((await pool.query('SELECT count(*)::int n FROM credit_grant WHERE account_id=$1',[id])).rows[0].n).toBe(0);
     expect((await pool.query('SELECT billing_policy,plan FROM account WHERE id=$1',[id])).rows[0]).toEqual({billing_policy:'legacy_daily_v1',plan:'paid'});
   });
@@ -224,7 +224,7 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     for(const body of [{sku:'wat',idempotency_key:key()},{sku:'start_v1',idempotency_key:key(),price_minor:1},{idempotency_key:key()}]) expect((await checkout(req(body))).status).toBe(422);
     const response=await checkout(req({sku:'addon_v1',idempotency_key:key()}));expect(response.status).toBe(201);
     const intent=(await response.json()).data.intent_id as string;
-    await applyVerifiedPayment(pool,{provider:'fake',eventKey:key(),payloadSha256:'a'.repeat(64),payment:{id:(await pool.query('SELECT provider_payment_id FROM payment_intent WHERE id=$1',[intent])).rows[0].provider_payment_id,orderId:intent,amountMinor:149000,feeMinor:null,paidAt:new Date().toISOString()}});
+    await applyVerifiedPayment(pool,{provider:'fake',eventKey:key(),payloadSha256:'a'.repeat(64),payment:{identity:{provider:'fake' as const,environment:'test' as const,merchantId:null},id:(await pool.query('SELECT provider_payment_id FROM payment_intent WHERE id=$1',[intent])).rows[0].provider_payment_id,orderId:intent,amountMinor:149000,feeMinor:null,paidAt:new Date().toISOString()}});
     const status=await createCheckoutStatusHandler(deps)(new Request('https://test.invalid/api/checkout/'+intent,{headers:{cookie:'__Host-n5_session=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx','x-forwarded-for':'198.51.100.7, 10.0.0.2, 10.0.0.3'}}),intent);
     expect((await status.json()).data).toMatchObject({sku:'addon_v1',package_title:'Дополнительный пакет',grant_seconds:36000,account_plan:'paid',period_start:expect.any(String),period_end:expect.any(String)});
     const disabled=createCheckoutHandler({...deps,billingMode:'legacy'});expect((await disabled(req({sku:'start_v1',idempotency_key:key()}))).status).toBe(422);
@@ -258,7 +258,7 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     const oldPool=createPool(url!,oldSchema);
     try{
       await oldPool.query(`CREATE SCHEMA ${oldSchema}`);
-      for(const name of await readdir('packages/db/migrations')) if(name.endsWith('.sql') && !name.startsWith('022_') && !name.startsWith('029_'))await copyFile(path.join('packages/db/migrations',name),path.join(directory,name));
+      for(const name of await readdir('packages/db/migrations')) if(name.endsWith('.sql') && !name.startsWith('022_') && !name.startsWith('029_') && !name.startsWith('030_'))await copyFile(path.join('packages/db/migrations',name),path.join(directory,name));
       await migrate(oldPool,directory);
       const a=(await oldPool.query<{id:string}>(`INSERT INTO account(email,password_hash,plan,plan_source,plan_paid_until)
         VALUES('old-paid@test.invalid','x','paid','payment','2031-01-01'),('old-operator@test.invalid','x','paid','operator',NULL),('old-free@test.invalid','x','free','none',NULL) RETURNING id`)).rows;
@@ -275,10 +275,18 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     }finally{await oldPool.query(`DROP SCHEMA IF EXISTS ${oldSchema} CASCADE`);await oldPool.end();await rm(directory,{recursive:true,force:true});}
   });
 
+  it('finalized unbound legacy intent remains a review fact without another grant',async()=>{
+    const who=await account(),purchase=await buy(who,'start_v1');
+    await pool.query("UPDATE payment_intent SET status='succeeded',fulfilled_at=now() WHERE id=$1",[purchase.i.intent.id]);
+    expect(await applyVerifiedPayment(pool,purchase.p)).toMatchObject({applied:false,reason:'intent_already_fulfilled'});
+    expect((await pool.query("SELECT count(*)::int n FROM credit_grant WHERE account_id=$1 AND source='payment'",[who])).rows[0].n).toBe(0);
+    expect((await pool.query('SELECT needs_review,review_reason FROM payment WHERE provider_payment_id=$1',[purchase.p.payment.id])).rows[0]).toEqual({needs_review:true,review_reason:'intent_already_fulfilled'});
+  });
+
   it('one verified provider payment cannot be rebound to a second intent or account',async()=>{
     const a=await account(),b=await account(),first=await buy(a,'addon_v1'),second=await buy(b,'addon_v1');
     expect(await applyVerifiedPayment(pool,first.p)).toMatchObject({applied:true});
-    expect(await applyVerifiedPayment(pool,{...second.p,payment:{...second.p.payment,id:first.p.payment.id}})).toEqual({applied:false,reason:'duplicate'});
+    await expect(applyVerifiedPayment(pool,{...second.p,payment:{...second.p.payment,id:first.p.payment.id}})).rejects.toThrow('payment_provenance_conflict');
     expect((await pool.query("SELECT count(*)::int n FROM credit_grant WHERE account_id=$1 AND source='payment'",[b])).rows[0].n).toBe(0);
     expect((await pool.query('SELECT status FROM payment_intent WHERE id=$1',[second.i.intent.id])).rows[0].status).toBe('created');
   });

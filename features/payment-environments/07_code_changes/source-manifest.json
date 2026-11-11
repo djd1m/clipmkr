@@ -1,0 +1,189 @@
+{
+  "schema": "clipmkr-payment-environments-author-source-1",
+  "author": "gpt-6.1-sol high",
+  "base": "1ed7e77599e370a7d0f48778b8d15b90ef3e255e",
+  "planSha256": "8819f08149f6fcb9ff18ad7f3a577a00baafb02eaa2728d0700b1c5d8f249894",
+  "coderContextDigest": "fb9dec561e8a1eee59343754c119c81a5d3f73fb906fc2247a015cb86f7089f9",
+  "files": [
+    {
+      "path": "packages/shared/src/payment-identity.ts",
+      "sha256": "0efa9f707b5020ed74caa70516c01cd42b24828d3c59a4f630891c5da89d6186",
+      "bytes": 474,
+      "change": "created"
+    },
+    {
+      "path": "packages/db/migrations/030_payment_environments.sql",
+      "sha256": "70d0004c574a41fd29421841418dcedcbe37ba8bbeb0eca08b83cf64be460752",
+      "bytes": 2207,
+      "change": "created"
+    },
+    {
+      "path": "packages/db/src/payment-provenance.ts",
+      "sha256": "3bf5e9a1e9f2a06b4f97a5ca60ad9aef1a9373bb3b72fffed14aaa4c3e53ef9e",
+      "bytes": 4534,
+      "change": "created"
+    },
+    {
+      "path": "packages/db/src/payments.ts",
+      "sha256": "7e18f4d66e8a79d659c0aab7d0404245409284ed84eabacac1f4e8b5952cfe0f",
+      "bytes": 22372,
+      "change": "modified"
+    },
+    {
+      "path": "packages/db/src/index.ts",
+      "sha256": "ee99ab7780f5c14ae77e24f20624c8625bcccdb10d930104341340b9da2caa02",
+      "bytes": 1129,
+      "change": "modified"
+    },
+    {
+      "path": "packages/db/src/blogger-report.ts",
+      "sha256": "4451fdc463bad264a3db057e772fb00718ded8eebf82358aacfb39a307f31f13",
+      "bytes": 7248,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/payments/provider.ts",
+      "sha256": "4803e7fd8aa73f7cf63a23c5627006cfb8c796a180051fbe7ed92126e1d02281",
+      "bytes": 5077,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/payments/yookassa.ts",
+      "sha256": "941450e01f1a86bb75ed2f74e3614bcb1ad430fb9b9335c64adb8c5f9cbba173",
+      "bytes": 19587,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/payments/fake.ts",
+      "sha256": "8db66f6b60a95b2de9aa43de1d97c5e62055bfd7b6108bbf6a88b3f2f6a4ce18",
+      "bytes": 10251,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/billing-handler.ts",
+      "sha256": "65e7bff02d517c0e20dbc82b9ee3d6c43c16e2389237ff4042a1dc802754b75b",
+      "bytes": 22918,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/billing-deps.ts",
+      "sha256": "722212f6204edcc62b7990b4fa1cca4f26297dfb7a52247497c62075772632df",
+      "bytes": 2628,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/partner.ts",
+      "sha256": "fba339ee6f70649ae519ede2f642c93b4a943d46e398e920db3b9ad737b861f2",
+      "bytes": 11422,
+      "change": "modified"
+    },
+    {
+      "path": "apps/web/src/server/payments/ops-payment-provenance.ts",
+      "sha256": "beba4c9b85a584f4e8561b09f5eb6525e9447b0ed0b348966b09f385d5ee25d4",
+      "bytes": 3734,
+      "change": "created"
+    },
+    {
+      "path": "apps/web/tsconfig.preflight.json",
+      "sha256": "072d6f3ea45463837262a297e362379211ad7dede32fd1a8b9454c4e11ccfe51",
+      "bytes": 281,
+      "change": "modified"
+    },
+    {
+      "path": "tests/payment-environments.integration.test.ts",
+      "sha256": "6f0641df957767bdd0a57cec56235f806edd39c5c96a07fd82aa7db086ceae95",
+      "bytes": 29026,
+      "change": "created"
+    },
+    {
+      "path": "tests/browser/payment-environments-next.test.ts",
+      "sha256": "0393527c9388fc648a5ee81a5bd8c049b288661cfe899b44b711f35f80f4770e",
+      "bytes": 22209,
+      "change": "created"
+    },
+    {
+      "path": "tests/billing.unit.test.ts",
+      "sha256": "c48ab7a854aed9a343e29b12342f7649e7710c1d3d54bc5e4aa1b7749838322a",
+      "bytes": 42677,
+      "change": "modified"
+    },
+    {
+      "path": "tests/billing.integration.test.ts",
+      "sha256": "ef572187b677870631ae110a91f6f9c7f08006d96ed245235ac3ad3907912444",
+      "bytes": 40326,
+      "change": "modified"
+    },
+    {
+      "path": "tests/credit-packages.integration.test.ts",
+      "sha256": "b20d6305e9914b064fb28cf41abe9c767fc28abc1de100e97a8cb45b15d44eb7",
+      "bytes": 31714,
+      "change": "modified"
+    },
+    {
+      "path": "tests/relocation-test-webhook.integration.test.ts",
+      "sha256": "edf9246c037e6629bc7be281908fafb02fe0cea188d8de5275c1a7ecd049144c",
+      "bytes": 17244,
+      "change": "modified"
+    },
+    {
+      "path": "tests/yookassa-receipts.unit.test.ts",
+      "sha256": "a5c78531d9bf81f4f4fbd36b55d9b56983393dd3f0592577c6c55037197343de",
+      "bytes": 7660,
+      "change": "modified"
+    },
+    {
+      "path": "tests/yookassa-receipts.integration.test.ts",
+      "sha256": "02680cd828ff6e9e9f6f6cb09bb4577c7c3d23e251b1f4a6badbf6399b6fa190",
+      "bytes": 33486,
+      "change": "modified"
+    },
+    {
+      "path": "tests/blogger-report.integration.test.ts",
+      "sha256": "b8eaf7ccbfc3182722fa250682e593de1ff7c0e32d97afebeeeffbf65a6dd6a9",
+      "bytes": 17173,
+      "change": "modified"
+    },
+    {
+      "path": "tests/partner.integration.test.ts",
+      "sha256": "a5323a9512f7f3c5825c6b8af0741606678b2838153ee5b8562e665af899a971",
+      "bytes": 37603,
+      "change": "modified"
+    },
+    {
+      "path": "tests/payments-guards.test.ts",
+      "sha256": "95e9bf11b11eb446c92540336fe7f2a12c3c884874e2c0c348842fd611caae35",
+      "bytes": 16245,
+      "change": "modified"
+    },
+    {
+      "path": "tests/test-webhook-route.test.ts",
+      "sha256": "376acb5a35dce6bc5a8d6883ed433c26d33fefe11405f9d00346d96dc084b802",
+      "bytes": 19744,
+      "change": "modified"
+    },
+    {
+      "path": "tests/fixtures/fake-yookassa-server.ts",
+      "sha256": "0b8de037117076c45ffcf1a41d4e32e4e3d2bbee5ff1b05af7477a0ef51a16d8",
+      "bytes": 7771,
+      "change": "modified"
+    },
+    {
+      "path": "tests/preflight.test.ts",
+      "sha256": "2c0334c9ab585875b2bdb379414351b194ffaed5d589ab2753ccf2e5743332c2",
+      "bytes": 2288,
+      "change": "modified"
+    },
+    {
+      "path": "tests/run-payments-mutations.mjs",
+      "sha256": "3477a6364c8f0347cc7c91f2e3fb1cee379fbd918aef3ae47fd57097c539e29c",
+      "bytes": 9219,
+      "change": "modified"
+    },
+    {
+      "path": "scripts/test-credit-mutations.mjs",
+      "sha256": "07def8c495b60ca602a79d393b607e993befec7ccfc30ec81f573fcc5d7d29c0",
+      "bytes": 5262,
+      "change": "modified"
+    }
+  ]
+}
