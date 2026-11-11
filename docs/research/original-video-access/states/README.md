@@ -12,8 +12,12 @@
 | Временная ошибка | Строка «Не удалось проверить исходник» и одна кнопка «Повторить»; нажатие показывает проверку. Не выдаём timeout за удаление |
 | Неподдержанный браузером codec | Текст в прежнем viewer «Браузер не может воспроизвести исходник. Скачайте файл, чтобы открыть его в другом плеере»; «Скачать» остаётся в source row; «К клипам» возвращает выбор |
 | Аудио | Та же строка с «Слушать · Скачать», в прежнем viewer native audio без пустого видеоэкрана; та же кнопка возврата |
+| Клипов ещё нет | Готовый исходник открывается в существующей рабочей области без фиктивного выбранного клипа и списка. «К клипам» возвращает прежний empty-state, focus — на «Смотреть». Обработка продолжается |
+| Обрыв воспроизведения при доступном файле | В прежнем viewer «Не удалось воспроизвести исходник» и пояснение о повторном «Смотреть» или скачивании. Прежние действия остаются; автоматического повторного запуска нет. Это не сообщение о codec или удалении |
 
 Новых страниц, диалогов, меню, иконных тулбаров и кнопки refresh URL нет. Повторное открытие может получать актуальный доступ через прежнее «Смотреть/Слушать»; окончательное поведение expiry определит архитектор. Метаданные вымышлены; native audio содержит 1 с встроенной синтетической тишины, постер — встроенный SVG. Реальный исходник/подписанный URL/сеть не используются. Наличие native controls не является доказательством воспроизведения исходного codec.
+
+Два последних примера добавлены после реального QCSD r1 (OQ-QUALITY-1/OQ-QUALITY-2) до согласования пакета владельцем. Пример обрыва только иллюстрирует message и повтор прежним действием: настоящего stream/fetch/автоматического воспроизведения здесь нет. Полный контракт иных metadata ответов и budget retry — `features/original-video-access/05_architecture.md`; отдельное browser app доказательство ещё требуется. Все восемь дополнительных состояний остаются candidate, это не owner approval.
 
 ## Снимки
 
@@ -25,6 +29,8 @@
 | Ошибка / повтор | [dark 390](error-dark-390.png) | [light 390](error-light-390.png) | [dark 1440](error-dark-1440.png) | [light 1440](error-light-1440.png) |
 | Не поддерживается | [dark 390](unsupported-dark-390.png) | [light 390](unsupported-light-390.png) | [dark 1440](unsupported-dark-1440.png) | [light 1440](unsupported-light-1440.png) |
 | Аудио | [dark 390](audio-dark-390.png) | [light 390](audio-light-390.png) | [dark 1440](audio-dark-1440.png) | [light 1440](audio-light-1440.png) |
+| Клипов ещё нет | [dark 390](no-clips-dark-390.png) | [light 390](no-clips-light-390.png) | [dark 1440](no-clips-dark-1440.png) | [light 1440](no-clips-light-1440.png) |
+| Обрыв воспроизведения | [dark 390](playback-error-dark-390.png) | [light 390](playback-error-light-390.png) | [dark 1440](playback-error-dark-1440.png) | [light 1440](playback-error-light-1440.png) |
 
 ## Фактическая проверка
 
@@ -34,11 +40,11 @@
 PATH=/tmp/pu-next-security-runtime/node-v22.23.4-linux-x64/bin:$PATH node docs/research/original-video-access/states/probe.cjs
 ```
 
-Chromium `148.0.7778.96`: terminal exit0, **24/24** (6 состояний × 2 ширины × 2 темы), page errors0, external requests0. Проверены overflow, высота видимых button/select ≥44 px, один video и один audio без autoplay, сохранение выбранного клипа и focus при возврате, доступность download в audio/unsupported и переход error→loading. [Машинный результат и SHA256 HTML/probe/24 снимков](probe-result.json).
+Chromium `148.0.7778.96`: terminal exit0, **32/32** (8 состояний × 2 ширины × 2 темы), page errors0, external requests0. Проверены overflow, высота видимых button/select ≥44 px, один video и один audio без autoplay, сохранение выбранного клипа и focus при возврате, доступность download в audio/unsupported и переход error→loading. Добавлены проверки zero-clips→back→empty-state/focus и playback-error→явное Смотреть ровно одной демонстрационной попыткой без проигрывания. [Машинный результат и SHA256 HTML/probe/32 снимков](probe-result.json).
 
-Осмотрены изображения unsupported dark390, audio light1440, затем финальные audio light390 и error dark1440. Финальные изменения footer/audio metadata покрыты повторным 24-case probe. Это проверка макета; app E2E, Cloud.ru Range, auth, expiry и реальный codec ещё не проверялись.
+После расширения пакета осмотрены no-clips dark390 и playback-error light1440; исторический24-case результат не выдаётся за проверку новой версии. Это проверка макета; app E2E, Cloud.ru Range, auth, expiry и реальный codec ещё не проверялись.
 
-HTML SHA256: `f8b2b570fb96db123408f91f53e206826a2f2ed5d7e0fe3dedbbd433cf013bc8`.
+HTML SHA256: `6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953`.
 
 ## Handoff
 

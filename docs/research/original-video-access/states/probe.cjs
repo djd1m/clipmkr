@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const directory = __dirname;
 const html = path.resolve(directory, '../states.html');
-const states = ['incomplete', 'missing', 'loading', 'error', 'unsupported', 'audio'];
+const states = ['incomplete', 'missing', 'loading', 'error', 'unsupported', 'audio', 'no-clips', 'playback-error'];
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const rows = [], errors = [], externalRequests = [];
@@ -33,7 +33,32 @@ const states = ['incomplete', 'missing', 'loading', 'error', 'unsupported', 'aud
         assert.equal(geometry.autoplay, false);
         const screenshot = `${state}-${theme}-${width}.png`;
         await page.screenshot({ path: path.join(directory, screenshot), fullPage: true });
-        if (['audio', 'unsupported'].includes(state)) {
+        if (state === 'no-clips') {
+          assert.equal(await page.locator('#return').isVisible(), true);
+          assert.equal(await page.locator('#native-video').isVisible(), true);
+          assert.equal(await page.locator('.clip.active').count(), 0);
+          assert.equal(await page.locator('.list').isVisible(), false);
+          await page.locator('#return').click();
+          assert.equal(await page.locator('#empty-state').isVisible(), true);
+          assert.equal(await page.locator('#workspace').isVisible(), false);
+          assert.equal(await page.locator('#watch').evaluate(node => node === document.activeElement), true);
+          assert.equal(await page.locator('#native-video').evaluate(node => node.paused), true);
+          await page.locator('#watch').click();
+          assert.equal(await page.locator('#empty-state').isVisible(), false);
+          assert.equal(await page.locator('#return').isVisible(), true);
+        } else if (state === 'playback-error') {
+          assert.equal(await page.locator('#playback-error').isVisible(), true);
+          assert.equal(await page.locator('#native-video').isVisible(), false);
+          assert.equal(await page.locator('#download').isVisible(), true);
+          assert.equal(await page.evaluate(() => demoOriginalAttempts), 0);
+          await page.locator('#watch').click();
+          assert.equal(await page.evaluate(() => demoOriginalAttempts), 1);
+          assert.equal(await page.locator('#playback-error').isVisible(), true);
+          assert.equal(await page.locator('#native-video').evaluate(node => node.paused), true);
+          await page.locator('#return').click();
+          assert.equal(await page.locator('#viewer-title').textContent(), 'Как найти главную мысль');
+          assert.equal(await page.locator('#watch').evaluate(node => node === document.activeElement), true);
+        } else if (['audio', 'unsupported'].includes(state)) {
           assert.equal(await page.locator('#return').isVisible(), true);
           assert.equal(await page.locator('#download').isVisible(), true);
           assert.equal(await page.locator(state === 'audio' ? '#native-audio' : '#unsupported').isVisible(), true);

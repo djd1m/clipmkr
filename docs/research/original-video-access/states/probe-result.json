@@ -59,6 +59,24 @@
     },
     {
       "width": 390,
+      "theme": "dark",
+      "state": "no-clips",
+      "screenshot": "no-clips-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "playback-error",
+      "screenshot": "playback-error-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
       "theme": "light",
       "state": "incomplete",
       "screenshot": "incomplete-light-390.png",
@@ -107,6 +125,24 @@
       "theme": "light",
       "state": "audio",
       "screenshot": "audio-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "no-clips",
+      "screenshot": "no-clips-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "playback-error",
+      "screenshot": "playback-error-light-390.png",
       "overflow": false,
       "controlsMinHeight": 44,
       "interactions": "pass"
@@ -167,6 +203,24 @@
     },
     {
       "width": 1440,
+      "theme": "dark",
+      "state": "no-clips",
+      "screenshot": "no-clips-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "playback-error",
+      "screenshot": "playback-error-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
       "theme": "light",
       "state": "incomplete",
       "screenshot": "incomplete-light-1440.png",
@@ -218,6 +272,24 @@
       "overflow": false,
       "controlsMinHeight": 44,
       "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "no-clips",
+      "screenshot": "no-clips-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "playback-error",
+      "screenshot": "playback-error-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
     }
   ],
   "pageErrors": [],
@@ -225,107 +297,139 @@
   "hashes": [
     {
       "path": "docs/research/original-video-access/states.html",
-      "sha256": "f8b2b570fb96db123408f91f53e206826a2f2ed5d7e0fe3dedbbd433cf013bc8"
+      "sha256": "6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953"
     },
     {
       "path": "docs/research/original-video-access/states/probe.cjs",
-      "sha256": "86892fc4bfd0f593446bbaa1ea642b65af023debba919aecd4feb2bf592a4afb"
+      "sha256": "01071fc579b67d3f659b67ddf8f7cb8db11cb00b82f8ca228fcba941a2979be8"
     },
     {
       "path": "docs/research/original-video-access/states/incomplete-dark-390.png",
-      "sha256": "1e869710b34c597282fd9f85b90d77be094bf7fa36c92d3861e642a51c22db61"
+      "sha256": "f4c9d7709d2dbff1045a8fe048ef80c4907e1f344d12df3f7371beda0520ebe1"
     },
     {
       "path": "docs/research/original-video-access/states/missing-dark-390.png",
-      "sha256": "e0765d8d78a02eba18ce14a51f0819a0a47f2d8ddf5113f17d6b08455cc1b534"
+      "sha256": "f3bb79b6eafc1add889c1d35ab174b34ffd6c4e089f7b5a2e35744297be3875c"
     },
     {
       "path": "docs/research/original-video-access/states/loading-dark-390.png",
-      "sha256": "78cee3588b4286d5169c000811a4a347ffe0f93b6efa0b0b4724bf006474d765"
+      "sha256": "75d6e1b238f44f284a5ba0822c8569553bab649f9e3c2de774dc9b520f996a87"
     },
     {
       "path": "docs/research/original-video-access/states/error-dark-390.png",
-      "sha256": "4f8cc48bf37e80ab08d3a0226a8a9c44d5d3d3c92a55e17170a371cea0d327f4"
+      "sha256": "4baeb8df3e55cba699551a0be36b0b062893aebe5346818b1e0bce0ef93a9ae1"
     },
     {
       "path": "docs/research/original-video-access/states/unsupported-dark-390.png",
-      "sha256": "b03884c38168b84aa794381fa3738671f5cbf0b92d08db6248deddf09ad19356"
+      "sha256": "f7138efb3b7eb8390e4d1fed70cb8df7614309688b2ed3bcbb2f609c68ef810b"
     },
     {
       "path": "docs/research/original-video-access/states/audio-dark-390.png",
-      "sha256": "954bf9d65c5caebf5700ac330792e8f809df65dd14d6ef39598c978e3bf66572"
+      "sha256": "799a4d662bab07be1f83fc9d8f23ba6bc82113df58da38089f996d8d311bc2f8"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-dark-390.png",
+      "sha256": "7b71e38dd1871235261392723df81ef922618fb584fc658df776b0e47b55ba94"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-dark-390.png",
+      "sha256": "416083bb330133e9aa2fc16dbcaa5de471cab83d860fb68ba7c5ea3ba2e0cbb9"
     },
     {
       "path": "docs/research/original-video-access/states/incomplete-light-390.png",
-      "sha256": "c4fa92a788d9e1716feec82896a6b1e244b0070ece9ec7e68790e50b5ce93003"
+      "sha256": "624f60063cf9f1728e061c8a7a00c858022320033393444ffccf1d2c0b266a66"
     },
     {
       "path": "docs/research/original-video-access/states/missing-light-390.png",
-      "sha256": "7690bb6faee002dfe36c4ebb071ed3788e4b2ee37831d36cab8f04c437f42fca"
+      "sha256": "b35532dde71186a54b4f1d9dbb8169ec2fb656adc56e2a061841bdfb27a580e2"
     },
     {
       "path": "docs/research/original-video-access/states/loading-light-390.png",
-      "sha256": "6964775b5fb44c36b13c78255999f0e8452cc02c51a421a24b8eb642b27599eb"
+      "sha256": "edd068cf9c97fbf43aead615cd0bd026e5d0487598f235786b67fd1dc21377e5"
     },
     {
       "path": "docs/research/original-video-access/states/error-light-390.png",
-      "sha256": "eeb106a27b11c0f4abcfb9823ac03bdf52ae4fa8db58085e73cd4da39d1f5270"
+      "sha256": "9b3801232cbeaab0efa268aa658349ba7716960a007b94d5eaf966449e2324d3"
     },
     {
       "path": "docs/research/original-video-access/states/unsupported-light-390.png",
-      "sha256": "97de0b554135bf708c9a6218465401c0ac4aa3cc2305754983258a7ea2b5c128"
+      "sha256": "315f2c67f966b3a440d0c0b0dad01fb2440aeaf9a526e0767d583c1a24053739"
     },
     {
       "path": "docs/research/original-video-access/states/audio-light-390.png",
-      "sha256": "3c34ce05eadf30ed9b83d7f2de215da50d1fad4939bdff8c0d22a64b8441e6ee"
+      "sha256": "f8fbadf8f103a26f3fcfcd8f083e45be1c1d3d3d3e0ce54093d2e8268c2b3a7d"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-light-390.png",
+      "sha256": "4c5fe4fa9ea39eeb72974d29116280fa7291d59bc5294c90fc6b9122faddb5cb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-light-390.png",
+      "sha256": "8fdefb5900b603fc39d240e164130ae9200b05faa11030c8b3277d3920801af9"
     },
     {
       "path": "docs/research/original-video-access/states/incomplete-dark-1440.png",
-      "sha256": "00ad3e3cc6bae2a9e6461dee2629592a99ff09ba0abf735dbee648819b483cb5"
+      "sha256": "efa6a6fd68d00b1dd149ae6164ddb52fbdada4fbc5f89f992e146447f93a59a0"
     },
     {
       "path": "docs/research/original-video-access/states/missing-dark-1440.png",
-      "sha256": "71cd6af93f46c1d4db46147130cade28e22183a18c467897430e02d96eea5cbd"
+      "sha256": "75954e02aac5500643ef1bacef0ca8b6255c6aa024bfecc811ee9f07c32b6295"
     },
     {
       "path": "docs/research/original-video-access/states/loading-dark-1440.png",
-      "sha256": "b99710d03335d49d28b93ecbdf3bc664031da30362dfa2e356e1111feccdadc4"
+      "sha256": "2497aa12916fbb4d040959669622be55614e459e7862211a021d4e5265267c16"
     },
     {
       "path": "docs/research/original-video-access/states/error-dark-1440.png",
-      "sha256": "bd91d2a11bd5a80817c91382258d793a6ba1e3131b20947adc152f1be90ff94e"
+      "sha256": "eebe8512d3d806138059599dc0231ffca28d01406a4ee7a442481ac472a140ba"
     },
     {
       "path": "docs/research/original-video-access/states/unsupported-dark-1440.png",
-      "sha256": "ed466a2cdf2313ac0142a95c239b2c0c7020efe3383b28da6ca5a4f2efc687b0"
+      "sha256": "c9f02ea18a40e20ffd78bc9b384a34ecd2d1cd8adfa7e66365e8d005a15a3af9"
     },
     {
       "path": "docs/research/original-video-access/states/audio-dark-1440.png",
-      "sha256": "745d7a4fd5e59eab35a4cc2a7b5d53e9d09570a0f66f6b85b28658f49a155c53"
+      "sha256": "2183421930fa8599ed5032ee51493d6444fc072a387cfaa0af27e70d150388eb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-dark-1440.png",
+      "sha256": "37df19613c21cd9d8b2e2d7c8b97432ded1d14f21092ca5c4e181f8bb56e8307"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-dark-1440.png",
+      "sha256": "c41b0159142b18a5b3d356c7a946afedb5a58837a103f33139fd69a1f119570b"
     },
     {
       "path": "docs/research/original-video-access/states/incomplete-light-1440.png",
-      "sha256": "656845d7a00436374a3246b14a2161c3e957d44b428296476416209cac8fad7d"
+      "sha256": "bc415ed5276def82f426f7e7788d35ae66841372dc11ef3e654afd97a57813be"
     },
     {
       "path": "docs/research/original-video-access/states/missing-light-1440.png",
-      "sha256": "2416d399dcc7164b170b4f04c1ad3002bfeaa9e697cbba27d2966c21d1574ff5"
+      "sha256": "ee3a4e7508184e305dec4804ccb4f02ac0c297a425a1ab3a7809d752da5a3839"
     },
     {
       "path": "docs/research/original-video-access/states/loading-light-1440.png",
-      "sha256": "ba85c3e0c005aef62b2c3fdbf538a1698efef51c04cd3724f2a2395eeffaf147"
+      "sha256": "1d0ed67d8e9156857b802ca8f582407f2f13b809822264fa04ce3aa5ce63f252"
     },
     {
       "path": "docs/research/original-video-access/states/error-light-1440.png",
-      "sha256": "1bba3b7abfdceb3b3b6761f7093fe17c710ed7d171d56edd754ac4867c7bdbb2"
+      "sha256": "ba6efe666a849d8203755b71141f946189be312c4541cfde8b1577a608bc20ce"
     },
     {
       "path": "docs/research/original-video-access/states/unsupported-light-1440.png",
-      "sha256": "9794daa02a3309b2e274d2c45a8265209ee3e3a3b7c16147717c243ab5b92bbb"
+      "sha256": "6f5267d286e8d27d940b61af4aeec468a92f3ce4ac258046b3096850dce41a2f"
     },
     {
       "path": "docs/research/original-video-access/states/audio-light-1440.png",
-      "sha256": "f7b7b55cbc1410c13931a19f9b2987b01ccbd4affdf921300fe9951fd19e2a8e"
+      "sha256": "216663e9beec3bded676acb2fd8a4a22a40793dc9e35225ffa712f6fac4d6932"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-light-1440.png",
+      "sha256": "5d4ed757fa1afbcae4404a466615c3ad31a05a57b466bbb483843d7896688684"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-light-1440.png",
+      "sha256": "68a12fa0771deb742b17eb4c64d5a2df9ea30bd278e9defa7b2774ac8f24fa06"
     }
   ]
 }
