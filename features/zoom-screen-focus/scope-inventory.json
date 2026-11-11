@@ -1,9 +1,9 @@
 {
   "meaning": "Планируемые editable targets отдельно от явно названных read-only dependencies/regression files; остальные исследовательские чтения не являются targets",
-  "editableCount": 42,
-  "editableExistingCount": 33,
-  "editableNewCount": 9,
-  "readOnlyCount": 20,
+  "editableCount": 44,
+  "editableExistingCount": 43,
+  "editableNewCount": 1,
+  "readOnlyCount": 22,
   "editable": [
     "packages/shared/src/screen-layout.ts",
     "packages/shared/src/cut-timeline.ts",
@@ -46,7 +46,9 @@
     "vitest.config.ts",
     "vitest.browser.config.ts",
     "apps/worker/src/render/probe.ts",
-    "packages/shared/src/enums.ts"
+    "packages/shared/src/enums.ts",
+    "apps/web/src/app/support/SignOut.tsx",
+    "apps/web/src/lib/clip-layout-draft.ts"
   ],
   "readOnly": [
     "apps/web/src/server/clip-music.ts",
@@ -68,7 +70,9 @@
     "tests/render-failure.test.ts",
     "tests/render-storage.test.ts",
     "tests/render.integration.test.ts",
-    "tests/enums.test.ts"
+    "tests/enums.test.ts",
+    "apps/web/src/lib/support-client.ts",
+    "apps/web/src/server/auth-handler.ts"
   ],
   "originalOwnedDependency": {
     "path": "packages/shared/src/server/original-source.ts",
@@ -83,7 +87,7 @@
     "quickDecisionTree": "XL because editable files >=30",
     "rootDecision": "XL retained; current PhaseB gates pending; historical PhaseA admission retained in execution snapshot"
   },
-  "existenceCountBasis": "Current integrated working tree; five originally new PhaseA files now exist. Initial design creation classes preserved in history.",
+  "existenceCountBasis": "Current root-confirmed complete source freeze at logout authority amendment; historical creation classes retained in history.",
   "phaseBReadinessDelta": {
     "at": "2026-11-11T18:55:11.520744+00:00",
     "integratedRevision": "c66b9ef4227580adad8fb5664c6a7650764518f1",
@@ -97,5 +101,21 @@
     "reason": "Existing ADR-001 SAR producer and migration032 canonical CHECK enums coverage; catch-all guard remains unchanged",
     "tier": "XL",
     "phaseBCodeAdmission": false
+  },
+  "logoutAuthorityDelta": {
+    "at": "2026-11-11T20:14:15.387931+00:00",
+    "basis": "Root-sanctioned implementation wiring for existing ADR003 logout/account cleanup; core9 unchanged",
+    "addedEditable": [
+      "apps/web/src/app/support/SignOut.tsx",
+      "apps/web/src/lib/clip-layout-draft.ts"
+    ],
+    "addedReadOnly": [
+      "apps/web/src/lib/support-client.ts",
+      "apps/web/src/server/auth-handler.ts"
+    ],
+    "priorEditable42Preserved": true,
+    "priorReadOnly20Preserved": true,
+    "totalMeasured": 66,
+    "currentAmendmentCodeGO": false
   }
 }

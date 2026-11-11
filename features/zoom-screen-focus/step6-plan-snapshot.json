@@ -1,18 +1,18 @@
 {
-  "status": "phaseB-gates-complete-full-literal-read-root-GO-pending",
+  "status": "logout-authority-gates-complete-expandedGO-currentLiteralRead-pending",
   "createdAtUtc": "2026-11-11T17:09:44.460654+00:00",
   "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
   "planner": "gpt-6-astra xhigh",
   "coder": "gpt-6.1-sol high",
   "stage6DocumentReady": true,
   "stage6Checkpoint": {
-    "status": "actual-recorded",
+    "status": "actual-recorded-current-logout-authority",
     "command": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/plan-checkpoint.command.json",
-      "sha256": "1d3f1dc698156ce89e7636d0f4ed386d1d96a717b808bd03a6a3ed43a48c3409"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/plan-checkpoint.command.json",
+      "sha256": "7e77f96d36de49fd66fb353bbf397ea16143eb861fcc232960bb5957d7d8df81"
     },
     "result": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/plan-checkpoint.stdout.json",
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/plan-checkpoint.stdout.json",
       "sha256": "ff2d2a3e94002bcf0f887b8b987b88457409daf6d376bb75606d566865499f23"
     },
     "exitCode": 0,
@@ -24,13 +24,13 @@
   },
   "codeAdmission": false,
   "gates": {
-    "Task0": "Original accepted and integrated; proof preserved",
-    "PhaseA": "Root-confirmed R2 freeze; originating focused exact fix verified; not fullSOURCE QE",
-    "PhaseB_K1_K2": "actual exit0; K2 C4 skipped/C8 warned, explicit20ID trace supplied",
-    "PhaseB_admission_context": "actual admitted/complete exit0 on frozen current source",
-    "rootCodeGO": "PhaseB not issued",
-    "coderLiteralRead": "current96236-byte literal must be fully read by same Sol before B",
-    "ownerPause": "historical; ended by explicit resume"
+    "Task0": "accepted Original integration proof preserved",
+    "previousPhaseB": "earlier42scope author work exists; complete root freeze now active",
+    "currentK1": "actual final author4names free, exit0, scan complete508files",
+    "currentK2": "actual exit0 PASS0fail/1warnC8/1skipC4; explicit20ID trace",
+    "currentAdmissionContext": "actual admitted/complete exit0; source66stable",
+    "rootExpandedScopeGO": "not-issued",
+    "coderLiteralRead": "current97428-byte literal fully read by sameSol required"
   },
   "ideation": {
     "nonce": "0276c1f3-2f7b-4e38-96c4-10258020aca1",
@@ -193,21 +193,21 @@
     "ZoomExpandsOriginalAuthority": false,
     "phaseBAdmission": "pending"
   },
-  "measuredTargets": 62,
-  "editableTargets": 42,
-  "readOnlyTargets": 20,
+  "measuredTargets": 66,
+  "editableTargets": 44,
+  "readOnlyTargets": 22,
   "files": [
     {
       "path": "features/zoom-screen-focus/06_implementation_plan.md",
-      "sha256": "103756434538e12df3177f8bed69256093be523ed0ca62be6ea8066a3d9db5a2"
+      "sha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15"
     },
     {
       "path": "features/zoom-screen-focus/architecture-handoff.md",
-      "sha256": "891aa10834d91684f4e3201d3f38549b66a9afea71c940cc7bbb9352bf87bbfd"
+      "sha256": "2a8e7e581e423bec80dbf8452390fbe21883616717e279df5bb5e40924600e72"
     },
     {
       "path": "features/zoom-screen-focus/README.md",
-      "sha256": "02b42889ca6bf15371befb3769463f8851037642e948524d3852f3074524763c"
+      "sha256": "c46663eb4dd1e829f8007e987fca1499e524592a2880e338d7ace574bba76a33"
     },
     {
       "path": "features/zoom-screen-focus/requirements-revision.json",
@@ -223,7 +223,7 @@
     },
     {
       "path": "features/zoom-screen-focus/scope-inventory.json",
-      "sha256": "aaa1ac580b2faf656eb66d2f2d0df5a255ba1d696f359e066b2ec8574b0c63e2"
+      "sha256": "67cf8bbe7741239e70161be1ba85795bf696c8fd0f96edc57c35e7cf799ce03c"
     }
   ],
   "wordingRevisionAtUtc": "2026-11-11T17:36:12.103519+00:00",
@@ -411,13 +411,13 @@
       }
     },
     "PhaseB": {
-      "status": "gates-complete-awaiting-same-coder-full-literal-read-and-root-GO",
+      "status": "implementation-frozen-current-logout-authority-gates-complete",
       "codeAdmission": false,
       "writerAuthorized": false,
       "requires": [
-        "same Sol full read of current96236-byte literal",
-        "explicit root PhaseB GO",
-        "K1 for any additional newly selected public identifier before declaration"
+        "sameSol full current97428-byte literal read",
+        "explicit root expanded44scopeGO",
+        "K1 before any additional public name declaration"
       ],
       "acceptedOriginalDependency": "satisfied by task0DependencyProof",
       "addedEditable": [
@@ -440,9 +440,9 @@
     },
     "dag": "gates→1A→4A parallel Original/0; {0,1A}→1B→2; {1B,2}→3; {0,1B,2,4A}→4B; {0,1B,2,3}→5;4B→6;{3,4B,5,6}→7→8",
     "scope": {
-      "editable": 42,
-      "readOnly": 20,
-      "measured": 62,
+      "editable": 44,
+      "readOnly": 22,
+      "measured": 66,
       "tier": "XL"
     },
     "priorPlanArchive": {
@@ -451,7 +451,7 @@
     }
   },
   "executionRevisionAtUtc": "2026-11-11T18:55:11.520744+00:00",
-  "executionRevision": "c66b9ef4227580adad8fb5664c6a7650764518f1",
+  "executionRevision": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
   "phaseBAddedTargetPins": [
     {
       "path": "apps/worker/src/render/probe.ts",
@@ -543,25 +543,25 @@
     "gateBoundary": "PhaseA gates/root GO pending; PhaseB additionally requires genuine Task0 and fresh admission/context"
   },
   "instrumentalPlanRevision": {
-    "status": "actual-complete-current-context",
-    "planBytes": 17752,
-    "planSha256": "103756434538e12df3177f8bed69256093be523ed0ca62be6ea8066a3d9db5a2",
-    "promptBytes": 96236,
+    "status": "actual-complete-current-logout-authority",
+    "planBytes": 18944,
+    "planSha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15",
+    "promptBytes": 97428,
     "limitBytes": 98304,
-    "contextDigest": "0d97b9d752c6ea696be5846cafd404933d4eb2077695717ec3df262cadfd6234",
-    "promptSha256": "359c84b4f793311462c8a300d32c4e30402783a7e9282bd11316b63d90ecb7a2",
+    "contextDigest": "12d0edc7f030eae9c85ae5ff5b572fcfe0d9ab9eb73abed798cbe47c1e6ca552",
+    "promptSha256": "bd7caefa33fc1b0b0fb1bfd884a7e4eb45b7962b171b23624e2f5792c3536e0d",
     "actualCurrentHelperExecuted": true,
     "literalTruncated": false,
     "limitRaised": false,
-    "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/coder-context.literal.prompt.md",
+    "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/coder-context.literal.prompt.md",
     "coderFullyRead": false,
     "rawResult": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/coder-context.stdout.json",
-      "sha256": "bfeeba2d5c882cad6f570edab396d84a5a5942c9fffd4894362b8a3bde754635"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/coder-context.stdout.json",
+      "sha256": "340a174b0208f06add874942c06f85efd9f1dc71631e167bcc85fa39d022604b"
     },
     "codeTargetAdmission": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/code-targets.stdout.json",
-      "sha256": "3480800c61ebe32147bce83badfd3896bca7dd638c72ce261480d9c3ea92530f"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/code-targets.stdout.json",
+      "sha256": "a3f0f843c034c17e9727aa0834ac32b3cbe27863b3e19df7dedd17b56f88dab0"
     }
   },
   "historicalChecksBeforePhaseBUpdate": {
@@ -614,44 +614,40 @@
     ]
   },
   "checks": {
-    "status": "current-document-integrity-and-plan-readiness-PASS-not-SourceQE",
+    "status": "current-document-authority-integrity-and-gates-PASS-not-QE",
     "evidence": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/document-integrity.json",
-      "sha256": "dc8209414388180ef3d08a5d96cef0cbfcdfb145e78c436ea9a7623a88549397"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/document-integrity.json",
+      "sha256": "9bc74b367974571d74d6309b7a7fee7ccc569e2434d0abd942ebcf321aa97f13"
     },
     "K1": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/k1.stdout.json",
-      "sha256": "2d3c0afd6392d17ebf8328daa1a1414dd7a84784ee6c11a2aa9975b3b33433fd"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/k1.stdout.json",
+      "sha256": "96d3a85377f48893f12f3355603e743d18680b09794b2b5bc91317e7e1e57664"
     },
     "K2": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/k2.stdout",
-      "sha256": "62acc07961f1ed4349443c306d01d04fb7888ac7cf0a14aacf40169da9322cd3"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/k2.stdout",
+      "sha256": "1d96087ee17dda37627ded9a37ac0b9f1965c91c6a9dc1de84bc7144cd35efd4"
     },
-    "namespacePath": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/namespace-path-check.json",
-      "sha256": "058b1708b888caa6ecd1a62fc481690d90a764af88ff82632ce5eabbbdcde6de"
-    },
-    "ZFACTrace": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-entry/zf-ac-task-trace.json",
-      "sha256": "8500e8e13e0bb07b3e78ef882c83da1c1905b324e551872b58200736e105f9bb"
+    "ZF_AC_Trace": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/zf-ac-task-trace.json",
+      "sha256": "599564b03a1692d45c97bfbafd5ed8b84ed35109031d23a8c50a6ea5930de6eb"
     },
     "core9Unchanged": true,
     "OpenSpecUnchanged": true,
-    "approvedUIUnchanged": true,
+    "UIUnchanged": true,
     "R3DossierUnchanged": true,
-    "exact12Amendments": true,
-    "sixSourceHashesStable": true,
-    "gatesDoNotProveRuntime": true
+    "sourceFrozen66Stable": true,
+    "newTestsWrittenOrRun": false,
+    "GitCommandsByPlanner": false,
+    "noSourceEdits": true
   },
   "resumeCheckpoint": {
-    "ownerPaused": false,
-    "state": "B gate package complete, rootGO and same-coder literal read pending",
-    "HEADFromRootProof": "c66b9ef4227580adad8fb5664c6a7650764518f1",
-    "PhaseAFrozenDigest": "239546d6192d915bcc109b95b4b7ff87dae31a251df1fa3301e63d5f7e57b65d",
+    "state": "source frozen; current logout authority gates complete; waitrootGO/samecoderfullread",
+    "headFromRootFreeze": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+    "baseRefPreserved": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
     "pending": [
-      "same Sol full read of current96236-byte literal",
-      "explicit root PhaseB GO",
-      "K1 for any additional newly selected public identifier before declaration"
+      "sameSol full current97428-byte literal read",
+      "explicit root expanded44scopeGO",
+      "K1 before any additional public name declaration"
     ],
     "noNewCoder": true,
     "noSourceEditsByPlanner": true
@@ -660,6 +656,82 @@
   "phaseBReadinessAtUtc": "2026-11-11T19:24:03.502399+00:00",
   "phaseBReadinessDocument": {
     "path": "features/zoom-screen-focus/phase-b-readiness.md",
-    "sha256": "1d82393ea391242a696bf9fb26155c36ca856620314b206db71b6acd7e158476"
+    "sha256": "89b79a018baa9ab3bda012c62e01f757f6d928f79a9a4eeec40edbef7c473adf"
+  },
+  "logoutAuthorityAtUtc": "2026-11-11T20:18:06.076378+00:00",
+  "currentSourceFreeze": {
+    "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-author/scope-amendment-freeze.json",
+    "sha256": "12b1ba921c4720f1bcfbd5d82659f5d81cbe6f46fd7592c78d51f5562bf893a3",
+    "head": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+    "baseRef": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
+    "root62Digest": "c560081cb3e41f3dd1ff2aa1394e25d39d6ca98aafa61903956d73c2f0fd720e",
+    "measured66Pins": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/source-freeze-before.json",
+      "sha256": "6439b9a1991e617137cb3b8b452a3d6944f2ebdcd235239e84204b4d8a2a673e"
+    },
+    "stableThroughGates": true
+  },
+  "logoutAuthority": {
+    "existingRequirement": "ADR-003 logout/account cleanup",
+    "core9Change": false,
+    "document": {
+      "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/phase-b-logout-authority.md",
+      "sha256": "bd2310e78f9d367567053bebdc7685743b9bf2b04bf9590b62dff27e2472add1"
+    },
+    "addedEditable": [
+      "apps/web/src/app/support/SignOut.tsx",
+      "apps/web/src/lib/clip-layout-draft.ts"
+    ],
+    "addedReadOnly": [
+      "apps/web/src/lib/support-client.ts",
+      "apps/web/src/server/auth-handler.ts"
+    ],
+    "old42EditableAnd20ReadonlyPreserved": true,
+    "exactNames": {
+      "module": "clip-layout-draft",
+      "exports": [
+        "CLIP_LAYOUT_DRAFT_PREFIX",
+        "CLIP_LAYOUT_DRAFT_CLEAR_EVENT",
+        "clearClipLayoutDrafts"
+      ],
+      "existingNotNew": "SignOut",
+      "prefix": "n5-clip-layout:v1:",
+      "scope": {
+        "editable": 44,
+        "readOnly": 22,
+        "measured": 66
+      },
+      "sources": [
+        "ADR-003 draft logout/account lifecycle",
+        "root exact technical authority",
+        "existing SignOut success HTTP response branch"
+      ],
+      "status": "pending-actual-K1",
+      "exactAuthorNamesFromRoot": true,
+      "supersedesCandidateOnly": "CLIP_LAYOUT_SESSION_CLEARED was root provisional; not selected by author"
+    },
+    "additionalDependencyPins": [
+      {
+        "path": "apps/web/src/app/support/SignOut.tsx",
+        "sha256": "54b3397981e916a3eda571e7b937dc2f6cd1afb44fcc358f7fb2e318ff9d0436"
+      },
+      {
+        "path": "apps/web/src/lib/clip-layout-draft.ts",
+        "sha256": null
+      },
+      {
+        "path": "apps/web/src/lib/support-client.ts",
+        "sha256": "34402b86e435fc3ccc74b99078451ef10b842875da5d565c8a2a021e8a073c95"
+      },
+      {
+        "path": "apps/web/src/server/auth-handler.ts",
+        "sha256": "f3c92eca69584170077e25d26db393e1c70ee91b73c0790efeac848f1fa12c79"
+      }
+    ],
+    "testTargetUnchanged": "tests/browser/clip-layout.test.ts",
+    "archive": {
+      "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/history/step6-before-logout-authority/snapshot.json",
+      "sha256": "e9817c052fe95942d80c07814b032365b61425707e6a70ccdc7cbff0fdad4a3d"
+    }
   }
 }

@@ -14,7 +14,7 @@ Goal:03/advanced01–02, seed/wholeclip/apply, сохранность MP4/credit
 - TASK-2 (ADR-002, ADR-004; ZF-07, ZF-08, ZF-10; AC05, AC06): migration032/DB intent/seed/render; service/RPC/projection/runtime; `packages/shared/src/enums.ts` canonical SQL_ENUMS для032, catch-all `tests/enums.test.ts` не ослаблять. Depends:TASK-0,1B. Test:real PG clip-layout integration/populated migration/replay/concurrency/rollback/erasure. Done:1 admission/debit,0 source charge/STT/select, old publication.
 - TASK-3 (ADR-004, ADR-001; ZF-01, ZF-04, ZF-06, ZF-07; AC01, AC03): queues/seed/runtime/faces/watchdog. Depends:TASK-0,1B,2. Test:queue-redis/clip-layout integration/screen-layout-media. Done:ADR-004 CAS/privacy/priority/deadline/descendants,0 render/quota/publish; reuse initial-render data.
 - TASK-4 (ADR-001, ADR-002; ZF-03, ZF-06, ZF-08, ZF-09, ZF-10; AC02, AC03, AC04, AC06): A — isolated screen-layout graph+synthetic pixel/time tests; B — `apps/worker/src/render/probe.ts` producer реального SAR для ADR-001 (не угадывать1); FFmpeg/teaser/worker DB input, camera veto/fence/publish. Depends:A1A; B0,1B,2,4A. Test:screen-layout-media + render/storage/failure/music/CTA/framing regressions. Done:ADR pixel/time/fallback/fence; A alone не completes TASK-4.
-- TASK-5 (ADR-003, ADR-002, ADR-004; ZF-01, ZF-02, ZF-04, ZF-05, ZF-07, ZF-08, ZF-10; AC01, AC05, AC07, AC08, AC09, AC10): web/RPC, Choice/Preview/CSS, ClipCard/VideoDetail: ADR-003 safeguards. Depends:TASK-0,1B,2,3. Test:browser clip-layout/regressions; real video Chromium/WebKit390/1440, обе темы/manual screen reader. Done:ADR-003 + AM-5/6/7/10/11/12.
+- TASK-5 (ADR-003, ADR-002, ADR-004; ZF-01, ZF-02, ZF-04, ZF-05, ZF-07, ZF-08, ZF-10; AC01, AC05, AC07, AC08, AC09, AC10): web/RPC, Choice/Preview/CSS, ClipCard/VideoDetail: ADR-003 safeguards. Depends:TASK-0,1B,2,3. Test:browser clip-layout/regressions; real video Chromium/WebKit390/1440, обе темы/manual screen reader. Done:ADR-003 + AM-5/6/7/10/11/12. Logout ADR-003: `SignOut.tsx` + browser-only `lib/clip-layout-draft.ts` делят с Choice prefix `n5-clip-layout:v1:`. Только successful logout POST очищает layout session keys на любой странице/без mounted Choice; failed logout сохраняет draft. Не подписываться на generic support-clear; support/upload/other storage keys не трогать. Helper возвращает actual read-back boolean; один local event с результатом сбрасывает mounted memory/review/decoder до hard redirect; blocked storage сообщает cleanup failure, не ложный logout failure/успех очистки, чужой account draft не восстанавливается. Oracle в existing `tests/browser/clip-layout.test.ts`: success/unmounted→layout-only clear; failure→retain; support focus/unmount→retain; blocked storage→honest fallback/no cross-account restore.
 - TASK-6 (ADR-001; ZF-09, ZF-10; AC04): stale order guard `tests/render.test.ts` и anchor `scripts/test-framing-mutations.mjs`. Depends:TASK-4B. Test:broken graph→RED/restored→GREEN, >0 tests/unique match. Done:indexOf(-1)/no-match не PASS; no-pad legacy-scoped; font/ONNX/metrics SHA прежние.
 - TASK-7 (ADR-001, ADR-002, ADR-003, ADR-004): root integration/freeze, общий прогон, discrimination/code-spec anti-drift, independent code-critic/security/QX/fleet QE. Depends:TASK-3,4B,5,6. Done:terminal results, skip/no-match не PASS; QE independently ищет source/tests из approved docs, без выводов автора.
 - TASK-8 (ZF-05, ZF-08, ZF-10; AC04, AC07): small verified commits/mirror pushes; test VPS migration→worker→web, synthetic E2E+отдельно разрешённый private wholeclip QA, ссылка owner. Depends:TASK-7. Done:owner acceptance UI/media до production; Cloud/DNS/real charges не разрешены. Rollback:stop apply, drain intents новым worker до старого.
@@ -50,7 +50,7 @@ Node22/project-pinned targeted: `npm test -- --run tests/screen-layout.test.ts t
 ## Risk assessment
 
 Риски money/idempotency→PG; fence→late publish; privacy→owner404/canary; media→pixels/time; sampling→wholeclip; worker→30s/traffic. Falsifiers:ADR+AM. A не доказывает B; новых dependencies/queue/ML нет.
-62 measured=42 editable+20 read-only, менять нельзя. Добавлены B probe.ts/enums.ts и read-only enums catch-all;43-й editable не разрешён. Original leaf чужой. XL прежний; tests не исключать. Root сверяет diff/migration032 collision.
+66 measured=44 editable+22 read-only, менять нельзя. Logout wiring добавляет SignOut/helper; support-client/auth-handler read-only. Прежние42 сохраняются, включая screen.ts; новых test targets нет. Original leaf чужой. XL прежний; tests не исключать. Root сверяет diff/migration032 collision.
 Прежняя оценка полного объёма: implementation110–180min; checks60–100min; QE/delivery30–60min. Остаток после A/root resume пересчитать; owner pause отдельно.
 
 ## Amendments
@@ -113,6 +113,8 @@ EXPECTED_CODE_TARGETS:
 - vitest.browser.config.ts
 - apps/worker/src/render/probe.ts
 - packages/shared/src/enums.ts
+- apps/web/src/app/support/SignOut.tsx
+- apps/web/src/lib/clip-layout-draft.ts
 - apps/web/src/server/clip-music.ts
 - apps/worker/assets/fonts/ClipMakerNarrow-Bold.ttf
 - apps/worker/assets/models/face_detection_yunet.onnx
@@ -133,3 +135,5 @@ EXPECTED_CODE_TARGETS:
 - tests/render-storage.test.ts
 - tests/render.integration.test.ts
 - tests/enums.test.ts
+- apps/web/src/lib/support-client.ts
+- apps/web/src/server/auth-handler.ts
