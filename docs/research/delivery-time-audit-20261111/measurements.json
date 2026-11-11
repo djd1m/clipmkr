@@ -1,0 +1,994 @@
+{
+  "status": "prepared_for_focused_review",
+  "reviewed_at_utc": "2026-11-11T17:43:26.652739+00:00",
+  "scope": [
+    "original-video-access",
+    "zoom-screen-focus"
+  ],
+  "main_head": "165260cc837cd4473d9586f3a830308f6cffcc55",
+  "historical_commit_counts_including_merges": {
+    "2026-10-28": 7,
+    "2026-10-29": 3,
+    "2026-11-02": 16,
+    "2026-11-03": 43,
+    "2026-11-04": 54,
+    "2026-11-05": 52,
+    "2026-11-06": 44,
+    "2026-11-07": 4,
+    "2026-11-09": 11,
+    "2026-11-10": 37,
+    "2026-11-11": 39
+  },
+  "cpu_seconds": null,
+  "cpu_unknown_reason": "No resource accounting; runner durations and session spans are wall time.",
+  "operations": [
+    {
+      "category": "implementation",
+      "operation": "Original author implementation plus focused validation",
+      "elapsed_seconds": 2252.916,
+      "start": "2026-11-11T16:39:30.453Z",
+      "end": "2026-11-11T17:17:03.369Z",
+      "timing_kind": "session start to frozen author-report mtime window",
+      "pure_implementation_seconds": null,
+      "unknown_reason": "Coding, reading, diagnostics and tests interleaved; wall window is not hands-on coding time.",
+      "overlap": "Review session opened16:51; formal snapshot prepared17:17.",
+      "critical_path": "Candidate freeze required before SOURCE closure",
+      "possible_saving_seconds": null,
+      "confidence": "high for window, low for avoidable fraction"
+    },
+    {
+      "category": "review",
+      "operation": "Original SOURCE native prepare to evaluate",
+      "elapsed_seconds": 1053.46,
+      "start": "2026-11-11T17:17:24.827Z",
+      "end": "2026-11-11T17:34:58.287Z",
+      "timing_kind": "native history wall window",
+      "outcome": "four unresolved HIGH conditions; not closure",
+      "overlap": "Author regression and release preparation; do not add durations",
+      "critical_path": "Repair and independent verification required",
+      "possible_saving_seconds": null,
+      "confidence": "high",
+      "evidence": {
+        "path": "/home/clipmkr-original-video/features/original-video-access/.fa-state/native-qe-history.jsonl",
+        "sha256": "af428a781cdc49acd723ff6560c4efab0004399fb9ad856ca374b918e9e0d4f0"
+      }
+    },
+    {
+      "category": "context",
+      "operation": "Zoom build-coder-context prompt-limit failure to compacted complete envelope",
+      "elapsed_seconds": 439.627,
+      "timing_kind": "artifact-mtime window",
+      "overlap": "Other sessions active; not pure compaction work",
+      "critical_path": "check-code-targets admitted independently; context assembly failed separately; Original TASK-0 still blocked coding.",
+      "possible_saving_seconds": null,
+      "confidence": "high for failure/window, low for saved time",
+      "evidence": [
+        {
+          "basename": "readiness-context-preflight.raw.json",
+          "sha256": "997207f345b4e21e12f5cabb1ab353bc60c76a05849beb6e62b0489b8f93cd57"
+        },
+        {
+          "basename": "readiness-context-compacted.raw.json",
+          "sha256": "ac05420651b4c36a7a200d62c1e30b9c8e26b1bef3f78ad3f6dfb4aeb0fc8d09"
+        }
+      ]
+    },
+    {
+      "category": "coordination",
+      "operation": "Wrong-cwd amendment result to correct-cwd pass",
+      "elapsed_seconds": 30.164,
+      "timing_kind": "artifact-mtime window",
+      "outcome": "7 file-missing findings disappear at correct root; 8/8 resolved",
+      "overlap": "Independent review active",
+      "critical_path": "False failure could delay readiness; observed saved time unknown",
+      "possible_saving_seconds": null,
+      "confidence": "high for invocation defect",
+      "evidence": [
+        {
+          "basename": "amendment-check-frozen-r1.raw.json",
+          "sha256": "98cdb1df22808eb5353a65e945feb2f3b7d315f6f0434a321013527a94c16683"
+        },
+        {
+          "basename": "amendment-check-correct-cwd-frozen-r1.raw.json",
+          "sha256": "5adbadd10b008ce5a350a4209d802aed136b272155e9e16e2ba7cba7bc40139a"
+        }
+      ]
+    },
+    {
+      "category": "testing",
+      "operation": "One genuine 125-second stream acceptance",
+      "elapsed_seconds": 130.63,
+      "timing_kind": "runner_reported_wall",
+      "outcome": "13 passed; late marker125001ms and abort-to-close7ms from public QE evidence",
+      "overlap": "Can share time window with legacy negative control; cannot shorten below contract",
+      "critical_path": "Required streaming proof",
+      "possible_saving_seconds": 0,
+      "confidence": "high",
+      "evidence": {
+        "basename": "final-lifecycle-backend.log",
+        "sha256": "f2b3847716152007020d898d3b4b146856c977c8def094f6148ec44b974c218a"
+      }
+    },
+    {
+      "category": "testing",
+      "operation": "Interrupted baseline browser run",
+      "elapsed_seconds": 327.039,
+      "timing_kind": "public author report terminal evidence",
+      "outcome": "interrupted130, missing usePathname export; not green",
+      "overlap": "Unknown",
+      "critical_path": "Baseline fixture repair before full regression",
+      "possible_saving_seconds": null,
+      "candidate_avoidable_run_seconds_upper_bound": 327.039,
+      "confidence": "high for failure; medium for early-smoke prevention",
+      "evidence": {
+        "path": "/home/clipmkr-original-video/features/original-video-access/08_author_verification.md"
+      },
+      "candidate_avoidable_run_seconds_lower_bound": 0,
+      "saving_limit": "Conditional command-wall upper bound before smoke cost; does not establish critical-path saving."
+    },
+    {
+      "category": "docs",
+      "operation": "Writing, rereading and manual receipt coordination",
+      "elapsed_seconds": null,
+      "duration_kind": "unavailable",
+      "unknown_reason": "No reliable per-category accounting; commit counts and event gaps do not measure effort.",
+      "overlap": "Interleaved with execution",
+      "critical_path": "Required artifacts, but prose duplication avoidable",
+      "possible_saving_seconds": null,
+      "confidence": "low"
+    },
+    {
+      "category": "delivery",
+      "operation": "Original release preparation and ops review",
+      "elapsed_seconds": 568.911,
+      "start": "2026-11-11T17:18:24.153Z",
+      "end": "2026-11-11T17:27:53.064Z",
+      "timing_kind": "union of two session envelopes",
+      "outcome": "Preparation only; no delivered runtime by this observation",
+      "overlap": "SOURCE and author regression active",
+      "critical_path": "Runtime delivery remains after acceptance",
+      "possible_saving_seconds": null,
+      "confidence": "high for envelope; not active work measurement"
+    }
+  ],
+  "author_test_runs": [
+    {
+      "category": "testing",
+      "duration_seconds": 135.25,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 9
+      },
+      "log_mtime_utc": "2026-11-11T16:54:00.654849+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "affected-backend.log",
+        "sha256": "b335bb83148f5d380112ce18fca24f8ac371c0c25b68befe83b2c824e52f6e77"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 25.85,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 3
+      },
+      "log_mtime_utc": "2026-11-11T16:52:12.483535+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "affected-browser.log",
+        "sha256": "e0f585d75fb7b9a1772a5ecd5dc8702779d3cb6654e6333bc42df913dbf2006a"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 61.64,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 49
+      },
+      "log_mtime_utc": "2026-11-11T17:06:29.085798+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "affected-legacy-stream.log",
+        "sha256": "89841591e2baf17a9bc9d817182f8f00a4aff35bfc93e86ec4b654fd85bcc006"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 135.37,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 9
+      },
+      "log_mtime_utc": "2026-11-11T16:58:41.512002+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "affected-stream-reader-cancel.log",
+        "sha256": "dd1ee491217f16f75aa8b867b79e45dd712993ed41a4fd76b05ecec37ec9b3b0"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 477.58,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 2,
+        "passed": 92
+      },
+      "log_mtime_utc": "2026-11-11T17:23:23.438254+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "approved-browser-regression.log",
+        "sha256": "8c31aa75ede4aacc7629d51b3f74328a484f210bdd0a626c4f225ce5e32c85f9"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 2.07,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed_with_skips",
+      "test_counts": {
+        "passed": 3,
+        "skipped": 7
+      },
+      "log_mtime_utc": "2026-11-11T17:11:38.655110+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "body-error-416-green.log",
+        "sha256": "2296acdbbdf148a87cc39715dd24e3073ac41394c76253ec057b8dce7907c45e"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 1.34,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 2,
+        "skipped": 8
+      },
+      "log_mtime_utc": "2026-11-11T17:11:15.391286+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "body-error-416-red.log",
+        "sha256": "84fb412a6e09ed9114ab785742934921d2dcb930d2acfd3b7a47230205d6fef6"
+      },
+      "intentional_red": true,
+      "intentional_red_reason": "Planned negative control or absent-handler initial test per author evidence; not optional rerun"
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 131.7,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 11
+      },
+      "log_mtime_utc": "2026-11-11T17:06:51.051560+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "final-focused-backend.log",
+        "sha256": "1473532ce477c86e4a483e0dc788d4d32b4c30ff23df2e8030548e5c6c81d07d"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 9.09,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 1
+      },
+      "log_mtime_utc": "2026-11-11T17:05:19.103360+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "final-focused-cloud.log",
+        "sha256": "ff745da94bd0e99ae645d7e9b405c642266ea6dc201c14abe3f958d3359ae824"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 130.63,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 13
+      },
+      "log_mtime_utc": "2026-11-11T17:14:10.023986+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "final-lifecycle-backend.log",
+        "sha256": "f2b3847716152007020d898d3b4b146856c977c8def094f6148ec44b974c218a"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 7.86,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 1
+      },
+      "log_mtime_utc": "2026-11-11T17:12:09.950874+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "final-original-cloud.log",
+        "sha256": "f0ecd7fd753963ae467540562185c34a7f81509547772bd1d3a357ae1509a918"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 135.38,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 9
+      },
+      "log_mtime_utc": "2026-11-11T16:49:59.507312+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "focused-backend.log",
+        "sha256": "6414e1e689393235035bd990081d1ab468454176a403d5f181aa17f67a80d517"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 7.41,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 1
+      },
+      "log_mtime_utc": "2026-11-11T16:48:17.617911+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "focused-cloud.log",
+        "sha256": "18f13b4282e71ebf52c22ef9fbe0edf1d58a8262175f095075df72ae9a1b8577"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 2.0,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed_with_skips",
+      "test_counts": {
+        "passed": 1,
+        "skipped": 7
+      },
+      "log_mtime_utc": "2026-11-11T17:04:09.643822+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "gc-both-green.log",
+        "sha256": "1c2f5743c0728d291b25283b0a9bf56f19c7e2b4cf2f780a96e1026df7315d42"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 1.31,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed_with_skips",
+      "test_counts": {
+        "passed": 1,
+        "skipped": 7
+      },
+      "log_mtime_utc": "2026-11-11T16:59:37.982628+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "gc-green.log",
+        "sha256": "cd2cc1e8f5a682614ebde096432807dabae1c0a3885ffa97420c77d22f11e3ae"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 2.4,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "skipped": 7
+      },
+      "log_mtime_utc": "2026-11-11T17:03:35.060052+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "gc-legacy-red.log",
+        "sha256": "dd512c5c857673d2969d204853931f70689811cf6a07e0cbc537ea8f1a43b14d"
+      },
+      "intentional_red": true,
+      "intentional_red_reason": "Planned negative control or absent-handler initial test per author evidence; not optional rerun"
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 1.49,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "skipped": 7
+      },
+      "log_mtime_utc": "2026-11-11T16:59:15.211779+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "gc-red.log",
+        "sha256": "797eaeb74df2cfa503931f11d12d76a3cb4f630854843c357aa9317a96e6ca58"
+      },
+      "intentional_red": true,
+      "intentional_red_reason": "Planned negative control or absent-handler initial test per author evidence; not optional rerun"
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 72.77,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 165
+      },
+      "log_mtime_utc": "2026-11-11T17:01:59.619687+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "legacy-focused.log",
+        "sha256": "322657d94562b053a76b80958b5c93f28e15b472accd1595e230c42e1b54f626"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 59.79,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 15
+      },
+      "log_mtime_utc": "2026-11-11T16:58:02.311262+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "original-browser-native-first.log",
+        "sha256": "5689932d51334778263468be42a44130b978d5de249960a0a1bed2808ce26301"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 62.12,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 16
+      },
+      "log_mtime_utc": "2026-11-11T17:01:47.721766+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "original-browser-native-second.log",
+        "sha256": "0933714973495bc97b55fe07057c291d520f07cf2ebb55742be4beaf9997bed0"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 55.08,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed",
+      "test_counts": {
+        "passed": 16
+      },
+      "log_mtime_utc": "2026-11-11T17:13:57.346079+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "original-hover-native-final.log",
+        "sha256": "66bb71fc9955ee3b37e68d501490c40952f7ab24b6dd7a46211201c55b719e34"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 0.348,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "not_established",
+      "test_counts": {},
+      "log_mtime_utc": "2026-11-11T16:40:25.165198+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "red.log",
+        "sha256": "a8ac3f23cfd4d5b4eb2ff95379ee5ab80d7cb282746fac966ee453c24a8ecc27"
+      },
+      "intentional_red": true,
+      "intentional_red_reason": "Planned negative control or absent-handler initial test per author evidence; not optional rerun"
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 19.17,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 9,
+        "skipped": 91
+      },
+      "log_mtime_utc": "2026-11-11T17:42:58.454367+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "repair-r2-red.log",
+        "sha256": "307547e340caad1accd08fd3acf31dc65656e58f1baf38bd473d62f45b4cf20f"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 154.31,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "passed": 10
+      },
+      "log_mtime_utc": "2026-11-11T17:02:28.854492+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "request-retained-backend.log",
+        "sha256": "b6c1b7ab979992d15d7b7274dc1349a0c3da26a04cfcc36d0604a72a22490d62"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 0.66,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "failed",
+      "test_counts": {
+        "failed": 1,
+        "skipped": 6
+      },
+      "log_mtime_utc": "2026-11-11T16:51:34.443768+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "short-stream.log",
+        "sha256": "15bf7d5fdbff2788a34bd16aacb564907253cfb406d8e90ab77d367c4f59bcaa"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 3.4,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed_with_skips",
+      "test_counts": {
+        "passed": 8,
+        "skipped": 2
+      },
+      "log_mtime_utc": "2026-11-11T16:45:23.247117+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "short.log",
+        "sha256": "81e2876e9cce9aae344b8fd9af8a488cdf6a3f26ef49dbf3f1747a9f6f8a6506"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 4.14,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed_with_skips",
+      "test_counts": {
+        "passed": 1,
+        "skipped": 8
+      },
+      "log_mtime_utc": "2026-11-11T16:54:33.097639+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "ui-error-diagnostic.log",
+        "sha256": "1c046477b356a0e0cbe951f6b1a04a88e7e99dd7f08fbc27e7824e51c00d0ad9"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    },
+    {
+      "category": "testing",
+      "duration_seconds": 4.74,
+      "duration_kind": "runner_reported_wall",
+      "outcome": "passed_with_skips",
+      "test_counts": {
+        "passed": 2,
+        "skipped": 75
+      },
+      "log_mtime_utc": "2026-11-11T17:14:36.181795+00:00",
+      "timing_limit": "mtime is file observation, not authenticated process finish; duplicate printed summaries counted once",
+      "evidence": {
+        "basename": "ux-primary-diagnostic.log",
+        "sha256": "1ba1c74067012d4e446631ca6eb42cb91889d4153a21ccedcd290f2eee197963"
+      },
+      "intentional_red": null,
+      "intentional_red_reason": "Unknown: filename and test outcome do not establish whether RED was intentional; not classified as wasted or unplanned."
+    }
+  ],
+  "independent_command_wall_runs": [
+    {
+      "category": "review_environment",
+      "duration_seconds": 2.465,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "copy-db-build.json",
+        "sha256": "b1b8e58bd5e0d95001fce1c37a152e8f3fa7a491d8eefd5aa5a4fe0394425770"
+      }
+    },
+    {
+      "category": "review_environment",
+      "duration_seconds": 1.693,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "copy-queue-build.json",
+        "sha256": "5d3f304d29987e437a84c5a24a97155e1c783f0c7c8b2e41fac7aed289e14b17"
+      }
+    },
+    {
+      "category": "review_environment",
+      "duration_seconds": 2.306,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "copy-s3-build.json",
+        "sha256": "0693d7d4bb621d67213c88effc9c8292e36cc6932053f6f63bd954da630f6e86"
+      }
+    },
+    {
+      "category": "review_environment",
+      "duration_seconds": 2.282,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "copy-shared-build.json",
+        "sha256": "f6a1a46fdf71d1725b80b7ded49dde4a1f2f1a43c96693e6d099a16bec919e25"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 6.698,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "discrimination-command.json",
+        "sha256": "1a45b0a7e3f55b2730667725b97700beb42a77fb260d736c5795ce7e3c90c1de"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 3.712,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "mutation-header-deadline-explicit-green.json",
+        "sha256": "7c7a3fcd842e6e6cd48fda884cc27c1dcba3010045f0985ca8b9458c0c14bb32"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 3.429,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "mutation-header-deadline-explicit-red.json",
+        "sha256": "c886442b0870d6ffc2a9d8a1597c600be1dfbddc8f86653d8410c20ff8398fde"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 3.657,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "mutation-header-deadline-green.json",
+        "sha256": "08a77e5cddee3d9f7046b5ed8a2342ec4b93fe2e431eb7f4d494495bd7fff3a1"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 3.441,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "mutation-header-deadline-red.json",
+        "sha256": "945bbb468514259dbac7566deced9935f026215e707ee938b3e84be323a74c46"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 3.482,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "mutation-ownership-green.json",
+        "sha256": "587677161a2a3c5b1f4bf954f9aeff197f7a113c55d3cc8312faeb35a409f3df"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 3.667,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "mutation-ownership-red.json",
+        "sha256": "8a6442a6ed8395b00187c8729364d8c597069d65269c42611c572b73a4730b47"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 10.677,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "qe-backend.json",
+        "sha256": "82b9341cb97c170ec0a196408d7499a751662b8fd04689e843672543ec94cdab"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 45.41,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "qe-browser-contract-built.json",
+        "sha256": "8cfa87d3911232f9c2e0d2c9c53dd84d8cb3e5e287c10a0b67721ba8f5f05b03"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 2.601,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "qe-browser-contract-retry.json",
+        "sha256": "3b4e42bd70b2b68aef215e5cf4ff1a69d2171c2b56415b5229345df3d7037f4a"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 2.158,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "qe-browser-contract.json",
+        "sha256": "3bc4df5fd4517598c8cdd0e1db68bce9bc2ceccde7185a640a4ad989eee0f737"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 8.553,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "qe-browser-probes.json",
+        "sha256": "270bf8f737b0890f3510ada9dddbb1c71b0c2724046edd502c46f75c4124739e"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 6.87,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 0,
+      "evidence": {
+        "basename": "qe-cloud.json",
+        "sha256": "b77cf111ee8a7515da73aa44332ff049cd3708f0fa424a34ab480acb1844c242"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 4.906,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "qe-light-contrast.json",
+        "sha256": "b5c3eaa6ef0ee8b0c0c570a24491e9a76017fc375372288717be151a9ad5fa53"
+      }
+    },
+    {
+      "category": "review",
+      "duration_seconds": 7.898,
+      "duration_kind": "command_elapsed_wall",
+      "exit": 1,
+      "evidence": {
+        "basename": "qe-ux-targeted.json",
+        "sha256": "763f8cfbd2f8678e75a8ca2cca7250f03176ba38729bd1dc571efcc6a1c9b08c"
+      }
+    }
+  ],
+  "checkpoints": [
+    {
+      "feature": "original-video-access",
+      "events": [
+        {
+          "stage": "0",
+          "timestamp": "2026-11-11T14:29:27.994Z"
+        },
+        {
+          "stage": "1",
+          "timestamp": "2026-11-11T14:29:28.785Z"
+        },
+        {
+          "stage": "router",
+          "timestamp": "2026-11-11T16:35:45.412Z"
+        },
+        {
+          "stage": "requirements",
+          "timestamp": "2026-11-11T16:35:46.065Z"
+        },
+        {
+          "stage": "adr",
+          "timestamp": "2026-11-11T16:35:46.705Z"
+        },
+        {
+          "stage": "ideation",
+          "timestamp": "2026-11-11T16:35:47.365Z"
+        },
+        {
+          "stage": "architecture",
+          "timestamp": "2026-11-11T16:35:47.997Z"
+        },
+        {
+          "stage": "plan",
+          "timestamp": "2026-11-11T16:35:48.663Z"
+        },
+        {
+          "stage": "plan",
+          "timestamp": "2026-11-11T16:43:02.713Z"
+        },
+        {
+          "stage": "plan",
+          "timestamp": "2026-11-11T17:12:03.796Z"
+        },
+        {
+          "stage": "plan",
+          "timestamp": "2026-11-11T17:37:23.017Z"
+        }
+      ],
+      "evidence": {
+        "path": "/home/clipmkr-original-video/features/original-video-access/.fa-state/checkpoints.jsonl",
+        "sha256": "200b2bd2f99abcd9f298a3880b502568dde82e9f61786f3ac16d11e83cd823b0"
+      }
+    },
+    {
+      "feature": "zoom-screen-focus",
+      "events": [
+        {
+          "stage": "router",
+          "timestamp": "2026-11-11T16:28:52.871Z"
+        },
+        {
+          "stage": "requirements",
+          "timestamp": "2026-11-11T16:28:53.474Z"
+        },
+        {
+          "stage": "adr",
+          "timestamp": "2026-11-11T17:13:14.749Z"
+        },
+        {
+          "stage": "ideation",
+          "timestamp": "2026-11-11T17:13:15.491Z"
+        },
+        {
+          "stage": "architecture",
+          "timestamp": "2026-11-11T17:13:16.347Z"
+        }
+      ],
+      "evidence": {
+        "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/.fa-state/checkpoints.jsonl",
+        "sha256": "90dc9ab3893f0e0b54f3798a64db14b2382edefc9520127f0f90758e23872c99"
+      }
+    }
+  ],
+  "public_input_sha256": {
+    "/home/clipmkr-original-video/features/original-video-access/00_complexity_assessment.md": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18",
+    "/home/clipmkr-original-video/features/original-video-access/01_requirements.md": "959179ee8f7a515535c4fdfec0ee99b6e4a0b2f040a580e638e169f2d2609ad9",
+    "/home/clipmkr-original-video/features/original-video-access/03.5_ideation_report.md": "705b99eecf1751e9fe2d58ca0c90aa5dfd7a2dbd0b28420707cb92988482fd9b",
+    "/home/clipmkr-original-video/features/original-video-access/05_architecture.md": "179fe241dcda4f1b14d4ff8a24bc09d991fc4b5f03c81e204f54dc8c74443a78",
+    "/home/clipmkr-original-video/features/original-video-access/06_implementation_plan.md": "b243769bbb01329f6daf583b2a3edee2742579971cbbbd6f4623320662e990fb",
+    "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/00_complexity_assessment.md": "b1e0bfff540b8305008f7b16bf47b50a08b9315632baa6ff9f056d120ab0d635",
+    "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/01_requirements.md": "5464fbeaf78cb01e21440186e89d683903837a4043e7580f30e7937496bd0219",
+    "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/03.5_ideation_report.md": "6727f3ab245e470bbdbf8084d5973d03c86af01beec0e46937d24a250e055056",
+    "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/05_architecture.md": "2daa5b4b8b14146b02bea42ab954561c82fbed9e8acbfe0260a27fdc47e592a8",
+    "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/06_implementation_plan.md": "94464019af8f483ee5996de09b7529c88a76630968eb70cfbbdfcc1d2b1df836"
+  },
+  "limitations": [
+    "Intervals overlap and MUST NOT be summed as total delivery time.",
+    "No tests/builds/network/runtime operations performed by audit.",
+    "Event gaps do not establish idle time; agents and processes may run concurrently.",
+    "SHA values identify observed local bytes, not authenticated execution or private owner evidence.",
+    "Current pool is unfinished; no actual remaining-time distribution or Zoom implementation benchmark exists.",
+    "Author runner durations use one final summary per file; files can contain duplicated printed summaries.",
+    "Logs with no final Duration have no duration estimate here."
+  ],
+  "session_envelopes": [
+    {
+      "role": "original_release_prepare",
+      "basename": "rollout-2026-11-11T17-18-24-01a1cb9e-2f66-7901-9aa6-c451292db504.jsonl",
+      "sha256": "356a05ecde43d3bddad6af88ae3101293befcad52026f7d6450cce97db066fc1",
+      "first": "2026-11-11T17:18:24.153Z",
+      "last_at_observation": "2026-11-11T17:27:04.174Z",
+      "observed_at_utc": "2026-11-11T17:44:35.466867+00:00",
+      "limitation": "Envelope only; not continuous active work, idle or CPU accounting. Author session remains active."
+    },
+    {
+      "role": "original_video_code",
+      "basename": "rollout-2026-11-11T16-39-30-01a1cb7a-9372-73f0-8aa2-c984460612e3.jsonl",
+      "sha256": "4ccccb784c97e503f2ac4df626223bd5251fd267995be6825dd390e96cbdeefc",
+      "first": "2026-11-11T16:39:30.453Z",
+      "last_at_observation": "2026-11-11T17:44:33.185Z",
+      "observed_at_utc": "2026-11-11T17:44:35.520699+00:00",
+      "limitation": "Envelope only; not continuous active work, idle or CPU accounting. Author session remains active."
+    },
+    {
+      "role": "zoom_design_rework_r2",
+      "basename": "rollout-2026-11-11T16-34-36-01a1cb76-18d0-7be0-b26c-b13dcdaa7303.jsonl",
+      "sha256": "5e6509ca7b2df73f9f9a7fb70ea1ceb82c5713b9a9fd8c6da7aaa15029fdde14",
+      "first": "2026-11-11T16:34:36.914Z",
+      "last_at_observation": "2026-11-11T17:38:10.661Z",
+      "observed_at_utc": "2026-11-11T17:44:35.559640+00:00",
+      "limitation": "Envelope only; not continuous active work, idle or CPU accounting. Author session remains active."
+    },
+    {
+      "role": "original_video_source_qe",
+      "basename": "rollout-2026-11-11T16-51-36-01a1cb85-a7ca-70c1-8ae8-3d034956082c.jsonl",
+      "sha256": "98d1f4e1b3a3357f85625008a70a845b62cd3575fecc83cd2ce8777082d8ef6f",
+      "first": "2026-11-11T16:51:36.556Z",
+      "last_at_observation": "2026-11-11T17:35:12.822Z",
+      "observed_at_utc": "2026-11-11T17:44:35.606446+00:00",
+      "limitation": "Envelope only; not continuous active work, idle or CPU accounting. Author session remains active."
+    },
+    {
+      "role": "original_release_ops_qe",
+      "basename": "rollout-2026-11-11T17-23-07-01a1cba2-841e-7713-a3f1-6b2b09015227.jsonl",
+      "sha256": "495af14756eaf1dfc6b5da5e00f43e0dde1f172c08181b906263e9ac4f860d00",
+      "first": "2026-11-11T17:23:07.976Z",
+      "last_at_observation": "2026-11-11T17:27:53.064Z",
+      "observed_at_utc": "2026-11-11T17:44:35.616881+00:00",
+      "limitation": "Envelope only; not continuous active work, idle or CPU accounting. Author session remains active."
+    }
+  ],
+  "audit_evidence_metadata_observed_at_utc": "2026-11-11T17:44:35.624253+00:00"
+}
