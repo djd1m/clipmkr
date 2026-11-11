@@ -1,0 +1,120 @@
+{
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "worktreeHead": "3603be73ba4fc32d43f611885a4ac89faeaaa80d",
+  "status": "post-ideation-final-step6-ui-approved-awaiting-code-entry-gates",
+  "historicalPin": "features/original-video-access/history/design-r0/requirements-pin.json",
+  "engineeringDecision": "root messages 2026-11-11 to /root/original_video_architecture: same-origin source stream; canonical originalSourceRevision in backend-only shared/server/original-source leaf, no barrel export",
+  "uiAdditionalStatesApproval": "approved-owner",
+  "files": [
+    {
+      "path": "openspec/changes/original-video-access/proposal.md",
+      "sha256": "83d8b4cb37fdedb0aad89b445b406b23e361c52b2f6f41a99c29ac95ed8da5f3"
+    },
+    {
+      "path": "openspec/changes/original-video-access/specs/original-video-access/spec.md",
+      "sha256": "87dd40a3cb7ae5975dd25385a01808137011cb2fe694b829ec8ce04ee35ac77f"
+    },
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "959179ee8f7a515535c4fdfec0ee99b6e4a0b2f040a580e638e169f2d2609ad9"
+    },
+    {
+      "path": "features/original-video-access/02_reuse_inventory.md",
+      "sha256": "6c5d458318ca41084e3b14866169094bff53ca4702374357b1c00cd93bb09952"
+    },
+    {
+      "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+      "sha256": "23c59360d4c9d93e9f72fb347561261921aae652de9457ac354064ee2aab9fbd"
+    },
+    {
+      "path": "features/original-video-access/03_shift_left_validation.md",
+      "sha256": "7aab7e154e0a436449e3eaf4491aa3794b0751486b21bc3392505c9bcb200717"
+    },
+    {
+      "path": "features/original-video-access/05_architecture.md",
+      "sha256": "179fe241dcda4f1b14d4ff8a24bc09d991fc4b5f03c81e204f54dc8c74443a78"
+    },
+    {
+      "path": "features/original-video-access/06_implementation_plan.md",
+      "sha256": "578f2b173ad8d5513a10b1804fd69c3c3bbcf13697e9bc0c05620c29c579b9ea"
+    },
+    {
+      "path": "docs/research/original-video-access/mockup.html",
+      "sha256": "ddfedb3cf797237955f044c22d5663cb07af8663771ed7c9cf03fc675484c174"
+    },
+    {
+      "path": "docs/research/original-video-access/states.html",
+      "sha256": "6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953"
+    },
+    {
+      "path": "features/original-video-access/ui-approval.md",
+      "sha256": "38bcb0c3efcb5dcedfb9530de97f526371b9705b0728fd3f06d4f03064cc9ed9"
+    }
+  ],
+  "previousDesignPin": "features/original-video-access/history/qcsd-r1/requirements-pin.json",
+  "qcsdRework": [
+    "OQ-QUALITY-1",
+    "OQ-QUALITY-2",
+    "OT-TEST-1"
+  ],
+  "acceptedBaseRevision": "2b61adeea68f9fa7d316969db7738e5754dec8f8",
+  "planAuthorSession": "/root/original_video_final_plan",
+  "modelRequested": "gpt-6-astra",
+  "reasoningRequested": "xhigh",
+  "reviewedR2": {
+    "snapshotPath": "features/original-video-access/history/step6-before-final/design-snapshot.json",
+    "snapshotSha256": "0138da0500ed1c7b64c83398d56727fba2fd6ff66dd73517a1b8e49eab56d4f5",
+    "requirementsPinPath": "features/original-video-access/history/step6-before-final/requirements-pin.json",
+    "requirementsPinSha256": "93e15d0420f4cf9bd724bdf10cce53fcc7f25b2d88175bf0d42350f6dca768e5",
+    "planPath": "features/original-video-access/history/step6-before-final/06_implementation_plan.md",
+    "planSha256": "79425cc3e573b11faa4235860b6735cf493a6bc1cbb8249e748fde43b91b6cee"
+  },
+  "ideationClosure": {
+    "phase": "ideation",
+    "verdict": "closed",
+    "revision": "d7b8009a27a9111aa6478d38483595af4e8f865212973671d46c169936a284e0",
+    "nonce": "813cb2be-355a-43a6-8d5c-7199290984c5",
+    "unresolved": [],
+    "reasons": [],
+    "report": "features/original-video-access/03.5_ideation_report.md",
+    "rawSha256": "e158e80a61d0a356c5f88be80c2e8eb8364c972ab3fe0f0ee25057d6f0d24cd1",
+    "scope": "reviewed R2 design only; no implementation, UI approval or code-entry gate claim"
+  },
+  "measuredCoreFiles": [
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "f2af963d82ed3668babe4f73236eb3d9d30caa404580b4c84bce6b1febaf5e18"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "959179ee8f7a515535c4fdfec0ee99b6e4a0b2f040a580e638e169f2d2609ad9"
+    },
+    {
+      "path": "features/original-video-access/03_adr/001-serve-original-through-owned-route.md",
+      "sha256": "23c59360d4c9d93e9f72fb347561261921aae652de9457ac354064ee2aab9fbd"
+    },
+    {
+      "path": "features/original-video-access/05_architecture.md",
+      "sha256": "179fe241dcda4f1b14d4ff8a24bc09d991fc4b5f03c81e204f54dc8c74443a78"
+    }
+  ],
+  "dependencyRecheck": "features/original-video-access/dependency-recheck.md",
+  "codeEntryGates": "root canonical pinned K1 exit 0 (13 free names / 486 files); K2 passed prior plan, rerun required on current plan; checkpoints/context admission/code GO remain root responsibility",
+  "uiApproval": {
+    "status": "approved-owner",
+    "path": "features/original-video-access/ui-approval.md",
+    "sha256": "38bcb0c3efcb5dcedfb9530de97f526371b9705b0728fd3f06d4f03064cc9ed9",
+    "receivedAt": "2026-11-11T16:33:19.977685+00:00",
+    "questionId": "call_7d57dd079fe542ad83e6ac0fd1f6170a",
+    "answer": "Да, реализовать эти состояния",
+    "statesSha256": "6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953"
+  },
+  "previousPostIdeationSnapshot": {
+    "path": "features/original-video-access/history/step6-before-ui-approval/design-snapshot.json",
+    "sha256": "6550ac613901ac307db2c69fcb43f985afedf4b7e7facfe1eda8c5894deac33f"
+  }
+}

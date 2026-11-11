@@ -23,3 +23,20 @@ export function isAllowedMedia(bytes: Uint8Array): boolean {
     (b[1]! & 0x18) !== 0x08 && (b[1]! & 0x06) !== 0 &&
     (b[2]! & 0xf0) !== 0xf0 && (b[2]! & 0xf0) !== 0 && (b[2]! & 0x0c) !== 0x0c;
 }
+
+export interface OriginalMediaType { kind: 'video' | 'audio' | 'unknown'; mime: string; extension: string }
+/** Container identification only; decoding remains the native player's responsibility. */
+export function detectOriginalMedia(bytes: Uint8Array): OriginalMediaType {
+  const b = Buffer.from(bytes);
+  if (!isAllowedMedia(b)) return { kind: 'unknown', mime: 'application/octet-stream', extension: 'bin' };
+  if (b.toString('ascii', 4, 8) === 'ftyp') {
+    const brands = [b.toString('ascii', 8, 12)];
+    for (let i = 16; i + 4 <= b.readUInt32BE(0); i += 4) brands.push(b.toString('ascii', i, i + 4));
+    if (brands.includes('M4A ')) return { kind: 'audio', mime: 'audio/mp4', extension: 'm4a' };
+    if (brands.includes('qt  ')) return { kind: 'video', mime: 'video/quicktime', extension: 'mov' };
+    return { kind: 'video', mime: 'video/mp4', extension: 'mp4' };
+  }
+  if (['moov', 'mdat', 'wide'].includes(b.toString('ascii', 4, 8))) return { kind: 'video', mime: 'video/quicktime', extension: 'mov' };
+  if (b[0] === 0x1a) return { kind: 'video', mime: 'video/webm', extension: 'webm' };
+  return { kind: 'audio', mime: 'audio/mpeg', extension: 'mp3' };
+}

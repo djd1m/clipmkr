@@ -6,11 +6,24 @@ export async function headObject(ctx: StorageContext, key: string): Promise<bigi
   if (!Number.isSafeInteger(result.ContentLength) || result.ContentLength! < 0) throw new Error('Хранилище не сообщило размер файла');
   return BigInt(result.ContentLength!);
 }
-export async function getObjectBytes(ctx: StorageContext, key: string, range = 'bytes=0-4095'): Promise<Uint8Array> {
+export async function getObjectBytes(ctx: StorageContext, key: string, range = 'bytes=0-4095', maxBytes?: number): Promise<Uint8Array> {
+  if (maxBytes !== undefined && (!Number.isSafeInteger(maxBytes) || maxBytes < 1)) throw new Error('Invalid byte limit');
   const result = await ctx.client.send(new GetObjectCommand({ Bucket: ctx.bucket, Key: key, Range: range }),
     { requestTimeout: FAST_REQUEST_TIMEOUT_MS, abortSignal: AbortSignal.timeout(FAST_REQUEST_TIMEOUT_MS) });
   if (!result.Body) throw new Error('Хранилище не вернуло байты файла');
-  return result.Body.transformToByteArray();
+  if (maxBytes === undefined) return result.Body.transformToByteArray();
+  const reader = result.Body.transformToWebStream().getReader();
+  let complete = false;
+  try {
+    if (result.ContentLength !== undefined && result.ContentLength > maxBytes) throw new Error('Storage byte limit exceeded');
+    const output = new Uint8Array(maxBytes); let size = 0;
+    while (true) {
+      const next = await reader.read();
+      if (next.done) { complete = true; return output.slice(0, size); }
+      if (next.value.byteLength > maxBytes - size) throw new Error('Storage byte limit exceeded');
+      output.set(next.value, size); size += next.value.byteLength;
+    }
+  } finally { try { if (!complete) await reader.cancel(); } finally { reader.releaseLock(); } }
 }
 export async function deleteObject(ctx: StorageContext, key: string): Promise<void> {
   await ctx.client.send(new DeleteObjectCommand({ Bucket: ctx.bucket, Key: key }), { requestTimeout: FAST_REQUEST_TIMEOUT_MS });

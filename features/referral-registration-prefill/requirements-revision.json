@@ -1,0 +1,67 @@
+{
+  "baseRevision": "74ea7a6bae354a1cf1fdaec1af01a957cd421137",
+  "state": "r2-structural-author-repair-awaiting-origin-verification",
+  "codingAuthorized": false,
+  "approvedMockup": {
+    "path": "docs/research/referral-registration-ux/mockup.html",
+    "sha256": "040a988b2881e0e287e42d0f33deff8a9775cd7480d96eca977de576773b8315",
+    "ownerReply": "Да, реализовать этот макет"
+  },
+  "files": [
+    {
+      "path": "features/referral-registration-prefill/00_complexity_assessment.md",
+      "sha256": "4f8fc15f52cc692621a60b4745569ee8bc863fd29e47725bc8a0c561ef4643e6"
+    },
+    {
+      "path": "features/referral-registration-prefill/01_requirements.md",
+      "sha256": "c92408460509477f853f586e792412ef418a716b49a3927c5ff80f354f5bb9f7"
+    },
+    {
+      "path": "features/referral-registration-prefill/02_reuse_inventory.md",
+      "sha256": "b5e57535d59f17c540cc3cf443ed713d24fa5ef271eb9d03e717e430230bb475"
+    },
+    {
+      "path": "features/referral-registration-prefill/author-design-notes.md",
+      "sha256": "62c8796492aac9b1c5b28c92074844f0e12e55a92a4e18af29697ab1a94f54a7"
+    },
+    {
+      "path": "openspec/changes/referral-registration-prefill/proposal.md",
+      "sha256": "0431191dbc410b2301bfcf017dc9757a9a003b1a57ffcd2825bc35efe632437b"
+    },
+    {
+      "path": "openspec/changes/referral-registration-prefill/tasks.md",
+      "sha256": "3f150301c52b0e9dbc3f0fa2ca564b6c2137863859aadd164795ecdc1498dfd8"
+    },
+    {
+      "path": "openspec/changes/referral-registration-prefill/specs/referral-registration/spec.md",
+      "sha256": "75bdcc8a049109df016ed5b3540880700ccf48a11cd0d6fd599316816e654516"
+    },
+    {
+      "path": "features/referral-registration-prefill/03_adr/001-preserve-referral-authority.md",
+      "sha256": "32643d90531ac1d0630f6901bbc184d32ae086bd3b9b3885077ecba5bdcbb606"
+    },
+    {
+      "path": "features/referral-registration-prefill/05_architecture.md",
+      "sha256": "43f6ec83a5b3e21e648b5d31fa350f971d9510cf8f4efaf625043d0c77427c1c"
+    },
+    {
+      "path": "features/referral-registration-prefill/06_implementation_plan.md",
+      "sha256": "b74970e2ae4645e95debd4bb43f709e31fac7cc8bf63404cfbe3a46920d489d8"
+    },
+    {
+      "path": "features/referral-registration-prefill/diagrams/architecture-c4.mermaid",
+      "sha256": "fba0b4ac2e2e1ce302ca43d61c4ef6ea3e242267c90b932b8b753cd9a1beafdb"
+    },
+    {
+      "path": "features/referral-registration-prefill/README.md",
+      "sha256": "8cfea9a688c505cdb265e6ec1e9aad32c682a28186c8a9f24a8ba6258e3e5376"
+    }
+  ],
+  "previousRequirementsSha256": "0d8dcb7c2c078acddee19f387b1b2a0780a6d6b4570ef1a4ce5613c80bb6dec3",
+  "previousOpenSpecSha256": "dd6d63ad5d279c058661ff6ff576d4024e167bbf5a2178e93746a8953e1771e0",
+  "originatingConditions": [
+    "QCR-QUALITY-1",
+    "QCR-RISK-1",
+    "QCR-TEST-1"
+  ]
+}

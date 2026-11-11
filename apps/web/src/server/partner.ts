@@ -61,7 +61,7 @@ export class PartnerService {
     } catch (error) { await tx.query('ROLLBACK'); throw error; }
     finally { tx.release(); }
   }
-  async apply(account: string, raw: unknown, prefix: string, cookieHeader = ''): Promise<Attribution | null> {
+  async apply(account: string, raw: unknown, prefix: string, cookieHeader = ''): Promise<(Attribution & { applied_code?: string }) | null> {
     const parsed = applyCodeSchema.safeParse(raw);
     if (!parsed.success) throw invalid(); // Invalid explicit input never falls back to a cookie.
     if ('discard_referral' in parsed.data) return null;
@@ -75,7 +75,7 @@ export class PartnerService {
       // Same account first, then same code: one lock order for concurrent replacements.
       const active = await tx.query("SELECT id FROM account WHERE id=$1 AND status='active' FOR NO KEY UPDATE", [account]);
       if (!active.rowCount) throw new UploadError('not_found', 'Аккаунт не найден', 404);
-      const code = (await tx.query<{ id: string; status: string; account_id: string; unblocked_at: Date | null }>(`SELECT c.id,c.status,p.account_id,c.unblocked_at
+      const code = (await tx.query<{ id: string; code: string; status: string; account_id: string; unblocked_at: Date | null }>(`SELECT c.id,c.code,c.status,p.account_id,c.unblocked_at
         FROM partner_code c JOIN partner p ON p.id=c.partner_id JOIN account a ON a.id=p.account_id
         WHERE c.code=$1 AND a.status='active' FOR NO KEY UPDATE OF c`, [codeValue])).rows[0];
       if (!code) throw invalid();
@@ -112,7 +112,8 @@ export class PartnerService {
           VALUES('guest_registered',$1,$2,$3::cidr,$4::date,$5)`, [account, code.id, prefix, moscowDay(now), now]);
       }
       await tx.query('COMMIT');
-      return result;
+      return !self && result.reject_reason === null && result.partner_code_id === code.id && (result.status === 'pending' || result.status === 'activated')
+        ? { ...result, applied_code: code.code } : result;
     } catch (error) { await tx.query('ROLLBACK'); throw error; }
     finally { tx.release(); }
   }

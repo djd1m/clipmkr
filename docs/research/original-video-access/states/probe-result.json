@@ -1,0 +1,435 @@
+{
+  "status": "pass",
+  "scope": "synthetic HTML UI only; not app/S3/codec playback",
+  "browser": "148.0.7778.96",
+  "cases": [
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "incomplete",
+      "screenshot": "incomplete-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "missing",
+      "screenshot": "missing-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "loading",
+      "screenshot": "loading-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "error",
+      "screenshot": "error-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "unsupported",
+      "screenshot": "unsupported-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "audio",
+      "screenshot": "audio-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "no-clips",
+      "screenshot": "no-clips-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "state": "playback-error",
+      "screenshot": "playback-error-dark-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "incomplete",
+      "screenshot": "incomplete-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "missing",
+      "screenshot": "missing-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "loading",
+      "screenshot": "loading-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "error",
+      "screenshot": "error-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "unsupported",
+      "screenshot": "unsupported-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "audio",
+      "screenshot": "audio-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "no-clips",
+      "screenshot": "no-clips-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "state": "playback-error",
+      "screenshot": "playback-error-light-390.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "incomplete",
+      "screenshot": "incomplete-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "missing",
+      "screenshot": "missing-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "loading",
+      "screenshot": "loading-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "error",
+      "screenshot": "error-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "unsupported",
+      "screenshot": "unsupported-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "audio",
+      "screenshot": "audio-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "no-clips",
+      "screenshot": "no-clips-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "state": "playback-error",
+      "screenshot": "playback-error-dark-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "incomplete",
+      "screenshot": "incomplete-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "missing",
+      "screenshot": "missing-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "loading",
+      "screenshot": "loading-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "error",
+      "screenshot": "error-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "unsupported",
+      "screenshot": "unsupported-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "audio",
+      "screenshot": "audio-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "no-clips",
+      "screenshot": "no-clips-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "state": "playback-error",
+      "screenshot": "playback-error-light-1440.png",
+      "overflow": false,
+      "controlsMinHeight": 44,
+      "interactions": "pass"
+    }
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "hashes": [
+    {
+      "path": "docs/research/original-video-access/states.html",
+      "sha256": "6521026a864be1ca323cd082ecb402360062bd12b65a1e5fae71ab67ffe10953"
+    },
+    {
+      "path": "docs/research/original-video-access/states/probe.cjs",
+      "sha256": "01071fc579b67d3f659b67ddf8f7cb8db11cb00b82f8ca228fcba941a2979be8"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-dark-390.png",
+      "sha256": "f4c9d7709d2dbff1045a8fe048ef80c4907e1f344d12df3f7371beda0520ebe1"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-dark-390.png",
+      "sha256": "f3bb79b6eafc1add889c1d35ab174b34ffd6c4e089f7b5a2e35744297be3875c"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-dark-390.png",
+      "sha256": "75d6e1b238f44f284a5ba0822c8569553bab649f9e3c2de774dc9b520f996a87"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-dark-390.png",
+      "sha256": "4baeb8df3e55cba699551a0be36b0b062893aebe5346818b1e0bce0ef93a9ae1"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-dark-390.png",
+      "sha256": "f7138efb3b7eb8390e4d1fed70cb8df7614309688b2ed3bcbb2f609c68ef810b"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-dark-390.png",
+      "sha256": "799a4d662bab07be1f83fc9d8f23ba6bc82113df58da38089f996d8d311bc2f8"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-dark-390.png",
+      "sha256": "7b71e38dd1871235261392723df81ef922618fb584fc658df776b0e47b55ba94"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-dark-390.png",
+      "sha256": "416083bb330133e9aa2fc16dbcaa5de471cab83d860fb68ba7c5ea3ba2e0cbb9"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-light-390.png",
+      "sha256": "624f60063cf9f1728e061c8a7a00c858022320033393444ffccf1d2c0b266a66"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-light-390.png",
+      "sha256": "b35532dde71186a54b4f1d9dbb8169ec2fb656adc56e2a061841bdfb27a580e2"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-light-390.png",
+      "sha256": "edd068cf9c97fbf43aead615cd0bd026e5d0487598f235786b67fd1dc21377e5"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-light-390.png",
+      "sha256": "9b3801232cbeaab0efa268aa658349ba7716960a007b94d5eaf966449e2324d3"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-light-390.png",
+      "sha256": "315f2c67f966b3a440d0c0b0dad01fb2440aeaf9a526e0767d583c1a24053739"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-light-390.png",
+      "sha256": "f8fbadf8f103a26f3fcfcd8f083e45be1c1d3d3d3e0ce54093d2e8268c2b3a7d"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-light-390.png",
+      "sha256": "4c5fe4fa9ea39eeb72974d29116280fa7291d59bc5294c90fc6b9122faddb5cb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-light-390.png",
+      "sha256": "8fdefb5900b603fc39d240e164130ae9200b05faa11030c8b3277d3920801af9"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-dark-1440.png",
+      "sha256": "efa6a6fd68d00b1dd149ae6164ddb52fbdada4fbc5f89f992e146447f93a59a0"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-dark-1440.png",
+      "sha256": "75954e02aac5500643ef1bacef0ca8b6255c6aa024bfecc811ee9f07c32b6295"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-dark-1440.png",
+      "sha256": "2497aa12916fbb4d040959669622be55614e459e7862211a021d4e5265267c16"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-dark-1440.png",
+      "sha256": "eebe8512d3d806138059599dc0231ffca28d01406a4ee7a442481ac472a140ba"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-dark-1440.png",
+      "sha256": "c9f02ea18a40e20ffd78bc9b384a34ecd2d1cd8adfa7e66365e8d005a15a3af9"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-dark-1440.png",
+      "sha256": "2183421930fa8599ed5032ee51493d6444fc072a387cfaa0af27e70d150388eb"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-dark-1440.png",
+      "sha256": "37df19613c21cd9d8b2e2d7c8b97432ded1d14f21092ca5c4e181f8bb56e8307"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-dark-1440.png",
+      "sha256": "c41b0159142b18a5b3d356c7a946afedb5a58837a103f33139fd69a1f119570b"
+    },
+    {
+      "path": "docs/research/original-video-access/states/incomplete-light-1440.png",
+      "sha256": "bc415ed5276def82f426f7e7788d35ae66841372dc11ef3e654afd97a57813be"
+    },
+    {
+      "path": "docs/research/original-video-access/states/missing-light-1440.png",
+      "sha256": "ee3a4e7508184e305dec4804ccb4f02ac0c297a425a1ab3a7809d752da5a3839"
+    },
+    {
+      "path": "docs/research/original-video-access/states/loading-light-1440.png",
+      "sha256": "1d0ed67d8e9156857b802ca8f582407f2f13b809822264fa04ce3aa5ce63f252"
+    },
+    {
+      "path": "docs/research/original-video-access/states/error-light-1440.png",
+      "sha256": "ba6efe666a849d8203755b71141f946189be312c4541cfde8b1577a608bc20ce"
+    },
+    {
+      "path": "docs/research/original-video-access/states/unsupported-light-1440.png",
+      "sha256": "6f5267d286e8d27d940b61af4aeec468a92f3ce4ac258046b3096850dce41a2f"
+    },
+    {
+      "path": "docs/research/original-video-access/states/audio-light-1440.png",
+      "sha256": "216663e9beec3bded676acb2fd8a4a22a40793dc9e35225ffa712f6fac4d6932"
+    },
+    {
+      "path": "docs/research/original-video-access/states/no-clips-light-1440.png",
+      "sha256": "5d4ed757fa1afbcae4404a466615c3ad31a05a57b466bbb483843d7896688684"
+    },
+    {
+      "path": "docs/research/original-video-access/states/playback-error-light-1440.png",
+      "sha256": "68a12fa0771deb742b17eb4c64d5a2df9ea30bd278e9defa7b2774ac8f24fa06"
+    }
+  ]
+}

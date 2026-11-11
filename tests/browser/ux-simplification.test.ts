@@ -40,7 +40,7 @@ beforeAll(async()=>{
     resolve:{alias:Object.fromEntries(['upload','enums','cta','tariff','music-catalog'].map(name=>[`@clipmaker/shared/${name}`,resolve(`packages/shared/src/${name}.ts`)]))},server:{host:'127.0.0.1',port:0,watch:null},plugins:[{name:'ux-components',enforce:'pre',
       transform(source,id){if(!id.endsWith('/videos/[videoId]/VideoDetail.tsx'))return;const fault=process.env.CLIPMKR_UX_FALSIFIER;if(fault==='baseline-at-ack')return source.replace("intent.phase = failed ? 'unknown' : 'awaiting';","intent.baseline = clipsRef.current.find(c => c.clip_id === clipId)?.render_version ?? intent.baseline; intent.phase = failed ? 'unknown' : 'awaiting';");if(fault==='stale-read')return source.replace('if (!alive()) return;', 'if (!mounted) return;');},
       resolveId(id){if(id==='next/navigation')return nav;if(id==='next/link')return link;if(id===entry)return entry;},
-      load(id){if(id===nav)return 'export const useRouter=()=>({push:p=>{history.pushState({},"",p)},refresh(){}});';if(id===link)return `import React from 'react';export default function Link(p){return React.createElement('a',p);}`;
+      load(id){if(id===nav)return 'export const usePathname=()=>window.location.pathname;export const useRouter=()=>({push:p=>{history.pushState({},"",p)},refresh(){}});';if(id===link)return `import React from 'react';export default function Link(p){return React.createElement('a',p);}`;
         if(id===entry)return `import React from 'react';import {createRoot} from 'react-dom/client';
         import {VideoDetail} from '/apps/web/src/app/videos/[videoId]/VideoDetail.tsx';import {VideoUploader} from '/apps/web/src/app/upload/Uploader.tsx';
         import {PartnerPanel} from '/apps/web/src/app/dashboard/PartnerPanel.tsx';import BloggerAdmin from '/apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx';
@@ -189,7 +189,7 @@ for(const [name,engine] of Object.entries({chromium,webkit}))describe(`UX compon
     for(const width of [320,390,1440])for(const layout of ['workspace','studio'])for(const theme of ['dark','light']){
       await page.setViewportSize({width,height:1000});await preferences(page,theme,layout);
       const positions=await page.locator('.clip-card[data-selected=true]').evaluate(card=>{
-        const title=card.querySelector('h3')!,caption=card.querySelector('.eyebrow')!,media=card.querySelector('video')!,download=card.querySelector('.clip-actions button')!,retention=Array.from(card.querySelectorAll('p')).find(n=>n.textContent?.startsWith('Хранится до'))!,more=card.querySelector('.clip-secondary > summary')!;
+        const title=card.querySelector('h3')!,caption=card.querySelector('.eyebrow')!,media=card.querySelector('video')!,download=card.querySelector('.clip-actions button')!,retention=Array.from(card.querySelectorAll('p')).find(n=>n.textContent?.startsWith('Доступно до'))!,more=card.querySelector('.clip-secondary > summary')!;
         const box=(n:Element)=>{const r=n.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left};};
         return {caption:box(caption),title:box(title),media:box(media),download:box(download),retention:box(retention),more:box(more),naturalTitleBeforeMedia:!!(title.compareDocumentPosition(media)&Node.DOCUMENT_POSITION_FOLLOWING),naturalMediaBeforeDownload:!!(media.compareDocumentPosition(download)&Node.DOCUMENT_POSITION_FOLLOWING),sameMedia:media===Reflect.get(window,'orderedMedia')};
       });

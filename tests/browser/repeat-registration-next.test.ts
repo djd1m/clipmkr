@@ -16,6 +16,8 @@ import { createPool, type Pool } from '../../packages/db/src/index';
 import { migrate } from '../../packages/db/src/migrate';
 import { AuthService } from '../../apps/web/src/server/auth';
 import { PgAuthStore } from '../../apps/web/src/server/auth-store';
+import { PartnerService } from '../../apps/web/src/server/partner';
+import { bloggerReport } from '../../packages/db/src/blogger-report';
 import { referralCookie } from '../../apps/web/src/lib/partner-referral';
 import { environment } from '../fixtures/environment';
 import { startFakeYooKassa, SHOP_ID, SECRET, type FakeYooKassa } from '../fixtures/fake-yookassa-server';
@@ -50,16 +52,18 @@ async function snapshot(id: string) {
 async function sessions(id: string) { return (await pool.query('SELECT count(*)::int AS n FROM session WHERE account_id=$1', [id])).rows[0].n as number; }
 async function fill(page: Page, email: string, value = password, explicit = true) {
   await page.locator('#auth-email').fill(email); await page.locator('#auth-password').fill(value);
-  if (explicit) { await page.locator('#auth summary').click(); await page.locator('[name=partner_code]').fill(codeB); }
+  if (explicit) { if (!await page.locator('#auth details').evaluate(el => (el as HTMLDetailsElement).open)) await page.locator('#auth summary').click(); await page.locator('[name=partner_code]').fill(codeB); }
 }
 async function submit(page: Page) { await page.locator('#auth button[type=submit]').click(); }
-async function context(engine: typeof chromium, width = 390, theme = 'dark') {
+async function context(engine: typeof chromium, width = 390, theme = 'dark', withReferral = true) {
   await redis.del('n5:mutation:rate:' + createHmac('sha256', secret).update('anonymous:198.51.100.0/24').digest('hex'));
   const browser = await engine.launch(); const jar = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width, height: 1000 } });
   let signup = 0, apply = 0; const external: string[] = [];
   await jar.exposeBinding('registrationSignupObserved', () => { signup++; });
   await jar.addCookies([{ name: 'n5_theme', value: theme, url: origin, secure: true, sameSite: 'Lax' }]);
   await jar.addInitScript(() => {
+    // Signup instrumentation belongs to the app document, not the opaque SDK iframe.
+    if (window !== window.top) return;
     localStorage.setItem('n5.analytics.consent', 'yes');
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (key, value) {
@@ -78,12 +82,13 @@ async function context(engine: typeof chromium, width = 390, theme = 'dark') {
   });
   // Only a referral cookie is seeded; auth cookies must be accepted from native HTTPS Set-Cookie.
   const referral = referralCookie('', codeC, 'cookie', false, secret, Date.now());
-  if (referral) {
+  if (withReferral && referral) {
     const pair = referral.split(';')[0]!, equal = pair.indexOf('=');
     await jar.addCookies([{ name: pair.slice(0, equal), value: pair.slice(equal + 1), url: origin, secure: true }]);
   }
   const page = await jar.newPage(); page.setDefaultTimeout(10000);
-  return { browser, jar, page, counts: () => ({ signup, apply }), external };
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.name));
+  return { browser, jar, page, errors, counts: () => ({ signup, apply }), external };
 }
 async function close(f: Awaited<ReturnType<typeof context>>) { await f.jar.close(); await f.browser.close(); }
 async function assertInline(page: Page) {
@@ -112,6 +117,7 @@ beforeAll(async () => {
   for (const name of ['A', 'B', 'C']) {
     const email = `${name}-${randomUUID()}@example.invalid`; const token = await auth.register(email, password, '198.51.100.0/24');
     const id = (await auth.authenticate(token))!.account_id;
+    await pool.query('UPDATE account SET is_blogger=true WHERE id=$1', [id]);
     const partner = (await pool.query("INSERT INTO partner(account_id,display_name) VALUES($1,'Synthetic') RETURNING id", [id])).rows[0].id;
     const code = 'RR' + name + randomBytes(3).toString('hex').toUpperCase();
     await pool.query("INSERT INTO partner_code(partner_id,code,status) VALUES($1,$2,'active')", [partner, code]);
@@ -175,7 +181,7 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]] as con
       const email = `created-${randomUUID()}@example.invalid`; await f.page.goto(origin + '/#auth');
       await fill(f.page, email); const response = f.page.waitForResponse(r => r.url().endsWith('/api/auth/register'));
       await submit(f.page); await f.page.waitForURL(origin + '/dashboard');
-      await f.page.getByRole('status').filter({ hasText: 'Аккаунт создан. Вы вошли.' }).waitFor();
+      await f.page.getByRole('status').filter({ hasText: 'Аккаунт создан. Приглашение применено.' }).waitFor();
       await assertCookie(f.jar, (await (await response).headerValue('set-cookie'))!); await assertInline(f.page);
       await expect.poll(f.counts).toEqual({ apply: 1, signup: 1 });
       const account = (await pool.query('SELECT id FROM account WHERE email=$1', [email])).rows[0]; identities.add(`account:${account.id}`);
@@ -289,6 +295,123 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]] as con
     try {
       await f.page.goto(origin + '/legacy'); await fill(f.page, `legacy-created-${randomUUID()}@example.invalid`); await submit(f.page); await f.page.waitForURL(origin + '/dashboard');
       await expect.poll(f.counts).toEqual({ apply: 1, signup: 1 });
+    } finally { await close(f); }
+  }, 120000);
+}
+
+async function persistedReferral(email: string) {
+  const row = (await pool.query(`SELECT a.id,a.source,a.status,a.partner_code_id,c.code,
+    to_char(a.created_at AT TIME ZONE 'Europe/Moscow','YYYY-MM') AS month
+    FROM attribution a JOIN account u ON u.id=a.account_id JOIN partner_code c ON c.id=a.partner_code_id WHERE u.email=$1`, [email])).rows[0];
+  return row;
+}
+async function changeReferral(jar: BrowserContext, code: string, source: 'cookie' | 'guest_link' = 'cookie') {
+  const value = referralCookie('', code, source, false, secret)!.split(';')[0]!.split('=')[1]!;
+  await jar.addCookies([{ name: '__Host-n5_referral', value, url: origin, secure: true, httpOnly: true, sameSite: 'Lax' }]);
+}
+async function confirmReferral(f: Awaited<ReturnType<typeof context>>, email: string) {
+  const response = f.page.waitForResponse(r => new URL(r.url()).pathname === '/api/trpc/code.apply');
+  await fill(f.page, email, password, false); await submit(f.page);
+  const applied = await response; expect(applied.status()).toBe(200); const reply = (await applied.json()).result.data.data;
+  await f.page.waitForURL(origin + '/dashboard'); const persisted = await persistedReferral(email);
+  expect(reply).toMatchObject({ id: persisted.id, partner_code_id: persisted.partner_code_id, source: persisted.source, applied_code: persisted.code });
+  expect(await f.page.locator('.auth-flow-notice').textContent()).toContain('Аккаунт создан. Приглашение применено.');
+  expect(await f.page.locator('.auth-flow-referral-code').textContent()).toBe(`Регистрация по коду ${persisted.code} учтена.`);
+  // Baseline consent fixture attempts the SDK; the transport aborts every external request.
+  await assertInline(f.page); expect(f.external.filter(host => host !== 'mc.yandex.ru')).toEqual([]); expect(f.errors).toEqual([]); return { persisted, request: applied.request().postDataJSON() };
+}
+for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]] as const) {
+  it(`referral HTTPS invitation registers without manual code ${name}`, async () => {
+    for (const source of ['cookie', 'guest_link'] as const) {
+      const f = await context(engine, 390, 'dark', false);
+      try {
+        if (source === 'guest_link') await changeReferral(f.jar, codeB, source);
+        await f.page.goto(origin + '/r/' + codeA); await f.page.locator('#auth-email').waitFor();
+        if (source === 'cookie') { await f.page.goto(origin + '/r/' + codeB); await f.page.locator('#auth-email').waitFor(); }
+        const effective = source === 'cookie' ? codeA : codeB;
+        expect(await f.page.locator('#auth-partner').inputValue()).toBe(effective);
+        expect(await f.page.locator('#auth details').evaluate(el => (el as HTMLDetailsElement).open)).toBe(true);
+        expect(await f.page.locator('#auth-partner').getAttribute('readonly')).toBeNull();
+        if (evidence) { mkdirSync(evidence, { recursive: true, mode: 0o700 }); await f.page.screenshot({ path: join(evidence, `referral-prefill-${name}-390-dark.png`), fullPage: true }); }
+        const email = `invited-${randomUUID()}@example.invalid`, result = await confirmReferral(f, email);
+        expect(result.persisted).toMatchObject({ code: effective, source }); expect(result.request).toEqual({});
+        expect(f.counts()).toEqual({ apply: 1, signup: 1 });
+        if (evidence) { mkdirSync(evidence, { recursive: true, mode: 0o700 }); await f.page.screenshot({ path: join(evidence, `referral-confirmed-${name}.png`), fullPage: true }); }
+      } finally { await close(f); }
+    }
+  }, 120000);
+  it(`referral HTTPS confirmation uses persisted code ${name}`, async () => {
+    for (const change of ['cookie', 'manual', 'removed']) {
+      const f = await context(engine, 1440, 'light', false);
+      try {
+        await f.page.goto(origin + '/r/' + codeA); await f.page.locator('#auth-email').waitFor();
+        expect(await f.page.locator('#auth-partner').inputValue()).toBe(codeA);
+        if (evidence && change === 'cookie') { mkdirSync(evidence, { recursive: true, mode: 0o700 }); await f.page.screenshot({ path: join(evidence, `referral-prefill-${name}-1440-light.png`), fullPage: true }); }
+        if (change === 'cookie') await changeReferral(f.jar, codeB);
+        if (change === 'manual') await f.page.locator('#auth-partner').fill(codeB);
+        const email = `changed-${randomUUID()}@example.invalid`;
+        if (change !== 'removed') {
+          const result = await confirmReferral(f, email); expect(result.persisted).toMatchObject({ code: codeB, source: change === 'manual' ? 'explicit' : 'cookie' });
+          expect(result.request).toEqual(change === 'manual' ? { code: codeB } : {});
+        } else {
+          await f.jar.clearCookies({ name: '__Host-n5_referral' });
+          const response = f.page.waitForResponse(r => new URL(r.url()).pathname === '/api/trpc/code.apply');
+          await fill(f.page, email, password, false); await submit(f.page); const applied = await response;
+          expect(applied.request().postDataJSON()).toEqual({}); expect((await applied.json()).result.data.data).toBeNull();
+          await f.page.waitForURL(origin + '/dashboard'); expect(await persistedReferral(email)).toBeUndefined();
+          expect(await f.page.locator('.auth-flow-notice').textContent()).toContain('Аккаунт создан. Вы вошли.');
+          expect(await f.page.locator('.auth-flow-referral-code').count()).toBe(0);
+        }
+      } finally { await close(f); }
+    }
+  }, 120000);
+  it(`referral HTTPS display is isolated and read only ${name}`, async () => {
+    const f = await context(engine, 390, 'dark', false), clean = await context(engine, 1440, 'light', false);
+    const views = async () => (await pool.query("SELECT count(*)::int AS n FROM growth_event WHERE type='link_view'")).rows[0].n;
+    try {
+      await f.page.goto(origin + '/r/' + codeA); await f.page.locator('#auth-email').waitFor(); const before = await views();
+      const saved = (await f.jar.cookies()).find(c => c.name === '__Host-n5_referral')!;
+      expect(saved).toMatchObject({ httpOnly: true, secure: true, sameSite: 'Lax', path: '/' });
+      await f.page.reload(); expect(await f.page.locator('#auth-partner').inputValue()).toBe(codeA); expect(await views()).toBe(before);
+      expect(await f.page.evaluate(() => document.cookie)).not.toContain('__Host-n5_referral');
+      const html = await f.page.content(); expect(html).not.toContain(saved.value); expect(html).not.toContain(secret);
+      await clean.page.goto(origin); expect(await clean.page.locator('#auth-partner').inputValue()).toBe('');
+      expect(await clean.page.locator('#auth details').evaluate(el => (el as HTMLDetailsElement).open)).toBe(false);
+      await clean.page.goto(origin + '/r/' + codeB); expect(await clean.page.locator('#auth-partner').inputValue()).toBe(codeB);
+      await f.page.reload(); expect(await f.page.locator('#auth-partner').inputValue()).toBe(codeA);
+      const codeRow = (await pool.query('SELECT c.id,p.account_id FROM partner_code c JOIN partner p ON p.id=c.partner_id WHERE c.code=$1', [codeA])).rows[0];
+      await pool.query("UPDATE partner_code SET status='blocked' WHERE id=$1", [codeRow.id]);
+      try { await f.page.reload(); expect(await f.page.locator('#auth-partner').inputValue()).toBe(''); expect(await f.page.locator('.public-referral-notice').count()).toBe(0); }
+      finally { await pool.query("UPDATE partner_code SET status='active' WHERE id=$1", [codeRow.id]); }
+      await pool.query("UPDATE account SET status='erasing' WHERE id=$1", [codeRow.account_id]);
+      try { await f.page.reload(); expect(await f.page.locator('#auth-partner').inputValue()).toBe(''); }
+      finally { await pool.query("UPDATE account SET status='active' WHERE id=$1", [codeRow.account_id]); }
+      await pool.query('ALTER TABLE partner_code RENAME TO referral_lookup_unavailable');
+      try { const response = await f.page.reload(); expect(response!.status()).toBe(200); expect(await f.page.locator('#auth-partner').inputValue()).toBe(''); await f.page.locator('#auth-email').waitFor(); }
+      finally { await pool.query('ALTER TABLE referral_lookup_unavailable RENAME TO partner_code'); }
+      expect(logs).toContain('referral_prefill_lookup_unavailable');
+    } finally { await close(f); await close(clean); }
+  }, 120000);
+  it(`referral HTTPS registration increments both canonical projections once ${name}`, async () => {
+    const owner = await seed(false); await pool.query('UPDATE account SET owner_unlimited=true WHERE id=$1', [owner.id]);
+    const members = (await pool.query('SELECT c.id,c.code,p.account_id FROM partner_code c JOIN partner p ON p.id=c.partner_id WHERE c.code=ANY($1::text[])', [[codeA, codeB]])).rows;
+    const chosen = members.find(r => r.code === codeA)!, foreign = members.find(r => r.code === codeB)!;
+    const months: string[] = (await pool.query("SELECT to_char(now() AT TIME ZONE 'Europe/Moscow','YYYY-MM') AS current,to_char((now() AT TIME ZONE 'Europe/Moscow')+interval '1 month','YYYY-MM') AS next")).rows.flatMap(row => [row.current, row.next]);
+    const service = new PartnerService(pool, secret);
+    const project = async (month: string) => {
+      const own = await service.dashboard(chosen.account_id, chosen.id), other = await service.dashboard(foreign.account_id, foreign.id), report = await bloggerReport(pool, owner.id, month);
+      if (report.kind !== 'ok') throw new Error('Canonical owner report unavailable');
+      return { own: own.counters.registrations, other: other.counters.registrations,
+        reportOwn: report.bloggers.find(b => b.account_id === chosen.account_id)!.codes.find(c => c.id === chosen.id)!.counters.registrations,
+        reportOther: report.bloggers.find(b => b.account_id === foreign.account_id)!.codes.find(c => c.id === foreign.id)!.counters.registrations };
+    };
+    const before = new Map(await Promise.all(months.map(async month => [month, await project(month)] as const))), f = await context(engine, 390, 'dark', false);
+    try {
+      await f.page.goto(origin + '/r/' + codeA); const email = `projection-${randomUUID()}@example.invalid`, result = await confirmReferral(f, email);
+      const baseline = before.get(result.persisted.month); expect(baseline).toBeDefined();
+      const after = await project(result.persisted.month);
+      expect(after).toEqual({ own: baseline!.own + 1, other: baseline!.other, reportOwn: baseline!.reportOwn + 1, reportOther: baseline!.reportOther });
+      expect(await project(result.persisted.month)).toEqual(after); expect(f.counts()).toEqual({ apply: 1, signup: 1 });
     } finally { await close(f); }
   }, 120000);
 }

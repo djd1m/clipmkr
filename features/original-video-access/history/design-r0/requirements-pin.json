@@ -1,0 +1,26 @@
+{
+  "baseRevision": "e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1",
+  "status": "prepared-awaiting-coordinator-gates",
+  "files": [
+    {
+      "path": "openspec/changes/original-video-access/proposal.md",
+      "sha256": "83d8b4cb37fdedb0aad89b445b406b23e361c52b2f6f41a99c29ac95ed8da5f3"
+    },
+    {
+      "path": "openspec/changes/original-video-access/specs/original-video-access/spec.md",
+      "sha256": "e45e4b6d1f4bafbdbbdfab0ccbe79892061312553c78fdcc456eaca31b2546bd"
+    },
+    {
+      "path": "features/original-video-access/00_complexity_assessment.md",
+      "sha256": "1c65473ac95a73ca355115dafdf87026548c52a9ebc3743adc0a4fdc49071210"
+    },
+    {
+      "path": "features/original-video-access/01_requirements.md",
+      "sha256": "f6075602af16a1c1dd0b58ab274be259db393d12ce6ca434d07eddeeab0a84b8"
+    },
+    {
+      "path": "features/original-video-access/02_reuse_inventory.md",
+      "sha256": "1d9985c150fccafbf560f3e8dad5661fa00b370be240e7528c290abf8a770f4b"
+    }
+  ]
+}
