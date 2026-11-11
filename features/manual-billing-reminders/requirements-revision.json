@@ -1,0 +1,46 @@
+{
+  "revision": "2026-11-11-r1",
+  "status": "proposed-awaiting-independent-qcsd",
+  "base": "f701c60",
+  "normativeSources": [
+    {
+      "path": "openspec/changes/manual-billing-reminders/proposal.md",
+      "sha256": "3094db007c79557b923733f6676f978726261c1caa22e4db3042eb762904d527"
+    },
+    {
+      "path": "openspec/changes/manual-billing-reminders/design.md",
+      "sha256": "0abbea02f61032ad65f11abaf5e62ba9f7389a91de57cdd8c27a687c9d40d7e6"
+    },
+    {
+      "path": "openspec/changes/manual-billing-reminders/specs/manual-billing-reminders/spec.md",
+      "sha256": "fcc149bbf0fbe9e25d180f21f5f0747042c742610f728cd47e602afe7d375ec0"
+    },
+    {
+      "path": "openspec/changes/manual-billing-reminders/.openspec.yaml",
+      "sha256": "b8f20def63a86ae4075c5499ff9ed413265d8704692a8493712424dc3f28d8e3"
+    }
+  ],
+  "reuseInventory": {
+    "path": "features/manual-billing-reminders/02_reuse_inventory.md",
+    "sha256": "e36fd0c1532278c296357259cf047f0e0a22b7f7efd9908d42465a4d12ee11b8"
+  },
+  "featureArtifacts": [
+    {
+      "path": "features/manual-billing-reminders/01_requirements.md",
+      "sha256": "844910e0c83a702f7fdc078b272f9a4b0819aff9d062938a699c6ab3cc99f3b1"
+    },
+    {
+      "path": "features/manual-billing-reminders/03_adr/001-reuse-idempotent-mail-journal.md",
+      "sha256": "ae1488351832092a58b2e4c305d55050a5b718f27623c38443049791a4cab88e"
+    },
+    {
+      "path": "features/manual-billing-reminders/05_architecture.md",
+      "sha256": "63e3e2c0c84fa29a41dd941d4c83861543a777f724e6033b519ee8e388e28cad"
+    },
+    {
+      "path": "features/manual-billing-reminders/exact-legal-copy-proposal.md",
+      "sha256": "cc8bd8337678c00c7f01b0ea5aefe53b3a4aa71974853c35d6822bd50583fe57"
+    }
+  ],
+  "excludedMutableLedger": "openspec/changes/manual-billing-reminders/tasks.md"
+}
