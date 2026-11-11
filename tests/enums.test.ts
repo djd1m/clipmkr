@@ -46,6 +46,14 @@ describe('Закрытые перечисления', () => {
     expect([...declared].filter(key => !(key in e.SQL_ENUMS) && !legacy.includes(key))).toEqual([]);
     expect(declared.has('video.cta_kind')).toBe(true);
   });
+  it('retention migration enums are exact and mutation sensitive', () => {
+    const sql = migrations();
+    for (const [before,after] of [
+      ["ready_at_source IN ('unknown','render','legacy_render','legacy_video')","ready_at_source IN ('unknown','render','legacy_render')"],
+      ["offset_days IN (1,3)),\n  clip_count","offset_days IN (1,7)),\n  clip_count"],
+      ["CHECK(state IN ('pending','sending','accepted','failed','unknown','superseded'))","CHECK(state IN ('pending','sending','accepted','failed','unknown'))"],
+    ]) { expect(sql).toContain(before); expect(() => checkSqlEnums(sql.replace(before!,after!))).toThrow(); }
+  });
   it('billing_notice_check_constraints_are_declared_and_mutation_sensitive', () => {
     const sql = migrations();
     expect(e.SQL_ENUMS['billing_notice.state']).toEqual(e.BILLING_NOTICE_STATE);

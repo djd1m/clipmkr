@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, type Ref } from 'react';
 import Link from 'next/link';
+import { OriginalSource } from './OriginalSource';
 import { useRouter } from 'next/navigation';
 import { resetLabel } from '../../../lib/limits-contract';
 import { ANALYTICS_READY, observeClips } from '../../../lib/acquisition-analytics';
@@ -63,6 +64,12 @@ export function ProgressPanel({ video, onRetry, busy = false, storageEnded=false
 }
 export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks = [], consentHash, paymentsOn = false, creditMode=false }: { videoId: string; initialVideo: VideoScreen; initialClips: ClipScreen[]; initialPacks?: GuestPackSummary[]; consentHash?: string; paymentsOn?: boolean; creditMode?:boolean }) {
   const router = useRouter();
+  const [originalOpen, setOriginalOpen] = useState(false), [originalHost, setOriginalHost] = useState<HTMLDivElement | null>(null);
+  function sourceMode(open: boolean) {
+    if(open) document.querySelectorAll<HTMLMediaElement>('.clip-grid video,.clip-grid audio').forEach(node=>node.pause());
+    setOriginalOpen(open);
+  }
+  function selectClip(id: string) { setOriginalOpen(false); setSelectedClipId(id); }
   const [video, setVideo] = useState(initialVideo), [clips, setClips] = useState(initialClips);
   const [error, setError] = useState<string | null>(null), [busy, setBusy] = useState(false);
   const [ctaFeedback, setCtaFeedback] = useState<{ state: 'pending' | 'success' | 'failure'; message: string } | null>(null);
@@ -164,31 +171,31 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
   const storageEnded=video.status==='done' && clips.length>0 && video.clips_done===video.clips_total &&
     clips.every(clip=>clip.status==='done' && (clip.retention_state==='expired' || (!!clip.expires_at && Date.parse(clip.expires_at)<=now)));
   return <><div className="workspace-ready">
-    <div className="studio-ready-intro"><VideoHeader video={video} headingRef={headingRef} storageEnded={storageEnded} /><ProgressPanel storageEnded={storageEnded} video={shown} onRetry={() => void retry()} busy={busy} />
+    <div className="studio-ready-intro"><VideoHeader video={video} headingRef={headingRef} storageEnded={storageEnded} /><OriginalSource key={videoId} videoId={videoId} status={video.status} open={originalOpen} onOpenChange={sourceMode} viewerHost={originalHost} fallbackFocus={()=>headingRef.current?.focus({preventScroll:true})} /><ProgressPanel storageEnded={storageEnded} video={shown} onRetry={() => void retry()} busy={busy} />
       {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}
       {video.clips_total > 0 && video.clips_total < 3 && <p className="notice">Найдено фрагментов: {video.clips_total}. Самодостаточных моментов меньше трёх — показываем столько, сколько есть.</p>}
       {video.status === 'done' && video.clips_done < video.clips_total && <p className="notice">Часть клипов не удалось собрать. Готовые клипы доступны для скачивания.</p>}
     </div>
     <section className="clips-section workspace-result-content" aria-label="Ваши клипы">
-      {clips.length > 0 && <p className="workspace-section-label workspace-selected-caption">Выбранный клип</p>}
-      <div className="workspace-result-regions">
-        <div className="clip-grid studio-clips">{clips.map(clip => <ClipCard creditMode={creditMode} key={clip.clip_id} clip={clip}
-          contextRoot={contextHost} onEditClip={setEditingClipId} selected={clip.clip_id === selectedClipId} onSelect={setSelectedClipId}
+      {clips.length > 0 && !originalOpen && <p className="workspace-section-label workspace-selected-caption">Выбранный клип</p>}
+      <div className="workspace-result-regions" style={!clips.length ? {gridTemplateColumns:"minmax(0,1fr)"} : undefined}>
+        <div className="clip-grid studio-clips"><div ref={setOriginalHost} /><div hidden={originalOpen}>{clips.map(clip => <ClipCard creditMode={creditMode} key={clip.clip_id} clip={clip}
+          contextRoot={contextHost} onEditClip={setEditingClipId} selected={clip.clip_id === selectedClipId} onSelect={selectClip}
           paymentsOn={paymentsOn} onSendToGuest={sendToGuest}
           musicPending={musicStates[clip.clip_id]?.pending} musicNotice={musicStates[clip.clip_id]?.notice} musicResolution={musicStates[clip.clip_id]?.resolution}
           onMusicApplyStart={(track, version) => applyStart(clip.clip_id, track, version)}
           onMusicFailed={token => musicAcknowledged(clip.clip_id, token, true)}
-          onMusicQueued={(_track, token) => musicAcknowledged(clip.clip_id, token)} />)}</div>
-        <nav className="workspace-clip-list workspace-list" aria-label="Фрагменты">
+          onMusicQueued={(_track, token) => musicAcknowledged(clip.clip_id, token)} />)}</div></div>
+        <nav className="workspace-clip-list workspace-list" aria-label="Фрагменты" hidden={!clips.length}>
           {clips.length > 0 && <p className="workspace-section-label">Фрагменты</p>}
           {clips.map(clip => <button type="button" key={clip.clip_id} data-select-clip={clip.clip_id}
-            aria-current={clip.clip_id === selectedClipId ? 'true' : 'false'} onClick={() => setSelectedClipId(clip.clip_id)}>
+            aria-current={clip.clip_id === selectedClipId ? 'true' : 'false'} onClick={() => selectClip(clip.clip_id)}>
             <span className="clip-num">{String(clip.index).padStart(2, '0')}</span><span className="clip-selector-title">{clip.title}</span>
             <span className="clip-duration">{(clip.duration_seconds ?? clip.end - clip.start).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} с</span>
           </button>)}
         </nav>
       </div>
-      {!clips.length && <p className="empty">{video.status === 'failed' ? 'Готовых клипов нет.' : video.status === 'done'
+      {!clips.length && !originalOpen && <p className="empty">{video.status === 'failed' ? 'Готовых клипов нет.' : video.status === 'done'
         ? 'Готовых клипов нет. Загрузите другую запись, чтобы найти новые фрагменты.' : 'Фрагменты появятся здесь после выделения.'}
         {(video.status === 'done' || video.status === 'failed') && <> <Link href="/dashboard">Загрузить запись</Link></>}</p>}
     </section>
