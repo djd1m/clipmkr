@@ -1,0 +1,43 @@
+{
+  "commands": [],
+  "commandReason": "Нового dz/npm subcommand нет; operator запускается node по native compiled entry path.",
+  "modules": [
+    {
+      "basename": "payment-identity",
+      "path": "packages/shared/src/payment-identity.ts",
+      "exports": [
+        "PaymentEnvironment",
+        "PaymentIdentity"
+      ]
+    },
+    {
+      "basename": "payment-provenance",
+      "path": "packages/db/src/payment-provenance.ts",
+      "exports": [
+        "verifiedLivePaymentSql",
+        "reconcilePaymentProvenance",
+        "PaymentProvenanceConflict"
+      ]
+    },
+    {
+      "basename": "ops-payment-provenance",
+      "path": "apps/web/src/server/payments/ops-payment-provenance.ts",
+      "exports": [
+        "parsePaymentProvenanceArgs",
+        "runPaymentProvenanceBackfill"
+      ]
+    },
+    {
+      "basename": "payment-environments.integration.test",
+      "path": "tests/payment-environments.integration.test.ts",
+      "exports": []
+    },
+    {
+      "basename": "payment-environments-next.test",
+      "path": "tests/browser/payment-environments-next.test.ts",
+      "exports": []
+    }
+  ],
+  "cli": "npm run dz -- name-check --project <W> --module <basename> --export <comma-separated exports> --json",
+  "status": "proposed names; architect did not run K1. Coordinator uses actual project-pinned CLI. Дополнительные публичные имена до ввода требуют K1; private local helper names остаются implementation detail."
+}

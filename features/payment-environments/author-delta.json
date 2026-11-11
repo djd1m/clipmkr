@@ -1,0 +1,25 @@
+{
+  "addressed": [
+    "Q-01",
+    "RISK-001",
+    "RISK-002",
+    "RISK-003"
+  ],
+  "changedScope": [
+    "features/payment-environments/01_requirements.md",
+    "features/payment-environments/03_adr/001-preserve-payment-provenance.md",
+    "features/payment-environments/05_architecture.md",
+    "openspec/changes/payment-environments/design.md",
+    "openspec/changes/payment-environments/specs/payment-environments/spec.md",
+    "features/payment-environments/02_reuse_inventory.md",
+    "features/payment-environments/requirements-revision.json"
+  ],
+  "classification": "structural",
+  "delta": "Q-01: отдельные численные оракулы owner month и blogger all-time, distinct payer не складывается по кодам; новый UI/API filter не вводится. RISK-001: полный writer inventory/old web stop/in-flight drain/zero owned PG sessions до030, запрет mixed writers/DB rollback после новых денег. RISK-002: общий payment advisory→account→intent→payment/CAS, reread, rollback event claim, held-lock positive control. RISK-003: explicit refund proof matrix для linked/erased known/unknown и before-success tombstone, без нового PII/order resurrection.",
+  "evidence": "Изменены 01: FR-2/3/5 и Измеримые условия QCSD; ADR: Decision/Consequences/Confirmation;05: RISK-001/002/003, Historical classification; OpenSpec design/spec синхронизированы;02 дополнен фактическим account-first erasure контрактом. SHA таблица01 и manifest revision2 обновлены механически. Source/tests/runtime/gates не исполнялись и не менялись; host/nonce/reviewer receipts и исходные отчёты не изменялись. Проверка формата/pins выполняется отдельно; этот delta не закрывает условия независимого review. Фактически выполнено: OpenSpec validate payment-environments --strict PASS; SHA self-check всех ledger/normative/context/policy/reuse PASS (36 reuse); git diff --check exit0. Core36532байта при лимите36864.",
+  "newRisks": {
+    "assessment": "Cutover требует короткой недоступности платёжных routes и доказанной принадлежности PG sessions; недоказанный drain оставляет продажи закрытыми. После erasure финансовая строка проверяется exact provider ID/amount и known identity; unknown остаётся unknown и вне выручки. При недостаточном proof возврат ждёт retry/reconciliation. Ожидание locks и retries остаются эксплуатационными рисками, поэтому требуются реальные controls. Новых сервисов, auth bypass и permanent PII полей не добавлено.",
+    "evidence": "05 RISK-001 задаёт fail-closed при неизвестном session ownership; RISK-002 требует observed PG wait и completion; RISK-003 задаёт no-effects ветвь. Проверки ещё NOT RUN.",
+    "conditions": []
+  }
+}
