@@ -1,0 +1,1712 @@
+{
+  "schemaVersion": 1,
+  "title": "Clipmkr: динамика проекта за 5–11 ноября 2026",
+  "period": {
+    "from": "2026-11-05",
+    "to": "2026-11-11"
+  },
+  "generatedOn": "2026-11-11",
+  "scope": "Только Clipmkr; сравнение с отчётом 5 ноября и события до завершения поставки регистрации по партнёрской ссылке",
+  "state": "done",
+  "readingTimeMinutes": 17,
+  "statusDefinitions": {
+    "done": "Завершён только прямо названный результат и уровень проверки; не означает полную готовность продукта.",
+    "in_progress": "Есть выполненные части, но заявленная приёмка или операционная граница ещё открыта.",
+    "planned": "План, требование, макет либо сообщение в бэклоге; runtime-реализация не подтверждена.",
+    "blocked": "Есть явный незакрытый блокер.",
+    "paused": "Работа отменена или остановлена владельцем."
+  },
+  "stateMeaning": "Сборка отчётных данных завершена; done у события означает только названный проверенный результат, а не готовность всего продукта.",
+  "evidenceCutoff": "2026-11-11T15:44:04Z",
+  "coverageNote": "Git-снимок 59361e07dc1eec69e2daac5783f1ab1ac18b80c5; сравнение с b0cb88255e687338499faa4b786eda72073e5ed5. Период UTC 5–11 ноября до 15:44:04. Последний документ закоммичен 15:44:51 после завершённой операции. Источники — Git/docs, новые runtime-проверки для отчёта не выполнялись; даты событий берутся из протоколов. Исторические результаты не приравниваются к приёмке последней версии.",
+  "summary": [
+    {
+      "id": "s1",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "От макетов к опубликованному короткому пути",
+      "text": "5 ноября UX и автоссылка были планами; к 11 ноября UI, автоссылка, повторный вход и автозаполнение реферального кода опубликованы. После переноса два новых клипа воспроизведены и скачаны.",
+      "eventIds": [
+        "e01",
+        "e03",
+        "e06",
+        "e10",
+        "e18"
+      ]
+    },
+    {
+      "id": "s2",
+      "date": "2026-11-11",
+      "status": "in_progress",
+      "title": "От TEST к LIVE-покупке и зарегистрированному чеку",
+      "text": "TEST-платёж после DNS начислился один раз; LIVE-магазин включён, владелец сообщил о покупке, регистрация фискального чека зафиксирована. Доставка оригинального письма и отдельной квитанции во входящие не подтверждена.",
+      "eventIds": [
+        "e07",
+        "e11",
+        "e12",
+        "e14"
+      ]
+    },
+    {
+      "id": "s3",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "От паузы инфраструктуры к переносу и проверенным копиям",
+      "text": "Перенос 5 ноября был остановлен; 10 ноября основной сайт и данные работают на текущем VPS, DNS сменил владелец, почасовое резервирование включено. Cloud.ru не обновлялся.",
+      "eventIds": [
+        "e05",
+        "e08",
+        "e09"
+      ]
+    },
+    {
+      "id": "s4",
+      "date": "2026-11-11",
+      "status": "planned",
+      "title": "Новые UX-задачи имеют честную границу",
+      "text": "Zoom: 03 и доступ к исходнику согласованы к реализации, пока это требования/макеты. Своя переписка по умолчанию и новый UPLOAD-001 P0 остаются бэклогом; частичный повтор не объявлен выпущенным.",
+      "eventIds": [
+        "e17",
+        "e19",
+        "e20",
+        "e21",
+        "e22"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e01",
+      "date": "2026-11-05",
+      "topic": "Партнёры",
+      "title": "Автоматическая личная ссылка блогера опубликована",
+      "status": "done",
+      "evidenceLevel": "deployed_and_browser_verified",
+      "what": "В отчёте 5 ноября был одобренный макет; вечером того же дня блогер уже получал готовую личную ссылку в кабинете. Source f55ae400 опубликован на clipmkr.ru.",
+      "why": "Убрать отдельное создание ссылки и дать блогеру сразу копировать свой адрес.",
+      "checks": [
+        "Настоящий Chromium: ссылка появилась, clipboard совпал, reload сохранил идентичность; обычному пользователю personal mint отказан.",
+        "Восемь сочетаний темы/компоновки/ширины проверены. После переноса 10 ноября старый пароль, копирование и гостевой переход проверены снова."
+      ],
+      "limitations": "Не полный путь с новой регистрацией и оплатой; первая поставка не проверяла новую генерацию, 90/120 минут или Safari на устройстве.",
+      "sources": [
+        {
+          "path": "features/blogger-auto-link/09_runtime_acceptance.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/blogger-auto-link/09_runtime_acceptance.md",
+          "label": "features/blogger-auto-link/09_runtime_acceptance.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/operations/relocation-20261110-activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-activation.md",
+          "label": "docs/operations/relocation-20261110-activation.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e02",
+      "date": "2026-11-05",
+      "topic": "Платежи",
+      "title": "TEST-покупка разрешена одному серверно заданному аккаунту",
+      "status": "done",
+      "evidenceLevel": "deployed_policy_and_negative_ui_checks",
+      "what": "Вместо только локального кандидата из прошлого отчёта опубликована ограниченная серверная политика TEST checkout: разрешён один аккаунт, общие продажи выключены. Main 9ec8231.",
+      "why": "Проверять настоящий тестовый магазин без открытия покупок остальным пользователям.",
+      "checks": [
+        "Health подтвердил точную ревизию; ограничение проверено на опубликованной политике.",
+        "Обычный клиент и блогер в настоящем браузере не увидели кнопки покупки; сохранены данные и почтовая конфигурация."
+      ],
+      "limitations": "Это ещё не успешная оплата. Исторический флаг payments_mode=live обозначал драйвер ЮKassa, при test=true и test-ключе магазин оставался TEST. 11 ноября персональное исключение удалено при включении LIVE.",
+      "sources": [
+        {
+          "path": "features/per-account-test-checkout/09_runtime_acceptance.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/per-account-test-checkout/09_runtime_acceptance.md",
+          "label": "features/per-account-test-checkout/09_runtime_acceptance.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/yookassa-live-activation/10_activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/yookassa-live-activation/10_activation.md",
+          "label": "features/yookassa-live-activation/10_activation.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e24",
+      "date": "2026-11-05",
+      "topic": "Исследования и обучение",
+      "title": "Подготовлена памятка курса: dz, feature-adr и OpenSpec",
+      "status": "done",
+      "evidenceLevel": "completed_document_artifact_no_product_runtime",
+      "what": "После дневного отчёта 5 ноября, к 16:11 UTC, подготовлена отдельная русская памятка по реальной роли dz, feature-adr и OpenSpec на примере Clipmkr. Она объясняет пересечение требований и отличие исполнения фичи от capability/delta ledger.",
+      "why": "Сделать процесс разработки понятным участникам курса и отделить gate от доказанной работы продукта.",
+      "checks": [
+        "Автор и независимый reviewer отдельно сверили 19 ссылок, pinned версии и команды; 6/6 host hashes совпали.",
+        "Независимый документальный clean и настоящий plain QE closure записаны в 08; первое неуспешное evaluate сохранено."
+      ],
+      "limitations": "done относится к Markdown-памятке. Примеры регистрации, автоссылки и Cloud иллюстрируют процесс; они не запускают операции. HTML renderer, app E2E, teach/sync/archive этими примерами не выполнялись.",
+      "sources": [
+        {
+          "path": "docs/course/dz-feature-adr-openspec.md",
+          "commit": "57075ea1cc0b490f98b17263970eebd68a2da94f",
+          "url": "https://github.com/djd1m/clipmkr/blob/57075ea1cc0b490f98b17263970eebd68a2da94f/docs/course/dz-feature-adr-openspec.md",
+          "label": "docs/course/dz-feature-adr-openspec.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/course-toolchain-guide/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/course-toolchain-guide/08_qe_report.md",
+          "label": "features/course-toolchain-guide/08_qe_report.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e25",
+      "date": "2026-11-05",
+      "topic": "Исследования и обучение",
+      "title": "Завершены исследования OSS QA, UMUX-Lite, банковского UX и facecam",
+      "status": "done",
+      "evidenceLevel": "completed_document_artifact_no_product_runtime",
+      "what": "Вечером 5 ноября после предыдущего среза подготовлены исследовательские документы: синтетические пользователи/OSS QA, корректное измерение UMUX-Lite, принципы мобильного банковского UX и путь для стримеров с постоянной камерой. Это материал для выбора и проверки гипотез, а не внедрение этих возможностей.",
+      "why": "Переиспользовать подходящие инструменты и сформулировать следующий дизайн-проход без нового стека и недоказанных обещаний.",
+      "checks": [
+        "OSS QA предлагает ограниченный Stagehand-пилот поверх существующих Playwright/HTTP/PG; агентский сценарий отделён от репрезентативного человека.",
+        "UMUX-Lite измеряется ответами реальных пользователей после работы; предложены native UI, точечные primitives и существующие axe/Playwright.",
+        "Банковское исследование переносит иерархию задач и честные состояния; facecam предлагает сохранённые camera/content ROI и двухслойный 9:16 на существующих FFmpeg/OpenCV."
+      ],
+      "limitations": "Не установлены и не запущены synthetic users; измеренного UMUX-Lite/SUS, роста конверсии, готовности платить, популярности или сравнительной эффективности на Clipmkr нет. Банковские публичные экраны не доказывают удобство нашего продукта. Стримерский renderer и пилот не выполнены; Zoom11 ноября отдельно дошёл только до согласованного макета.",
+      "sources": [
+        {
+          "path": "docs/research/synthetic-user-qa/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/synthetic-user-qa/README.md",
+          "label": "docs/research/synthetic-user-qa/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/synthetic-user-qa/umux-lite/README.md",
+          "commit": "73f12abfc54888444466fdd3e323e6125e3d8808",
+          "url": "https://github.com/djd1m/clipmkr/blob/73f12abfc54888444466fdd3e323e6125e3d8808/docs/research/synthetic-user-qa/umux-lite/README.md",
+          "label": "docs/research/synthetic-user-qa/umux-lite/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/mobile-banking-ux/README.md",
+          "commit": "ed97911ca3ce671ff372216f479cca71c1818b13",
+          "url": "https://github.com/djd1m/clipmkr/blob/ed97911ca3ce671ff372216f479cca71c1818b13/docs/research/mobile-banking-ux/README.md",
+          "label": "docs/research/mobile-banking-ux/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/streamer-facecam/README.md",
+          "commit": "931e7bda24c52dea0f6be814efd8e4fe1e8ec725",
+          "url": "https://github.com/djd1m/clipmkr/blob/931e7bda24c52dea0f6be814efd8e4fe1e8ec725/docs/research/streamer-facecam/README.md",
+          "label": "docs/research/streamer-facecam/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/synthetic-user-qa-research/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/synthetic-user-qa-research/08_qe_report.md",
+          "label": "features/synthetic-user-qa-research/08_qe_report.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/umux-lite-qa-research/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/umux-lite-qa-research/08_qe_report.md",
+          "label": "features/umux-lite-qa-research/08_qe_report.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/mobile-banking-ux/review-status.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/mobile-banking-ux/review-status.md",
+          "label": "docs/research/mobile-banking-ux/review-status.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/streamer-facecam-research/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/streamer-facecam-research/08_qe_report.md",
+          "label": "features/streamer-facecam-research/08_qe_report.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e03",
+      "date": "2026-11-06",
+      "topic": "Интерфейс",
+      "title": "Упрощённый UI трёх ролей работает на clipmkr.ru",
+      "status": "done",
+      "evidenceLevel": "published_ui_and_short_real_media_e2e",
+      "what": "5 ноября новый UX был исследованием и ожидал согласования; после отдельного одобрения полной компоновки опубликована ревизия 6d19cb8. Вторичные действия раскрываются по запросу, темы и две компоновки сохранены.",
+      "why": "Сократить число действий на основном пути пользователя, блогера и владельца.",
+      "checks": [
+        "Проверены три роли: 53 снимка и 8 сочетаний ширины/темы/компоновки на роль.",
+        "Реальные реферальная регистрация, загрузка, обработка, 2/2 клипа, Play и скачивание Chromium; опубликована инструкция владельцу."
+      ],
+      "limitations": "Письменная приёмка владельца в протоколе ожидалась. Четыре шага целиком на 6 ноября не закрыты из-за оплаты; Cloud.ru этим UI-блоком не обновлён. Короткая запись не доказывает 90/120 минут, Windows Chrome или WCAG.",
+      "sources": [
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/owner-approval.md",
+          "label": "features/ux-simplification/owner-approval.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/delivery-status.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/delivery-status.md",
+          "label": "features/ux-simplification/delivery-status.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/manual-acceptance.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/manual-acceptance.md",
+          "label": "features/ux-simplification/manual-acceptance.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e04",
+      "date": "2026-11-06",
+      "topic": "Платежи",
+      "title": "Маршрут TEST исправлен; потеря ответа выявила границу приёмки",
+      "status": "in_progress",
+      "evidenceLevel": "historical_runtime_pending_and_recovery_design_only",
+      "what": "В прошлом отчёте был локальный платёжный candidate; 6 ноября callback и уникальный upstream применены, но одна новая попытка осталась pending без начисления. Восстановление известного checkout потребовало отдельного контракта.",
+      "why": "Не создавать повторную покупку вслепую и отделять сбой тестового исполнителя от оплаты.",
+      "checks": [
+        "Наблюдался HTTP201 checkout и ровно один canonical TEST pending intent; платежей/начислений по нему на тот момент не было.",
+        "Локальный опыт воспроизвёл гонку чтения response body; это не установленная причина live exception. Recovery design позже получил closed, CODE QE оставался NO-GO."
+      ],
+      "limitations": "Историческая остановка 6 ноября не равна текущему отказу всех платежей. Успешный новый TEST-платёж 10 ноября закрыт отдельно; legacy recovery-пакет и его собственный runtime не выданы за выполненные.",
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-06-payment-e2e-progress.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/measurements/2026-11-06-payment-e2e-progress.md",
+          "label": "docs/measurements/2026-11-06-payment-e2e-progress.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/recover-known-checkout-response/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/recover-known-checkout-response/08_qe_report.md",
+          "label": "features/recover-known-checkout-response/08_qe_report.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e05",
+      "date": "2026-11-10",
+      "topic": "Эксплуатация",
+      "title": "Основной сайт и данные перенесены на текущий VPS",
+      "status": "done",
+      "evidenceLevel": "documented_frozen_migration_and_owner_dns_change",
+      "what": "5 ноября перенос был на паузе и имел только инвентаризацию. 9–10 ноября после отдельного разрешения перенесены приложение, основная БД, поддержка, Redis и локальные файлы; владелец сменил DNS основного сайта на текущий VPS.",
+      "why": "Работать с одним актуальным backend, сохранив аккаунты, материалы и поддержку.",
+      "checks": [
+        "Frozen-срез и восстановленные offsite proof: 27 таблиц/995 строк основной БД, 57 таблиц/138 строк поддержки; структура, данные, последовательности и scoped Redis сверены.",
+        "Старая браузерная сессия, прежний пароль и staff-история 11 обращений сохранились; 07:16 UTC подтверждены DNS/HTTPS."
+      ],
+      "limitations": "Числа — инвентарь момента переноса, не недельный прирост. Это перенос clipmkr.ru на текущий VPS: c.clipmkr.ru/Cloud.ru и legacy n5 не переключались, объединение двух историй Cloud не выполнено. Старый relay сохранён; вывод старого сервера из эксплуатации не заявлен.",
+      "sources": [
+        {
+          "path": "docs/operations/relocation-20261110-activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-activation.md",
+          "label": "docs/operations/relocation-20261110-activation.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/operations/relocation-20261110-final-sync.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-final-sync.md",
+          "label": "docs/operations/relocation-20261110-final-sync.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e06",
+      "date": "2026-11-10",
+      "topic": "Основной путь",
+      "title": "После переноса получены и скачаны два новых клипа",
+      "status": "done",
+      "evidenceLevel": "published_real_upload_processing_play_download",
+      "what": "Короткий полезный путь был доказан и раньше; после переноса новый 120-секундный исходник прошёл настоящее S3, STT, выбор и монтаж, затем оба новых клипа воспроизведены и скачаны на публичном сайте.",
+      "why": "Убедиться, что перенос сохранил именно полезный пользовательский результат.",
+      "checks": [
+        "2/2 готовых клипа; браузер currentTime>0,2, кадр 1080×1920, media error отсутствует.",
+        "Оба штатных скачивания завершились без ошибки, размеры совпали с обработкой."
+      ],
+      "limitations": "120 секунд — не 120 минут. Полное визуальное качество каждого кадра и SHA скачанных файлов этим коротким прогоном не проверялись; положительные 90/120 минут и полный owner→blogger→client→LIVE путь не закрыты автоматически.",
+      "sources": [
+        {
+          "path": "docs/operations/relocation-20261110-activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-activation.md",
+          "label": "docs/operations/relocation-20261110-activation.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/acceptance/core-cjm.md",
+          "label": "docs/acceptance/core-cjm.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e07",
+      "date": "2026-11-10",
+      "topic": "Платежи",
+      "title": "Настоящая TEST-покупка после DNS начислилась один раз",
+      "status": "done",
+      "evidenceLevel": "real_test_provider_and_ledger_readback",
+      "what": "В прошлом отчёте текущая платёжная приёмка была открыта. 10 ноября в 07:19 UTC владелец прошёл TEST checkout; ЮKassa и приложение подтвердили один успешный платёж и один пакет.",
+      "why": "Закрыть оставшуюся проверку успешной тестовой оплаты на новом backend.",
+      "checks": [
+        "Canonical API ЮKassa: succeeded, paid=true, test=true, 990 RUB и правильный order.",
+        "Одна payment, одно нормализованное payment_succeeded и одно начисление 18000 секунд; доступный баланс вырос на 300 кредитов."
+      ],
+      "limitations": "Это TEST без настоящего списания. Повтор уведомления и возврат в данном узком прогоне не выполнялись. Исторический Cloud-тест 4 ноября их не переносит на эту версию.",
+      "sources": [
+        {
+          "path": "docs/operations/relocation-20261110-activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-activation.md",
+          "label": "docs/operations/relocation-20261110-activation.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e08",
+      "date": "2026-11-10",
+      "topic": "Эксплуатация",
+      "title": "Включены почасовые копии и проверено восстановление БД",
+      "status": "done",
+      "evidenceLevel": "enabled_timer_manual_service_offsite_extraction_pg_restore",
+      "what": "От read-only инвентаризации и разовых копий 5 ноября перешли к изолированному restic-резервированию: timer включён, один запуск service и извлечение из двух offsite проверены.",
+      "why": "Иметь восстановимые копии БД и конфигурации при последующих поставках.",
+      "checks": [
+        "Один фактический service 08:20:11–08:20:31 UTC; из каждого хранилища извлечены 8 файлов с совпадающими SHA.",
+        "Из primary восстановлены две изолированные PostgreSQL БД; подтверждены новый TEST-платёж/начисление, готовая запись с двумя клипами и 11 обращений поддержки."
+      ],
+      "limitations": "Timer — настройка, не гарантия RPO. На момент первого протокола автоматический запуск ещё не наступил. Байты исходных видео/клипов отдельной копией не охвачены; полный аварийный запуск на другом сервере, загрузка Redis RDB и получение escrow-ключа не приняты. Общий app-test run в backup-блоке INCOMPLETE.",
+      "sources": [
+        {
+          "path": "docs/operations/2026-11-10-regular-backups.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/2026-11-10-regular-backups.md",
+          "label": "docs/operations/2026-11-10-regular-backups.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/regular-clipmkr-backups/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/regular-clipmkr-backups/08_qe_report.md",
+          "label": "features/regular-clipmkr-backups/08_qe_report.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e09",
+      "date": "2026-11-10",
+      "topic": "Хранение",
+      "title": "Новые сроки хранения и предупреждения опубликованы",
+      "status": "done",
+      "evidenceLevel": "deployed_policy_independent_qe_and_existing_clip_smoke",
+      "what": "В текущем периоде введена явная политика: бесплатный клип 7 суток от первой готовности; оплаченный — максимум из первой готовности+7 суток и конца оплаченного периода+30 суток. Source 3bcbf62 опубликован.",
+      "why": "Показывать точную дату и не предлагать недоступные действия после истечения срока.",
+      "checks": [
+        "Native QE closed на третьем цикле; изолированные сценарии трёх ролей, guest и реальные S3 bytes.",
+        "Письма-предупреждения за 3/1 сутки приняты тестовым runtime без дублей; на опубликованной версии два существующих клипа воспроизведены и скачаны."
+      ],
+      "limitations": "Старый возраст не обнуляется, удалённые байты не возвращаются. Политика автоматически не удаляет исходники. Тестовый приём письма не доказывает доставку пользователю; уже выданные подписанные URL не отзываются задним числом.",
+      "sources": [
+        {
+          "path": "features/clip-retention-policy/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/clip-retention-policy/10_delivery.md",
+          "label": "features/clip-retention-policy/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e10",
+      "date": "2026-11-10",
+      "topic": "Вход",
+      "title": "Повторная регистрация стала настоящим входом",
+      "status": "done",
+      "evidenceLevel": "deployed_native_auth_e2e",
+      "what": "5 ноября повторная регистрация была отложена. 10 ноября опубликован AUTH-001 source 085103b: верный пароль существующего аккаунта выполняет вход; неверный переводит к форме входа с сохранённым email и пустым паролем.",
+      "why": "Убрать тупик у возвращающегося пользователя без повторного бонуса или смены источника.",
+      "checks": [
+        "Изолированные service/PG/component/native HTTPS проверки и независимое cross-model QE закрыты.",
+        "На публичном сайте один собственный synthetic аккаунт прошёл новый signup, ошибочный повтор, обычный вход и верный повтор с защищённой перезагрузкой; trial grant остался один."
+      ],
+      "limitations": "Полная проверка recovery-письма, физический Chrome/Windows, WCAG и новая генерация/оплата не выполнялись. Старая открытая форма до reload сохраняет прежний 409 для existing account.",
+      "sources": [
+        {
+          "path": "features/repeat-registration/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/repeat-registration/10_delivery.md",
+          "label": "features/repeat-registration/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e11",
+      "date": "2026-11-10",
+      "topic": "Платежи",
+      "title": "Поставлен неизменяемый снимок данных фискального чека",
+      "status": "done",
+      "evidenceLevel": "receipt_source_qe_deployed_test_mode",
+      "what": "К открытому TEST checkout добавлена отдельная основа чеков: source 012efb6 и миграция 029 опубликованы. Данные чека фиксируются на момент намерения оплаты.",
+      "why": "Не менять состав чека из-за будущей правки каталога и подготовить настоящий боевой магазин.",
+      "checks": [
+        "Независимый SOURCE QE closed; проверены миграция, CHECK и immutable trigger.",
+        "Существующие аккаунты, записи, клипы и intents сохранены; старые receipt_snapshot остались NULL без backfill."
+      ],
+      "limitations": "Поставка 10 ноября ещё работала в TEST и не выполняла реальную покупку/возврат или регистрацию чека. Фискальные параметры подключены отдельно 11 ноября; само наличие snapshot не доказывает полученный чек.",
+      "sources": [
+        {
+          "path": "features/yookassa-receipts/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/yookassa-receipts/10_delivery.md",
+          "label": "features/yookassa-receipts/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e12",
+      "date": "2026-11-11",
+      "topic": "Платежи",
+      "title": "LIVE включён, контрольная покупка выполнена; доставка чека ещё открыта",
+      "status": "in_progress",
+      "evidenceLevel": "live_enabled_owner_purchase_report_documented_receipt_registered_inbox_unconfirmed",
+      "what": "5 ноября реальные продажи были выключены. 11 ноября включён LIVE-магазин и общий checkout с параметрами «без НДС, услуга, полный расчёт». В 11:37 UTC владелец сообщил о покупке; более позднее исследование зафиксировало зарегистрированный фискальный чек.",
+      "why": "Разрешить разовую настоящую покупку после явного решения владельца.",
+      "checks": [
+        "Read-only API магазина, parser, env/health и кнопки покупки проверены; персональное TEST-исключение удалено.",
+        "Обезличенный публичный документ receipt-appearance сообщает: у чека status=succeeded и фискальные реквизиты; чтение API не создавало новую покупку или чек.",
+        "Отдельная квитанция Clipmkr отправлена оператором через Resend: один POST, HTTP200. Владелец сообщил о подтверждении почты и запросил квитанцию."
+      ],
+      "limitations": "Ранние 10_activation и payment-environments/10_delivery писали «покупка ожидается» до сообщения владельца. Регистрация фискального чека подтверждена документированным чтением API; получение оригинального письма и доставка отдельной квитанции во входящие не подтверждены. Resend HTTP200 — приём API, дальнейшая проверка вернула 401. Автоматическая отправка квитанций после каждой покупки не доказана. Полная LIVE-воронка с relogin, партнёрской статистикой, merchant webhook и оплаченной нарезкой данным отчётом не закрывается.",
+      "sources": [
+        {
+          "path": "features/yookassa-live-activation/10_activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/yookassa-live-activation/10_activation.md",
+          "label": "features/yookassa-live-activation/10_activation.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/payment-environments/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/payment-environments/10_delivery.md",
+          "label": "features/payment-environments/10_delivery.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/payments/2026-11-11-live-purchase-acceptance.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/payments/2026-11-11-live-purchase-acceptance.md",
+          "label": "docs/payments/2026-11-11-live-purchase-acceptance.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/receipt-appearance/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/receipt-appearance/README.md",
+          "label": "docs/research/receipt-appearance/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/receipt-appearance/review.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/receipt-appearance/review.md",
+          "label": "docs/research/receipt-appearance/review.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "commit": "19661663845318410307f2f94deb36c4e694ec15",
+          "url": "https://github.com/djd1m/clipmkr/blob/19661663845318410307f2f94deb36c4e694ec15/docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "label": "Обезличенная запись первичных сообщений владельца: покупка и согласование Zoom",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e13",
+      "date": "2026-11-11",
+      "topic": "Платежи",
+      "title": "Автоплатежи исключены; три пункта оферты исправлены",
+      "status": "done",
+      "evidenceLevel": "owner_decision_and_published_ssr_text",
+      "what": "Оплата закреплена как ручная разовая покупка. Владелец отменил реализацию автоплатежей; подготовленные макеты и проект сохранены отдельно. В оферте опубликованы точные замены §6.3, §7.7, §7.8, source 9312564.",
+      "why": "Согласовать пользовательское обещание с действующим способом оплаты.",
+      "checks": [
+        "В runtime отсутствовал включённый recurring; backend автоплатежей не был написан.",
+        "На опубликованных legal pages сверены все 87 абзацев оферты и 62 политики на 390/1440; остальные 84 абзаца оферты сохранены."
+      ],
+      "limitations": "Это не новая оплата и не юридическая экспертиза. Уведомление по §10.2 не отправлялось. Сохранённый проект автопродления DEFERRED не разрешает возобновить его без нового поручения.",
+      "sources": [
+        {
+          "path": "features/yookassa-live-activation/11_autopay-deferred.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/yookassa-live-activation/11_autopay-deferred.md",
+          "label": "features/yookassa-live-activation/11_autopay-deferred.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/one-time-offer/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/one-time-offer/10_delivery.md",
+          "label": "features/one-time-offer/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e14",
+      "date": "2026-11-11",
+      "topic": "Партнёрская выручка",
+      "title": "TEST и неизвестная история исключены из денежных итогов",
+      "status": "done",
+      "evidenceLevel": "deployed_payment_provenance_and_canonical_backfill",
+      "what": "Предварительные партнёрские суммы после TEST-покупок получили постоянное разделение сред: source 2af0015 и миграция 030 опубликованы; TEST/unknown больше не входят в денежные итоги.",
+      "why": "Не принимать тестовые деньги за выручку для расчёта вознаграждения.",
+      "checks": [
+        "Canonical GET тестового магазина подтвердил две исторические операции: checked2, updated2, conflicts0, unavailable0.",
+        "Два payments и два intents получили test; три intents остались unknown. Суммы, статусы, начисления и списания сохранены."
+      ],
+      "limitations": "Дата и текущий режим не использовались как доказательство происхождения. Это не автоматическая выплата партнёрам и не новая LIVE-покупка. Старый writer после 030 несовместим с новым контрактом.",
+      "sources": [
+        {
+          "path": "features/payment-environments/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/payment-environments/10_delivery.md",
+          "label": "features/payment-environments/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e15",
+      "date": "2026-11-11",
+      "topic": "Продление",
+      "title": "Напоминания о ручной покупке опубликованы",
+      "status": "done",
+      "evidenceLevel": "deployed_enabled_source_qe_no_production_mail_due",
+      "what": "В начале 11 ноября напоминания были проектом; к 12:48:16 UTC source 90d526e и миграция 031 опубликованы, существующий минутный watchdog включён для писем за 3 дня и сутки до конца оплаченного периода.",
+      "why": "Напомнить о самостоятельной покупке без автоматического платежа.",
+      "checks": [
+        "Native SOURCE QE закрыт во втором цикле; env/health подтвердили версию и enabled-флаг.",
+        "Семь финансовых таблиц до/после совпали; backup после обновления binding завершён, новые платежи или искусственные продления не создавались."
+      ],
+      "limitations": "Продолжения оплаченных периодов учитываются. Продуктивное письмо ещё не должно было отправляться; доставка в ящик не доказана. BILLING-раздел BACKLOG и ранний autopay-документ отстают от фактического delivery. Общий R1 завершился exit1:12 failed и 16 skipped; 11 отказов независимо воспроизведены на baseline. После исправления новой fixture выполнен только targeted R2, весь набор новой ревизии зелёным не объявлен.",
+      "sources": [
+        {
+          "path": "features/manual-billing-reminders/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/manual-billing-reminders/10_delivery.md",
+          "label": "features/manual-billing-reminders/10_delivery.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/manual-billing-reminders/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/manual-billing-reminders/08_qe_report.md",
+          "label": "features/manual-billing-reminders/08_qe_report.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e16",
+      "date": "2026-11-11",
+      "topic": "Поддержка",
+      "title": "Закрытие и холодная инициализация виджета исправлены на уровне SOURCE",
+      "status": "in_progress",
+      "evidenceLevel": "source_qe_closed_runtime_revision_observed_no_full_delivery_receipt",
+      "what": "От запроса на историю поддержки перешли к двум отдельным lifecycle-исправлениям: hide перед очисткой identity и ожидание готовности виджета с изоляцией смены аккаунта. Исходники 81ee092/6b2a65b включены в main.",
+      "why": "Убрать оставшийся открытым native чат и предотвратить показ истории другого аккаунта после холодного старта.",
+      "checks": [
+        "Для closure независимые 23unit/8browser; для readiness R2 независимые 28unit/18browser, мутации guards и privacy RED на baseline.",
+        "SOURCE native gates closed; документированный health14:18 UTC наблюдал runtime 6b2a65b, SUPPORT-001 также исследует эту опубликованную ревизию."
+      ],
+      "limitations": "Runtime health не является полной приёмкой провайдера. SOURCE-отчёт ещё оставляет enablement/cold provider QA отдельной поставкой; отдельной полной delivery-квитанции в основном снимке не найдено. Устаревшие README «pending» не отменяют 08 closed. История по умолчанию остаётся отдельной задачей.",
+      "sources": [
+        {
+          "path": "features/support-chat-closure/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/support-chat-closure/08_qe_report.md",
+          "label": "features/support-chat-closure/08_qe_report.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/support-widget-readiness/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/support-widget-readiness/08_qe_report.md",
+          "label": "features/support-widget-readiness/08_qe_report.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "label": "docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e17",
+      "date": "2026-11-11",
+      "topic": "Поддержка",
+      "title": "Своя переписка доступна через представление аккаунта; основной вход ещё в бэклоге",
+      "status": "planned",
+      "evidenceLevel": "owner_observation_and_documented_readonly_diagnosis_backlog_only",
+      "what": "5 ноября сообщалось об отсутствии клиентской истории. 11 ноября владелец уточнил: «Представить аккаунт в чате» показывает прежнюю переписку; документация фиксирует сохранность сообщений. Требуется очевидный вход в свою историю по умолчанию.",
+      "why": "Сделать поддержку с отложенными ответами понятной вошедшему пользователю.",
+      "checks": [
+        "BACKLOG SUPPORT-001 отделяет старые наблюдения 5Nov от нового уточнения 11Nov.",
+        "Основная кнопка на опубликованной 6b2a65b открывала anonymous и при повторе сбрасывала identity; это не удаление серверных сообщений."
+      ],
+      "limitations": "Это принятый бэклог, новые UI/настройки этой командой не менялись. Нельзя объявлять историю всех аккаунтов, ответы в другом браузере или почтовые уведомления полностью принятыми.",
+      "sources": [
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e18",
+      "date": "2026-11-11",
+      "topic": "Реферальный вход",
+      "title": "По партнёрской ссылке код заполнен автоматически",
+      "status": "done",
+      "evidenceLevel": "deployed_prefill_live_no_signup_isolated_signup_statistics_qe",
+      "what": "Ранее блогер уже мог копировать ссылку; теперь регистрация по ней раскрывает и заполняет поле кода без ручного переноса. Опубликован runtime 638790f, содержащий source e29c8bf; контроль завершён к 15:44:04 UTC.",
+      "why": "Убрать лишнее действие нового пользователя и показать подтверждённый партнёрский код.",
+      "checks": [
+        "Native SOURCE/QE closed: изолированная настоящая регистрация и обе canonical проекции статистики blogger/owner.",
+        "Live Chromium: один публичный переход, prefill390/1440, поле редактируемо, email/пароль пусты, ошибок/overflow нет; backup и post-release завершены."
+      ],
+      "limitations": "Live контроль не создавал аккаунты, загрузки или платежи; один визит мог учитываться. Новая production-регистрация и её статистика не заявлены: они проверены изолированно. Приёмка владельцем ещё не зафиксирована.",
+      "sources": [
+        {
+          "path": "features/referral-registration-prefill/09_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/referral-registration-prefill/09_delivery.md",
+          "label": "features/referral-registration-prefill/09_delivery.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/referral-registration-prefill/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/referral-registration-prefill/08_qe_report.md",
+          "label": "features/referral-registration-prefill/08_qe_report.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e19",
+      "date": "2026-11-11",
+      "topic": "Записи Zoom",
+      "title": "Макет Zoom одобрен: 03 по умолчанию, 01/02 в дополнительных настройках",
+      "status": "planned",
+      "evidenceLevel": "specific_selector_approved_requirements_no_runtime",
+      "what": "5 ноября было исследование streamer facecam. 11 ноября владелец выбрал 03 «Фокус на действии»; 01/02 оставлены альтернативами. В 14:38 UTC конкретно одобрен selector с закрытыми дополнительными настройками и пересборкой только после подтверждения. Подготовлен feature-пакет.",
+      "why": "Сохранять значимые действия на экране и лицо в вертикальном результате.",
+      "checks": [
+        "Требования ZF01–10 и AC01–07, reuse/source pins и candidate ADR подготовлены.",
+        "Макет переключает 01/02/03 на синтетическом preview; первоначальный аудит прямо подтвердил отсутствие нового screen+face runtime."
+      ],
+      "limitations": "Старые README/mockup-review «approval отсутствует» относятся к состоянию до 14:38 UTC и заменены первичным решением владельца. Согласование selector не закрывает ADR/QCSD/Step6/K1/K2, не означает код, новый renderer или выкладку. Исследование кадра и HTML не доказывают читаемость всего движущегося видео.",
+      "sources": [
+        {
+          "path": "features/zoom-screen-focus/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/README.md",
+          "label": "features/zoom-screen-focus/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-screen-focus/01_requirements.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/01_requirements.md",
+          "label": "features/zoom-screen-focus/01_requirements.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-screen-focus/mockup-review.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/mockup-review.md",
+          "label": "features/zoom-screen-focus/mockup-review.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "label": "docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "commit": "19661663845318410307f2f94deb36c4e694ec15",
+          "url": "https://github.com/djd1m/clipmkr/blob/19661663845318410307f2f94deb36c4e694ec15/docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "label": "Обезличенная запись первичных сообщений владельца: покупка и согласование Zoom",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/streamer-facecam/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/streamer-facecam/README.md",
+          "label": "docs/research/streamer-facecam/README.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e20",
+      "date": "2026-11-11",
+      "topic": "Исходная запись",
+      "title": "Просмотр и скачивание исходника — согласованная цель и макеты",
+      "status": "planned",
+      "evidenceLevel": "base_target_authorized_extra_states_pending_no_runtime",
+      "what": "В текущем периоде исследовано переиспользование S3 и штатного плеера. Владелец поручил нормальные «Смотреть/Скачать»; подготовлено дополнение с шестью состояниями исходника.",
+      "why": "Вернуться к контексту полной записи и забрать загруженный файл из того же рабочего пространства.",
+      "checks": [
+        "Компактная source row и viewer показаны синтетическим макетом.",
+        "Дополнительные состояния проверены локально 24/24:6 состояний×2 темы×2 ширины, без внешних запросов и page errors."
+      ],
+      "limitations": "Дополнительные состояния ещё не согласованы. Авторизованный endpoint и пользовательский runtime не реализованы; существующий S3 signer сам по себе не является функцией. Не обещать наличие всех старых исходников, вечное хранение, Range/seek, expiry или поддержку всех codec.",
+      "sources": [
+        {
+          "path": "docs/research/original-video-access/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/README.md",
+          "label": "docs/research/original-video-access/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/original-video-access/states/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/states/README.md",
+          "label": "docs/research/original-video-access/states/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "label": "docs/research/zoom-screen-layout/2026-11-11-delivery-audit.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "commit": "19661663845318410307f2f94deb36c4e694ec15",
+          "url": "https://github.com/djd1m/clipmkr/blob/19661663845318410307f2f94deb36c4e694ec15/docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "label": "Обезличенная запись первичных сообщений владельца: покупка и согласование Zoom",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e21",
+      "date": "2026-11-11",
+      "topic": "Загрузка",
+      "title": "UPLOAD-001 повышен до P0: возобновление после смены настройки",
+      "status": "planned",
+      "evidenceLevel": "owner_report_backlog_no_diagnosis",
+      "what": "На фоне прежнего открытого upload-recovery появился новый P0: владелец сообщил, что после остановки передачи и смены дополнительной настройки загрузка не продолжилась.",
+      "why": "Защитить основной путь до готового клипа и сохранить переданные части и выбранные настройки.",
+      "checks": [
+        "В BACKLOG записаны отдельные диагностические шаги и будущие критерии без повторного списания/дубликата.",
+        "Команда сейчас не менять код сохранена; не установлены точная настройка, кнопка остановки или состояние session."
+      ],
+      "limitations": "Это сообщение о симптоме, диагностика ещё не выполнена. Причина, потеря частей и браузер данного случая неизвестны; нельзя приписывать его Chrome/Windows из другого сообщения. Новый P0 не закрыт старыми unit-тестами.",
+      "sources": [
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/upload-transfer-recovery/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/upload-transfer-recovery/README.md",
+          "label": "features/upload-transfer-recovery/README.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e22",
+      "date": "2026-11-11",
+      "topic": "Частичный результат",
+      "title": "Повтор неготового клипа остаётся планом",
+      "status": "planned",
+      "evidenceLevel": "previous_approved_mockup_no_new_delivery_evidence",
+      "what": "В прошлом отчёте был одобрен частичный повтор без новой оплаты исходника и учёт старых partial-результатов. К срезу отдельная выполненная поставка этих двух обещаний не подтверждена.",
+      "why": "Сохранить готовый клип и повторять только незавершённый монтаж.",
+      "checks": [
+        "Предыдущий отчёт закрепляет e17/e18 как planned.",
+        "Текущий owner-approval сохраняет конкретное одобрение макета и правило исходного месяца активности."
+      ],
+      "limitations": "Отсутствие нового протокола не доказывает отсутствие любого кода, но не даёт основания повысить статус. Не смешивать с опубликованным retention, автоссылкой или серверным multipart-фиксом, который также ещё не выпущен.",
+      "sources": [
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/owner-approval.md",
+          "label": "features/ux-simplification/owner-approval.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/multipart-completion-integrity/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/multipart-completion-integrity/README.md",
+          "label": "features/multipart-completion-integrity/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-05-lesson-data.json",
+          "commit": "b0cb88255e687338499faa4b786eda72073e5ed5",
+          "url": "https://github.com/djd1m/clipmkr/blob/b0cb88255e687338499faa4b786eda72073e5ed5/docs/reports/2026-11-05-lesson-data.json",
+          "label": "Предыдущий отчёт: e17/e18",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e23",
+      "date": "2026-11-11",
+      "topic": "Планы продукта",
+      "title": "Новые идеи отделены от опубликованных функций",
+      "status": "planned",
+      "evidenceLevel": "backlog_and_research_only",
+      "what": "К открытой смене музыки добавлены публичный бэклог/предложение функции и fullscreen клипа на мобильном. Зафиксированы пользовательские потребности и критерии будущей приёмки.",
+      "why": "Дать следующим решениям проверяемые границы и не принять репозиторный Markdown за пользовательский сервис.",
+      "checks": [
+        "FEEDBACK-001: переиспользовать Libredesk и ручную модерацию обезличенных карточек.",
+        "PLAYER-001: конкретные устройство/браузер ещё не установлены; MUSIC-001 остаётся незакрытым."
+      ],
+      "limitations": "Приоритеты и сроки не обещаны, новые интерфейсы не реализованы. Публичный список в кабинете, форма предложения и мобильный fullscreen не объявлены готовыми.",
+      "sources": [
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/public-feedback/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/public-feedback/README.md",
+          "label": "docs/research/public-feedback/README.md",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "l1",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "Уровень доказательства следует за конкретной границей",
+      "what": "Published health, SOURCE QE, TEST-успех и LIVE-чек — разные результаты.",
+      "why": "Отдельно записывать среду, ревизию, наблюдаемый результат и открытый пункт.",
+      "checks": [
+        "Вывод связан с указанными событиями и их первичными источниками."
+      ],
+      "limitations": "Урок не разрешает будущую выкладку или новую операцию и не является отдельной квитанцией dz teach.",
+      "eventIds": [
+        "e03",
+        "e07",
+        "e12",
+        "e18"
+      ],
+      "sources": [
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/owner-approval.md",
+          "label": "features/ux-simplification/owner-approval.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l2",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "Сохранность требует проверки восстановления",
+      "what": "Перенос и backup проверены на восстановленных изолированных БД; timer сам по себе не доказывает будущую доступность.",
+      "why": "Не подменять копию байтов медиа резервной копией только БД и конфигурации.",
+      "checks": [
+        "Вывод связан с указанными событиями и их первичными источниками."
+      ],
+      "limitations": "Урок не разрешает будущую выкладку или новую операцию и не является отдельной квитанцией dz teach.",
+      "eventIds": [
+        "e05",
+        "e08"
+      ],
+      "sources": [
+        {
+          "path": "docs/operations/relocation-20261110-activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-activation.md",
+          "label": "docs/operations/relocation-20261110-activation.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l3",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "Тестовая выручка не становится боевой по дате",
+      "what": "Две исторические оплаты классифицированы canonical GET; неизвестная история осталась unknown.",
+      "why": "Сохранять существующие права и исключать TEST/unknown из денежных итогов.",
+      "checks": [
+        "Вывод связан с указанными событиями и их первичными источниками."
+      ],
+      "limitations": "Урок не разрешает будущую выкладку или новую операцию и не является отдельной квитанцией dz teach.",
+      "eventIds": [
+        "e14"
+      ],
+      "sources": [
+        {
+          "path": "features/payment-environments/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/payment-environments/10_delivery.md",
+          "label": "features/payment-environments/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l4",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "История сервера и основной пользовательский вход различаются",
+      "what": "Переписка сохранилась и доступна через представление аккаунта, но основная кнопка ещё открывает anonymous.",
+      "why": "Принимать основной путь пользователя и изоляцию A→B отдельно от исправления lifecycle.",
+      "checks": [
+        "Вывод связан с указанными событиями и их первичными источниками."
+      ],
+      "limitations": "Урок не разрешает будущую выкладку или новую операцию и не является отдельной квитанцией dz teach.",
+      "eventIds": [
+        "e16",
+        "e17"
+      ],
+      "sources": [
+        {
+          "path": "features/support-chat-closure/08_qe_report.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/support-chat-closure/08_qe_report.md",
+          "label": "features/support-chat-closure/08_qe_report.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "l5",
+      "date": "2026-11-11",
+      "status": "done",
+      "title": "Реальный симптом не является установленной причиной",
+      "what": "UPLOAD-001 пока сообщение; Zoom и исходник пока макеты; backup и платёжный harness сохраняют неуспешные исходы.",
+      "why": "Не повышать готовность по названию коммита, числу тестов или наличию HTML.",
+      "checks": [
+        "Вывод связан с указанными событиями и их первичными источниками."
+      ],
+      "limitations": "Урок не разрешает будущую выкладку или новую операцию и не является отдельной квитанцией dz teach.",
+      "eventIds": [
+        "e04",
+        "e19",
+        "e20",
+        "e21"
+      ],
+      "sources": [
+        {
+          "path": "docs/measurements/2026-11-06-payment-e2e-progress.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/measurements/2026-11-06-payment-e2e-progress.md",
+          "label": "docs/measurements/2026-11-06-payment-e2e-progress.md",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "nextSteps": [
+    {
+      "id": "n1",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Завершить сверку уже выполненной LIVE-покупки",
+      "status": "in_progress",
+      "what": "По одной уже выполненной покупке подтвердить однократный пакет, сохранение после входа, фактическую доставку merchant webhook, получение чека/квитанции и использование оплаченных прав.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: сведения провайдера, приложения, владельца и оплаченного результата относятся к одной существующей операции."
+      ],
+      "limitations": "Новая покупка ради отчёта не нужна. Регистрация чека уже документирована; получение письма во входящие и полный оплаченный путь не закрыты. Агент не вводит платёжные реквизиты.",
+      "sources": [
+        {
+          "path": "docs/payments/2026-11-11-live-purchase-acceptance.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/payments/2026-11-11-live-purchase-acceptance.md",
+          "label": "docs/payments/2026-11-11-live-purchase-acceptance.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/receipt-appearance/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/receipt-appearance/README.md",
+          "label": "docs/research/receipt-appearance/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "commit": "19661663845318410307f2f94deb36c4e694ec15",
+          "url": "https://github.com/djd1m/clipmkr/blob/19661663845318410307f2f94deb36c4e694ec15/docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "label": "Обезличенная запись первичных сообщений владельца: покупка и согласование Zoom",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n2",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "UPLOAD-001: диагностика, затем согласованное исправление",
+      "status": "planned",
+      "what": "Сначала безопасно сопоставить состояние передачи, паузу/отмену и настройку; затем воспроизвести на синтетическом файле и защитить resume без дублей и повторного списания.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: Сначала безопасно сопоставить состояние передачи, паузу/отмену и настройку; затем воспроизвести на синтетическом файле и защитить resume без дублей и повторного списания."
+      ],
+      "limitations": "Сейчас только сообщение и бэклог; реальный файл не изменялся.",
+      "sources": [
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n3",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Своя история поддержки по основному действию",
+      "status": "planned",
+      "what": "Согласовать лаконичный UI: вошедший пользователь сразу открывает свою переписку; проверить отложенный ответ, reload и A→B без утечки.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: Согласовать лаконичный UI: вошедший пользователь сразу открывает свою переписку; проверить отложенный ответ, reload и A→B без утечки."
+      ],
+      "limitations": "Закрытие виджета и SOURCE readiness не закрывают этот продуктовый запрос.",
+      "sources": [
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n4",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Zoom: 03 и альтернативы 01/02",
+      "status": "planned",
+      "what": "По уже одобренному selector завершить ADR/QCSD/план и gates, затем проверить синтетическое движущееся видео, ROI, fallback и отсутствие нового списания за исходник.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: движущийся screen+face результат соответствует уже одобренному UI03/01/02 и требованиям."
+      ],
+      "limitations": "Макет и требования не являются работающим renderer; сроки не назначены.",
+      "sources": [
+        {
+          "path": "features/zoom-screen-focus/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/README.md",
+          "label": "features/zoom-screen-focus/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-screen-focus/01_requirements.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/01_requirements.md",
+          "label": "features/zoom-screen-focus/01_requirements.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "commit": "19661663845318410307f2f94deb36c4e694ec15",
+          "url": "https://github.com/djd1m/clipmkr/blob/19661663845318410307f2f94deb36c4e694ec15/docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "label": "Обезличенная запись первичных сообщений владельца: покупка и согласование Zoom",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n5",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Доступ к своему исходнику",
+      "status": "planned",
+      "what": "Согласовать дополнительные состояния и политику, соединить авторизацию, наличие объекта и native S3 GET; проверить Range/seek/expiry/codec и чужой 404.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: Согласовать дополнительные состояния и политику, соединить авторизацию, наличие объекта и native S3 GET; проверить Range/seek/expiry/codec и чужой 404."
+      ],
+      "limitations": "Наличие объекта одной записи не доказывает доступность всех файлов; автоматическая платная конвертация не обещана.",
+      "sources": [
+        {
+          "path": "docs/research/original-video-access/states/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/states/README.md",
+          "label": "docs/research/original-video-access/states/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/original-video-access/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/README.md",
+          "label": "docs/research/original-video-access/README.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n6",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Частичный повтор и длинный текущий CJM",
+      "status": "planned",
+      "what": "Вернуться к одобренному повтору только незавершённого клипа и исходному месяцу partial-активности; доказать актуальные 90/120 минут и индивидуальный лимит в полном UI-пути.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: Вернуться к одобренному повтору только незавершённого клипа и исходному месяцу partial-активности; доказать актуальные 90/120 минут и индивидуальный лимит в полном UI-пути."
+      ],
+      "limitations": "Исторические Cloud-проходы не заменяют текущую приёмку; delivery partial не подтверждён.",
+      "sources": [
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/owner-approval.md",
+          "label": "features/ux-simplification/owner-approval.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/acceptance/core-cjm.md",
+          "label": "docs/acceptance/core-cjm.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n7",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Оставшиеся границы эксплуатации и бэклога",
+      "status": "planned",
+      "what": "Отдельно оценить копии байтов S3, полный аварийный запуск и Cloud-консолидацию после приёмки; приоритизировать музыку, mobile fullscreen и публичные предложения функций.",
+      "why": "Закрыть конкретную пользовательскую или эксплуатационную границу через действующий feature-adr/dz/OpenSpec процесс.",
+      "checks": [
+        "Будущий критерий: Отдельно оценить копии байтов S3, полный аварийный запуск и Cloud-консолидацию после приёмки; приоритизировать музыку, mobile fullscreen и публичные предложения функций."
+      ],
+      "limitations": "Текущий отчёт не разрешает инфраструктурные изменения; дедлайны и готовность в процентах не обещаны.",
+      "sources": [
+        {
+          "path": "docs/operations/2026-11-10-regular-backups.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/2026-11-10-regular-backups.md",
+          "label": "docs/operations/2026-11-10-regular-backups.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/BACKLOG.md",
+          "label": "docs/BACKLOG.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "n8",
+      "date": "2026-11-11",
+      "topic": "Следующие шаги",
+      "title": "Завершить полный путь восстановления доступа",
+      "status": "planned",
+      "what": "Подтвердить получение recovery-письма, переход по одноразовой ссылке, смену пароля и вход на согласованном QA-профиле или вручную владельцем.",
+      "why": "В прошлом отчёте был подтверждён приём почтового запроса, но не полный reset-путь.",
+      "checks": [
+        "Будущий критерий: один действующий recovery token, успешный вход с новым паролем и ожидаемый отзыв старых сессий."
+      ],
+      "limitations": "После миграции Resend принял одно письмо, но reset token не использовался и получение не подтверждено. Повторная регистрация AUTH-001 не подменяет проверку восстановления.",
+      "sources": [
+        {
+          "path": "docs/operations/relocation-20261110-activation.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/operations/relocation-20261110-activation.md",
+          "label": "docs/operations/relocation-20261110-activation.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-05-lesson-data.json",
+          "commit": "b0cb88255e687338499faa4b786eda72073e5ed5",
+          "url": "https://github.com/djd1m/clipmkr/blob/b0cb88255e687338499faa4b786eda72073e5ed5/docs/reports/2026-11-05-lesson-data.json",
+          "label": "docs/reports/2026-11-05-lesson-data.json",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "guardrails": [
+    "Отчёт не разрешает новые развёртывания, платежи, операции с БД, S3 или выдачу ролей.",
+    "Опубликованные интерфейсы, SOURCE QE, изолированные проверки и реальные списания описываются отдельно.",
+    "Cloud.ru/c.clipmkr.ru в этом периоде не объявлены обновлёнными или консолидированными с основным сайтом.",
+    "Нет email, пользовательских ID, серверных IP, private paths, медиа, ключей, cookie и подписанных URL.",
+    "Инвентарные количества аккаунтов/таблиц/клипов — состояние на момент операции, а не недельный рост или метрика готовности.",
+    "Покупка сообщена владельцем и регистрация чека документирована; доставка письма/квитанции во входящие и будущих напоминаний не подтверждена.",
+    "Отчёт не является новым QE Clipmkr, юридической экспертизой или обещанием сроков."
+  ],
+  "story": [
+    {
+      "title": "Было 5 ноября → стало 11 ноября",
+      "minutes": 3,
+      "eventIds": [
+        "e01",
+        "e03",
+        "e05",
+        "e10"
+      ]
+    },
+    {
+      "title": "После предыдущего среза: исследования и курс",
+      "minutes": 2,
+      "eventIds": [
+        "e24",
+        "e25"
+      ]
+    },
+    {
+      "title": "Пользователь получает результат",
+      "minutes": 3,
+      "eventIds": [
+        "e06",
+        "e07",
+        "e09",
+        "e18"
+      ]
+    },
+    {
+      "title": "Деньги и сохранность",
+      "minutes": 3,
+      "eventIds": [
+        "e08",
+        "e11",
+        "e12",
+        "e13",
+        "e14",
+        "e15"
+      ]
+    },
+    {
+      "title": "Что ещё открыто",
+      "minutes": 3,
+      "eventIds": [
+        "e16",
+        "e17",
+        "e19",
+        "e20",
+        "e21",
+        "e22"
+      ]
+    },
+    {
+      "title": "Чему научились",
+      "minutes": 2,
+      "lessonIds": [
+        "l1",
+        "l2",
+        "l3",
+        "l4",
+        "l5"
+      ]
+    }
+  ],
+  "designReferences": [
+    {
+      "id": "cjm",
+      "title": "CJM и обязательная приёмка",
+      "statusLabel": "Исторически выбран CJM D",
+      "description": "Исторически выбран CJM D; схемы A/B/C — варианты. Обязательная core-CJM приёмка и текущие ограничения сохраняются.",
+      "sources": [
+        {
+          "path": "docs/CJM_Variants.html",
+          "label": "CJM — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/CJM_Variants.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/CJM_Variants.md",
+          "label": "CJM — Markdown",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/CJM_Variants.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "label": "Обязательная приёмка",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/acceptance/core-cjm.md",
+          "workingTree": false
+        },
+        {
+          "path": "CLAUDE.md",
+          "label": "Выбор CJM D",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/CLAUDE.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "main",
+      "title": "Основной макет · 4 ноября",
+      "statusLabel": "Исторический макет",
+      "description": "Исходный дизайн для сопоставления с изменениями. Его наличие не является новой приёмкой текущего приложения.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-04-mockup.html",
+          "label": "Макет — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/2026-11-04-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/mockup-home-1440.png",
+          "label": "Главная — PNG, 1440",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/mockup-home-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/mockup-home-390.png",
+          "label": "Главная — PNG, 390",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/mockup-home-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "public-entry",
+      "title": "Публичный вход · 5 ноября",
+      "statusLabel": "Согласованный макет; реализация — в хронологии",
+      "description": "Публичный вход и главная. Подтверждённый результат реализации описан отдельно в событии e03.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-public-entry-mockup.html",
+          "label": "Public entry — HTML",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/2026-11-05-public-entry-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/public-entry-light-1440.png",
+          "label": "Светлая тема — PNG, 1440",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/public-entry-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/public-entry-dark-390.png",
+          "label": "Тёмная тема — PNG, 390",
+          "commit": "384796b1beda66916e9a5d9474c5f662ffffefed",
+          "url": "https://github.com/djd1m/clipmkr/blob/384796b1beda66916e9a5d9474c5f662ffffefed/docs/design/screenshots/public-entry-dark-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "auto-link",
+      "title": "Личная ссылка блогера",
+      "statusLabel": "Опубликовано 5 ноября",
+      "description": "Автоматическая личная ссылка работает; на новом VPS10 ноября проверены копирование и гостевой переход. Полная реферальная оплата отдельно.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-blogger-auto-link.html",
+          "label": "Личная ссылка — HTML",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/2026-11-05-blogger-auto-link.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/blogger-auto-link-light-1440.png",
+          "label": "Личная ссылка — PNG, 1440",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/screenshots/blogger-auto-link-light-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/blogger-auto-link-light-390.png",
+          "label": "Личная ссылка — PNG, 390",
+          "commit": "18e4fa98e72fd8bdc84287d6c7495b4e3410b907",
+          "url": "https://github.com/djd1m/clipmkr/blob/18e4fa98e72fd8bdc84287d6c7495b4e3410b907/docs/design/screenshots/blogger-auto-link-light-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "partial",
+      "title": "Частичный повтор клипа",
+      "statusLabel": "Макет одобрен; реализация впереди",
+      "description": "Повтор только неготового клипа и сохранение готового результата. Не названо внедрённой функцией.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-partial-render-recovery-mockup.html",
+          "label": "Частичный повтор — HTML",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/2026-11-05-partial-render-recovery-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/partial-render-recovery-1440.png",
+          "label": "Частичный повтор — PNG, 1440",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/screenshots/partial-render-recovery-1440.png",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/screenshots/partial-render-recovery-390.png",
+          "label": "Частичный повтор — PNG, 390",
+          "commit": "1659d7002bdf344a00260e0eefcb05c07f47d016",
+          "url": "https://github.com/djd1m/clipmkr/blob/1659d7002bdf344a00260e0eefcb05c07f47d016/docs/design/screenshots/partial-render-recovery-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "ux",
+      "title": "Новый UX трёх ролей",
+      "statusLabel": "Одобрен и опубликован 6 ноября; ручная приёмка отдельно",
+      "description": "Точная полная компоновка отдельно одобрена 5 ноября; runtime 6d19cb8 опубликован 6 ноября. См. delivery-status, ограничения оплаты и Cloud сохранены.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-05-ux-simplification.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/design/2026-11-05-ux-simplification.html",
+          "label": "docs/design/2026-11-05-ux-simplification.html",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/owner-approval.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/owner-approval.md",
+          "label": "features/ux-simplification/owner-approval.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/ux-simplification/delivery-status.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/ux-simplification/delivery-status.md",
+          "label": "features/ux-simplification/delivery-status.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "referral",
+      "title": "Регистрация по партнёрской ссылке",
+      "statusLabel": "Макет одобрен; prefill опубликован 11 ноября",
+      "description": "HTML согласован; live prefill проверен без новой регистрации. Signup и статистика — изолированный SOURCE/QE.",
+      "sources": [
+        {
+          "path": "docs/research/referral-registration-ux/mockup.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/referral-registration-ux/mockup.html",
+          "label": "docs/research/referral-registration-ux/mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "features/referral-registration-prefill/01_requirements.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/referral-registration-prefill/01_requirements.md",
+          "label": "features/referral-registration-prefill/01_requirements.md",
+          "workingTree": false
+        },
+        {
+          "path": "features/referral-registration-prefill/09_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/referral-registration-prefill/09_delivery.md",
+          "label": "features/referral-registration-prefill/09_delivery.md",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "zoom",
+      "title": "Zoom: экран и лицо",
+      "statusLabel": "Selector одобрен 11 ноября 14:38 UTC; runtime отсутствует",
+      "description": "03 «Фокус на действии» по умолчанию; 01/02 в закрытых дополнительных настройках, пересборка после подтверждения. Согласованный синтетический макет не является работающим render.",
+      "sources": [
+        {
+          "path": "docs/research/zoom-screen-layout/mockup.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/zoom-screen-layout/mockup.html",
+          "label": "docs/research/zoom-screen-layout/mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-screen-focus/selector-mockup.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/selector-mockup.html",
+          "label": "features/zoom-screen-focus/selector-mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-screen-focus/screenshots/selector-open-390.png",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/screenshots/selector-open-390.png",
+          "label": "features/zoom-screen-focus/screenshots/selector-open-390.png",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-screen-focus/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/zoom-screen-focus/README.md",
+          "label": "features/zoom-screen-focus/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "commit": "19661663845318410307f2f94deb36c4e694ec15",
+          "url": "https://github.com/djd1m/clipmkr/blob/19661663845318410307f2f94deb36c4e694ec15/docs/reports/2026-11-11-project-dynamics/prompt.md",
+          "label": "Обезличенная запись первичных сообщений владельца: покупка и согласование Zoom",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "original",
+      "title": "Исходная запись",
+      "statusLabel": "Базовые действия поручены; допсостояния не согласованы; runtime отсутствует",
+      "description": "Компактная строка «Смотреть/Скачать» и шесть дополнительных состояний. Все публичные данные макетов синтетические; 24/24 относятся только к макету.",
+      "sources": [
+        {
+          "path": "docs/research/original-video-access/mockup.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/mockup.html",
+          "label": "docs/research/original-video-access/mockup.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/original-video-access/states.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/states.html",
+          "label": "docs/research/original-video-access/states.html",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/original-video-access/states/README.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/states/README.md",
+          "label": "docs/research/original-video-access/states/README.md",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/original-video-access/states/audio-light-390.png",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/research/original-video-access/states/audio-light-390.png",
+          "label": "docs/research/original-video-access/states/audio-light-390.png",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "title": "Повторная регистрация",
+      "statusLabel": "Макет одобрен и опубликован 10 ноября",
+      "description": "Existing+correct password выполняет настоящий вход, incorrect предлагает вход/восстановление.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-10-repeat-registration.html",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/docs/design/2026-11-10-repeat-registration.html",
+          "label": "docs/design/2026-11-10-repeat-registration.html",
+          "workingTree": false
+        },
+        {
+          "path": "features/repeat-registration/10_delivery.md",
+          "commit": "59361e07dc1eec69e2daac5783f1ab1ac18b80c5",
+          "url": "https://github.com/djd1m/clipmkr/blob/59361e07dc1eec69e2daac5783f1ab1ac18b80c5/features/repeat-registration/10_delivery.md",
+          "label": "features/repeat-registration/10_delivery.md",
+          "workingTree": false
+        }
+      ]
+    }
+  ]
+}
