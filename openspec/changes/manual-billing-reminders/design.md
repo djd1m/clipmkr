@@ -1,17 +1,17 @@
 ## Context
-M/12, manual-only после отмены optional-autorenew; источник решения owner-authority.md. LIVE012efb6 не выключается.
+M/12, proposed r2. Owner «реализуем2и3»; payment-environments first. Оферта опубликована9312564/docs8ea82, прежний legal draft только история.
 
 ## Goals / Non-Goals
-Goal: два bounded email события о конце текущего непрерывного оплаченного периода. Non-goals: автосписания, маркетинг, новые controls/financial states, полный юраудит.
+Два manual emails по end текущей непрерывной цепочки. Не менять права/финансы/UI/оферту; не строить recurring/framework.
 
 ## Decisions
-Использовать ADR-001 и05_architecture.md: all payment entitlement intervals (base/addon/eligible legacy), компоненту покрывающую now, unique(account,end,offset), fixed recipient/payload/key после first attempt. SQL claim revalidates; network вне transaction; max3 attempts/<23h. Optional delivery flag=false. Checkout adapter false; оферта только exact approved replacement map.
+ADR-001/05: полный entitlement union base/addon/eligible legacy, включая TEST/unknown; отдельный verified LIVE identity proof допускает отправку. Event(account,end,offset), immutable payload/key после first attempt; final serialized claim,HTTP внеTX, max3/<23h. Временный relevant refund/review/неполный LIVE proof оставляет pending/failed/unknown без HTTP/attempt/new key; после сверки тот же event возобновляется только при том же end/offset, действующем окне, полной eligibility и прежних max3/1h/<23h. Timestamps/payload/key не сбрасываются; terminal accepted/superseded не открываются. Изменённый tail/offset, истёкшее окно/исчерпание или недопустимый status/recipient→superseded; erasure→CASCADE. Дата письма — конец текущего непрерывного периода доступа по пакетам, индивидуальные сроки и бессрочные кредиты прежние.031 после030; flag=false. Dispatch после media≤2concurrent/≤4tick,20s monotonic admission и short DB locks.0paymentPOST при tick/CTA GET.
 
 ## Risks / Trade-offs
-Accepted != delivered; длительный outage/clock anomaly пропускает письмо; refund review suppresses. Состояние после committed dispatch нельзя атомарно отозвать у provider. Legal дата/§10.2 open до публикации.
+Accepted≠delivered; outage/clock rollback пропускает письмо; релевантные refund/review suppress до сверки, без продления окна или retry budget. После commit dispatch письмо нельзя отозвать атомарно. Budget20s ограничивает admission, не весь watchdog.
 
 ## Migration Plan
-Additive030 journal, default-off rollout после настоящих gates; rollback flag off, без data restore. Existing namespaces для PG/HTTP/browser QE, без реальных писем/платежей.
+Fresh QCSD нормативного контракта выполняется параллельно завершению payment-environments, затем06. До кода/031 дождаться merge final accepted030 source, фактически перепроверить proof/locks/optional false/migrations, закрепить final revision и пройти K1/K2. При влияющем на QCSD расхождении — независимая проверка затронутой дельты. Candidate не является accepted source; dependency pins пока pending. Поставка2 предшествует поставке3.031 additive/default-off; rollback flag off без restore. Existing isolated PG/Redis/mail/Next fixtures.
 
 ## Open Questions
-LEGAL-1: согласовать exact draft, дату публикации/вступления и исполнение14-дневного уведомления до legal rollout.
+Решений владельца по оферте здесь больше нет. Final dependency fields/SHA ещё не готовы; это порядок интеграции, не разрешение пропустить gates.

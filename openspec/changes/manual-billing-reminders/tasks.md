@@ -1,12 +1,13 @@
-## 1. Admission
-- [ ] Независимый QCSD; требования/ADR/light architecture и настоящие K1/K2, затем06.
-- [ ] Решение LEGAL-1 до публикации legal draft.
+## 1. Independent requirements and dependent admission
+- [ ] Fresh independent QCSD нормативного контракта, параллельно завершению payment-environments; затем06.
+- [ ] До кода/031: final accepted payment-environments source/030 merge; фактический recheck contract/locks/false guard/migrations, final pins. Candidate не закрывает зависимость.
+- [ ] При влияющем на QCSD расхождении final source — независимая проверка затронутой дельты; настоящиеK1/K2 до кода.
 
 ## 2. Implementation
-- [ ] Paid-period reader, additive journal и native tick/mail reuse; default-off wiring.
-- [ ] Explicit false adapter; только approved legal replacements.
+- [ ] Rights/LIVE-proof reader,031 journal/native bounded tick/mail/default-off wiring.
+- [ ] Только отсутствующий manual provider false guard; без legal/UI changes.
 
 ## 3. Verification and delivery
-- [ ] Изолированные PG+HTTP tests, concurrency barriers/clock/negative controls.
-- [ ] Actual Next/auth/browser E2E, adjacent suites, independent source review и anti-drift.
-- [ ] Ручная приёмка/точный artifact; delivery flag после приёмки, малые verified commits/mirrors координатором.
+- [ ] Real PG/mail concurrency+clock+budget controls; actual Next/native auth→mail socket→upgradeGET,0paymentPOST.
+- [ ] Sibling suites, независимое source QE, guard mutations и anti-drift.
+- [ ] Поставка payment-environments завершена до reminders; ручная приёмка/точный artifact; включение delivery после QE/приёмки координатором.

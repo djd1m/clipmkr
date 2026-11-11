@@ -1,19 +1,8 @@
-# Ручное продление и напоминания — сложность
+# Сложность ручных напоминаний
 
 Task kind: feature
 
-11.11.2026, предварительный **M,12баллов**:11–20source/test files→3; billing с почтовой доставкой и правовым текстом в1–2 существующих bounded contexts→2; новых providers0→1; breaking changes0→1; одна outbox-модель→2; auth/PII/idempotency→3. Уточнение реальных targets перед планом. Active0→1→3→3.5→5light→6→7→8. Новый крупный платёжный subsystem не создаётся; L-фича optional-autorenew отложена прямым решением владельца, её gates не выдаются за gates этого сокращённого объёма.
-
-## Действующий scope владельца
-
-Из ранее согласованного предложения остаются письма за3дня и сутки с переходом к ручной покупке. Более позднее решение владельца: автоплатежи не включать/убрать из текущего продукта, подготовленные материалы сохранить для будущего. Следовательно, нет сохранения платёжного средства, consent/recurring routes, scheduler автосписаний или новых автоматических платёжныхPOST. Нынешние боевые разовые покупки сохраняются.
-
-## Минимальные изменения
-
-Переиспользовать текущие PostgreSQL journal/lease/account-lock, Resend идемпотентную доставку, existing watchdog и purchase page. Новый worker/service/library не нужен. Reminder не создаёт payment_intent. При ручной покупке после письма, изменении срока/recipient/status аккаунта отправка перепроверяется и подавляется по фактам. Убрать из оферты обещания автоматического списания и несуществующую кнопку отключения, не менять цену/права/возвратную политику без отдельного основания. В manual YooKassa POST явно сохранить save_payment_method=false.
-
-## Проверки и полномочия
-
-Нужны genuine предкодовый QCSD, K1/K2, независимый source QE и локальный реальный Next/browser→auth→PG→mail-socket проход без платёжныхPOST. Из согласованного макета SHA0ad97e1808eb2e5820ceced07be5ceba25931ff882fc6913b320f6867949f05e переиспользуются только два ручных письма. Новые интерфейсные действия не добавляются. Новая редакция конкретных юридических абзацев готовится до реализации, необходимость согласования определяется фактической смысловой дельтой.
-
-Архитектор gpt-6-astra xhigh; implementer gpt-6.1-sol high; QCSD дизайна Astra — fresh gpt-6.1-terra xhigh, проверка Sol source — fresh gpt-6-astra xhigh. Documents русские. Project-pinned dz на Node22 из canonical /home/clipmkr, OpenSpec как supportingledger. Runtime/DNS/Cloud до готовых gates не меняются.
+r2,11.11.2026: **M,12баллов**:11–20source/test files→3; billing/mail в1–2contexts→2; new providers0→1; breaking0→1; одна journal-модель→2; auth/PII/idempotency→3. Предварительную оценку уточнить по final targets. Active0→1→3→3.5→5light→6→7→8; DDD/fleet не требуются.
+Автоплатежи отменены; остаются письма3/1 и manual checkout. Оферта уже поставлена one-time-offer9312564; правовой implementation/gate отсюда удалён. Payment-environments030 идёт первым; наша additive031, existing mail/watchdog без нового runtime. Ограничение dispatch≤4/tick/≤2concurrent,20s admission предотвращает batch100×8s.
+Нужны genuine fresh QCSD/K1/K2 и independent source QE, real PG barriers/HTTP/native Next auth→mail→upgradeGET. Requirements/ADR и fresh QCSD нормативного контракта выполняются параллельно завершению payment-environments. 06 — после QCSD; код/031 — только после final accepted030 source merge, фактического recheck/pins и K1/K2. Поставка2 предшествует поставке3. Documents proposed, originalbase/state не сбрасываются.
+Модели из owner matrix: архитекторAstra xhigh; реализацияSol high; QCSD дизайна freshTerra xhigh; source QE freshAstra xhigh. Эти роли не означают, что проверки уже запущены.

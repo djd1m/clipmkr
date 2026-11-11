@@ -1,19 +1,23 @@
 {
-  "revision": "2026-11-11-r1",
-  "status": "proposed-awaiting-independent-qcsd",
+  "revision": "2026-11-11-r2-qcsd-repair-1",
+  "status": "proposed-qcsd-rework-awaiting-origin-verification-final-dependency-pending",
   "base": "f701c60",
+  "researchSnapshot": {
+    "source": "5c5130d",
+    "basis": "orchestrator merge; source files read locally; original base/native state unchanged"
+  },
   "normativeSources": [
     {
       "path": "openspec/changes/manual-billing-reminders/proposal.md",
-      "sha256": "3094db007c79557b923733f6676f978726261c1caa22e4db3042eb762904d527"
+      "sha256": "70f9be7da41355c6cef232db13c8d98a648822e91586d6fb7e3ad253385feb54"
     },
     {
       "path": "openspec/changes/manual-billing-reminders/design.md",
-      "sha256": "0abbea02f61032ad65f11abaf5e62ba9f7389a91de57cdd8c27a687c9d40d7e6"
+      "sha256": "15655f2f38a1f403ef78a16b00f12e98be075bca5bdfc4cd0e6df3117c6eed01"
     },
     {
       "path": "openspec/changes/manual-billing-reminders/specs/manual-billing-reminders/spec.md",
-      "sha256": "fcc149bbf0fbe9e25d180f21f5f0747042c742610f728cd47e602afe7d375ec0"
+      "sha256": "5996a9e2bcaba3feffd894b5dc7f444b44c4eea13faeafd70f84ac20dad46572"
     },
     {
       "path": "openspec/changes/manual-billing-reminders/.openspec.yaml",
@@ -22,25 +26,222 @@
   ],
   "reuseInventory": {
     "path": "features/manual-billing-reminders/02_reuse_inventory.md",
-    "sha256": "e36fd0c1532278c296357259cf047f0e0a22b7f7efd9908d42465a4d12ee11b8"
+    "sha256": "a2d9288f2f427da337cc91e7ab96c546e55b7d5b56424da95c6acba976087471"
   },
   "featureArtifacts": [
     {
+      "path": "features/manual-billing-reminders/00_complexity_assessment.md",
+      "sha256": "de5cbd208a4e37bcea06239e542e51f844551567fd96d4a19fc33425f3789ff4"
+    },
+    {
+      "path": "features/manual-billing-reminders/owner-authority.md",
+      "sha256": "9e122e6b4f3af515727639c2d74c21fc6ef189bf8ea9291d46cf65fe4f0fd39a"
+    },
+    {
       "path": "features/manual-billing-reminders/01_requirements.md",
-      "sha256": "844910e0c83a702f7fdc078b272f9a4b0819aff9d062938a699c6ab3cc99f3b1"
+      "sha256": "bbda4db15b0b32850cbffec55c7cb40150746dd1ba07b570bd20f4d080a44720"
     },
     {
       "path": "features/manual-billing-reminders/03_adr/001-reuse-idempotent-mail-journal.md",
-      "sha256": "ae1488351832092a58b2e4c305d55050a5b718f27623c38443049791a4cab88e"
+      "sha256": "d80c03d0bbcd7a0873084ef13e293a2f69eda5d246c8747ab0084f814b09d342"
     },
     {
       "path": "features/manual-billing-reminders/05_architecture.md",
-      "sha256": "63e3e2c0c84fa29a41dd941d4c83861543a777f724e6033b519ee8e388e28cad"
-    },
-    {
-      "path": "features/manual-billing-reminders/exact-legal-copy-proposal.md",
-      "sha256": "cc8bd8337678c00c7f01b0ea5aefe53b3a4aa71974853c35d6822bd50583fe57"
+      "sha256": "5978b05d9b9db4ee3e06c65e413b4f6d16a3032a10f9a477ff3276b45b069252"
     }
   ],
+  "dependency": {
+    "feature": "payment-environments",
+    "migration": "030_payment_environments.sql",
+    "nextMigration": "031_billing_notice.sql",
+    "sourceRevision": "2af00157b2394b4af9ce5d131856f40a2f2714f2",
+    "status": "accepted source merged; actual source-contract recheck PASS; native K1/K2 required before code; 031/feature3 delivery after runtime030/feature2 delivery",
+    "contract": "packages/db/src/payment-provenance.ts#verifiedLivePaymentSql(pAlias,iAlias)",
+    "verifiedDraft": "Sibling candidate packages/db/src/payment-provenance.ts read at /tmp/clipmkr-payment-environments-20261111; observed only, not accepted source or completed QE/delivery",
+    "qcsdInput": "Normative verifiedLivePaymentSql contract in features/manual-billing-reminders/05_architecture.md; fresh requirements/QCSD independent of dependency publication",
+    "recheckScope": "After accepted030 merge: proof, locks, optional save_payment_method:false, migrations; independent focused verification if final dependency changes QCSD conclusions",
+    "integratedRevision": "50f1030d3360fa5de09a2d1aa492b8c08f649e20",
+    "sourceReview": {
+      "status": "closed",
+      "revision": "49f281fadebe2ef7294b83761688d96a90090e4636622f82a17e0de70570b26d",
+      "report": "features/payment-environments/08_qe_report.md"
+    },
+    "acceptedSourceManifest": {
+      "path": "features/payment-environments/07_code_changes/source-manifest.json",
+      "sha256": "e18c51e65588adf82b1e4ac2595c7b5c13cc2a821bb00a761b65e8d9197f63fd",
+      "matchedFiles": 30
+    },
+    "recheck": {
+      "path": "features/manual-billing-reminders/dependency-recheck.md",
+      "sha256": "01490f87485ea2fafa4400bd8777f66d77ee74fc11481a7cc10969f8820ee4d5",
+      "status": "pass",
+      "semanticContractDelta": false,
+      "runtime030Verified": false
+    },
+    "filePins": [
+      {
+        "path": "packages/db/src/credits.ts",
+        "sha256": "e807af6d1e8264af81e51509301f3c1b5969014dd4649d01b89a18ee457eb161"
+      },
+      {
+        "path": "packages/db/src/quota.ts",
+        "sha256": "da1d10660fb84a78dbab490853230f0b00fe3267071b22ddfd8c6c1b3e3dd78e"
+      },
+      {
+        "path": "packages/db/src/index.ts",
+        "sha256": "ee99ab7780f5c14ae77e24f20624c8625bcccdb10d930104341340b9da2caa02"
+      },
+      {
+        "path": "packages/db/src/plan.ts",
+        "sha256": "cc738715a4db9f76c71d797be3c15d5b18556c89d3e7cff276d03dd41d07f5f9"
+      },
+      {
+        "path": "packages/db/src/payments.ts",
+        "sha256": "7e18f4d66e8a79d659c0aab7d0404245409284ed84eabacac1f4e8b5952cfe0f"
+      },
+      {
+        "path": "packages/db/src/support-email.ts",
+        "sha256": "9331ef138369d427219d5cbcd519f9a8ca2c083bcdc59949976be5ca3fbb2506"
+      },
+      {
+        "path": "packages/db/src/migrate.ts",
+        "sha256": "811b03ea40ec002f99c872744eb8a45410c5d5ad508d2395e23078b4b29ab7a3"
+      },
+      {
+        "path": "packages/db/migrations/028_clip_retention.sql",
+        "sha256": "2778ae56998e3d2581775b504ed0918f50aaf9296e7bb8fb3369c2aaa9ddbaa9"
+      },
+      {
+        "path": "packages/shared/src/enums.ts",
+        "sha256": "313ff9e43d5485cb24430b35affa813d6b0abcf5f8261e7728c6ab0338c85d9e"
+      },
+      {
+        "path": "packages/shared/src/config.ts",
+        "sha256": "d66cd0977b52de2331f0a630a1c79476492aea0fec6a2be5263714ba094ff12f"
+      },
+      {
+        "path": "apps/web/src/server/environment.ts",
+        "sha256": "be0c936fea8ea1d8cc5ccdb3e023f4a20dffd3d7ee340a037657b1185a359aab"
+      },
+      {
+        "path": "apps/web/src/server/queue-runtime.ts",
+        "sha256": "8b4b6474b8a751b5ee8f803036a812f612fb9053c68de2855a2718060f70b83a"
+      },
+      {
+        "path": "apps/web/src/server/watchdog.ts",
+        "sha256": "68f2978640262febf8e2eb94949ede17e8a7a7d14e7bdfee383c41556da9b44e"
+      },
+      {
+        "path": "apps/web/src/server/retention-notices.ts",
+        "sha256": "ee614923bbf95c260dfd73eaa272f1d914eda6180223046154dac4d5232c2cf5"
+      },
+      {
+        "path": "apps/web/src/server/support/mail.ts",
+        "sha256": "3493af574090dd83bc6762232eca5c1ce500a9952b2759a0ad15077334b5d797"
+      },
+      {
+        "path": "apps/web/src/server/payments/yookassa.ts",
+        "sha256": "941450e01f1a86bb75ed2f74e3614bcb1ad430fb9b9335c64adb8c5f9cbba173"
+      },
+      {
+        "path": "apps/web/src/server/billing-handler.ts",
+        "sha256": "65e7bff02d517c0e20dbc82b9ee3d6c43c16e2389237ff4042a1dc802754b75b"
+      },
+      {
+        "path": "apps/web/src/server/ip.ts",
+        "sha256": "af357f46c7cad2def1629a34e85b576237fd6a5db8ca9d2249639e706c823301"
+      },
+      {
+        "path": "tests/test-webhook-route.test.ts",
+        "sha256": "376acb5a35dce6bc5a8d6883ed433c26d33fefe11405f9d00346d96dc084b802"
+      },
+      {
+        "path": "tests/enums.test.ts",
+        "sha256": "31031bb6cd7456ef3a02467cc9b15bc6a1da0e76efb9867196b828fac26688b7"
+      },
+      {
+        "path": "tests/database.integration.test.ts",
+        "sha256": "d5b9488a34a9891d1090a947a1803d543ca302af993a8b619a5cd7add15473b8"
+      },
+      {
+        "path": "tests/preflight.test.ts",
+        "sha256": "2c0334c9ab585875b2bdb379414351b194ffaed5d589ab2753ccf2e5743332c2"
+      },
+      {
+        "path": "tests/config.test.ts",
+        "sha256": "38d2a77863c1e93cbba4aefc8c2fa8fee39ef1dc973ddd915952ab5435267a78"
+      },
+      {
+        "path": "tests/wiring.test.ts",
+        "sha256": "22b705b15924e69d2a1164e050981bee6f8dd61118118b7b4c0edc1f9aa03877"
+      },
+      {
+        "path": "tests/support-backend-environment.test.ts",
+        "sha256": "cf7cc662e2231560c1ffed12c40b0d1a5b9bf982696d57a3d30ac89201b284df"
+      },
+      {
+        "path": "tests/support-mail-resend.test.ts",
+        "sha256": "7aae0e363ca81c61c0048087a0bacb82511bcd5079d5e1bf18e6c92421ad4bcc"
+      },
+      {
+        "path": "tests/fixtures/environment.ts",
+        "sha256": "d1c53da86d68bd5f471b5849c56cdd2aa9b2ee193d6783be85b5a1a1c0cfcf99"
+      },
+      {
+        "path": "tests/fixtures/payment-test-transport.mjs",
+        "sha256": "97d875c52585ad260836f19d5584d1a652dc48ad00ee38f4587820e757a4c7d1"
+      },
+      {
+        "path": "tests/browser/per-account-test-checkout-next.test.ts",
+        "sha256": "22cf515cc53e3646becd4726c12826bc74b9ec80c8166cb04bb69c9f716e64fa"
+      },
+      {
+        "path": "tests/browser/repeat-registration-next.test.ts",
+        "sha256": "317fffb8587909e9e50cc8108aa47cad008826a97f7f91acac19f710a989f13c"
+      },
+      {
+        "path": "scripts/check-env-wiring.mjs",
+        "sha256": "1926fbc46854805eb39a0bf60d93ed2052e9c08b52810f7549fab1d95e191a42"
+      },
+      {
+        "path": "scripts/test-retention-mutations.mjs",
+        "sha256": "3fe8eda659c526c975481b5797c8d7916f9a01f1f4aac0dde168738462a750c8"
+      },
+      {
+        "path": "docker-compose.yml",
+        "sha256": "3539729535adbf875402f88c0593ce1f032a6226e86db6da65e0d2f9758f996d"
+      },
+      {
+        "path": ".env.example",
+        "sha256": "5be8ef9d6639ff6f9fa5d9fc1a7c813ef4c652a43eb87d14498ea070fffbb70f"
+      },
+      {
+        "path": "packages/db/src/payment-provenance.ts",
+        "sha256": "3bf5e9a1e9f2a06b4f97a5ca60ad9aef1a9373bb3b72fffed14aaa4c3e53ef9e"
+      },
+      {
+        "path": "packages/shared/src/payment-identity.ts",
+        "sha256": "0efa9f707b5020ed74caa70516c01cd42b24828d3c59a4f630891c5da89d6186"
+      },
+      {
+        "path": "packages/db/migrations/030_payment_environments.sql",
+        "sha256": "70d0004c574a41fd29421841418dcedcbe37ba8bbeb0eca08b83cf64be460752"
+      },
+      {
+        "path": "apps/web/src/server/payments/provider.ts",
+        "sha256": "4803e7fd8aa73f7cf63a23c5627006cfb8c796a180051fbe7ed92126e1d02281"
+      }
+    ]
+  },
+  "historicalContext": {
+    "feature": "one-time-offer",
+    "sourceCommit": "931256429e18ffe597678101e69ac8565321d490",
+    "documentationRevision": "8ea82",
+    "deliveryPath": "features/one-time-offer/10_delivery.md",
+    "deliverySha256": "b80487c399ac29b454ae64df3df8735091f4a2014062c986614e19538d7d69ef",
+    "formerLegalProposal": "features/manual-billing-reminders/exact-legal-copy-proposal.md",
+    "formerLegalProposalSha256": "cc8bd8337678c00c7f01b0ea5aefe53b3a4aa71974853c35d6822bd50583fe57",
+    "legalProposalIsNormative": false
+  },
   "excludedMutableLedger": "openspec/changes/manual-billing-reminders/tasks.md"
 }

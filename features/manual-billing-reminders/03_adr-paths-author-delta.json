@@ -1,0 +1,19 @@
+{
+  "addressed": [],
+  "changedScope": [
+    "features/manual-billing-reminders/03_adr/001-reuse-idempotent-mail-journal.md",
+    "features/manual-billing-reminders/requirements-revision.json",
+    "features/manual-billing-reminders/03_adr-paths-author-delta.json",
+    "features/manual-billing-reminders/06_implementation_plan.md",
+    "tests/billing-notices.integration.test.ts",
+    "tests/browser/manual-billing-reminders-next.test.ts"
+  ],
+  "classification": "wording",
+  "delta": "Координатор сообщил фактический K2 STRICT exit1, единственный blocker C2: ADR Confirmation не содержит распознаваемых literal test paths. Только в строке Checks заменены сокращённые ссылки billing-notices.integration и existing Next harness на tests/billing-notices.integration.test.ts и tests/browser/manual-billing-reminders-next.test.ts. Обновлён SHA ADR в requirements-revision.json. Проверки, поведение и scope не расширены; validator и custom testPathRules не менялись.",
+  "evidence": "Оба точных пути уже есть в неизменном 06_implementation_plan.md: команды проверки, раздел EXPECTED_CODE_TARGETS; integration path также в TASK-2 и AM-1/2/3. ChangedScope перечисляет три фактически изменённых/новых документа и затронутые неизменные plan/test targets; тестовые файлы остаются плановыми, здесь не создавались. Старый author-delta.json и reviewer/native history сохранены. K2 повторно не запускался; focused verification и настоящий повтор K2 выполняет координатор.",
+  "newRisks": {
+    "assessment": "Новых рисков от уточнения ссылок не выявлено; semantic contract не изменён.",
+    "evidence": "ADR до Confirmation и все условия Checks после перечня путей сохранены. Accepted dependency 2af00157b2394b4af9ce5d131856f40a2f2714f2 и её 38 file pins сохранены. Реализация, требования, архитектура, план и тесты не менялись. Указание путей не является результатом выполнения тестов или K2.",
+    "conditions": []
+  }
+}

@@ -1,29 +1,28 @@
-# ADR-001: Использовать native mail journal для ручных напоминаний
+# ADR-001: Использовать native journal для ручных напоминаний
 
 ## Status
-proposed; обратимо до delivery flag; пересмотр при смене entitlement/provider contract.
+proposed, r2; прежний проект не был accepted. Fresh QCSD может проверить нормативный контракт до final payment-environments source. Перед кодом — merge final accepted030 source и фактический recheck/pins; расхождение, влияющее на выводы QCSD, требует независимой проверки дельты. Обратимо до delivery flag; смена provider contract требует пересмотра.
 
 ## Context
-FR-1..9: ручная покупка, несколько web processes, потеря HTTP-ответа. Native journal/SupportMailer/watchdog существуют.
+FR-1..9: ручная покупка, повторы/потеря HTTP, несколько web processes. Оферта уже поставлена отдельной фичей; reminders следует за provenance030.
 
 ## Decision Drivers
-D1 высокий: dedup без финансовых side effects. D2 высокий: актуальные end/recipient. D3 средний: минимум компонентов.
+D1 высокий: один logical event без финансовых side effects. D2 высокий: актуальные права/recipient/LIVE proof. D3 высокий: не задерживать watchdog пачкой HTTP. D4 средний: reuse.
 
 ## Considered Options
-A: отдельная billing_notice по native pattern: durable identity/простое reuse; цена — SQL concurrency tests.
-B: расширить retention_notice: меньше таблиц; цена — ломка video/clip schema и иной identity.
+A: отдельная031 billing_notice по native pattern; плюс durable identity/reuse, минус SQL concurrency tests.
+B: расширить retention_notice; плюс меньше таблиц, минус ломка video/clip schema и shared lifecycle.
 
 ## Decision
-A: additive billing_notice UNIQUE(account,end,offset),account FK CASCADE; billing-notices.ts использует transaction/account→credit advisory→notice lock, SupportMailer.sendRetention и watchdog. End=current contiguous union всех payment intervals/base/addon/legacy без clamp(now); existing grant/windows неизменны. Frozen payload/key после first attempt;max3attempts/<23h; HTTP вне SQL transaction;flag=false.
+A: account FK CASCADE, UNIQUE(account,end,offset), SupportMailer.sendRetention, existing watchdog. All-paid continuous end сохраняет TEST/unknown grants; send требует verified LIVE identity в компоненте. Final claim account→credit advisory→notice, immutable bytes/key, max3 retries<23h, network вне SQL transaction. Relevant refund/review/неполный LIVE proof временно defer без HTTP/attempt/new key: сохраняется pending/failed/unknown и frozen payload/key/timestamps. После сверки тот же event допускается только при прежнем end/offset, текущем окне, полной eligibility и прежних max3/1h/<23h; terminal accepted/superseded не открываются. Изменённый tail/offset, истёкшее окно/исчерпание или недопустимый status/recipient остаются superseded, erasure — CASCADE. Письмо различает общий конец непрерывного периода доступа и индивидуальные сроки пакетов. Dispatch≤2concurrent/≤4tick после media,20s monotonic admission и short DB waits. Flag=false.
 
 ## Rationale
-A сохраняет D1/D3 без новых runtime/deps. D2 требует all-paid end: base window/next_expiry не отражают продолжение оплаченных прав.
+A сохраняет D1/D4 без нового runtime. D2 разделяет права и provenance, не просит купить до реального конца доступа. D3 ограничивает workload независимо от candidate batch;20s не является обещанием latency всего watchdog.
 
 ## Consequences
-Durable dedup и unchanged finance. Цена: prolonged outage/clock anomaly пропускает письмо; refund-review подавляет аккаунт до сверки; accepted≠delivered. После committed dispatch нельзя атомарно отменить внешнюю отправку.23h предполагает24h provider dedup/корректные часы. Follow-up ADR сейчас не нужен; владелец+maintainer пересмотрят через месяц после приёмки.
+Outage/clock anomaly может пропустить письмо; accepted≠delivered. Relevant refund/review подавляет текущую неопределённость до сверки, не старую историю целиком; defer не продлевает окно или retry budget. После committed dispatch письмо не отозвать атомарно.23h опирается на24h provider dedup/часы. Follow-up ADR не нужен; владелец/maintainer пересмотрят через месяц после приёмки.
 
 ## Confirmation
-Method: isolated PG+HTTP,actual Next/auth/browser,independent QE. Monitoring: accepted/unknown-budget counts. Success:1provider message/event,0payment POST/tick,0stale overwrites. Owner: implementer+independent reviewer.
-Load-bearing property: same event/key/bytes через crash/email change и revalidation до dispatch.
-Required automated check: tests/billing-notices.integration.test.ts, tests/support-mail-resend.test.ts; existing Next browser harness расширяется; adapter false negative control. Точные команды в06 послеQCSD.
-Shift-left: held-lock contender blocking; timeout→same key; provider down→bounded unknown; новый пакет доclaim→no send; stale A completion послеB fenced. High duplicate/stale/privacy risks имеют эти guards/tests; результаты пока не получены.
+Method: real PG+HTTP и native Next/auth/browser, independent QE. Monitoring: accepted/unknown/deferred/backlog. Success:1provider message/event,0payment POST/tick+CTA,≤2inflight/≤4attempts/tick; stale completions0. Owner: implementer+independent reviewer.
+Load-bearing: same event/key/bytes через crash/email change, serialized revalidation без long watchdog stalls.
+Checks: `tests/billing-notices.integration.test.ts`, support-mail-resend, `tests/browser/manual-billing-reminders-next.test.ts` (existing Next harness); held-lock purchase/refund/email barriers, clock rollback, last-moment eligibility, slow-HTTP batch, false-adapter mutation; до first attempt и после unknown: review/неполный proof→0HTTP/attempt delta0→cleared same end/offset/window→одна отправка same event/key, с сохранением frozen bytes и лимитов; expired/exhausted/email-change→no resume. Проверить, что текст общего tail не продлевает отдельный пакет. Точные команды в06 после QCSD; их source targets/pins окончательно сверяются после accepted030 merge до кода/K1/K2. Тесты пока не выполнены.
