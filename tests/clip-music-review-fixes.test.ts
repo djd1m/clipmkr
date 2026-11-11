@@ -32,7 +32,9 @@ it('retention uses real clip prefix validation and erases every version without 
   const query = vi.fn(async (sql: string) => {
     if (sql.includes('pg_try_advisory_lock')) return { rows: [{ locked: true }] };
     if (sql.includes('SELECT count(*) FROM account')) return { rows: [{ count: '0' }] };
-    if (sql.startsWith('SELECT c.id')) return { rows: [{ id: clip, video_id: video }], rowCount: 1 };
+    if (sql.startsWith('SELECT c.id,c.video_id')) return { rows: [{ id: clip, video_id: video, account_id: 'synthetic-owner' }], rowCount: 1 };
+    if (sql === "SELECT id FROM account WHERE id=$1 AND status='active' FOR NO KEY UPDATE" || sql === 'SELECT id FROM video WHERE id=$1 AND account_id=$2 AND deleted_at IS NULL FOR UPDATE' || sql === 'SELECT id FROM clip WHERE id=$1 FOR UPDATE') return { rows: [{ id: 'synthetic-owned-row' }], rowCount: 1 };
+    if (sql.startsWith('SELECT c.deletion_started_at')) return { rows: [{ deletion_started_at: null, media_recheck_at: null, ready_at: new Date('2026-01-01'), alive: false }], rowCount: 1 };
     if (sql.startsWith('UPDATE clip SET object_key=NULL')) expect([...objects]).toEqual([neighbour]);
     return { rows: [], rowCount: 0 };
   });
@@ -49,7 +51,7 @@ it('retention uses real clip prefix validation and erases every version without 
 it('known skipped choice rejects before quota, while screen shows rendered track and warning', async () => {
   const query = vi.fn(async (sql: string) => {
     if (sql.startsWith('SELECT v.*')) return { rows: [{ id: video, status: 'done', music: true, plan: 'paid' }] };
-    if (sql.startsWith('SELECT * FROM clip')) return { rows: [{ id: clip, index: 2, status: 'done', object_key: 'old', music_track_id: track,
+    if (sql.startsWith('SELECT c.*,')) return { rows: [{ id: clip, index: 2, status: 'done', object_key: 'old', music_track_id: track,
       rendered_music_track_id: 'none', music_skip_reason: 'speech_too_quiet' }] };
     return { rows: [], rowCount: 0 };
   });

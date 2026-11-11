@@ -13,7 +13,7 @@ describe.skipIf(!dbUrl)('PostgreSQL showcase route', () => {
   let pool: Pool;
   const schema = `showcase_${randomBytes(8).toString('hex')}`;
   const account = randomUUID(), video = randomUUID(), neighbour = randomUUID();
-  const now = new Date('2026-09-30T12:00:00Z'), finished = new Date('2026-09-24T10:24:31Z');
+  const now = new Date('2026-10-02T12:00:00Z'), finished = new Date('2026-09-24T10:24:31Z');
   const sign = vi.fn(async (key: string) => `https://storage.example/${key}?X-Amz-Expires=900`);
   const handler = (kind: 'file' | 'thumbnail' = 'file') => createShowcaseFileHandler({ pool, sign, trustedProxyHops: 1, allowRead: async () => true }, kind);
   const request = () => new Request('https://clipmkr.ru/api/showcase/x/file', { headers: { 'x-forwarded-for': '203.0.113.9, 127.0.0.1' } });
@@ -30,8 +30,8 @@ describe.skipIf(!dbUrl)('PostgreSQL showcase route', () => {
     await pool.query(`INSERT INTO video(id,account_id,idempotency_key,source,declared_bytes,status,finished_at)
       VALUES($1,$2,$3,'upload',100,'done',$4)`, [video, account, randomUUID(), finished]);
     for (const [id, index, code] of [[SHOWCASE.clipId, 1, SHOWCASE.code], [neighbour, 2, 'ABCDEF']] as const) {
-      await pool.query(`INSERT INTO clip(id,video_id,"index",start_seconds,end_seconds,title,status,watermarked,object_key,thumbnail_key)
-        VALUES($1,$2,$3,0,25,'Клип','done',true,$4,$5)`, [id, video, index, `clips/free/${video}/${id}-v2.mp4`, `thumbs/${video}/${id}.jpg`]);
+      await pool.query(`INSERT INTO clip(id,video_id,"index",start_seconds,end_seconds,title,status,watermarked,object_key,thumbnail_key,ready_at,ready_at_source)
+        VALUES($1,$2,$3,0,25,'Клип','done',true,$4,$5,$6,'render')`, [id, video, index, `clips/free/${video}/${id}-v2.mp4`, `thumbs/${video}/${id}.jpg`, finished]);
       await pool.query('INSERT INTO clip_link(clip_id,code) VALUES($1,$2)', [id, code]);
     }
   });
@@ -82,7 +82,7 @@ describe.skipIf(!dbUrl)('PostgreSQL showcase route', () => {
     await pool.query('INSERT INTO clip_link(clip_id,code) VALUES($1,$2),($3,$4)', [SHOWCASE.clipId, 'HJKMNP', neighbour, SHOWCASE.code]);
     expect((await handler()(request(), SHOWCASE.code)).status).toBe(404);
   });
-  it('/c/ через 6 дней: клип витрины «ready», соседний клип той же записи — «expired»', async () => {
+  it('/c/ через 8 дней: клип витрины «ready», соседний клип той же записи — «expired»', async () => {
     const links = new ShortLinkService(pool, () => now);
     const showcase = await links.find(SHOWCASE.code), other = await links.find('ABCDEF');
     expect(showcase.clip_id).toBe(SHOWCASE.clipId);

@@ -3,6 +3,7 @@ import path from 'node:path';
 export default defineConfig({
   esbuild: { jsx: 'automatic' },
   resolve: { alias: {
+    '@clipmaker/shared/server/original-source': path.resolve('packages/shared/src/server/original-source.ts'),
     '@clipmaker/shared/music-catalog': path.resolve('packages/shared/src/music-catalog.ts'),
     '@clipmaker/shared/formats': path.resolve('packages/shared/src/formats.ts'),
     '@clipmaker/shared/watermark': path.resolve('packages/shared/src/watermark.ts'),

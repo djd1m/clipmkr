@@ -103,16 +103,30 @@ describe('маршрут витрины /api/showcase/{code}/file|thumbnail — 
     const config = loadWebConfig(environment()).s3, client = createS3Client(config);
     try {
       const handler = createShowcaseFileHandler({ pool: { query: vi.fn(async () => ({ rows: [{ object_key: 'clips/free/v/c.mp4', thumbnail_key: 't.jpg' }] })) } as unknown as Pick<Pool, 'query'>,
-        allowRead: async () => true, trustedProxyHops: 1, sign: key => generateDownloadUrl({ client, bucket: config.bucket }, key) }, 'file');
+        allowRead: async () => true, trustedProxyHops: 1, sign: (key,notAfter) => generateDownloadUrl({ client, bucket: config.bucket }, key,undefined,notAfter) }, 'file');
       const location = new URL((await handler(request(), 'CTDUUG')).headers.get('Location')!);
       expect(Number(location.searchParams.get('X-Amz-Expires'))).toBeGreaterThan(0);
       expect(Number(location.searchParams.get('X-Amz-Expires'))).toBeLessThanOrEqual(900);
     } finally { client.destroy(); }
   });
+  it('showcase forwards the absolute deadline to the canonical signer for file and thumbnail', async () => {
+    const config = loadWebConfig(environment()).s3, client = createS3Client(config), deadline = new Date(Date.now()+30_000);
+    try {
+      const sign = vi.fn((key: string,notAfter?:Date|null) => generateDownloadUrl({client,bucket:config.bucket},key,undefined,notAfter));
+      const pool = {query:vi.fn(async()=>({rows:[{object_key:'clips/free/v/c.mp4',thumbnail_key:'thumbs/v/c.jpg',deadline}]}))} as unknown as Pick<Pool,'query'>;
+      for (const kind of ['file','thumbnail'] as const) {
+        const response = await createShowcaseFileHandler({pool,sign,trustedProxyHops:1,allowRead:async()=>true},kind)(request(),SHOWCASE.code);
+        expect(response.status).toBe(302); expect(sign).toHaveBeenLastCalledWith(kind==='file'?'clips/free/v/c.mp4':'thumbs/v/c.jpg',deadline);
+        const url = new URL(response.headers.get('Location')!), ttl = Number(url.searchParams.get('X-Amz-Expires')), date=url.searchParams.get('X-Amz-Date')!;
+        const signedAt=Date.UTC(Number(date.slice(0,4)),Number(date.slice(4,6))-1,Number(date.slice(6,8)),Number(date.slice(9,11)),Number(date.slice(11,13)),Number(date.slice(13,15)));
+        expect(ttl).toBeGreaterThan(0); expect(ttl).toBeLessThanOrEqual(30); expect(signedAt+ttl*1000).toBeLessThanOrEqual(deadline.getTime());
+      }
+    } finally {client.destroy();}
+  });
   it('маршрут Next подписывает generateDownloadUrl и не проксирует байты через web', () => {
     const runtime = readFileSync('apps/web/src/server/screen-runtime.ts', 'utf8');
     const showcase = runtime.slice(runtime.indexOf('export function showcaseRoute'));
-    expect(showcase).toContain('sign: key => generateDownloadUrl(ctx, key)');
+    expect(showcase).toContain('sign: (key,notAfter) => generateDownloadUrl(ctx, key,undefined,notAfter)');
     expect(showcase).not.toMatch(/stream|guestSecret/);
     for (const kind of ['file', 'thumbnail']) {
       expect(readFileSync(`apps/web/src/app/api/showcase/[code]/${kind}/route.ts`, 'utf8')).toContain(`export const GET = showcaseRoute('${kind}')`);
@@ -139,17 +153,24 @@ describe('ретенция и /c/ не хоронят клип витрины', 
     const from = new Date('2026-09-20T00:00:00Z');
     expect(clipExpiry({ clipId: SHOWCASE.clipId, expiresAt: null, plan: 'free', retentionFrom: from })).toBeNull();
     expect(clipExpiry({ clipId: '11111111-1111-4111-8111-111111111111', expiresAt: null, plan: 'free', retentionFrom: from })?.toISOString())
-      .toBe('2026-09-23T00:00:00.000Z');
+      .toBe('2026-09-27T00:00:00.000Z');
     const explicit = new Date('2026-09-21T00:00:00Z');
     expect(clipExpiry({ clipId: SHOWCASE.clipId, expiresAt: explicit, plan: 'free', retentionFrom: from })).toBe(explicit);
   });
   const link: ShortLink = { id: 'l', code: 'CTDUUG', clip_id: SHOWCASE.clipId, account_id: 'a', title: 't', status: 'done',
     thumbnail_key: 'thumbs/v/c.jpg', expires_at: null, retention_from: new Date('2026-09-24T10:24:31Z'), plan: 'free' };
-  const later = new Date('2026-09-30T00:00:00Z');
-  it('/c/ клипа витрины после 3 суток бесплатного тарифа — «ready», соседний клип той же записи — «expired»', () => {
+  const later = new Date('2026-10-02T00:00:00Z');
+  it('/c/ клипа витрины после 7 суток бесплатного тарифа — «ready», соседний клип той же записи — «expired»', () => {
     expect(previewState(link, later)).toBe('ready');
     expect(previewState({ ...link, clip_id: '11111111-1111-4111-8111-111111111111' }, later)).toBe('expired');
     expect(previewState({ ...link, clip_id: undefined }, later)).toBe('expired');
+  });
+  it('ordinary clip closes exactly at seven days while showcase remains available', () => {
+    const ordinary = { ...link, clip_id: '11111111-1111-4111-8111-111111111111' };
+    const deadline = new Date('2026-10-01T10:24:31Z');
+    expect(previewState(ordinary,new Date(deadline.getTime()-1))).toBe('ready');
+    expect(previewState(ordinary,deadline)).toBe('expired');
+    expect(previewState(link,deadline)).toBe('ready');
   });
   it('явный expires_at соблюдается и у клипа витрины', () => {
     expect(previewState({ ...link, expires_at: new Date('2026-09-29T00:00:00Z') }, later)).toBe('expired');

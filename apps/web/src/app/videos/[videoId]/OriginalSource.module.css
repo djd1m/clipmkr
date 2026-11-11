@@ -1,0 +1,13 @@
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0 22px;min-width:0;color:var(--ink)}
+.name{font-weight:600}.meta{font-size:13px;color:var(--muted);margin-right:8px}.status{font-size:13px;color:var(--muted);max-width:100%}
+.row button,.download{font:inherit;font-size:15px;min-height:44px;padding:8px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:inherit;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.row button:hover,.download:hover{border-color:var(--green)}.row button:focus-visible,.download:focus-visible,.viewer button:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.viewer{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;min-width:0;width:100%}
+.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.heading>div{min-width:0}.heading small{font-size:12px;color:var(--muted)}.heading h2{font-size:17px;margin:0}.heading button{flex-shrink:0;font:inherit;min-height:44px;padding:9px 16px;border:1px solid var(--line);border-radius:9px;background:transparent;color:inherit}
+.frame{aspect-ratio:16/9;background:var(--surface-2);color:var(--ink);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.frame video{width:100%;height:100%;position:absolute;inset:0;background:var(--media-bg);object-fit:contain}
+.audio{aspect-ratio:auto;min-height:220px;padding:28px 22px;flex-direction:column;gap:18px}.audio>span{font-size:13px;color:var(--muted)}.audio audio{width:100%;max-width:520px}
+.fallback{max-width:460px;padding:24px;text-align:center}.fallback h3{font-size:18px;line-height:1.4;margin:0 0 12px}.fallback p{font-size:14px;color:var(--muted);margin:0}
+.foot{padding:17px 22px;color:var(--muted);font-size:13px}
+@media(max-width:700px){.row{gap:6px 9px;margin:16px 0}.meta{flex-basis:calc(100% - 95px);font-size:12px;margin:0}.status{flex-basis:100%}.heading{padding:14px}.heading h2{font-size:15px}.heading small{font-size:10px}.heading button{padding:8px 11px}.foot{padding:14px}.fallback{padding:22px}.fallback h3{font-size:16px}.audio{min-height:190px;padding:22px 14px}}

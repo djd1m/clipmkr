@@ -13,7 +13,8 @@ import { addGuestPreselect } from '../apps/web/src/lib/guest-contract';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
-const now = new Date('2026-09-22T12:00:00Z');
+// SSR renders against Date.now(); keep this ready fixture in the future without global/fake clocks.
+const now = new Date(Date.now() + 86_400_000);
 const id = '00000000-0000-4000-8000-000000000001', other = '00000000-0000-4000-8000-000000000002';
 const row: ClipRow = { id, index: 1, start_seconds: '2', end_seconds: '31.2', title: 'Сильный момент', status: 'done',
   watermarked: true, object_key: 'file', expires_at: null, score: 85, score_hook: 29, score_completeness: 29, score_length: 27,
