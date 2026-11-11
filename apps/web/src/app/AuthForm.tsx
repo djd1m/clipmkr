@@ -9,13 +9,14 @@ import { safeNextPath } from '../lib/payment-return';
 type AuthReply = { ok?: unknown; registration?: unknown; code?: unknown; error?: unknown };
 const afterLogin = () => safeNextPath(new URLSearchParams(window.location.search).get('next')) ?? '/dashboard';
 
-export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChange, creditMode = false }: {
+export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChange, creditMode = false, referralCode }: {
   mode: 'register' | 'login'; onModeChange: (mode: 'register' | 'login') => void;
-  focusRequest: number; onAvailabilityChange: (available: boolean) => void; creditMode?: boolean;
+  focusRequest: number; onAvailabilityChange: (available: boolean) => void; creditMode?: boolean; referralCode?: string | null;
 }) {
   const register = mode === 'register';
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [signedIn, setSignedIn] = useState(false);
+  const [manuallyEdited, setManuallyEdited] = useState(false);
   const [emailError, setEmailError] = useState(''), [passwordError, setPasswordError] = useState('');
   const request = useRef(false), authenticated = useRef(false), pendingRegistration = useRef<'created' | 'existing' | null>(null);
   const email = useRef<HTMLInputElement>(null), password = useRef<HTMLInputElement>(null);
@@ -54,9 +55,9 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
   function finishRequest() {
     request.current = false; setBusy(false); onAvailabilityChange(!authenticated.current);
   }
-  function continueToCabinet() {
+  function continueToCabinet(appliedCode?: string) {
     const target = afterLogin();
-    if (pendingRegistration.current === 'created') { observeSignup(); pendingRegistration.current = null; flow.showNotice('created', target); }
+    if (pendingRegistration.current === 'created') { observeSignup(); pendingRegistration.current = null; flow.showNotice(appliedCode ? 'created_with_referral' : 'created', target, appliedCode); }
     else if (pendingRegistration.current === 'existing') flow.showNotice('existing', target);
     flow.clearRecovery(); router.push(target); router.refresh();
   }
@@ -93,8 +94,18 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
         authenticated.current = true; setSignedIn(true);
       }
       const explicit = String(form.get('partner_code') ?? '').trim();
-      if (pendingRegistration.current !== 'existing') await rpc('code.apply', explicit ? { code: explicit } : {}, true);
-      continueToCabinet();
+      let appliedCode: string | undefined;
+      if (pendingRegistration.current !== 'existing') {
+        const reply = await rpc<unknown>('code.apply', manuallyEdited && explicit ? { code: explicit } : {}, true);
+        if (reply && typeof reply === 'object' && !Array.isArray(reply) &&
+          'id' in reply && typeof reply.id === 'string' && reply.id.length > 0 &&
+          'partner_code_id' in reply && typeof reply.partner_code_id === 'string' && reply.partner_code_id.length > 0 &&
+          'status' in reply && (reply.status === 'pending' || reply.status === 'activated') &&
+          'source' in reply && (reply.source === 'cookie' || reply.source === 'guest_link' || reply.source === 'explicit') &&
+          'reject_reason' in reply && reply.reject_reason === null &&
+          'applied_code' in reply && typeof reply.applied_code === 'string' && /^[A-Za-z0-9_-]{6,12}$/.test(reply.applied_code)) appliedCode = reply.applied_code;
+      }
+      continueToCabinet(appliedCode);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Нет связи с сервером'); }
     finally { finishRequest(); }
   }}>
@@ -104,6 +115,7 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
     </div>
     <h2 id="auth-title">{register ? 'Создать аккаунт' : 'Войти в clipmkr'}</h2>
     <p className="public-form-intro">{register ? creditMode ? 'Начните с 30 пробных кредитов.' : 'Создайте аккаунт, чтобы начать.' : 'Ваши записи и клипы — в вашем кабинете.'}</p>
+    {register && referralCode && !manuallyEdited && <div className="public-referral-notice" role="status"><strong>Код из приглашения заполнен. Вводить его не нужно</strong><p>Код заполнен из приглашения. Проверим привязку после создания нового аккаунта.</p></div>}
     <label htmlFor="auth-email">Электронная почта</label>
     <input ref={email} id="auth-email" name="email" type="email" autoComplete="email" required aria-invalid={!!emailError} aria-describedby="auth-email-error" onInput={() => setEmailError('')} />
     <p className="public-hint" id="auth-email-error">{emailError}</p>
@@ -111,7 +123,7 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
     <input ref={password} id="auth-password" name="password" type="password" minLength={8} autoComplete={register ? 'new-password' : 'current-password'} required aria-invalid={!!passwordError} aria-describedby="auth-password-hint auth-password-error" onInput={event => validatePassword(event.currentTarget)} />
     <p className="public-hint" id="auth-password-hint">{register ? 'От 8 символов, не больше 72 байт. Кириллица и эмодзи занимают больше одного байта.' : 'Введите пароль вашего аккаунта.'}</p>
     <p className="public-hint" id="auth-password-error">{passwordError}</p>
-    <details className="public-partner"><summary>Есть код партнёра? Необязательно</summary><label htmlFor="auth-partner">Код партнёра</label><input id="auth-partner" name="partner_code" autoComplete="off" maxLength={12} /></details>
+    <details className="public-partner" open={register && !!referralCode}><summary>Есть код партнёра? Необязательно</summary><label htmlFor="auth-partner">Код партнёра</label><input id="auth-partner" name="partner_code" autoComplete="off" maxLength={12} defaultValue={referralCode ?? ''} onInput={() => setManuallyEdited(true)} />{referralCode && !manuallyEdited && <p className="public-hint">Подставлен из ссылки. Можно изменить.</p>}</details>
     {error && <p className="public-error" role="alert" aria-atomic="true">{error}</p>}
     <button className="public-primary public-submit" type="submit" disabled={busy}>{busy ? 'Подождите…' : signedIn ? pendingRegistration.current === 'existing' ? 'Перейти в кабинет' : 'Повторить применение кода' : register ? 'Создать аккаунт' : 'Войти →'}</button>
     <p className="public-legal" hidden={!register}>Создавая аккаунт, вы принимаете <a href="/legal/terms">соглашение</a> и <a href="/legal/privacy">политику конфиденциальности</a>.</p>

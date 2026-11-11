@@ -7,7 +7,7 @@ import { LandingDemo } from './LandingDemo';
 import { ThemeToggle } from './ThemeToggle';
 
 // Только presentation state. AuthForm сообщает производную доступность синхронно до await.
-export function Landing({ theme, creditMode = false }: { theme: Theme; creditMode?: boolean }) {
+export function Landing({ theme, creditMode = false, referralCode }: { theme: Theme; creditMode?: boolean; referralCode?: string | null }) {
   const [mode, setMode] = useState<'register' | 'login'>('register');
   const [focusRequest, setFocusRequest] = useState(0);
   const [blocked, setBlocked] = useState(false);
@@ -32,7 +32,7 @@ export function Landing({ theme, creditMode = false }: { theme: Theme; creditMod
           {creditMode && <p className="public-trial"><strong>30 пробных кредитов после регистрации.</strong><br />Это 30 минут исходной записи: 1 кредит = 60 секунд.</p>}
           <ol className="public-path" aria-label="Как это работает"><li><b>01</b>Загрузите запись</li><li><b>02</b>Получите клипы</li><li><b>03</b>Скачайте</li></ol>
         </section>
-        <AuthForm mode={mode} onModeChange={requestMode} focusRequest={focusRequest} onAvailabilityChange={availability} creditMode={creditMode} />
+        <AuthForm referralCode={referralCode} mode={mode} onModeChange={requestMode} focusRequest={focusRequest} onAvailabilityChange={availability} creditMode={creditMode} />
         <section className="public-example" aria-label="Пример результата"><h2>Пример результата</h2><LandingDemo /><p>Вертикальный кадр 9:16 · Субтитры прямо в видео</p></section>
       </div>
       <section className="public-details" aria-label="Кредиты и ограничения">
