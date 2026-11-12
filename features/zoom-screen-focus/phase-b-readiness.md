@@ -1,9 +1,7 @@
 # Phase B: текущий readiness
 
-Phase B source заморожен root для узкого [logout authority amendment](phase-b-logout-authority.md). Его actual пакет теперь текущий; предыдущий42/20 пакет сохранён в `history/step6-before-logout-authority/` и private `phase-b-entry/`. Это не отменяет исполненный earlier B work, не выдаёт новый GO и не объявляет Source QE.
+[Fixture authority](phase-b-fixture-authority.md) применена по root GO после terminal common и actual full R2 evaluate exit2 `not-established/native-repair-required`; это не Source approval. Scope51editable+21readonly=72 сохраняет прежние49/70 и добавляет только progress aliases и DB fixture exact28→30 с двумя migration032 tables. Requirements/ADR/OpenSpec/UI/R3 и9TASK/12AM/11conditions прежние.
 
-Scope **44 editable+22 read-only=66**, XL. Ровно2 новых editable SignOut/clip-layout-draft; support-client/auth-handler новые read-only dependencies. Прежние42editable/20readonly полностью сохранены. Requirements/ADR/OpenSpec/UI и R3 dossier прежние.
+Actual K2 PASS(exit0, C8 WARN/C4 SKIP, explicit20/20 trace); admission admitted(exit0); context complete(exit0,98198B, diagnostics[]); supported plan checkpoint ok:true(exit0). K1 reuse-only без новых имён, не запускался. Source72 stable; из historical R2 manifest изменён только разрешённый plan06, остальные156 exact. Старые receipts сохранены private.
 
-Current gates: final author K1 names4free(exit0); K2 PASS(exit0, C8 WARN/C4 SKIP, explicit trace20/20); canonical admission admitted(exit0); context complete(exit0,97 428B, diagnostics[]); supported plan checkpoint ok:true(exit0). Source freeze66 stable до/после. Честные пределы K2 и exact commands/SHA — authority note и `step6-plan-snapshot.json`.
-
-Same Sol полностью читает новый literal SHA `bd7caefa33fc1b0b0fb1bfd884a7e4eb45b7962b171b23624e2f5792c3536e0d`, затем ждёт отдельного root GO на44 scope. Future new public names требуют K1 до объявления. Никаких Source QE/браузерных/logout/runtime проверок планировщик не выполнял; sourceguards/mutation RED-GREEN и все AM обязательны в реализации/QE.
+Full literal SHA `25d56d7249273f9f0432537939aaac75f9aaa506609123f234e8ea67030ba928`; same Sol обязан полностью прочитать его перед отдельным root code GO. Оба шага pending at handoff. Actual commands/results/SHA — authority note, execution snapshot и private gate-package. Runtime/independent Source QE этим пакетом не выполнялись; R3 repair/review state управляет root.

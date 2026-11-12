@@ -1,31 +1,15 @@
 // OWN-012. Plans use source seconds; the render timeline is always 25 fps.
 export const COMPACT_KEEP_SECONDS = 0.05;
-export const COMPACT_XFADE_SECONDS = 0.08;
-export const COMPACT_FPS = 25;
 export const COMPACT_MIN_PAUSE = 0.30;
 export const COMPACT_MAX_PAUSE = 2.0;
 export const COMPACT_EDGE = 0.5;
 export const COMPACT_THRESHOLD_BELOW_MEDIAN_DB = 18;
 export const COMPACT_MIN_SAVING = 0.03;
 export const ENVELOPE_SECONDS = 0.02;
-export type Segment = [number, number];
-// Runtime schema for JSON read from the database; no coercion of strings/null.
-export function parseCutPlan(value: unknown, start: number, end: number): Segment[] {
-  if (!Array.isArray(value) || !value.length || !Number.isFinite(start) || !Number.isFinite(end)
-    || !value.every((pair, i) => Array.isArray(pair) && pair.length === 2
-      && pair.every(n => typeof n === 'number' && Number.isFinite(n))
-      && pair[0] >= start && pair[1] <= end && pair[0] < pair[1]
-      && (i === 0 || pair[0] >= value[i - 1][1]))) {
-    throw new Error('Непригодный cut_plan');
-  }
-  return value as Segment[];
-}
+import { COMPACT_FPS, COMPACT_XFADE_SECONDS, planDuration, type Segment } from '@clipmaker/shared/cut-timeline';
+export { COMPACT_FPS, COMPACT_XFADE_SECONDS, planDuration, parseCutPlan, mapTime, type Segment } from '@clipmaker/shared/cut-timeline';
 const frame = (t: number) => Math.round(t * COMPACT_FPS) / COMPACT_FPS;
 const ms = (t: number) => Math.round(t * 1000) / 1000;
-export function planDuration(plan: Segment[]): number {
-  const length = plan.reduce((sum, [s, e]) => sum + e - s, 0) - (plan.length - 1) * COMPACT_XFADE_SECONDS;
-  return plan.length > 1 ? frame(length) : ms(length);
-}
 export function planCuts(envelopeDb: number[], median: number, start: number, end: number): {
   plan: Segment[]; reason?: 'too_short' | 'small_saving' | 'no_pauses';
 } {
@@ -54,20 +38,6 @@ export function planCuts(envelopeDb: number[], median: number, start: number, en
 }
 export function buildCutPlan(envelopeDb: number[], median: number, start: number, end: number): Segment[] {
   return planCuts(envelopeDb, median, start, end).plan;
-}
-export function mapTime(plan: Segment[], tSource: number): number {
-  const xf = COMPACT_XFADE_SECONDS;
-  let offset = 0;
-  for (let k = 0; k < plan.length; k++) {
-    const [s, e] = plan[k]!;
-    if (k && tSource <= s + xf) return offset + xf / 2;
-    if (k + 1 < plan.length && tSource >= e - xf && tSource <= plan[k + 1]![0] + xf) {
-      return offset + e - s - xf / 2;
-    }
-    if (tSource <= e) return Math.max(0, offset + tSource - s);
-    offset += e - s - xf;
-  }
-  return planDuration(plan);
 }
 export function buildCompactionGraph(plan: Segment[], start: number, videoIndex: number | null): string {
   const filters: string[] = [];

@@ -46,22 +46,49 @@ it('fontfile only; font bytes are pinned and shipped in runtime image', () => {
   expect(filter).toContain('/c/'); expect(filter).toContain(`text='${code}'`); expect(filter).toContain('color=black@0.6');
   expect(readFileSync('Dockerfile', 'utf8')).toContain('COPY --from=build /app/apps/worker/assets ./apps/worker/assets');
 });
-it('filter order in source and graph: scale crop ASS watermark last', () => {
-  const source = readFileSync('apps/worker/src/render/ffmpeg.ts', 'utf8');
-  expect(source.indexOf('filters.push(source ? getFramingFilter')).toBeLessThan(source.indexOf('filters.push(`ass='));
-  expect(source.indexOf('filters.push(`ass=')).toBeLessThan(source.indexOf('filters.push(buildWatermarkDrawtext'));
+it('filter order in actual legacy and screen tails: ASS watermark last', () => {
   const graph = buildFilterChain('portrait', '/tmp/subtitles.ass', true, origin, code);
+  for(const token of ['scale=','crop=','ass=','drawtext='])expect(graph.indexOf(token)).toBeGreaterThanOrEqual(0);
   expect(graph.indexOf('scale=')).toBeLessThan(graph.indexOf('crop='));
   expect(graph.indexOf('crop=')).toBeLessThan(graph.indexOf('ass='));
   expect(graph.indexOf('ass=')).toBeLessThan(graph.indexOf('drawtext='));
   expect(graph.endsWith(buildWatermarkDrawtext(1080, 1920, origin, code))).toBe(true);
   expect(graph).not.toContain('pad=');
+  const screen=buildFilterChain('portrait','/tmp/subtitles.ass',true,origin,code,undefined,undefined,undefined,
+    'drawbox=x=1:y=1:w=2:h=2:c=white:t=fill','drawtext=text=teaser','drawtext=text=cta',true);
+  for(const token of ['ass=','text=teaser','drawbox=x=1','text=cta'])expect(screen.indexOf(token)).toBeGreaterThanOrEqual(0);
+  expect(screen.indexOf('ass=')).toBeLessThan(screen.indexOf('text=teaser'));
+  expect(screen.indexOf('text=teaser')).toBeLessThan(screen.indexOf('drawbox=x=1'));
+  expect(screen.indexOf('drawbox=x=1')).toBeLessThan(screen.indexOf('text=cta'));
+  expect(screen.endsWith(buildWatermarkDrawtext(1080,1920,origin,code))).toBe(true);
+  expect(screen).not.toMatch(/scale=|crop=|vstack=|pad=/); // Only the legacy tail forbids padding in the whole graph.
   expect(buildFilterChain('portrait', null, false, origin, code)).not.toMatch(/drawtext|ass=/);
 });
 it('ADR-006 actual registered render worker has literal concurrency one', () => {
   const source = readFileSync('apps/worker/src/workers/render.ts', 'utf8');
   expect(source).toMatch(/\{ connection, concurrency: 1, maxStalledCount: 1 \}/);
   expect(readFileSync('apps/worker/src/runtime.ts', 'utf8')).toContain('worker = createRenderWorker(connection,');
+});
+it('actual video-worker storage factory provides the internal signing endpoint without a browser endpoint',async()=>{
+  const ts=await import('typescript');
+  const {createS3Client,generateDownloadUrl}=await import('../packages/s3/src');
+  const source=ts.createSourceFile('runtime.ts',readFileSync('apps/worker/src/runtime.ts','utf8'),ts.ScriptTarget.Latest,true);
+  let initializer:string|undefined;
+  function visit(node:import('typescript').Node){
+    if(ts.isVariableDeclaration(node)&&node.name.getText(source)==='storage')initializer=node.initializer?.getText(source);
+    ts.forEachChild(node,visit);
+  }
+  visit(source);expect(initializer).toBeTruthy();
+  const factory=new Function('role','s3Config','createS3Client',`return (${initializer});`) as
+    (role:string,config:Parameters<typeof createS3Client>[0],create:typeof createS3Client)=>{client:ReturnType<typeof createS3Client>;bucket:string};
+  const config={endpoint:'https://internal.synthetic.invalid',region:'us-east-1',bucket:'synthetic-render-test',
+    accessKeyId:'synthetic-key',secretAccessKey:'synthetic-secret',forcePathStyle:true};
+  const storage=factory('worker-video',config,createS3Client);
+  try{
+    expect(storage.client.signingClient).toBeDefined();
+    const signed=await generateDownloadUrl(storage,'videos/synthetic/input',undefined,new Date(Date.now()+30_000));
+    expect(new URL(signed).origin).toBe(config.endpoint);
+  }finally{storage.client.destroy();}
 });
 it('link created before render lease and enqueue; SQL rejects late creation', () => {
   const source = readFileSync('packages/db/src/selection.ts', 'utf8');

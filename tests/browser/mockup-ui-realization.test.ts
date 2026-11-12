@@ -29,7 +29,7 @@ beforeAll(async () => {
   const entry = '\0mockup-real-components', navigation = '\0mockup-navigation', link = '\0mockup-link';
   server = await createServer({ configFile: false, root: process.cwd(), cacheDir, esbuild: { jsx: 'automatic' },
     optimizeDeps: { include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime', '@noble/hashes/sha2.js', 'zod'], exclude: ['next/link', 'next/navigation'] },
-    resolve: { alias: Object.fromEntries(['enums', 'cta', 'tariff', 'music-catalog', 'upload'].map(name => [`@clipmaker/shared/${name}`, resolve(`packages/shared/src/${name}.ts`)])) },
+    resolve: { alias: Object.fromEntries(['enums', 'cta', 'tariff', 'music-catalog','screen-layout','cut-timeline', 'upload'].map(name => [`@clipmaker/shared/${name}`, resolve(`packages/shared/src/${name}.ts`)])) },
     server: { host: '127.0.0.1', port: 0, watch: null, hmr: false },
     plugins: [{ name: 'mockup-real-components', enforce: 'pre',
       resolveId(id) { if (id === entry) return entry; if (id === 'next/navigation') return navigation; if (id === 'next/link') return link; },
@@ -38,11 +38,11 @@ beforeAll(async () => {
           const file = id.slice(0, -7).replace(process.cwd() + '/', '');
           if (['apps/web/src/app/upload/Uploader.tsx', 'apps/web/src/app/videos/[videoId]/VideoDetail.tsx', 'apps/web/src/app/upgrade/UpgradeScreen.tsx'].includes(file)) return execFileSync('git', ['show', `153a9cd7d14d89776ab38bd83b04594bcb421d50:${file}`], { encoding: 'utf8' });
         }
-        if (id === navigation) return 'const router={refresh(){},push(){}};export const useRouter=()=>router;';
+        if (id === navigation) return 'const router={refresh(){},push(){}};export const useRouter=()=>router;export const usePathname=()=>window.location.pathname;';
         if (id === link) return `import {createElement} from 'react';export default function Link({prefetch,...props}){return createElement('a',props);}`;
         if (id === entry) return `import {createElement as h,Fragment,StrictMode} from 'react';import {createRoot} from 'react-dom/client';
           import {WorkspaceHeader} from '/apps/web/src/app/WorkspaceHeader.tsx';
-          import {WorkspacePreferenceSync} from '/apps/web/src/app/WorkspaceSettings.tsx';
+          import {WorkspaceSettings,WorkspacePreferenceSync} from '/apps/web/src/app/WorkspaceSettings.tsx';
           import {VideoUploader} from '/apps/web/src/app/upload/Uploader.tsx';
           import {VideoList} from '/apps/web/src/app/videos/VideoList.tsx';import {LimitsPanel} from '/apps/web/src/app/dashboard/LimitsPanel.tsx';
           import {VideoDetail} from '/apps/web/src/app/videos/[videoId]/VideoDetail.tsx';import {UpgradeScreen} from '/apps/web/src/app/upgrade/UpgradeScreen.tsx';
@@ -58,7 +58,7 @@ beforeAll(async () => {
             h(Detail,{videoId:video.video_id,initialVideo:{...video,clips_done:count,clips_total:count},initialClips:clips,consentHash:'fixture-consent'}):
             h('div',{className:'workspace-upload'},h('div',{className:'workspace-main'},h(Uploader,{accountScope:'${scope}',creditMode:true,maxSourceSeconds:5400}),h(VideoList,{videos:Array.from({length:count},(_,i)=>({...video,video_id:'record-'+i})),nextCursor:null})),h('aside',{className:'workspace-aside'},h(LimitsPanel,{remaining:{credits:{available_seconds:11040,reserved_seconds:0,next_expiry:null},max_source_seconds:5400,uploads:2,minutes:90,selections:2,resets_at:'2026-11-06T00:00:00Z'}})));
           const root=createRoot(document.getElementById('root'));
-          const render=content=>root.render(h(Fragment,null,h(WorkspacePreferenceSync,{initialTheme:'dark',initialLayout:'workspace'}),h(WorkspaceHeader,{owner:false,balanceLabel:'184 кредита',initialTheme:'dark',initialLayout:'workspace'}),h('main',{className:'container'},content)));render(content);window.renderAccount=(account,patch={})=>render(h(StrictMode,null,h(Upgrade,{...offerProps,...patch,key:account})));window.fixtureMounted=true;`;
+          const render=content=>root.render(h(Fragment,null,h(WorkspacePreferenceSync,{initialTheme:'dark',initialLayout:'workspace'}),h(WorkspaceHeader,{owner:false,balanceLabel:'184 кредита',initialTheme:'dark',initialLayout:'workspace'}),h(WorkspaceSettings,{initialTheme:'dark',initialLayout:'workspace'}),h('main',{className:'container'},content)));render(content);window.renderAccount=(account,patch={})=>render(h(StrictMode,null,h(Upgrade,{...offerProps,...patch,key:account})));window.fixtureMounted=true;`;
       }, configureServer(vite) { vite.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith('/fixture.html')) { next(); return; }
         res.setHeader('Content-Type', 'text/html; charset=utf-8');

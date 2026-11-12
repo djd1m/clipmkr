@@ -80,6 +80,8 @@ export type SupportAuditAction = typeof SUPPORT_AUDIT_ACTION[number];
 export const BILLING_NOTICE_STATE = ['pending','sending','accepted','failed','unknown','superseded'] as const;
 export type BillingNoticeState = typeof BILLING_NOTICE_STATE[number];
 export const SQL_ENUMS = {
+  'clip_layout_seed.status': ['pending','running','ready','unavailable'],
+  'clip_layout_seed.reason': ['camera_unavailable','camera_ambiguous','source_access_unavailable','analysis_timeout'],
   'clip.ready_at_source': ['unknown','render','legacy_render','legacy_video'],
   'retention_notice.offset_days': ['1','3'],
   'retention_notice.state': ['pending','sending','accepted','failed','unknown','superseded'],

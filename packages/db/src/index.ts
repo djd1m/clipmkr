@@ -14,6 +14,7 @@ export * from './probe.js';
 export * from './transcription.js';
 export * from './selection.js';
 export * from './render.js';
+export * from './clip-layout.js';
 export * from './plan.js';
 export * from './payments.js';
 

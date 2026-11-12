@@ -1,4 +1,7 @@
 import { buildCompactionGraph, mapTime, planDuration, type Segment } from './compaction.js';
+import { planScreenLayout,parseScreenFaceLayout,type ScreenFaceLayoutV1,type NormalizedRect } from '@clipmaker/shared/screen-layout';
+import type { LayoutPublished } from '@clipmaker/db';
+import { buildScreenLayoutGraph,resolveLayoutCamera,proposeLayoutCamera } from './screen-layout.js';
 import { prepareTeaser } from './teaser.js';
 import { prepareCta } from './cta-overlay.js';
 import { preparePackshot, buildFlashFilter } from './packshot.js';
@@ -19,11 +22,11 @@ import { prepareMusic, buildMusicAudioGraph, selectTrack, resolveMusicTrack, STI
 export { buildMusicAudioGraph } from './music.js';
 export function buildFilterChain(format: ClipFormat, assFilePath: string | null,
   watermark: boolean, origin: string, code: string, source?: SourceDimensions,
-  plan?: FramingPositions, follow?: FollowSegment[], flash?: string, teaser?: string, cta?: string): string {
+  plan?: FramingPositions, follow?: FollowSegment[], flash?: string, teaser?: string, cta?: string,screen=false): string {
   const filters: string[] = [];
   const { width, height } = FORMAT_DIMENSIONS[format];
   // Следование за лицом важнее неподвижного плана: оно и есть неподвижный план, когда лицо одно.
-  filters.push(source && follow?.length ? getFollowFilter(format, source, follow)
+  if(!screen)filters.push(source && follow?.length ? getFollowFilter(format, source, follow)
     : source ? getFramingFilter(format, source, plan) : getScaleFilter(format));
   if (assFilePath !== null) filters.push(`ass='${escapeFFmpegPath(assFilePath)}':fontsdir='${escapeFFmpegPath(SUBTITLE_FONTS)}'`);
   if (teaser) filters.push(teaser);
@@ -34,6 +37,7 @@ export function buildFilterChain(format: ClipFormat, assFilePath: string | null,
   return filters.join(',');
 }
 export interface RenderOptions {
+  layout?:ScreenFaceLayoutV1|null;
   musicTrackId?: string | null;
   cutPlan?: Segment[];
   inputPath: string; outputPath: string; startTime: number; endTime: number;
@@ -41,7 +45,7 @@ export interface RenderOptions {
   /** Вид призыва из базы (ADR-017, 27b); читается fail-closed, адрес в кадр не идёт. */
   cta?: string | null;
 }
-export async function renderClip(options: RenderOptions): Promise<RenderOutcome> {
+export async function renderClip(options: RenderOptions): Promise<RenderOutcome & {rendered_layout?:LayoutPublished|null;seedProposal?:NormalizedRect|null}> {
   const sourceDuration = options.endTime - options.startTime;
   const cuts = options.cutPlan && options.cutPlan.length > 1 ? options.cutPlan : null;
   const duration = cuts ? planDuration(cuts) : sourceDuration;
@@ -59,10 +63,12 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome>
     // Keep permanent watermark geometry failures ahead of probing/retryable media errors.
     if (options.watermark) watermarkGeometry(width, height, options.origin, options.code);
     const video = await probeVideoStream(options.inputPath, options.signal);
+    const layout=options.layout==null?null:parseScreenFaceLayout(options.layout);
+    if(layout && !video)throw new Error('Экран требует видеодорожку');
     if (options.music && options.clipIndex !== undefined && !Number.isSafeInteger(options.clipIndex)) {
       console.info(JSON.stringify({ event: 'music_track_fallback' }));
     }
-    const teaser = options.teaser ? await prepareTeaser(options.title ?? '', width, temp) : null;
+    const teaser = options.teaser ? await prepareTeaser(options.title ?? '', width, temp,!!layout) : null;
     const cta = prepareCta(options.cta, width, height, duration, !!teaser, options.watermark);
     const trackIndex = typeof options.clipIndex === 'number' ? options.clipIndex - 1 : undefined;
     const track = options.musicTrackId == null
@@ -76,9 +82,20 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome>
     // Отказ детектора НЕ валит рендер — план просто остаётся пустым, и кадрирование прежнее.
     let plan: FramingPlan | undefined;
     let follow: FollowSegment[] | undefined;
-    if (video) {
+    let seedProposal:NormalizedRect|null=null;
+    let cameraVisible=false;
+    let cameraReason:string|null=null;
+    if(layout && video){
+      const crop=planScreenLayout(layout,video,true).camera?.source;
+      if(crop){
+        const report=await detectFaces(options.inputPath,options.startTime,options.endTime,options.signal,{crop});
+        cameraVisible=resolveLayoutCamera(report,cuts??[[options.startTime,options.endTime]],options.startTime,options.endTime);
+        if(!cameraVisible)cameraReason=report?'camera_unstable':'camera_unavailable';
+      }
+    } else if (video) {
       const report = await detectFaces(options.inputPath, options.startTime, options.endTime, options.signal);
       if (report) {
+        seedProposal=proposeLayoutCamera(report);
         plan = planFraming(report, video, panelWindow(video, 0));
         // Два этажа остаются неподвижными: переезжающие панели читались бы как рябь.
         // Во всех прочих случаях кадр СЛЕДУЕТ за лицом.
@@ -91,17 +108,23 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome>
       }
     }
     const vf = buildFilterChain(options.format, ass, options.watermark, options.origin, options.code,
-      video ?? undefined, plan, follow, packshot ? buildFlashFilter(packshot.t0_ms) : undefined, teaser?.filter, cta?.filter);
+      video ?? undefined, plan, follow, packshot ? buildFlashFilter(packshot.t0_ms) : undefined, teaser?.filter, cta?.filter,!!layout);
+    const compositor=layout && video?buildScreenLayoutGraph(layout,video,cameraVisible,cuts?'vc':`0:${video.index}`):null;
+    const rendered_layout:LayoutPublished|null=layout && compositor?{version:1,requested:layout,
+      resolved:{cameraVisible:!!compositor.geometry.camera,reason:compositor.geometry.reason==='unsupported_geometry'?'unsupported_geometry':
+        (layout.camera && !compositor.geometry.camera ? cameraReason??compositor.geometry.cameraReason : null)??compositor.geometry.reason}}:null;
+    if(rendered_layout)console.info(JSON.stringify({event:'screen_layout_resolved',variant:rendered_layout.requested.variant,
+      reason:rendered_layout.resolved.reason,camera_present:rendered_layout.resolved.cameraVisible}));
     const source = video === null ? `color=c=0x181818:s=${width}x${height}:r=25:d=${duration},` : cuts ? '[vc]' : `[0:${video.index}]`;
     const compactionGraph = cuts ? buildCompactionGraph(cuts, options.startTime, video?.index ?? null) + ';' : '';
     await execFFmpeg(['-y', '-protocol_whitelist', 'file', '-ss', String(options.startTime), '-t', String(sourceDuration),
       '-i', options.inputPath, ...(music ? ['-i', music.path] : []), ...(packshot ? ['-i', STINGERS[0].path] : []),
-      '-filter_complex', `${compactionGraph}${source}${vf}[video]${music ? ';' + buildMusicAudioGraph(music.gain_db, duration, packshot, cuts ? '[ac]' : '[0:a:0]') : ''}`,
+      '-filter_complex', `${compactionGraph}${compositor?compositor.graph+';[screenout]'+(vf||'null'):source+vf}[video]${music ? ';' + buildMusicAudioGraph(music.gain_db, duration, packshot, cuts ? '[ac]' : '[0:a:0]') : ''}`,
       '-map', '[video]', '-map', music ? '[aout]' : cuts ? '[ac]' : '0:a:0',
       '-t', String(duration), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
       '-profile:v', 'high', '-level', '4.1', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k',
       '-ar', '44100', '-ac', '2', '-movflags', '+faststart', options.outputPath], FFMPEG_TIMEOUT_MS, options.signal);
-    return { music_skip_reason: musicSkipReason, duration_seconds: await probeDuration(options.outputPath, options.signal), teaser: teaser?.result ?? null, ...(cta ? { cta: cta.result } : {}), music: music ? { track: music.track, gain_db: music.gain_db } : null,
+    return { ...(rendered_layout?{rendered_layout}:{}),...(seedProposal?{seedProposal}:{}),music_skip_reason: musicSkipReason, duration_seconds: await probeDuration(options.outputPath, options.signal), teaser: teaser?.result ?? null, ...(cta ? { cta: cta.result } : {}), music: music ? { track: music.track, gain_db: music.gain_db } : null,
       packshot: packshot ? { stinger: packshot.stinger, gain_db: packshot.gain_db } : null };
   } finally { await rm(temp, { recursive: true, force: true }); }
 }

@@ -8,7 +8,7 @@
 // клипа: если лица найти не удалось, клип выходит с прежним кадрированием, и это записывается.
 // Обратное означало бы, что за оплаченные расшифровку и выделение пользователь не получает ничего
 // из-за необязательной части.
-import { execFile } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import type { FaceReport } from './framing-plan.js';
 
@@ -34,21 +34,48 @@ export const SAMPLE_SECONDS = 0.5;
 export const FACE_TIMEOUT_MS = 60_000;
 
 export async function detectFaces(path: string, start: number, end: number,
-  signal?: AbortSignal): Promise<FaceReport | null> {
+  signal?: AbortSignal,options?:{crop?:{x:number;y:number;width:number;height:number};remote?:{origin:string;allowHttp:boolean};timeoutMs?:number;
+    authorizeSource?:()=>Promise<boolean>}): Promise<FaceReport | null> {
+  if(signal?.aborted)return null;
+  if(options?.remote){
+    let url:URL;try{url=new URL(path);}catch{return null;}
+    if(url.origin!==options.remote.origin || url.username || url.password || url.hash
+      || !(url.protocol==='https:' || (options.remote.allowHttp && url.protocol==='http:')))return null;
+  }
   return new Promise(resolve => {
-    execFile('python3', [FACE_SCRIPT, path, String(start), String(end), String(SAMPLE_SECONDS), FACE_MODEL],
-      { timeout: FACE_TIMEOUT_MS, maxBuffer: 8 * 1024 * 1024, signal },
-      (error, stdout) => {
-        if (error) {
-          console.warn(JSON.stringify({ event: 'face_detection_unavailable',
-            reason: error.message.slice(0, 200) }));
-          return resolve(null);
-        }
-        try {
-          const report = JSON.parse(stdout) as FaceReport;
-          if (!Array.isArray(report.samples) || !report.samples.length) return resolve(null);
-          resolve(report);
-        } catch { resolve(null); }
-      });
+    const timeout=Math.min(FACE_TIMEOUT_MS,options?.timeoutMs??FACE_TIMEOUT_MS);
+    const {authorizeSource,...parameters}=options??{};
+    const child=spawn('python3',[FACE_SCRIPT,path,String(start),String(end),String(SAMPLE_SECONDS),FACE_MODEL,
+      JSON.stringify({...parameters,...(authorizeSource?{authorizeSources:true}:{})})],
+      {detached:true,stdio:['pipe','pipe','ignore'],env:{PATH:'/usr/local/bin:/usr/bin:/bin',NODE_ENV:process.env.NODE_ENV??'test'}});
+    let size=0,failed=false,accesses=0,buffer='';const chunks:Buffer[]=[];
+    const kill=()=>{failed=true;if(child.pid){try{process.kill(-child.pid,'SIGKILL');}catch(error){if((error as NodeJS.ErrnoException).code!=='ESRCH')child.kill('SIGKILL');}}};
+    const timer=setTimeout(kill,Math.max(1,timeout));
+    signal?.addEventListener('abort',kill,{once:true});if(signal?.aborted)kill();
+    child.stdin.on('error',()=>{if(!failed)kill();});
+    child.stdout.on('data',(chunk:Buffer)=>{
+      size+=chunk.length;if(size>8*1024*1024){kill();return;}
+      if(!authorizeSource || accesses===2){chunks.push(chunk);return;}
+      buffer+=chunk.toString('utf8');
+      const newline=buffer.indexOf('\n');if(newline<0){if(buffer.length>128)kill();return;}
+      const token=buffer.slice(0,newline);buffer=buffer.slice(newline+1);
+      if(token!==JSON.stringify({sourceAccess:accesses===0?'probe':'decode'}) || buffer.length){kill();return;}
+      accesses++;
+      // The same outer deadline includes the DB round trip. The child opens no source before ACK.
+      void authorizeSource().then(allowed=>{
+        if(failed || child.exitCode!==null || child.stdin.destroyed)return;
+        if(!allowed){kill();return;}child.stdin.write('allow\n');
+      }).catch(kill);
+    });
+    child.on('error',()=>{failed=true;});
+    child.on('close',code=>{
+      clearTimeout(timer);signal?.removeEventListener('abort',kill);
+      if(code!==0 || failed || (authorizeSource && accesses!==2)){kill();console.warn(JSON.stringify({event:'face_detection_unavailable',reason:'source_access_unavailable'}));resolve(null);return;}
+      try {
+        const report=JSON.parse(Buffer.concat(chunks).toString('utf8')) as FaceReport;
+        if(!Array.isArray(report.samples) || !report.samples.length)return resolve(null);
+        resolve(report);
+      }catch{resolve(null);}
+    });
   });
 }

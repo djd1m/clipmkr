@@ -1,11 +1,10 @@
-# Zoom: logout authority handoff
+# Zoom: host fixture authority handoff
 
-WORK_UNIT_ID: zoom-screen-focus-logout-authority-20261111
-Status: gates-complete-expanded-GO-and-current-literal-read-pending
-Planner gpt-6-astra xhigh; прежний coder gpt-6.1-sol high. Source writers frozen по root packet, HEAD1a9749e76be35bb3f66e55787104eda1a8d42ca6, base8a807d17dc2802c1b7dccc06a26719478f8c99c1. Original accepted/integrated proof и historical PhaseA/focusedR2 evidence сохранены в execution snapshot; этот пакет их не переоценивает.
+WORK_UNIT_ID: zoom-screen-focus-host-fixture-recovery-20261111
+Status: actual-gates-complete-current-literal-read-root-codeGO-pending-at-handoff
 
-Existing ADR-003 logout/account-change lifecycle реализуется через successful SignOut POST и маленький browser-only clip-layout-draft prefix/cleanup/event helper. Точный контракт/имена: [authority note](phase-b-logout-authority.md). Generic support-clear не logout, failed POST сохраняет draft, only-layout cleanup/readback сообщает реальный результат, foreign account restore запрещён. Никаких новых controls/flags/services.
+Scope51editable+21readonly=72. Existing TASK7:2existing shared TS aliases в progress-screen fixture; DB fixture exact28→30 +2migration032 table names, без удаления прежних имён/ослабления assertions. Прежняя5fixture/mockup settings authority и49editable/70targets сохранены; requirements/ADR/OpenSpec/UI/R3 прежние.
 
-44 editable+22 readonly=66: добавлены SignOut/helper editable и support-client/auth-handler readonly, прежние42+20 сохранены. Tests остаются existing browser/clip-layout. Новый helper пока отсутствует; после rootGO те же Sol выполняет2 pendingUI fixes и approved narrow cleanup в разрешённом scope.
+Actual K2/admission/context/supported plan checkpoint exit0; K1 reuse-only not run. Plan SHA `9d24d2cf36fae8b5a7c9f44e96eeb8d4f9d39572391e9bda098fad5fb45ffdee`; full literal98198B SHA `25d56d7249273f9f0432537939aaac75f9aaa506609123f234e8ea67030ba928`. Native base8a807d17dc2802c1b7dccc06a26719478f8c99c1 прежний. Source72 unchanged; historical R2 current W отличается только exactauthorized06delta, остальные156 unchanged. Root R2 actual verdict not-established/native-repair-required, не Source approval; bounded R3 repair дальше.
 
-Actual K1/K2/admission/context/plan checkpoint exit0; C8 warning/C4 skip не названы runtime PASS, ZF/AC supplement20/20. Full literal97 428B, SHA bd7caefa33fc1b0b0fb1bfd884a7e4eb45b7962b171b23624e2f5792c3536e0d: same author reads fully before continuation. Expanded GO выдаёт root, не планировщик. No Source QE/runtime/producttests/source edits/Git/commit выполнены этим пакетом. Current exact command/result/SHA package — snapshot/private path authority note.
+Same Sol полностью читает actual literal, затем root отдельно разрешает код. На передаче эти шаги pending. Планировщик не менял app/test source и не запускал runtime/Source QE/native review/Git mutation. Actual argv/stdout/stderr/exit/input hashes и честные пределы — private `phase-b-host-fixture-recovery/gate-package.json`, [authority](phase-b-fixture-authority.md), [snapshot](step6-plan-snapshot.json).

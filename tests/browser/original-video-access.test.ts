@@ -35,7 +35,7 @@ beforeAll(async()=>{
  const entry='\0original-entry',nav='\0original-nav',link='\0original-link';
  vite=await createServer({configFile:false,root:process.cwd(),cacheDir:join(cache,'vite'),esbuild:{jsx:'automatic'},
   optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime','zod'],exclude:['next/navigation','next/link']},
-  resolve:{alias:Object.fromEntries(['enums','cta','tariff','music-catalog'].map(n=>[`@clipmaker/shared/${n}`,resolve(`packages/shared/src/${n}.ts`)]))},
+  resolve:{alias:Object.fromEntries(['enums','cta','tariff','music-catalog','screen-layout','cut-timeline'].map(n=>[`@clipmaker/shared/${n}`,resolve(`packages/shared/src/${n}.ts`)]))},
   server:{host:'127.0.0.1',port:0,watch:null},plugins:[{name:'original-browser',enforce:'pre',resolveId(n){if(n===entry)return entry;if(n==='next/navigation')return nav;if(n==='next/link')return link;},
    load(n){if(n===nav)return 'export const useRouter=()=>({push(){},refresh(){}});';if(n===link)return "import React from 'react';export default function Link(p){return React.createElement('a',p)}";
     if(n===entry)return `import React from 'react';import{createRoot}from'react-dom/client';import{VideoDetail}from'/apps/web/src/app/videos/[videoId]/VideoDetail.tsx';const root=createRoot(document.getElementById('root'));window.mountOriginal=p=>root.render(React.createElement(VideoDetail,p));window.originalReady=true;`;},

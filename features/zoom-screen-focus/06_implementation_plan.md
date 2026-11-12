@@ -16,7 +16,7 @@ Goal:03/advanced01–02, seed/wholeclip/apply, сохранность MP4/credit
 - TASK-4 (ADR-001, ADR-002; ZF-03, ZF-06, ZF-08, ZF-09, ZF-10; AC02, AC03, AC04, AC06): A — isolated screen-layout graph+synthetic pixel/time tests; B — `apps/worker/src/render/probe.ts` producer реального SAR для ADR-001 (не угадывать1); FFmpeg/teaser/worker DB input, camera veto/fence/publish. Depends:A1A; B0,1B,2,4A. Test:screen-layout-media + render/storage/failure/music/CTA/framing regressions. Done:ADR pixel/time/fallback/fence; A alone не completes TASK-4.
 - TASK-5 (ADR-003, ADR-002, ADR-004; ZF-01, ZF-02, ZF-04, ZF-05, ZF-07, ZF-08, ZF-10; AC01, AC05, AC07, AC08, AC09, AC10): web/RPC, Choice/Preview/CSS, ClipCard/VideoDetail: ADR-003 safeguards. Depends:TASK-0,1B,2,3. Test:browser clip-layout/regressions; real video Chromium/WebKit390/1440, обе темы/manual screen reader. Done:ADR-003 + AM-5/6/7/10/11/12. Logout ADR-003: `SignOut.tsx` + browser-only `lib/clip-layout-draft.ts` делят с Choice prefix `n5-clip-layout:v1:`. Только successful logout POST очищает layout session keys на любой странице/без mounted Choice; failed logout сохраняет draft. Не подписываться на generic support-clear; support/upload/other storage keys не трогать. Helper возвращает actual read-back boolean; один local event с результатом сбрасывает mounted memory/review/decoder до hard redirect; blocked storage сообщает cleanup failure, не ложный logout failure/успех очистки, чужой account draft не восстанавливается. Oracle в existing `tests/browser/clip-layout.test.ts`: success/unmounted→layout-only clear; failure→retain; support focus/unmount→retain; blocked storage→honest fallback/no cross-account restore.
 - TASK-6 (ADR-001; ZF-09, ZF-10; AC04): stale order guard `tests/render.test.ts` и anchor `scripts/test-framing-mutations.mjs`. Depends:TASK-4B. Test:broken graph→RED/restored→GREEN, >0 tests/unique match. Done:indexOf(-1)/no-match не PASS; no-pad legacy-scoped; font/ONNX/metrics SHA прежние.
-- TASK-7 (ADR-001, ADR-002, ADR-003, ADR-004): root integration/freeze, общий прогон, discrimination/code-spec anti-drift, independent code-critic/security/QX/fleet QE. Depends:TASK-3,4B,5,6. Done:terminal results, skip/no-match не PASS; QE independently ищет source/tests из approved docs, без выводов автора.
+- TASK-7 (ADR-001, ADR-002, ADR-003, ADR-004): root integration/freeze, общий прогон, discrimination/code-spec anti-drift, independent code-critic/security/QX/fleet QE. Depends:TASK-3,4B,5,6. Done:terminal results, skip/no-match не PASS; QE independently ищет source/tests из approved docs, без выводов автора. Fixturecompat:6 inline Vite `configFile:false` harnesses — shared TS aliases `screen-layout`/`cut-timeline`; mockup: navigation `export const usePathname=()=>window.location.pathname;` + virtualentry import/mount existing `WorkspaceSettings` via `h(WorkspaceSettings,{initialTheme:'dark',initialLayout:'workspace'})` рядом с Header; assertions/mutations/guards/profiles и production package/imports не менять. DB fixture exception:28→30; arrayContaining += clip_layout_intent,clip_layout_seed; comment031→032.
 - TASK-8 (ZF-05, ZF-08, ZF-10; AC04, AC07): small verified commits/mirror pushes; test VPS migration→worker→web, synthetic E2E+отдельно разрешённый private wholeclip QA, ссылка owner. Depends:TASK-7. Done:owner acceptance UI/media до production; Cloud/DNS/real charges не разрешены. Rollback:stop apply, drain intents новым worker до старого.
 
 ## Dependency order / parallel groups
@@ -50,7 +50,7 @@ Node22/project-pinned targeted: `npm test -- --run tests/screen-layout.test.ts t
 ## Risk assessment
 
 Риски money/idempotency→PG; fence→late publish; privacy→owner404/canary; media→pixels/time; sampling→wholeclip; worker→30s/traffic. Falsifiers:ADR+AM. A не доказывает B; новых dependencies/queue/ML нет.
-66 measured=44 editable+22 read-only, менять нельзя. Logout wiring добавляет SignOut/helper; support-client/auth-handler read-only. Прежние42 сохраняются, включая screen.ts; новых test targets нет. Original leaf чужой. XL прежний; tests не исключать. Root сверяет diff/migration032 collision.
+72 measured=51 editable+21 read-only, менять нельзя. Fixturecompat:6 новых editable paths + mockup read-only→editable. Прежние49 сохранены, включая screen.ts; 2 aliases в6 fixtures + mockup navigation/settings wiring. Original leaf чужой. XL прежний; tests не исключать. Root сверяет diff/migration032 collision.
 Прежняя оценка полного объёма: implementation110–180min; checks60–100min; QE/delivery30–60min. Остаток после A/root resume пересчитать; owner pause отдельно.
 
 ## Amendments
@@ -63,7 +63,8 @@ AM-5 (ACC-01 qcsd-accessibility): доступные имя/единицы/зн�
 AM-6 (ACC-02 qcsd-accessibility): именованный modal, keyboard focus/restore/Escape, semantic status announcements с причиной/действием без polling дублей. Confirmation: Escape без apply и единственное объявление каждого состояния → test `confirmation_focus_and_semantic_status_announcements` in `tests/browser/clip-layout.test.ts` (fails on focus loss/repeated live event); manual screen-reader QA отдельно.
 AM-7 (ACC-03 qcsd-accessibility; UX-03 qcsd-ux): pause остальных refs на каждом play всех трёх media, включая уже selected clip. Confirmation: все шесть направлений и close/change clip оставляют один audible → test `every_media_play_pauses_the_other_two` in `tests/browser/clip-layout.test.ts` (fails if arbitration depends on selection change).
 AM-8 (SEC-01 qcsd-security): native max_redirects=0 в обоих children, exact origin/scheme, TLS, closed errors; unsupported policy→unavailable, без proxy. Confirmation: same/cross-origin/downgrade3xx не дают второго запроса или URL canary в диагностике → test `seed_redirects_are_refused_before_followup_request` in `tests/screen-layout-media.test.ts` (fails on default redirects8/missing ffprobe flags).
-AM-9 (SEC-02 qcsd-security): exact seed/legacy runtime union и authoritative DB eligibility/revision/epoch до source. Confirmation: unknown/mixed/extra messages не дают sign/read/claim/render/quota side effects → test `render_dispatch_rejects_unknown_mixed_payloads_without_side_effects` in `tests/queue-redis.integration.test.ts` (fails on fallback-to-legacy); valid stale/foreign/inactive/expired identities дополнительно → test `seed_claim_rechecks_owner_retention_revision_and_epoch` in `tests/clip-layout.integration.test.ts` (fails if authority only checked in web).
+AM-9 (SEC-02 qcsd-security): exact seed/legacy runtime union и authoritative DB eligibility/revision/epoch до source. Confirmation: unknown/mixed/extra messages не дают sign/read/claim/render/quota side effects → test `render_dispatch_rejects_unknown_mixed_payloads_without_side_effects` in `tests/queue-redis.integration.test.ts` (fails on fallback-to-legacy).
+AM-9 (SEC-02, продолжение): Confirmation: valid stale/foreign/inactive/expired identities дополнительно → test `seed_claim_rechecks_owner_retention_revision_and_epoch` in `tests/clip-layout.integration.test.ts` (fails if authority only checked in web).
 AM-10 (UX-01 qcsd-ux): checked sessionStorage envelope и явные restored/conflict/lost states; blocked storage предупреждает до ухода, native leave cancel сохраняет draft. Confirmation: late seed/poll/navigation/back/refresh не подменяют draft → test `dirty_layout_survives_navigation_reload_and_late_seed` in `tests/browser/clip-layout.test.ts` (fails if mount restores published over dirty); отказ storage/отмена → test `storage_failure_warns_before_loss_and_cancel_keeps_draft` in `tests/browser/clip-layout.test.ts`.
 AM-11 (UX-02 qcsd-ux): initial03 focus=null/whole-screen явно объяснён; camera seed не action seed, прежний focus текущего source сохраняется. Confirmation: good/ambiguous seed не придумывает focus и не требует manual ROI → test `initial_focus_is_whole_screen_until_confirmed_and_seed_is_camera_only` in `tests/browser/clip-layout.test.ts` (fails if ready camera implies ready action).
 AM-12 (UX-04 qcsd-ux, genuine R2): accepted/pending не означают публикацию и не удаляют local envelope; failed после reload восстанавливает editable latest draft, submitted intent отделён от поздних правок. Automatic clear только при authoritative успешной публикации точно совпавшего intent/config/sourceRevision и неизменённой draftVersion. Confirmation: accepted→reload→failed сохраняет редактируемый draft без нового apply → test `accepted_reload_failed_restores_editable_layout_draft` in `tests/browser/clip-layout.test.ts` (fails on clear-at-accepted); точная publication очищает соответствующий envelope → test `published_layout_clears_only_matching_draft` in `tests/browser/clip-layout.test.ts` (fails on never-clear); поздний publish не очищает late edits, включая A→B→A → test `late_draft_edits_survive_older_publication` in `tests/browser/clip-layout.test.ts` (fails on clear-on-any-success/config-only). TASK-5 реализует, TASK-7 проверяет; source/queue/payment/UI scope не меняется.
@@ -115,6 +116,11 @@ EXPECTED_CODE_TARGETS:
 - packages/shared/src/enums.ts
 - apps/web/src/app/support/SignOut.tsx
 - apps/web/src/lib/clip-layout-draft.ts
+- tests/browser/original-video-access.test.ts
+- tests/browser/ux-simplification.test.ts
+- tests/browser/billing.test.ts
+- tests/browser/mockup-ui-realization.test.ts
+- tests/browser/upload-lifecycle.test.ts
 - apps/web/src/server/clip-music.ts
 - apps/worker/assets/fonts/ClipMakerNarrow-Bold.ttf
 - apps/worker/assets/models/face_detection_yunet.onnx
@@ -125,7 +131,6 @@ EXPECTED_CODE_TARGETS:
 - packages/shared/src/server/original-source.ts
 - packages/shared/src/watermark-metrics.json
 - packages/shared/src/watermark.ts
-- tests/browser/mockup-ui-realization.test.ts
 - tests/browser/video-screen.test.ts
 - tests/clip-cta-rerender.integration.test.ts
 - tests/clip-music-choice.integration.test.ts
@@ -137,3 +142,5 @@ EXPECTED_CODE_TARGETS:
 - tests/enums.test.ts
 - apps/web/src/lib/support-client.ts
 - apps/web/src/server/auth-handler.ts
+- tests/progress-screen.test.ts
+- tests/database.integration.test.ts

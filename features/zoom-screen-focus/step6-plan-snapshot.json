@@ -1,36 +1,42 @@
 {
-  "status": "logout-authority-gates-complete-expandedGO-currentLiteralRead-pending",
+  "status": "editorial-trace-repair-actual-plan-checkpoint-complete-no-new-code-entry",
   "createdAtUtc": "2026-11-11T17:09:44.460654+00:00",
   "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
   "planner": "gpt-6-astra xhigh",
   "coder": "gpt-6.1-sol high",
   "stage6DocumentReady": true,
   "stage6Checkpoint": {
-    "status": "actual-recorded-current-logout-authority",
+    "status": "actual-recorded-current-editorial-trace-repair",
     "command": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/plan-checkpoint.command.json",
-      "sha256": "7e77f96d36de49fd66fb353bbf397ea16143eb861fcc232960bb5957d7d8df81"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/plan-checkpoint.command.json",
+      "sha256": "be2de8e3f3a6a928587468b6be7c70ed00e7dbb0bb28d0fa91e8be3b13964298"
     },
     "result": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/plan-checkpoint.stdout.json",
-      "sha256": "ff2d2a3e94002bcf0f887b8b987b88457409daf6d376bb75606d566865499f23"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/plan-checkpoint.stdout.json",
+      "sha256": "f4751bfda35c2a3f58a227eeb3b372c9ebbb14dec50251222bcc28a98a8963e6"
+    },
+    "inputManifest": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/plan-checkpoint-inputs.json",
+      "sha256": "90621c10e2848f5b0061daa5c4aa4e5f730327042dc64e1343840ea623a74b33"
     },
     "exitCode": 0,
     "witnessed": [
       "06_implementation_plan.md",
       "05_architecture.md",
-      "scope-inventory.json"
+      "scope-inventory.json",
+      "03.5_ideation_report.md"
     ]
   },
   "codeAdmission": false,
   "gates": {
     "Task0": "accepted Original integration proof preserved",
-    "previousPhaseB": "earlier42scope author work exists; complete root freeze now active",
-    "currentK1": "actual final author4names free, exit0, scan complete508files",
-    "currentK2": "actual exit0 PASS0fail/1warnC8/1skipC4; explicit20ID trace",
-    "currentAdmissionContext": "actual admitted/complete exit0; source66stable",
-    "rootExpandedScopeGO": "not-issued",
-    "coderLiteralRead": "current97428-byte literal fully read by sameSol required"
+    "currentK1": "reuse-only existing aliases/tables, no new names; not run",
+    "currentK2": "actual editorial exit0 PASS0fail/1C8WARN/1C4SKIP; ZF/AC task text unchanged",
+    "currentAdmissionContext": "no new code-entry; historical admission/literal retained; new98251B context observation complete",
+    "rootExpandedScopeGO": "explicit root apply GO observed; code GO pending",
+    "coderLiteralRead": "new editorial literal not claimed read; old25d56 literal historical full-read evidence retained in prior gatebundle",
+    "nativeSourceR2": "root actual exit2 not-established/native-repair-required; not Source approval",
+    "currentAmendmentTrace": "actual exit0 PASS16;12uniqueIDs in13rows; all16originalpointers retained"
   },
   "ideation": {
     "nonce": "0276c1f3-2f7b-4e38-96c4-10258020aca1",
@@ -60,8 +66,9 @@
   "canonicalIdeationReport": {
     "path": "features/zoom-screen-focus/03.5_ideation_report.md",
     "owner": "root",
-    "mutationByPlanner": false,
-    "note": "Root-authored canonical Step3.5 report; excluded from planner-owned freeze while root prepares it"
+    "mutationByPlanner": true,
+    "note": "Root-authorized editorial prefix Поправки before existing range summary; closedideation9 input manifest unchanged, no new ideation cycle",
+    "sha256": "47b110abb87c1c7310974e4d75fc1c326f283de2047d22ffb9304603c1d8aa1b"
   },
   "closedCoreManifest": [
     {
@@ -193,21 +200,21 @@
     "ZoomExpandsOriginalAuthority": false,
     "phaseBAdmission": "pending"
   },
-  "measuredTargets": 66,
-  "editableTargets": 44,
-  "readOnlyTargets": 22,
+  "measuredTargets": 72,
+  "editableTargets": 51,
+  "readOnlyTargets": 21,
   "files": [
     {
       "path": "features/zoom-screen-focus/06_implementation_plan.md",
-      "sha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15"
+      "sha256": "a5a11c93df52318d97045f2b863e3775b4faa1c4ee7b6077b7985a1db3834103"
     },
     {
       "path": "features/zoom-screen-focus/architecture-handoff.md",
-      "sha256": "2a8e7e581e423bec80dbf8452390fbe21883616717e279df5bb5e40924600e72"
+      "sha256": "67ac3b1373588bd2ea43c60b118cdd9e6f83cc81c7a5a8cd0e4b65f4c2901086"
     },
     {
       "path": "features/zoom-screen-focus/README.md",
-      "sha256": "c46663eb4dd1e829f8007e987fca1499e524592a2880e338d7ace574bba76a33"
+      "sha256": "f8566c0c4326d4808d3567ae07a241f9b01a96a00955512adce4ad18784a3021"
     },
     {
       "path": "features/zoom-screen-focus/requirements-revision.json",
@@ -223,7 +230,11 @@
     },
     {
       "path": "features/zoom-screen-focus/scope-inventory.json",
-      "sha256": "67cf8bbe7741239e70161be1ba85795bf696c8fd0f96edc57c35e7cf799ce03c"
+      "sha256": "e363bf827f5d85b2f1f646bf3174f101632fc3b0f59d0c0d55de7f343e65cc61"
+    },
+    {
+      "path": "features/zoom-screen-focus/phase-b-fixture-authority.md",
+      "sha256": "a8a049785baee5faee71239064f648405bab8daf909cb88f4745384b0246ffe0"
     }
   ],
   "wordingRevisionAtUtc": "2026-11-11T17:36:12.103519+00:00",
@@ -411,13 +422,13 @@
       }
     },
     "PhaseB": {
-      "status": "implementation-frozen-current-logout-authority-gates-complete",
+      "status": "implementation-frozen-current-settings-authority-gates-complete-at-handoff",
       "codeAdmission": false,
       "writerAuthorized": false,
       "requires": [
-        "sameSol full current97428-byte literal read",
-        "explicit root expanded44scopeGO",
-        "K1 before any additional public name declaration"
+        "sameSol full current98025-byte literal read",
+        "explicit root GO on mockup settings wiring exception",
+        "K1 before any additional production public name declaration"
       ],
       "acceptedOriginalDependency": "satisfied by task0DependencyProof",
       "addedEditable": [
@@ -440,9 +451,9 @@
     },
     "dag": "gates→1A→4A parallel Original/0; {0,1A}→1B→2; {1B,2}→3; {0,1B,2,4A}→4B; {0,1B,2,3}→5;4B→6;{3,4B,5,6}→7→8",
     "scope": {
-      "editable": 44,
-      "readOnly": 22,
-      "measured": 66,
+      "editable": 49,
+      "readOnly": 21,
+      "measured": 70,
       "tier": "XL"
     },
     "priorPlanArchive": {
@@ -450,8 +461,8 @@
       "sha256": "c5ae64fb782f7978297e81cbacf2935606fe651e9a88b5fe91892e4beb35f6ba"
     }
   },
-  "executionRevisionAtUtc": "2026-11-11T18:55:11.520744+00:00",
-  "executionRevision": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+  "executionRevisionAtUtc": "2026-11-11T21:32:12.534616+00:00",
+  "executionRevision": "7afb421072b397c554471d4741d1075e3037556e",
   "phaseBAddedTargetPins": [
     {
       "path": "apps/worker/src/render/probe.ts",
@@ -543,25 +554,31 @@
     "gateBoundary": "PhaseA gates/root GO pending; PhaseB additionally requires genuine Task0 and fresh admission/context"
   },
   "instrumentalPlanRevision": {
-    "status": "actual-complete-current-logout-authority",
-    "planBytes": 18944,
-    "planSha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15",
-    "promptBytes": 97428,
+    "status": "historical-precode-host-db-fixture-authority-preserved",
+    "planBytes": 19714,
+    "planSha256": "9d24d2cf36fae8b5a7c9f44e96eeb8d4f9d39572391e9bda098fad5fb45ffdee",
+    "scopeSha256": "e363bf827f5d85b2f1f646bf3174f101632fc3b0f59d0c0d55de7f343e65cc61",
+    "promptBytes": 98198,
     "limitBytes": 98304,
-    "contextDigest": "12d0edc7f030eae9c85ae5ff5b572fcfe0d9ab9eb73abed798cbe47c1e6ca552",
-    "promptSha256": "bd7caefa33fc1b0b0fb1bfd884a7e4eb45b7962b171b23624e2f5792c3536e0d",
+    "headroomBytes": 106,
+    "contextDigest": "13041d1f45a4dbba1ef379a51fae2df9fa28e64dca1ed205895dcf6672019829",
+    "promptSha256": "25d56d7249273f9f0432537939aaac75f9aaa506609123f234e8ea67030ba928",
     "actualCurrentHelperExecuted": true,
     "literalTruncated": false,
     "limitRaised": false,
-    "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/coder-context.literal.prompt.md",
+    "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-host-fixture-recovery/coder-context.literal.prompt.md",
     "coderFullyRead": false,
     "rawResult": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/coder-context.stdout.json",
-      "sha256": "340a174b0208f06add874942c06f85efd9f1dc71631e167bcc85fa39d022604b"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-host-fixture-recovery/coder-context.stdout.json",
+      "sha256": "1225912cb2e705dbdc2b2e1386144fc4a480f32f39895f1f933b2bc1a68788b7"
     },
     "codeTargetAdmission": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/code-targets.stdout.json",
-      "sha256": "a3f0f843c034c17e9727aa0834ac32b3cbe27863b3e19df7dedd17b56f88dab0"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-host-fixture-recovery/code-targets.stdout.json",
+      "sha256": "2c7cc67975b7fc3ee73b678f0322526523175bdac10655896f5d792ed249c991"
+    },
+    "previousActualEvidence": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-host-fixture-recovery/previous-docs/step6-plan-snapshot.json",
+      "sha256": "d3f0d50a5ba35b2e8f4e61261ae3c6ae83a6674796d19f88f5b5062b36190c92"
     }
   },
   "historicalChecksBeforePhaseBUpdate": {
@@ -614,40 +631,32 @@
     ]
   },
   "checks": {
-    "status": "current-document-authority-integrity-and-gates-PASS-not-QE",
+    "status": "actual-editorial-trace-and-document-checks-PASS-not-runtime-QE",
     "evidence": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/document-integrity.json",
-      "sha256": "9bc74b367974571d74d6309b7a7fee7ccc569e2434d0abd942ebcf321aa97f13"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/editorial-integrity.json",
+      "sha256": "b01f084e1bd7078f3f30c2ecce4d09564999e245945be063ee5f5a2d483f10ba"
     },
-    "K1": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/k1.stdout.json",
-      "sha256": "96d3a85377f48893f12f3355603e743d18680b09794b2b5bc91317e7e1e57664"
+    "amendment": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/amendment-after.stdout.json",
+      "sha256": "798c6809a5a4e2a71a10955411cee959d57971221b13475ec744cbffae720612"
     },
     "K2": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/k2.stdout",
-      "sha256": "1d96087ee17dda37627ded9a37ac0b9f1965c91c6a9dc1de84bc7144cd35efd4"
-    },
-    "ZF_AC_Trace": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/zf-ac-task-trace.json",
-      "sha256": "599564b03a1692d45c97bfbafd5ed8b84ed35109031d23a8c50a6ea5930de6eb"
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/k2.stdout",
+      "sha256": "66312c94867ab9e216dce7d793a8da46882786b783291f0fa1d7d32e652a67b4"
     },
     "core9Unchanged": true,
     "OpenSpecUnchanged": true,
     "UIUnchanged": true,
-    "R3DossierUnchanged": true,
-    "sourceFrozen66Stable": true,
+    "source72Stable": true,
     "newTestsWrittenOrRun": false,
-    "GitCommandsByPlanner": false,
-    "noSourceEdits": true
+    "noSourceCodeEdits": true,
+    "GitMutationByPlanner": false
   },
   "resumeCheckpoint": {
-    "state": "source frozen; current logout authority gates complete; waitrootGO/samecoderfullread",
-    "headFromRootFreeze": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+    "state": "editorial trace repaired; no new code-entry, root controls Source R3",
     "baseRefPreserved": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
     "pending": [
-      "sameSol full current97428-byte literal read",
-      "explicit root expanded44scopeGO",
-      "K1 before any additional public name declaration"
+      "root Source R3 preparation and independent evaluation"
     ],
     "noNewCoder": true,
     "noSourceEditsByPlanner": true
@@ -655,21 +664,19 @@
   "resumeAtUtc": "2026-11-11T19:19:22.891667+00:00",
   "phaseBReadinessAtUtc": "2026-11-11T19:24:03.502399+00:00",
   "phaseBReadinessDocument": {
-    "path": "features/zoom-screen-focus/phase-b-readiness.md",
-    "sha256": "89b79a018baa9ab3bda012c62e01f757f6d928f79a9a4eeec40edbef7c473adf"
+    "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/phase-b-readiness.md",
+    "sha256": "a5962d192a6016964692750709d17e1ffdfdfd9e8f1cd0fde1193e0811b82ff1"
   },
   "logoutAuthorityAtUtc": "2026-11-11T20:18:06.076378+00:00",
   "currentSourceFreeze": {
-    "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-author/scope-amendment-freeze.json",
-    "sha256": "12b1ba921c4720f1bcfbd5d82659f5d81cbe6f46fd7592c78d51f5562bf893a3",
-    "head": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
-    "baseRef": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
-    "root62Digest": "c560081cb3e41f3dd1ff2aa1394e25d39d6ca98aafa61903956d73c2f0fd720e",
-    "measured66Pins": {
-      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/source-freeze-before.json",
-      "sha256": "6439b9a1991e617137cb3b8b452a3d6944f2ebdcd235239e84204b4d8a2a673e"
+    "kind": "editorial-only-current72-source-freeze",
+    "evidence": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/before-inputs.json",
+      "sha256": "39b876fba0c8b88e7dc1565b909f621d8269bd284708a31700b56403903f49ca"
     },
-    "stableThroughGates": true
+    "source72UnchangedThroughEditorialChecks": true,
+    "nativeBase": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
+    "noNewNativeSourceCycleByPlanner": true
   },
   "logoutAuthority": {
     "existingRequirement": "ADR-003 logout/account cleanup",
@@ -732,6 +739,68 @@
     "archive": {
       "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/history/step6-before-logout-authority/snapshot.json",
       "sha256": "e9817c052fe95942d80c07814b032365b61425707e6a70ccdc7cbff0fdad4a3d"
+    }
+  },
+  "fixtureAuthorityAtUtc": "2026-11-11T23:57:37.194581+00:00",
+  "fixtureAuthority": {
+    "status": "active-step6-authority-gates-complete-codeGO-pending",
+    "existingRequirement": "TASK7 regression harness compatibility",
+    "core9Change": false,
+    "scopeChanged": true,
+    "addedEditable": [
+      "tests/progress-screen.test.ts",
+      "tests/database.integration.test.ts"
+    ],
+    "previousPrivateProof": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-host-fixture-recovery/previous-docs/step6-plan-snapshot.json",
+      "sha256": "d3f0d50a5ba35b2e8f4e61261ae3c6ae83a6674796d19f88f5b5062b36190c92"
+    },
+    "K1": "reuse-only, no new names; not run",
+    "document": {
+      "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/phase-b-fixture-authority.md",
+      "sha256": "a8a049785baee5faee71239064f648405bab8daf909cb88f4745384b0246ffe0"
+    }
+  },
+  "editorialTraceRevision": {
+    "at": "2026-11-12T00:22:04.839948+00:00",
+    "classification": "trace grammar only; no product/requirements/ADR/UI change",
+    "planSha256": "a5a11c93df52318d97045f2b863e3775b4faa1c4ee7b6077b7985a1db3834103",
+    "ideationOutputSha256": "47b110abb87c1c7310974e4d75fc1c326f283de2047d22ffb9304603c1d8aa1b",
+    "uniqueAmendmentIds": 12,
+    "parsedRows": 13,
+    "originalTestFilePointersPreserved": 16,
+    "closedIdeationInputsUnchanged": true,
+    "source72Unchanged": true,
+    "integrity": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/editorial-integrity.json",
+      "sha256": "b01f084e1bd7078f3f30c2ecce4d09564999e245945be063ee5f5a2d483f10ba"
+    },
+    "actualAmendmentBefore": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/amendment-before.stdout.json",
+      "sha256": "a4cad148f0026387e3c35d9f4e8899e1b0363c615d58f45081d7aa2f9fba6c76"
+    },
+    "actualAmendmentAfter": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/amendment-after.stdout.json",
+      "sha256": "798c6809a5a4e2a71a10955411cee959d57971221b13475ec744cbffae720612"
+    },
+    "exactDiff": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/editorial-exact.diff",
+      "sha256": "79b105916ed32bb2acbf882f37ad0b0fa17452ccfde41b72febea6d4b961569a"
+    },
+    "contextObservation": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-amendment-trace-repair/current-literal.observation.md",
+      "bytes": 98251,
+      "limit": 98304,
+      "sha256": "eb8bd542f4b7ea62624b9a118c31aa2b6cf7c7e72d95a9fc2a736d0eacf4871c",
+      "digest": "1c795681886ef3bb480380217a1b02e378359d7adfedf4bf046ed18b4067dd25",
+      "status": "complete",
+      "diagnostics": [],
+      "coderReadClaim": false,
+      "newCodeGO": false
+    },
+    "priorPreCodeGateBundle": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-host-fixture-recovery/gate-package.json",
+      "sha256": "d07345e03e7aa0e3967c16810e629c7641339064388580904452a84d1c5b6968"
     }
   }
 }

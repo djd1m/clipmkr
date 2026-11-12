@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, type Ref } from 'react';
+import { useEffect, useRef, useState, type Ref, type SyntheticEvent } from 'react';
 import Link from 'next/link';
 import { OriginalSource } from './OriginalSource';
 import { useRouter } from 'next/navigation';
@@ -64,12 +64,17 @@ export function ProgressPanel({ video, onRetry, busy = false, storageEnded=false
 }
 export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks = [], consentHash, paymentsOn = false, creditMode=false }: { videoId: string; initialVideo: VideoScreen; initialClips: ClipScreen[]; initialPacks?: GuestPackSummary[]; consentHash?: string; paymentsOn?: boolean; creditMode?:boolean }) {
   const router = useRouter();
+  const mediaRoot=useRef<HTMLDivElement>(null),leaveGuards=useRef(new Map<string,()=>boolean>());
+  function coordinate(event:SyntheticEvent){const playing=event.target;if(!(playing instanceof HTMLMediaElement))return;
+    for(const host of [mediaRoot.current,contextHost])host?.querySelectorAll<HTMLMediaElement>('video,audio').forEach(node=>{if(node!==playing)node.pause();});}
+  function allowLeave(){return leaveGuards.current.get(selectedClipId??'')?.()!==false;}
   const [originalOpen, setOriginalOpen] = useState(false), [originalHost, setOriginalHost] = useState<HTMLDivElement | null>(null);
   function sourceMode(open: boolean) {
-    if(open) document.querySelectorAll<HTMLMediaElement>('.clip-grid video,.clip-grid audio').forEach(node=>node.pause());
+    if(open && !allowLeave())return;
+    if(open)for(const host of [mediaRoot.current,contextHost])host?.querySelectorAll<HTMLMediaElement>('video,audio').forEach(node=>node.pause());
     setOriginalOpen(open);
   }
-  function selectClip(id: string) { setOriginalOpen(false); setSelectedClipId(id); }
+  function selectClip(id: string) { if(id!==selectedClipId && !allowLeave())return;setOriginalOpen(false); setSelectedClipId(id); }
   const [video, setVideo] = useState(initialVideo), [clips, setClips] = useState(initialClips);
   const [error, setError] = useState<string | null>(null), [busy, setBusy] = useState(false);
   const [ctaFeedback, setCtaFeedback] = useState<{ state: 'pending' | 'success' | 'failure'; message: string } | null>(null);
@@ -170,7 +175,7 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
     ? { ...video, no_response: true, stage_label: 'Статус давно не менялся. Обработка может продолжаться — проверяем автоматически.' } : video;
   const storageEnded=video.status==='done' && clips.length>0 && video.clips_done===video.clips_total &&
     clips.every(clip=>clip.status==='done' && (clip.retention_state==='expired' || (!!clip.expires_at && Date.parse(clip.expires_at)<=now)));
-  return <><div className="workspace-ready">
+  return <><div className="workspace-ready" ref={mediaRoot} onPlayCapture={coordinate}>
     <div className="studio-ready-intro"><VideoHeader video={video} headingRef={headingRef} storageEnded={storageEnded} /><OriginalSource key={videoId} videoId={videoId} status={video.status} open={originalOpen} onOpenChange={sourceMode} viewerHost={originalHost} fallbackFocus={()=>headingRef.current?.focus({preventScroll:true})} /><ProgressPanel storageEnded={storageEnded} video={shown} onRetry={() => void retry()} busy={busy} />
       {error && <p className="notice" role="alert">Не удалось обновить данные: {error}. Повторяем запрос каждые 5 секунд.</p>}
       {video.clips_total > 0 && video.clips_total < 3 && <p className="notice">Найдено фрагментов: {video.clips_total}. Самодостаточных моментов меньше трёх — показываем столько, сколько есть.</p>}
@@ -179,7 +184,7 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
     <section className="clips-section workspace-result-content" aria-label="Ваши клипы">
       {clips.length > 0 && !originalOpen && <p className="workspace-section-label workspace-selected-caption">Выбранный клип</p>}
       <div className="workspace-result-regions" style={!clips.length ? {gridTemplateColumns:"minmax(0,1fr)"} : undefined}>
-        <div className="clip-grid studio-clips"><div ref={setOriginalHost} /><div hidden={originalOpen}>{clips.map(clip => <ClipCard creditMode={creditMode} key={clip.clip_id} clip={clip}
+        <div className="clip-grid studio-clips"><div ref={setOriginalHost} /><div hidden={originalOpen}>{clips.map(clip => <ClipCard videoId={videoId} onLayoutLeaveGuard={guard=>{if(guard)leaveGuards.current.set(clip.clip_id,guard);else leaveGuards.current.delete(clip.clip_id);}} creditMode={creditMode} key={clip.clip_id} clip={clip}
           contextRoot={contextHost} onEditClip={setEditingClipId} selected={clip.clip_id === selectedClipId} onSelect={selectClip}
           paymentsOn={paymentsOn} onSendToGuest={sendToGuest}
           musicPending={musicStates[clip.clip_id]?.pending} musicNotice={musicStates[clip.clip_id]?.notice} musicResolution={musicStates[clip.clip_id]?.resolution}
@@ -201,7 +206,7 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
     </section>
     </div>
     {ctaFeedback && <p data-cta-feedback role={ctaFeedback.state === 'failure' ? 'alert' : 'status'}>{ctaFeedback.message}</p>}
-    <div className="workspace-context-host" ref={setContextHost} />
+    <div className="workspace-context-host" ref={setContextHost} onPlayCapture={coordinate} />
     <section className="video-edit-context" hidden={editingClipId === null || editingClipId !== selectedClipId}><details className="cta-disclosure"><summary>Дополнительные настройки записи</summary>
       <p>При смене вида призыва пересобираются доступные готовые клипы. Истёкшие файлы и исключения суточных лимитов проверяет сервер; старый файл доступен только в пределах срока хранения. Только смена URL не использует пересборку.</p>
       <VideoCtaForm videoId={videoId} initialKind={initialVideo.cta_kind} initialUrl={initialVideo.cta_url} onFeedback={setCtaFeedback} />

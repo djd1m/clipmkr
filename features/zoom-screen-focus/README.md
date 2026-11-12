@@ -1,9 +1,11 @@
 # Zoom: «Фокус на действии»
 
-Статус: Phase B заморожена для logout authority amendment; текущие gates завершены, same-Sol full literal read и root expanded GO pending. Это не Source QE/готовность к выпуску.
+Host/DB fixture authority gates завершены; same Sol full actual current literal read и root code GO pending at handoff. Root R2 verdict `not-established/native-repair-required`; Source QE/готовность к выпуску не объявлены.
 
-- [Текущая readiness](phase-b-readiness.md), [точная logout authority](phase-b-logout-authority.md), [план06](06_implementation_plan.md), [execution snapshot](step6-plan-snapshot.json), [handoff](architecture-handoff.md).
-- [Текущий scope44 editable+22 read-only](scope-inventory.json), [historical source pins](source-pins.json), [design input pins](design-source-pins.json).
+- [Readiness](phase-b-readiness.md), [точная fixture authority](phase-b-fixture-authority.md), [план06](06_implementation_plan.md), [execution snapshot](step6-plan-snapshot.json), [handoff](architecture-handoff.md).
+- [Scope51editable+21readonly](scope-inventory.json), [historical source pins](source-pins.json), [design pins](design-source-pins.json), [logout authority](phase-b-logout-authority.md).
 - [Closed ideation](03.5_ideation_report.md), [requirements](01_requirements.md), [ADR](03_adr/), [архитектура](05_architecture.md), [OpenSpec hashes](requirements-revision.json), [approved selector](ui-approval.md).
 
-Прежние42 targets не удалены;2 editable добавлены только для существующего logout/account lifecycle. Core9/OpenSpec/UI/R3 dossier не изменены. Source privacy/retention/quota,9 TASK/12 AM/11conditions, guards и independentQE/deployment constraints сохранены. Старый42/20 Step6 snapshot: `history/step6-before-logout-authority/`.
+Прежние49editable/70targets сохранены; только progress fixture aliases и DB fixture exact30 с двумя migration032 tables добавлены. Core9/OpenSpec/UI/R3 и9TASK/12AM/11conditions прежние. K2/admission/context/supported plan checkpoint actual exit0;98198B full literal без обрезки. Старые receipts и7документов сохранены private, public history не расширена. Дальше: full current literal read, отдельный root code GO и bounded R3 repair/QE.
+
+Редакционная trace правка: actual amendment-check PASS16 и current K2/plan checkpoint exit0;12uniqueAM сохранены, AM-9 имеет две file-scoped строки. Source72 иclosedideation9 inputs прежние. Новый98251B literal — observation без новой code-entry/fullread claim; [authority note](phase-b-fixture-authority.md) связывает exact receipts.

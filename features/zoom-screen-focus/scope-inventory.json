@@ -1,9 +1,9 @@
 {
   "meaning": "Планируемые editable targets отдельно от явно названных read-only dependencies/regression files; остальные исследовательские чтения не являются targets",
-  "editableCount": 44,
-  "editableExistingCount": 43,
-  "editableNewCount": 1,
-  "readOnlyCount": 22,
+  "editableCount": 51,
+  "editableExistingCount": 51,
+  "editableNewCount": 0,
+  "readOnlyCount": 21,
   "editable": [
     "packages/shared/src/screen-layout.ts",
     "packages/shared/src/cut-timeline.ts",
@@ -48,7 +48,14 @@
     "apps/worker/src/render/probe.ts",
     "packages/shared/src/enums.ts",
     "apps/web/src/app/support/SignOut.tsx",
-    "apps/web/src/lib/clip-layout-draft.ts"
+    "apps/web/src/lib/clip-layout-draft.ts",
+    "tests/browser/original-video-access.test.ts",
+    "tests/browser/ux-simplification.test.ts",
+    "tests/browser/billing.test.ts",
+    "tests/browser/mockup-ui-realization.test.ts",
+    "tests/browser/upload-lifecycle.test.ts",
+    "tests/progress-screen.test.ts",
+    "tests/database.integration.test.ts"
   ],
   "readOnly": [
     "apps/web/src/server/clip-music.ts",
@@ -61,7 +68,6 @@
     "packages/shared/src/server/original-source.ts",
     "packages/shared/src/watermark-metrics.json",
     "packages/shared/src/watermark.ts",
-    "tests/browser/mockup-ui-realization.test.ts",
     "tests/browser/video-screen.test.ts",
     "tests/clip-cta-rerender.integration.test.ts",
     "tests/clip-music-choice.integration.test.ts",
@@ -85,9 +91,9 @@
     "score": 16,
     "scoreBand": "L",
     "quickDecisionTree": "XL because editable files >=30",
-    "rootDecision": "XL retained; current PhaseB gates pending; historical PhaseA admission retained in execution snapshot"
+    "rootDecision": "XL retained; current host/DB fixture plan authority active; actual gates and separate root code GO required."
   },
-  "existenceCountBasis": "Current root-confirmed complete source freeze at logout authority amendment; historical creation classes retained in history.",
+  "existenceCountBasis": "Root-authorized current51 existing editable paths/21 unchanged read-only after common terminal and actual R2 evaluation; code GO remains separate.",
   "phaseBReadinessDelta": {
     "at": "2026-11-11T18:55:11.520744+00:00",
     "integratedRevision": "c66b9ef4227580adad8fb5664c6a7650764518f1",
@@ -117,5 +123,96 @@
     "priorReadOnly20Preserved": true,
     "totalMeasured": 66,
     "currentAmendmentCodeGO": false
+  },
+  "fixtureCompatibilityDelta": {
+    "at": "2026-11-11T21:05:48.966755+00:00",
+    "authority": "Root-sanctioned existing TASK7 regression fixture compatibility; no requirements/design change",
+    "exactFiveEditable": [
+      "tests/browser/original-video-access.test.ts",
+      "tests/browser/ux-simplification.test.ts",
+      "tests/browser/billing.test.ts",
+      "tests/browser/mockup-ui-realization.test.ts",
+      "tests/browser/upload-lifecycle.test.ts"
+    ],
+    "addedOutsidePreviousScope": [
+      "tests/browser/original-video-access.test.ts",
+      "tests/browser/ux-simplification.test.ts",
+      "tests/browser/billing.test.ts",
+      "tests/browser/upload-lifecycle.test.ts"
+    ],
+    "readOnlyToEditable": [
+      "tests/browser/mockup-ui-realization.test.ts"
+    ],
+    "old44EditablePreserved": true,
+    "allOld66TargetsPreserved": true,
+    "onlyAllowedEdit": "2 existing shared TS aliases in each5 inline harnesses; mockup existing navigation usePathname stub plus WorkspaceSettings import/mount in virtual entry only; assertions/mutations/guards/profiles and production unchanged",
+    "newNames": false,
+    "measured": 70,
+    "expandedGO": false,
+    "navigationException": {
+      "at": "2026-11-11T21:25:59.352045+00:00",
+      "authority": "Root-sanctioned existing TASK7 fixture compatibility, no scope change",
+      "path": "tests/browser/mockup-ui-realization.test.ts",
+      "exactAddition": "export const usePathname=()=>window.location.pathname;",
+      "reuse": "existing ux-simplification navigation stub / Next API; no new production module/export",
+      "diagnosticFiles": [
+        {
+          "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-author/mockup-diagnostic.command.json",
+          "sha256": "c5e061715317374964759347d5e79f61e1fadf56a3512baf66a83ec619cefdf3"
+        },
+        {
+          "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-author/mockup-diagnostic.stderr",
+          "sha256": "ab05acd7e2565b5137d4377ad83f2b978fbfe9ef4037f3b8ff6e9712886aa7f7"
+        },
+        {
+          "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-author/mockup-diagnostic.stdout",
+          "sha256": "c5d23763108a6cf95ec734eba45997112bc34fae3a3c39d4db033ee5910e4eda"
+        }
+      ]
+    },
+    "settingsWiringException": {
+      "at": "2026-11-11T21:30:54.077104+00:00",
+      "authority": "Root-sanctioned existing TASK7 fixture compatibility; same49/21/70",
+      "path": "tests/browser/mockup-ui-realization.test.ts",
+      "exactEdits": [
+        "import {WorkspaceSettings,WorkspacePreferenceSync} from existing WorkspaceSettings.tsx instead of Sync-only import",
+        "render h(WorkspaceSettings,{initialTheme:'dark',initialLayout:'workspace'}) beside WorkspaceHeader"
+      ],
+      "reuse": "existing ux-simplification fixture lines47/54; existing component exports",
+      "productionAccountPresentationUnchanged": true
+    }
+  },
+  "hostFixtureCompatibilityDelta": {
+    "status": "active-step6-authority-codeGO-pending",
+    "basis": "Root confirmed actual diagnostics and terminal common run; existing configFile:false VideoDetail fixture lacks two shared source aliases.",
+    "addedEditable": "tests/progress-screen.test.ts",
+    "onlyAllowedEdit": "Add two existing shared TS source aliases to the existing inline resolve.alias; assertions/profiles/mutations/guards/production unchanged",
+    "prior49EditablePreserved": true,
+    "allPrior70TargetsPreserved": true,
+    "readOnly21Unchanged": true,
+    "totalMeasured": 72,
+    "K1": "reuse-only; no new module/export name; not run",
+    "activation": "Root explicit apply GO after all common terminal and actual full R2 evaluate; actual current K2/admission/context/supported plan checkpoint and full same-Sol literal read required before separate code GO.",
+    "codeGO": false,
+    "activatedAtUtc": "2026-11-11T23:53:40.260098+00:00"
+  },
+  "databaseFixtureCompatibilityDelta": {
+    "status": "active-step6-authority-codeGO-pending",
+    "addedEditable": "tests/database.integration.test.ts",
+    "onlyAllowedEdits": [
+      "exact rowCount expectation28→30",
+      "append clip_layout_intent and clip_layout_seed to existing arrayContaining, retain all existing names",
+      "update existing migration comment count28→30 and range001…031→001…032"
+    ],
+    "basis": "Current migration032 creates exactly clip_layout_intent and clip_layout_seed; actual common DB exact-count failure30 versus28; root baseline98 comparison retained.",
+    "noWeakening": true,
+    "assertionShapePreserved": "toBe exact count and existing arrayContaining retained; no looser comparison, removal, skip or guard change",
+    "noProductionChange": true,
+    "previous49AndProgressTargetPreserved": true,
+    "readOnly21Unchanged": true,
+    "totalMeasured": 72,
+    "K1": "reuse-only, no new module or export names",
+    "codeGO": false,
+    "activatedAtUtc": "2026-11-11T23:53:40.260098+00:00"
   }
 }

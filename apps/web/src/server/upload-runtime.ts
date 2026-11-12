@@ -9,6 +9,8 @@ import { ShortLinkService } from './short-link';
 import { ScreenService } from './screen';
 import { GuestPackService } from './guest-pack';
 import { PartnerService } from './partner';
+import { ClipLayoutRepository } from '@clipmaker/db';
+import { ClipLayoutService } from './clip-layout';
 function createUploadRuntime() {
   const runtime = getRuntime();
   const ctx = { client: s3.createS3Client(runtime.config.s3), bucket: runtime.config.s3.bucket };
@@ -25,4 +27,8 @@ function createUploadRuntime() {
     allowMutation: (ip: string, account?: string) => allowMutation(runtime.redis, ip, runtime.config.sessionSecret, account) };
 }
 const singleton = globalThis as typeof globalThis & { n5UploadRuntime?: ReturnType<typeof createUploadRuntime> };
-export function getUploadRuntime() { return singleton.n5UploadRuntime ??= createUploadRuntime(); }
+export function getUploadRuntime() {
+  const cached=singleton.n5UploadRuntime ??= createUploadRuntime(),runtime=getRuntime(),transport=getQueueRuntime();
+  // Next instrumentation and route bundles share the transport, not this error-bearing service instance.
+  return {...cached,layout:new ClipLayoutService(new ClipLayoutRepository(runtime.pool,runtime.config.limits),transport.enqueue,transport.enqueueSeed)};
+}

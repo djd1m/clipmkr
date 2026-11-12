@@ -1,6 +1,16 @@
 import { quotaMessages } from './limits-contract';
 import { z } from 'zod';
 import type { VideoStatus, VideoFailureReason, ClipStatus, CtaKind } from '@clipmaker/shared/enums';
+import type { ScreenFaceLayoutV1, NormalizedRect } from '@clipmaker/shared/screen-layout';
+
+export interface ClipLayoutInfo {
+  accountScope:string; sourceRevision:string; start:number; end:number; cutPlan:[number,number][]|null;
+  renderVersion:number; publishedRenderVersion:number;
+  publishedLayout:{version:1;requested:ScreenFaceLayoutV1;resolved:{cameraVisible:boolean;reason:string|null}}|null;
+  seed:{state:'absent'|'pending'|'running'|'ready'|'unavailable';proposal:NormalizedRect|null;reason:string|null};
+  rerenderQuota:{available:boolean;unlimited:boolean;limit:number|null;remaining:number|null;resetsAt:string};
+  activeIntent:{request_key:string;render_version:number;layout:ScreenFaceLayoutV1;status:'pending'|'failed'|'succeeded'}|null;
+}
 
 export const failureMessages = {
   refused_credit_balance: 'Недостаточно кредитов для этой записи. Выберите пакет и повторите обработку.',
