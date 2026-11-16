@@ -2,6 +2,16 @@
 
 Актуальный вердикт роли: **CLEAN — QT-01 закрыто адресной проверкой на фазе ideation**. Первичная оценка testability **88/100**, AC completeness **100% (8/8)** сохраняется без нового общего review. Это полнота спецификации и исправление выбора будущих проверок, не PASS тестов или всего convergence gate. Типографика находится в отдельном scope root и в этой повторной проверке не оценивалась.
 
+## Focused wording check ADR, 16.11.2026
+
+Вердикт роли сохраняется **CLEAN**. Новый actual binding: nonce `5c7603bd-9819-4f43-a899-3b61b893e6c5`, revision `0c2a871b57fc259a0dce47edc0aa24fb4d69dc8ad19d1873c1824c9da0673617`. Прочитаны реальный host и wording author handoff; host/receipt и manifest digest сверены перед записью.
+
+Байтовое сравнение с ранее проверенным ADR (`dc469c43221a1798e8ee55b9d1914b70415d95dd90a7ff1296f8bf02e197737a`) подтверждает ровно `## Решение` → `## Decision` плюс русское пояснение. Остальной body, Confirmation и приёмочный смысл неизменны; новый ADR SHA256 `c43b422ba76dc0fc60ebcccdc7648d85ebf037dcc5c8abe9b63bc9037682f58a`. Классификация дельты **wording** подтверждена; новых рисков в проверенной дельте не найдено. Поведение машинного reader отдельно не исполнялось и не объявляется проверенным.
+
+QT-01 сохраняется закрытым: перечитаны команда release suite (:103) и AM-7 (:178); весь план сохраняет SHA256 `83f3d971e21b0624b2003baeb169cc9a4ace592ebad5cae51fb8470bf5b4a9d4`. Исходное condition не изменено; его собственная verification перенесена на текущую revision с `classification: structural`, `implementationVerified: true` в значении фазы ideation. Для новой дельты выставлены `deltaVerification.classification: wording` и `authorAssessmentChecked: true`.
+
+Это адресная проверка текста и актуальности прежнего закрытия QT-01. Полный review, новый пересчёт баллов, tests/code/deploy и convergence evaluate не выполнялись. Типографика и runtime вне scope; общий verdict gate не заявлен. Записаны только собственная entry и этот отчёт под прежним flock; originating condition, чужие entries, author и host сохранены. Ниже — история предшествующих проверок на прежнем binding.
+
 ## Адресная проверка QT-01, 16.11.2026
 
 Проверены только исходное условие, реальный author handoff и дельта `06_implementation_plan.md`. В строке 103 stable-candidate Vitest run явно включает `tests/zoom-layout-release.test.ts`. AM-7 в строке 178 связывает `current_vps_apply_fails_before_any_write_on_invalid_or_changed_evidence` с count/exit/skip на том же candidate. **Условие QT-01 выполнено на уровне плана.**

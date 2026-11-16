@@ -69,3 +69,12 @@ P — вероятность 1..5, I — влияние 1..5, score=P×I. Чис
 Собственный verdict остаётся `clean`, conditions/verifications не расширяются. `authorAssessmentChecked=true`; structural `deltaVerification.implementationVerified=true` означает проверку исправленного плана в phase ideation, **не запуск будущего test/executor и не app QE**. Полное ревью и общий прогон не повторялись.
 
 Прочитан новый `03_typography_qualification.md` (SHA256 `d74d89132252d989da9d23042a406eb5e5d243ab4054487df9d2d79846576153`): он сообщает bounded measurement 3/3 subtitle cases font46 и 8/8 footer/title cases. Это обновляет контекст R10 относительно первоначального отчёта; raw rasters/скрипты независимо не проверялись, подтверждение продуктовой интеграции из этой записи не следует. Typography не входила в исправление QT-01 и не используется как доказательство закрытия этого замечания.
+
+
+## Focused wording verification заголовка ADR
+
+16.11.2026: nonce `5c7603bd-9819-4f43-a899-3b61b893e6c5`, revision `0c2a871b57fc259a0dce47edc0aa24fb4d69dc8ad19d1873c1824c9da0673617`. Проверены фактический author handoff и узкий diff ADR: `## Решение` заменён на `## Decision`, добавлена русская поясняющая строка для машинного извлечения раздела.
+
+Независимая проверка байтов: точное удаление только этой formatting delta восстанавливает SHA256 прежнего ADR `dc469c43221a1798e8ee55b9d1914b70415d95dd90a7ff1296f8bf02e197737a`. Текущий SHA256 — `c43b422ba76dc0fc60ebcccdc7648d85ebf037dcc5c8abe9b63bc9037682f58a`. Остальные host manifest hashes совпали. Текст решения, acceptance, Confirmation, safeguards, геометрия и откат не изменены; classification `wording` подтверждена.
+
+Новых рисков нет, verdict `clean`; собственные conditions/verifications сохранены. Обновлены только собственные `authorAssessmentChecked` и `deltaVerification`/risk assessment с новой привязкой. Чужие условия не изменялись. Это проверка документа, без полного review, тестов, реализации или deploy; QT-01 остаётся в собственности testability.

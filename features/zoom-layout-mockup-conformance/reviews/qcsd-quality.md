@@ -73,3 +73,11 @@ Author classification **structural** подтверждена: меняется 
 Новых существенных рисков от изменения не найдено. Будущий `tests/zoom-layout-release.test.ts` пока отсутствует: это допустимо для текущей ideation, но его выполнение, ненулевой count и отсутствие mandatory skip должны быть подтверждены при implementation/QE. AM-7 и поправленная команда не считаются успешным тестом. `deltaVerification.implementationVerified=true` означает проверку исправленного **плана текущей ideation**, а не проверку будущего executor.
 
 Прочитан новый `03_typography_qualification.md`: он сообщает bounded эксперимент 3/3 subtitle cases при font46 и 8/8 footer/title cases. Это обновляет сообщённый координатором статус относительно первоначального отчёта выше. Raw rasters/приватные scripts в данном адресном review не проверялись; независимый app-QE или универсальная гарантия fit отсюда не выводятся.
+
+## Адресная проверка wording ADR, 16.11.2026
+
+Прочитаны actual host и author handoff, затем единственный ADR diff: `## Решение` заменён на `## Decision` и добавлено русское пояснение нормализации для `build-coder-context`. Обратная подстановка только этого заголовка/пояснения восстановила прежний SHA256 `dc469c43221a1798e8ee55b9d1914b70415d95dd90a7ff1296f8bf02e197737a`; следовательно все остальные байты ADR, включая decision body и Confirmation, совпадают с ранее проверенными. Текущий ADR SHA256 `c43b422ba76dc0fc60ebcccdc7648d85ebf037dcc5c8abe9b63bc9037682f58a`.
+
+Классификация author **wording** подтверждена: контракт продукта, приёмочный смысл и защитные условия не изменились. Нового существенного риска от этой дельты не выявлено. Сам `build-coder-context` не запускался; успешное извлечение контекста не заявляется по статическому diff.
+
+Новая actual binding: phase `ideation`, nonce `5c7603bd-9819-4f43-a899-3b61b893e6c5`, revision `0c2a871b57fc259a0dce47edc0aa24fb4d69dc8ad19d1873c1824c9da0673617`; четыре manifest hash сверены при обновлении своей receipt. Предыдущие проверки и условия сохраняют историю; собственных conditions/verifications у quality нет. Обновлены только собственная оценка author и wording deltaVerification. Общий HTSM review, продуктовый код, тесты, deploy и стадии dz не выполнялись.
