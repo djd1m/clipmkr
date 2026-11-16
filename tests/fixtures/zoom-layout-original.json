@@ -1,0 +1,70 @@
+{
+  "originalCommit": "9e19f5746a28bad89c9551ce8cd9934f0f0a4f8e",
+  "originalPath": "docs/research/zoom-screen-layout/mockup.html",
+  "originalSha256": "7b83572176b7c48c38c5d9d3ed141148c482cc11bb98493c07fcef59fe6f4ad0",
+  "source": {
+    "width": 1816,
+    "height": 968
+  },
+  "output": {
+    "width": 1080,
+    "height": 1920
+  },
+  "tolerancePixels": 2,
+  "variants": [
+    {
+      "variant": "01",
+      "screenRoi": {
+        "x": 0,
+        "y": 40,
+        "width": 1496,
+        "height": 886
+      },
+      "cameraRoi": {
+        "x": 1496,
+        "y": 0,
+        "width": 320,
+        "height": 180
+      },
+      "screenBounds": {
+        "x": 0,
+        "y": 518.4,
+        "width": 1080,
+        "height": 639.936
+      },
+      "cameraBounds": {
+        "x": 777.6,
+        "y": 960,
+        "width": 270,
+        "height": 151.872
+      }
+    },
+    {
+      "variant": "02",
+      "screenRoi": {
+        "x": 320,
+        "y": 190,
+        "width": 930,
+        "height": 704
+      },
+      "cameraRoi": {
+        "x": 1496,
+        "y": 0,
+        "width": 320,
+        "height": 180
+      },
+      "screenBounds": {
+        "x": 0,
+        "y": 537.6,
+        "width": 1080,
+        "height": 817.92
+      },
+      "cameraBounds": {
+        "x": 669.6,
+        "y": 192,
+        "width": 345.6,
+        "height": 194.496
+      }
+    }
+  ]
+}

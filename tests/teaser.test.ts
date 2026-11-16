@@ -131,3 +131,32 @@ it('preparation failure skips visibly instead of refusing clip', async () => {
   expect(await prepareTeaser('Заголовок', 1080, '/no-such-teaser-directory')).toBeNull();
   expect(log).toHaveBeenCalledWith(JSON.stringify({ event: 'teaser_skipped', reason: 'prepare_failed' }));
 });
+
+it('composition overlays opt in only for v2-02; v1-02 and v2-01 keep prior defaults',async()=>{
+  vi.spyOn(probe,'probeDuration').mockResolvedValue(20);
+  vi.spyOn(probe,'probeVideoStream').mockResolvedValue({index:0,width:1816,height:968});
+  let graph='',ass='';
+  vi.spyOn(exec,'execFFmpeg').mockImplementation(async args=>{
+    graph=args[args.indexOf('-filter_complex')+1]!;
+    const path=graph.match(/ass='([^']+)'/)?.[1];
+    ass=path?await readFile(path,'utf8'):'';
+  });
+  const {parseScreenFaceLayout}=await import('@clipmaker/shared/screen-layout');
+  for(const [version,variant] of [[1,'02'],[2,'01'],[2,'02']] as const){
+    const layout=parseScreenFaceLayout({version,mode:'screen-face',variant,screen:{x:0,y:0,width:1,height:1},focus:null,camera:null});
+    const result=await renderClip({...options,layout,cta:'subscribe'});
+    expect(result.rendered_layout?.requested).toEqual(layout);
+    if(version===2 && variant==='02'){
+      expect(ass).toContain('Default,Liberation Sans Narrow,46,');expect(ass).toContain(',2,54,54,458,1');
+      expect(graph).toContain(':x=91:y=237:');expect(result.cta?.font_size).toBe(48);
+    }else{
+      expect(ass).toContain(`Default,Liberation Sans Narrow,${SUBTITLE_FONT_SIZE},`);
+      expect(ass).toContain(',2,54,54,500,1');expect(graph).toContain(':x=(w-text_w)/2:y=0.03*h:');
+      expect(result.cta?.font_size).toBe(72);
+    }
+    expect(graph.endsWith('[video]')).toBe(true);
+    expect(graph.indexOf('ass=')).toBeLessThan(graph.indexOf('textfile='));
+    expect(graph.indexOf('textfile=')).toBeLessThan(graph.indexOf("text='Подписывайтесь"));
+    expect(graph.indexOf("text='Подписывайтесь")).toBeLessThan(graph.indexOf("text='КлипМейкер"));
+  }
+});

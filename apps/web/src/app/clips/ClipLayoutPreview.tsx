@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { planScreenLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
+import { planScreenLayout, type ScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 import { mapOutputTime, mapTime, planDuration, type Segment } from '@clipmaker/shared/cut-timeline';
 import styles from './clip-layout.module.css';
 
 /** One authorized decoder supplies both regions; source frames never leave this canvas. */
-export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{videoId:string;layout:ScreenFaceLayoutV1;
+export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{videoId:string;layout:ScreenFaceLayout;
   segments:Segment[];active:boolean;onState:(state:'loading'|'ready'|'unsupported')=>void}) {
   const video=useRef<HTMLVideoElement>(null),canvas=useRef<HTMLCanvasElement>(null);
   const [position,setPosition]=useState(0),[playing,setPlaying]=useState(false);
@@ -20,7 +20,7 @@ export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{vide
       try {
         const g=planScreenLayout(latest.current.layout,{width:node.videoWidth,height:node.videoHeight},true);
         const ctx=screen.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
-        ctx.fillStyle='#181818';ctx.fillRect(0,0,1080,1920);ctx.save();ctx.beginPath();ctx.rect(0,400,1080,800);ctx.clip();
+        ctx.fillStyle='#181818';ctx.fillRect(0,0,1080,1920);ctx.save();ctx.beginPath();ctx.rect(0,latest.current.layout.version===2?0:400,1080,latest.current.layout.version===2?1920:800);ctx.clip();
         for(const placement of [g.screen,g.camera])if(placement){const {source:s,destination:d}=placement;
           ctx.drawImage(node,s.x,s.y,s.width,s.height,d.x,d.y,d.width,d.height);}
         ctx.restore();return true;

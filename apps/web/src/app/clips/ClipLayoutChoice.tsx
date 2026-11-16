@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { z } from 'zod';
-import { parseScreenFaceLayout, type ScreenFaceLayoutV1, type NormalizedRect } from '@clipmaker/shared/screen-layout';
+import { parseScreenFaceLayout, type ScreenFaceLayout, type NormalizedRect } from '@clipmaker/shared/screen-layout';
 import type { ClipScreen, ClipLayoutInfo } from '../../lib/screen-contract';
 import { rpc } from '../../lib/rpc';
 import { CLIP_LAYOUT_DRAFT_PREFIX,CLIP_LAYOUT_DRAFT_CLEAR_EVENT } from '../../lib/clip-layout-draft';
@@ -16,7 +16,7 @@ const submittedSchema=z.object({request_key:z.string().uuid(),expected_render_ve
 const envelopeSchema=z.object({version:z.literal(1),accountScope:z.string().uuid(),clipId:z.string().uuid(),sourceRevision:hash,
   baseRenderVersion:integer,layout:layoutSchema,draftVersion:integer,submitted:submittedSchema.optional()}).strict();
 type Envelope=z.infer<typeof envelopeSchema>;
-const initial:ScreenFaceLayoutV1={version:1,mode:'screen-face',variant:'03',screen:{x:0,y:0,width:1,height:1},focus:null,camera:null};
+const initial:ScreenFaceLayout={version:1,mode:'screen-face',variant:'03',screen:{x:0,y:0,width:1,height:1},focus:null,camera:null};
 const defaultCamera={x:.7,y:.05,width:.25,height:.3};
 const limitation='Камера берётся из выбранной области. Смена человека и короткое исчезновение между проверками могут остаться незамеченными; просмотрите весь фрагмент.';
 const whole='Показан весь экран; для крупного плана можно уточнить область.';
@@ -29,7 +29,7 @@ const publishedReasonText:Record<string,string>={
   no_safe_camera_slot:'В опубликованном клипе камера скрыта: нет безопасного места. Выберите другой вариант или уточните область.',
 };
 const key=(account:string,clip:string)=>`${CLIP_LAYOUT_DRAFT_PREFIX}${account}:${clip}`;
-const same=(a:ScreenFaceLayoutV1,b:ScreenFaceLayoutV1)=>JSON.stringify(a)===JSON.stringify(b);
+const same=(a:ScreenFaceLayout,b:ScreenFaceLayout)=>JSON.stringify(a)===JSON.stringify(b);
 const percentage=(value:number)=>Math.round(value*1e6)/1e4;
 function read(account:string,clip:string):Envelope|null {
   const raw=sessionStorage.getItem(key(account,clip));if(raw===null)return null;
@@ -44,7 +44,7 @@ function write(value:Envelope):boolean {
 export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard}:{videoId:string;clip:ClipScreen;active:boolean;
   onLeaveGuard?:(guard:(()=>boolean)|null)=>void}) {
   const id=useId(),details=useRef<HTMLDetailsElement>(null),dialog=useRef<HTMLDialogElement>(null),applyButton=useRef<HTMLButtonElement>(null);
-  const [open,setOpen]=useState(false),[info,setInfo]=useState<ClipLayoutInfo|null>(null),[draft,setDraft]=useState(initial);
+  const [open,setOpen]=useState(false),[info,setInfo]=useState<ClipLayoutInfo|null>(null),[draft,setDraft]=useState<ScreenFaceLayout>(initial);
   const [target,setTarget]=useState<'screen'|'camera'>('screen'),[busy,setBusy]=useState(false),[confirming,setConfirming]=useState(false);
   const [reviewed,setReviewed]=useState(false),[preview,setPreview]=useState<'loading'|'ready'|'unsupported'>('loading');
   const [status,setStatus]=useState(''),[storageFailed,setStorageFailed]=useState(false),[error,setError]=useState('');
@@ -66,8 +66,8 @@ export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard}:{videoId:str
     }
     window.addEventListener(CLIP_LAYOUT_DRAFT_CLEAR_EVENT,clear);return()=>window.removeEventListener(CLIP_LAYOUT_DRAFT_CLEAR_EVENT,clear);
   },[announce]);
-  function change(layout:ScreenFaceLayoutV1){
-    const c=current.current;if(!c)return;const canonical=parseScreenFaceLayout(layout),old=envelope.current;
+  function change(layout:ScreenFaceLayout){
+    const c=current.current;if(!c || draft.version===2)return;const canonical=parseScreenFaceLayout(layout),old=envelope.current;
     const value:Envelope={version:1,accountScope:c.accountScope,clipId:clip.clip_id,sourceRevision:c.sourceRevision,
       baseRenderVersion:old?.baseRenderVersion??c.renderVersion,layout:canonical,draftVersion:(old?.draftVersion??0)+1,
       ...(old?.submitted?{submitted:old.submitted}:{})};
@@ -178,6 +178,7 @@ export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard}:{videoId:str
     const c=current.current;if(!c || sending.current || !reviewed || preview!=='ready')return;
     const old=envelope.current;let value=old;
     const replaying=!!old?.submitted && operation.current!=='failed' && operation.current!=='succeeded';
+    if(draft.version===2 && !replaying)return;
     // Unknown results replay the exact original snapshot/key before another operation is admitted.
     let submitted=old?.submitted;
     if(!submitted || operation.current==='failed' || operation.current==='succeeded'){
@@ -230,28 +231,29 @@ export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard}:{videoId:str
   const quotaText=quota?quota.unlimited?'Пересборки без суточного ограничения по действующему праву.':`Доступно ${quota.remaining} из ${quota.limit} пересборок. Обновление ${new Date(quota.resetsAt).toLocaleString('ru-RU',{timeZone:'Europe/Moscow'})} МСК.`:'';
   return <details ref={details} className={styles.choice} onToggle={event=>{const next=event.currentTarget.open;setOpen(next);if(!next){setConfirming(false);dialog.current?.close();event.currentTarget.querySelector('summary')?.focus();}}}>
     <summary>Экран + камера</summary>
-    {open && <><fieldset disabled={!info || busy}><legend>Оформление экрана и камеры</legend>
-      {(['03','01','02'] as const).map(variant=><label key={variant}><input type="radio" name={`${id}-variant`} checked={draft.variant===variant} onChange={()=>change({...draft,variant})} />
-        {variant==='03'?'03 — Крупный план действия':variant==='01'?'01 — Весь экран и камера в свободной области':'02 — Экран сверху, камера снизу'}</label>)}</fieldset>
-      <p>{draft.focus===null?whole:'Выделенная область экрана увеличена; проверьте её на всём фрагменте.'}</p>
+    {open && <><fieldset disabled={!info || busy || draft.version===2}><legend>Оформление экрана и камеры</legend>
+      {(['03','01','02'] as const).map(variant=><label key={variant}><input type="radio" name={`${id}-variant`} checked={draft.variant===variant} onChange={()=>{if(draft.version===1)change({...draft,variant});}} />
+        {variant==='03'?'03 — Крупный план действия':variant==='01'?(draft.version===2?'01 — Весь экран с камерой справа':'01 — Весь экран и камера в свободной области'):(draft.version===2?'02 — Рабочая область и камера справа сверху':'02 — Экран сверху, камера снизу')}</label>)}</fieldset>
+      <p>{draft.version===2?'Показана сохранённая область экрана. Проверьте её на всём фрагменте.':draft.focus===null?whole:'Выделенная область экрана увеличена; проверьте её на всём фрагменте.'}</p>
       <p>{limitation}</p>
+      {draft.version===2 && <p className={styles.warning}>Сохранённая исправленная композиция доступна для просмотра. Изменение оформления временно отключено.</p>}
       {info && !error && <ClipLayoutPreview videoId={videoId} layout={draft} segments={info.cutPlan??[[info.start,info.end]]} active={open && active} onState={previewState} />}
       <details><summary>Уточнить области</summary>
-        <label>Уточняемая область <select value={target} onChange={event=>setTarget(event.target.value as 'screen'|'camera')}><option value="screen">Экран</option><option value="camera">Камера</option></select></label>
+        <label>Уточняемая область <select disabled={draft.version===2} value={target} onChange={event=>setTarget(event.target.value as 'screen'|'camera')}><option value="screen">Экран</option><option value="camera">Камера</option></select></label>
         {([['x','положение по горизонтали'],['y','положение по вертикали'],['width','ширина']] as const).map(([field,label])=>{
           const min=field==='width'?.0001:percentage(field==='x'?regionBounds.x:regionBounds.y);
           const max=percentage(field==='x'?regionBounds.x+regionBounds.width-region.width:field==='y'?regionBounds.y+regionBounds.height-region.height:regionBounds.width);
           return <label key={field}>{targetName}: {label}, % <output>{percentage(region[field])}%</output>
             <input type="range" min={min} max={max} step="any" value={percentage(region[field])}
               aria-label={`${targetName}: ${label}, %`} aria-valuetext={`${percentage(region[field])}% ${field==='y'?'высоты':'ширины'} исходника`}
-              disabled={!info || busy} onChange={event=>regionChange(field,Number(event.target.value))} /></label>;})}
-        <label><input type="checkbox" checked={draft.camera!==null} disabled={!info || busy} onChange={event=>change({...draft,camera:event.target.checked?defaultCamera:null})} />Показывать камеру из выбранной области</label>
+              disabled={!info || busy || draft.version===2} onChange={event=>regionChange(field,Number(event.target.value))} /></label>;})}
+        <label><input type="checkbox" checked={draft.camera!==null} disabled={!info || busy || draft.version===2} onChange={event=>change({...draft,camera:event.target.checked?defaultCamera:null})} />Показывать камеру из выбранной области</label>
       </details>
       <p>{quotaText} При применении используется одна пересборка. Старый файл доступен до публикации нового в пределах срока хранения.</p>
       <p role="status" aria-live="polite" aria-atomic="true">{status} {publishedNotice} {preview==='loading'?'Загружаем видеопредпросмотр…':preview==='ready'?'Предпросмотр доступен. Проверьте весь фрагмент.':'Видеопредпросмотр недоступен. Проверьте исходник и повторно откройте настройки.'}</p>
       {storageFailed && <p className={styles.warning} role="alert">{storageWarning}</p>}
       {error && <p role="alert" id={`${id}-error`}>{error}</p>}
-      <button type="button" ref={applyButton} disabled={!info || preview!=='ready' || !!error || busy || !quota?.available || operation.current==='pending'}
+      <button type="button" ref={applyButton} disabled={!info || preview!=='ready' || !!error || busy || !quota?.available || operation.current==='pending' || (draft.version===2 && !unresolved)}
         aria-describedby={error?`${id}-error`:undefined} onClick={()=>{setConfirming(true);setReviewed(false);dialog.current?.showModal();dialog.current?.querySelector<HTMLElement>('h3')?.focus();}}>Применить оформление</button>
       <dialog ref={dialog} className={styles.dialog} aria-labelledby={`${id}-confirmation`} onCancel={event=>{event.preventDefault();closeConfirmation();}}>
         <h3 id={`${id}-confirmation`} tabIndex={-1}>Применить оформление клипа</h3>

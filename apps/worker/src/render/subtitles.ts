@@ -56,7 +56,7 @@ export function wrapSubtitleText(text: string, maxChars: number): string {
 }
 // User backslashes must never become ASS control sequences; braces stay visible data.
 const literal = (text: string) => escapeAssText(text.replace(/\\/g, '＼').replace(/[\r\n]/g, ' '));
-export function generateSubtitleFile(words: SubtitleSegment[], start: number, end: number, format: ClipFormat): string | null {
+export function generateSubtitleFile(words: SubtitleSegment[], start: number, end: number, format: ClipFormat, placement?: { fontSize: number; marginV: number }): string | null {
   const selected = words.filter(w => w.start >= start && w.end <= end && w.end > w.start);
   if (!selected.length) return null;
   const { width, height } = FORMAT_DIMENSIONS[format];
@@ -107,7 +107,7 @@ WrapStyle: 2
 ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Liberation Sans Narrow,${SUBTITLE_FONT_SIZE},&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,${SUBTITLE_OUTLINE},${SUBTITLE_SHADOW},2,54,54,${SUBTITLE_MARGIN_V},1
+Style: Default,Liberation Sans Narrow,${placement?.fontSize ?? SUBTITLE_FONT_SIZE},&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,${SUBTITLE_OUTLINE},${SUBTITLE_SHADOW},2,54,54,${placement?.marginV ?? SUBTITLE_MARGIN_V},1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ${events.join('\n')}

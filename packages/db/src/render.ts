@@ -4,10 +4,10 @@ import { transaction } from './quota.js';
 import { effectivePlanSql } from './plan.js';
 import { auditAttempt, leaseAttemptTx, type Attempt } from './attempts.js';
 import { parseTranscript } from '@clipmaker/shared/transcript';
-import { parseScreenFaceLayout, parsePublishedLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
+import { parseScreenFaceLayout, parsePublishedLayout, type ScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 import type { LayoutPublished } from './clip-layout.js';
 export interface RenderInput {
-  layout: ScreenFaceLayoutV1 | null;
+  layout: ScreenFaceLayout | null;
   music_track_id: string | null; render_version: number;
   compact: boolean; loudness_median_db: string | null; cut_plan: [number, number][] | null;
   object_key: string; actual_bytes: string; duration_seconds: string; music: boolean; teaser: boolean; title: string; plan: unknown; cta_kind: string | null;

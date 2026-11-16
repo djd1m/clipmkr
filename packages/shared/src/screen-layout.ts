@@ -9,6 +9,12 @@ export interface ScreenFaceLayoutV1 {
   focus: NormalizedRect | null;
   camera: NormalizedRect | null;
 }
+export interface ScreenFaceLayoutV2 extends Omit<ScreenFaceLayoutV1, 'version' | 'variant' | 'focus'> {
+  version: 2;
+  variant: '01' | '02';
+  focus: null;
+}
+export type ScreenFaceLayout = ScreenFaceLayoutV1 | ScreenFaceLayoutV2;
 interface Rect { x: number; y: number; width: number; height: number }
 interface Source { width: number; height: number; sampleAspectRatio?: number }
 interface Placement { source: Rect; destination: Rect }
@@ -51,14 +57,15 @@ function inside(a: Rect, b: Rect): boolean {
   return a.x >= b.x - 1e-12 && a.y >= b.y - 1e-12
     && right(a) <= right(b) + 1e-12 && bottom(a) <= bottom(b) + 1e-12;
 }
-export function parseScreenFaceLayout(value: unknown): ScreenFaceLayoutV1 {
+export function parseScreenFaceLayout(value: unknown): ScreenFaceLayout {
   if (!object(value, ['version', 'mode', 'variant', 'screen', 'focus', 'camera'])
-    || value.version !== 1 || value.mode !== 'screen-face'
-    || !['01', '02', '03'].includes(value.variant as string)) throw new Error('Непригодное оформление');
+    || (value.version !== 1 && value.version !== 2) || value.mode !== 'screen-face'
+    || !['01', '02', '03'].includes(value.variant as string)
+    || (value.version === 2 && (value.variant === '03' || value.focus !== null))) throw new Error('Непригодное оформление');
   const screen = rect(value.screen), focus = value.focus === null ? null : rect(value.focus);
   if (focus && !inside(focus, screen)) throw new Error('Фокус вне экрана');
-  return { version: 1, mode: 'screen-face', variant: value.variant as ScreenFaceLayoutV1['variant'],
-    screen, focus, camera: value.camera === null ? null : rect(value.camera) };
+  return { version: value.version, mode: 'screen-face', variant: value.variant,
+    screen, focus, camera: value.camera === null ? null : rect(value.camera) } as ScreenFaceLayout;
 }
 export function parsePublishedLayout(value:unknown) {
   if(!object(value,['version','requested','resolved']) || value.version!==1
@@ -76,10 +83,16 @@ function pixelCrop(r: Rect, source: Source): Rect {
     width: Math.max(2, Math.min(maxX, evenCeil(right(r))) - x),
     height: Math.max(2, Math.min(maxY, evenCeil(bottom(r))) - y) };
 }
-function pixels(r: NormalizedRect, source: Source): Rect | null {
+function pixels(r: NormalizedRect, source: Source, canonicalBoundary = false): Rect | null {
   const raw = { x: r.x * source.width, y: r.y * source.height,
     width: r.width * source.width, height: r.height * source.height };
-  const crop = pixelCrop(raw, source);
+  // V2 removes only the error introduced by canonical 1e-6 normalization before
+  // outward even alignment. A genuinely fractional boundary keeps its old coverage.
+  const snap = (n: number, dimension: number, terms = 1) => canonicalBoundary
+    && Math.abs(n - Math.round(n)) <= dimension * terms * .5e-6 + 1e-9 ? Math.round(n) : n;
+  const x = snap(raw.x, source.width), y = snap(raw.y, source.height);
+  const crop = canonicalBoundary ? pixelCrop({ x, y, width: snap(right(raw), source.width, 2) - x,
+    height: snap(bottom(raw), source.height, 2) - y }, source) : pixelCrop(raw, source);
   // A tiny ROI in the last odd pixel can require a >2px shift to obtain an even 2x2 crop.
   // Keep the JSON contract; declare this geometry unavailable rather than silently moving it.
   return [crop.x - raw.x, crop.y - raw.y, right(crop) - right(raw), bottom(crop) - bottom(raw)]
@@ -99,7 +112,7 @@ function mapRect(r: Rect, from: Rect, to: Rect): Rect {
 
 /** Input dimensions already include autorotation. cameraAvailable is a controlled observation,
  * not detector confidence; no I/O, detection, source identity or legacy dispatch occurs here. */
-export function planScreenLayout(value: ScreenFaceLayoutV1, source: Source, cameraAvailable = false): ScreenLayoutGeometry {
+export function planScreenLayout(value: ScreenFaceLayout, source: Source, cameraAvailable = false): ScreenLayoutGeometry {
   const layout = parseScreenFaceLayout(value);
   if (![source.width, source.height].every(n => Number.isSafeInteger(n) && n >= 2)
     || (source.sampleAspectRatio !== undefined && (!Number.isFinite(source.sampleAspectRatio) || source.sampleAspectRatio <= 0))) {
@@ -108,17 +121,25 @@ export function planScreenLayout(value: ScreenFaceLayoutV1, source: Source, came
   const { width, height } = FORMAT_DIMENSIONS.portrait;
   const pane = { x: 0, y: 400, width, height: 800 };
   const unsupportedSar = source.sampleAspectRatio !== undefined && source.sampleAspectRatio !== 1;
-  const requestedScreen = pixels(layout.screen, source);
+  const requestedScreen = pixels(layout.screen, source, layout.version === 2);
   const requestedFocus = layout.variant === '03' && layout.focus ? pixels(layout.focus, source) : null;
   const unsupported = unsupportedSar || !requestedScreen || (layout.variant === '03' && layout.focus !== null && !requestedFocus);
-  const crop = unsupportedSar || !requestedScreen ? pixels(whole, source)! : requestedScreen;
+  const crop = unsupportedSar || !requestedScreen ? pixels(whole, source, layout.version === 2)! : requestedScreen;
   const focus = unsupported ? null : requestedFocus;
   let screen: Placement = { source: crop, destination: contain(crop, pane, source.sampleAspectRatio) };
   let camera: Placement | null = null;
   let cameraReason: ScreenLayoutGeometry['cameraReason'] = 'camera_unavailable';
   const reason = unsupported ? 'unsupported_geometry' : layout.variant === '03' && !focus ? 'whole_screen' : null;
-  const cameraCrop = layout.camera && cameraAvailable && !unsupported ? pixels(layout.camera, source) : null;
-  if (layout.variant === '02' && !unsupported) {
+  const cameraCrop = layout.camera && cameraAvailable && !unsupported ? pixels(layout.camera, source, layout.version === 2) : null;
+  if (layout.version === 2) {
+    const slot = layout.variant === '01'
+      ? { x: 0, y: height * .27, width, height: height * .3333 }
+      : { x: 0, y: height * .28, width, height: height * .426 };
+    screen = { source: crop, destination: contain(crop, slot, source.sampleAspectRatio) };
+    if (cameraCrop) camera = { source: cameraCrop, destination: contain(cameraCrop, layout.variant === '01'
+      ? { x: width * .72, y: height * .50, width: width * .25, height: height * .0791 }
+      : { x: width * .62, y: height * .10, width: width * .32, height: height * .1013 }) };
+  } else if (layout.variant === '02' && !unsupported) {
     screen = { source: crop, destination: contain(crop, { ...pane, height: 560 }) };
     if (cameraCrop) camera = { source: cameraCrop,
       destination: contain(cameraCrop, { x: 0, y: 976, width, height: 224 }) };

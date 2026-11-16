@@ -1,4 +1,4 @@
-import { planScreenLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
+import { planScreenLayout, type ScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 import type { FaceReport } from './framing-plan.js';
 import type { Segment } from '@clipmaker/shared/cut-timeline';
 
@@ -32,7 +32,7 @@ export function proposeLayoutCamera(report:FaceReport|null) {
 
 /** Isolated graph only. The caller supplies an already compacted stream and camera decision.
  * This module neither probes sources nor runs detectors, jobs or FFmpeg. */
-export function buildScreenLayoutGraph(layout: ScreenFaceLayoutV1,
+export function buildScreenLayoutGraph(layout: ScreenFaceLayout,
   source: { width: number; height: number; sampleAspectRatio?: number },
   cameraAvailable = false, inputLabel = 'vc') {
   if (!/^[A-Za-z0-9_:]+$/.test(inputLabel)) throw new Error('Непригодная метка потока');
@@ -42,10 +42,10 @@ export function buildScreenLayoutGraph(layout: ScreenFaceLayoutV1,
     `scale=${p.destination.width}:${p.destination.height},setsar=1`;
   const graph = [
     `[${inputLabel}]split=${camera ? 3 : 2}[sl_base][sl_screen]${camera ? '[sl_camera]' : ''}`,
-    '[sl_base]scale=1080:800,setsar=1,drawbox=c=0x181818:t=fill[sl_bg]',
+    `[sl_base]scale=1080:${layout.version === 2 ? 1920 : 800},setsar=1,drawbox=c=0x181818:t=fill[sl_bg]`,
     `[sl_screen]${cropScale(screen)}[sl_content]`,
-    `[sl_bg][sl_content]overlay=x=${screen.destination.x}:y=${screen.destination.y - 400}:` +
-      'repeatlast=0:eof_action=pass:shortest=1,pad=1080:1920:0:400:color=0x181818[sl_canvas]',
+    `[sl_bg][sl_content]overlay=x=${screen.destination.x}:y=${screen.destination.y - (layout.version === 2 ? 0 : 400)}:` +
+      `repeatlast=0:eof_action=pass:shortest=1${layout.version === 2 ? '' : ',pad=1080:1920:0:400:color=0x181818'}[sl_canvas]`,
   ];
   if (camera) {
     graph.push(`[sl_camera]${cropScale(camera)}[sl_live_camera]`,

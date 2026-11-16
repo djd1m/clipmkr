@@ -62,7 +62,7 @@ export function buildCtaFilter(layout: CtaLayout, start: number): string {
 /** Вид читается fail-closed: неизвестное → none → надписи нет. Отказ разметки — журнал, клип без надписи.
  *  `watermark` обязателен (фича 30): текст надписи зависит от того, есть ли в кадре метка с /c/КОД. */
 export function prepareCta(kind: unknown, width: number, height: number, duration: number, teaser: boolean,
-  watermark: boolean, onSkip?: (reason: CtaSkipReason) => void): { result: CtaResult; filter: string } | null {
+  watermark: boolean, onSkip?: (reason: CtaSkipReason) => void, zone?: CtaZone): { result: CtaResult; filter: string } | null {
   const safe = readCtaKind(kind);
   if (safe === 'none') return null;
   const skip = (reason: CtaSkipReason) => {
@@ -75,7 +75,7 @@ export function prepareCta(kind: unknown, width: number, height: number, duratio
   const text = ctaFrameLabel(safe, watermark);
   if (text === null) return skip('paid_no_link');
   let layout: CtaLayout | null;
-  try { layout = layoutCta(text, width, ctaZone(height)); }
+  try { layout = layoutCta(text, width, zone ?? ctaZone(height)); }
   catch (error) { if (error instanceof WatermarkGeometryError) return skip('glyph_missing'); throw error; }
   if (!layout) return skip('no_room');
   return { result: { kind: safe, text, font_size: layout.fontSize, start_seconds: start }, filter: buildCtaFilter(layout, start) };

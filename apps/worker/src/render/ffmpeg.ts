@@ -1,5 +1,5 @@
 import { buildCompactionGraph, mapTime, planDuration, type Segment } from './compaction.js';
-import { planScreenLayout,parseScreenFaceLayout,type ScreenFaceLayoutV1,type NormalizedRect } from '@clipmaker/shared/screen-layout';
+import { planScreenLayout,parseScreenFaceLayout,type ScreenFaceLayout,type NormalizedRect } from '@clipmaker/shared/screen-layout';
 import type { LayoutPublished } from '@clipmaker/db';
 import { buildScreenLayoutGraph,resolveLayoutCamera,proposeLayoutCamera } from './screen-layout.js';
 import { prepareTeaser } from './teaser.js';
@@ -37,7 +37,7 @@ export function buildFilterChain(format: ClipFormat, assFilePath: string | null,
   return filters.join(',');
 }
 export interface RenderOptions {
-  layout?:ScreenFaceLayoutV1|null;
+  layout?:ScreenFaceLayout|null;
   musicTrackId?: string | null;
   cutPlan?: Segment[];
   inputPath: string; outputPath: string; startTime: number; endTime: number;
@@ -54,22 +54,23 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
   }
   const temp = await mkdtemp(join(dirname(options.outputPath), 'render-'));
   try {
+    const layout=options.layout==null?null:parseScreenFaceLayout(options.layout);
+    const original02=layout?.version===2 && layout.variant==='02';
     const words = cuts ? options.words.filter(w => w.start >= options.startTime && w.end <= options.endTime)
       .map(w => ({ ...w, start: mapTime(cuts, w.start), end: mapTime(cuts, w.end) })).filter(w => w.end > w.start) : options.words;
-    const subtitles = generateSubtitleFile(words, cuts ? 0 : options.startTime, cuts ? duration : options.endTime, options.format);
+    const subtitles = generateSubtitleFile(words, cuts ? 0 : options.startTime, cuts ? duration : options.endTime, options.format, original02 ? {fontSize:46,marginV:458} : undefined);
     const ass = subtitles ? join(temp, 'subtitles.ass') : null;
     if (ass) await writeFile(ass, subtitles!, { mode: 0o600 });
     const { width, height } = FORMAT_DIMENSIONS[options.format];
     // Keep permanent watermark geometry failures ahead of probing/retryable media errors.
     if (options.watermark) watermarkGeometry(width, height, options.origin, options.code);
     const video = await probeVideoStream(options.inputPath, options.signal);
-    const layout=options.layout==null?null:parseScreenFaceLayout(options.layout);
     if(layout && !video)throw new Error('Экран требует видеодорожку');
     if (options.music && options.clipIndex !== undefined && !Number.isSafeInteger(options.clipIndex)) {
       console.info(JSON.stringify({ event: 'music_track_fallback' }));
     }
-    const teaser = options.teaser ? await prepareTeaser(options.title ?? '', width, temp,!!layout) : null;
-    const cta = prepareCta(options.cta, width, height, duration, !!teaser, options.watermark);
+    const teaser = options.teaser ? await prepareTeaser(options.title ?? '', width, temp,!!layout,original02?{x:91,y:237,layoutWidth:632}:undefined) : null;
+    const cta = prepareCta(options.cta, width, height, duration, !!teaser, options.watermark,undefined,original02?{top:1481,bottom:1561}:undefined);
     const trackIndex = typeof options.clipIndex === 'number' ? options.clipIndex - 1 : undefined;
     const track = options.musicTrackId == null
       ? (options.music ? selectTrack(trackIndex) : null)
@@ -113,7 +114,7 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
     const rendered_layout:LayoutPublished|null=layout && compositor?{version:1,requested:layout,
       resolved:{cameraVisible:!!compositor.geometry.camera,reason:compositor.geometry.reason==='unsupported_geometry'?'unsupported_geometry':
         (layout.camera && !compositor.geometry.camera ? cameraReason??compositor.geometry.cameraReason : null)??compositor.geometry.reason}}:null;
-    if(rendered_layout)console.info(JSON.stringify({event:'screen_layout_resolved',variant:rendered_layout.requested.variant,
+    if(rendered_layout)console.info(JSON.stringify({event:'screen_layout_resolved',composition_version:rendered_layout.requested.version,variant:rendered_layout.requested.variant,
       reason:rendered_layout.resolved.reason,camera_present:rendered_layout.resolved.cameraVisible}));
     const source = video === null ? `color=c=0x181818:s=${width}x${height}:r=25:d=${duration},` : cuts ? '[vc]' : `[0:${video.index}]`;
     const compactionGraph = cuts ? buildCompactionGraph(cuts, options.startTime, video?.index ?? null) + ';' : '';

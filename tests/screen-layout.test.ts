@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { parseScreenFaceLayout, planScreenLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
+import { parseScreenFaceLayout, parsePublishedLayout, planScreenLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
 import { parseCutPlan, planDuration, mapTime, mapOutputTime, COMPACT_FPS, COMPACT_XFADE_SECONDS } from '@clipmaker/shared/cut-timeline';
 import * as legacy from '../apps/worker/src/render/compaction';
 import { buildScreenLayoutGraph } from '../apps/worker/src/render/screen-layout';
@@ -164,4 +164,70 @@ it('isolated graph rejects stream-label injection and retains focus when control
   const noCamera = buildScreenLayoutGraph(chosen, { width: 1920, height: 1080 }, false);
   expect(withCamera.geometry.camera).not.toBeNull(); expect(noCamera.geometry.camera).toBeNull();
   expect(noCamera.geometry.cameraReason).toBe('camera_unavailable'); expect(noCamera.geometry.reason).toBeNull();
+});
+
+it('v2_parser_is_strict_and_v1_canonical_bytes_are_unchanged', () => {
+  const v1 = '{"version":1,"mode":"screen-face","variant":"01","screen":{"x":0,"y":0,"width":1,"height":1},"focus":null,"camera":null}';
+  expect(JSON.stringify(parseScreenFaceLayout(JSON.parse(v1)))).toBe(v1);
+  for (const variant of ['01', '02'] as const) {
+    const v2 = {...layout(variant), version:2, focus:null};
+    expect(parseScreenFaceLayout(v2)).toEqual(v2);
+    expect(parsePublishedLayout({version:1,requested:v2,resolved:{cameraVisible:false,reason:null}}).requested).toEqual(v2);
+    expect(JSON.stringify(parseScreenFaceLayout(v2))).not.toBe(JSON.stringify(parseScreenFaceLayout({...v2,version:1})));
+    for(const field of ['screen','camera'])for(const roi of [null,{...whole,x:'0'},{...whole,extra:true},{...whole,height:0}]){
+      if(field==='camera' && roi===null)continue;
+      expect(()=>parseScreenFaceLayout({...v2,[field]:roi})).toThrow();
+    }
+    for (const invalid of [{...v2,version:'2'}, {...v2,version:3}, {...v2,variant:'03'},
+      {...v2,version:undefined}, {...v2,focus:whole}, {...v2,extra:true}, {...v2,screen:{...whole,width:Infinity}}]) {
+      expect(()=>parseScreenFaceLayout(invalid)).toThrow();
+    }
+  }
+});
+
+it.each(['01','02'] as const)('v2 %s uses the full canvas while absent camera preserves the screen', variant => {
+  const chosen = parseScreenFaceLayout({...layout(variant),version:2,focus:null});
+  const source = {width:1816,height:968};
+  const live = buildScreenLayoutGraph(chosen,source,true);
+  const absent = buildScreenLayoutGraph(chosen,source,false);
+  expect(absent.geometry.screen).toEqual(live.geometry.screen);
+  expect(absent.geometry.camera).toBeNull();
+  expect(live.graph).toContain('scale=1080:1920');
+  expect(live.graph).not.toContain('pad=1080:1920:0:400');
+  expect(live.graph).not.toMatch(/tpad|loop|freeze/);
+  expect(live.graph).toContain(`overlay=x=${live.geometry.screen.destination.x}:y=${live.geometry.screen.destination.y}:`);
+  const fallback = planScreenLayout(chosen,{width:720,height:576,sampleAspectRatio:16/15},true);
+  expect(fallback.reason).toBe('unsupported_geometry');expect(fallback.camera).toBeNull();
+  expect(Math.abs(fallback.screen.destination.width/(4/3)-fallback.screen.destination.height)).toBeLessThanOrEqual(2);
+});
+
+it('v2 canonical boundary correction is bounded by normalization error and leaves fractional coverage intact',()=>{
+  const source={width:1816,height:968};
+  // Independent even ROI across many boundaries, not just the research source ROI.
+  for(let x=2;x<=1500;x+=14)for(const y of [2,40,190]){
+    const chosen=parseScreenFaceLayout({version:2,mode:'screen-face',variant:'02',
+      screen:{x:x/source.width,y:y/source.height,width:200/source.width,height:300/source.height},focus:null,camera:null});
+    expect(planScreenLayout(chosen,source).screen.source).toEqual({x,y,width:200,height:300});
+  }
+  const fractional=parseScreenFaceLayout({...layout('02'),version:2,screen:{x:.1001,y:.1001,width:.2,height:.2},focus:null});
+  expect(planScreenLayout(fractional,{width:1000,height:1000}).screen.source).toEqual({x:100,y:100,width:202,height:202});
+});
+
+it.each(['01','02'] as const)('v2-%s preserves contain and explicit unsupported odd-edge fallback',variant=>{
+  const chosen=parseScreenFaceLayout({...layout(variant),version:2,focus:null});
+  for(const dimensions of [{width:1923,height:1081},{width:968,height:1816},{width:2,height:2}]){
+    const g=planScreenLayout(chosen,dimensions,true);
+    for(const p of [g.screen,g.camera!]){
+      expect(p).not.toBeNull();
+      expect(p.source.x+p.source.width).toBeLessThanOrEqual(dimensions.width);
+      expect(p.source.y+p.source.height).toBeLessThanOrEqual(dimensions.height);
+      expect(Math.abs(p.destination.width-p.source.width*p.destination.height/p.source.height)).toBeLessThanOrEqual(2*p.source.width/p.source.height+2);
+      expect(p.destination.y).toBeGreaterThanOrEqual(0);
+      expect(p.destination.y+p.destination.height).toBeLessThanOrEqual(1920);
+    }
+  }
+  const edge={x:.999999,y:.999999,width:.000001,height:.000001};
+  const fallback=planScreenLayout({...chosen,screen:edge},{width:1923,height:1081},true);
+  expect(fallback.reason).toBe('unsupported_geometry');expect(fallback.camera).toBeNull();
+  expect(fallback.screen.source).toEqual({x:0,y:0,width:1922,height:1080});
 });

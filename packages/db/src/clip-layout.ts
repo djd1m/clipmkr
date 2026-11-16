@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Pool, PoolClient } from 'pg';
 import type { Limits } from '@clipmaker/shared/config';
-import { parseScreenFaceLayout, parsePublishedLayout, type ScreenFaceLayoutV1, type NormalizedRect } from '@clipmaker/shared/screen-layout';
+import { parseScreenFaceLayout, parsePublishedLayout, type ScreenFaceLayout, type NormalizedRect } from '@clipmaker/shared/screen-layout';
 import { parseCutPlan } from '@clipmaker/shared/cut-timeline';
 import { originalSourceRevision } from '@clipmaker/shared/server/original-source';
 import { moscowDay, quotaResetAt } from '@clipmaker/shared/upload';
@@ -11,7 +11,7 @@ import { transaction, checkAndConsumeQuota } from './quota.js';
 import { leaseAttemptTx } from './attempts.js';
 
 export interface LayoutPublished {
-  version: 1; requested: ScreenFaceLayoutV1;
+  version: 1; requested: ScreenFaceLayout;
   resolved: { cameraVisible: boolean; reason: string | null };
 }
 interface Context {
@@ -28,7 +28,7 @@ interface Seed {
 }
 interface Apply {
   clip_id: string; request_key: string; expected_render_version: number;
-  expected_source_revision: string; layout: ScreenFaceLayoutV1;
+  expected_source_revision: string; layout: ScreenFaceLayout;
 }
 function refuse(code: 'not_found' | 'conflict' | 'refused', message: string, status: number) {
   return Object.assign(new Error(message), { code, status });
@@ -74,7 +74,7 @@ export class ClipLayoutRepository {
     return transaction(this.pool, async tx => {
       const c = await this.context(tx, clipId, account);
       const seed = (await tx.query<Seed>('SELECT * FROM clip_layout_seed WHERE clip_id=$1 AND seed_revision=$2', [clipId,c.seedRevision])).rows[0];
-      const intent = (await tx.query<{request_key:string;render_version:number;series_no:number;layout:ScreenFaceLayoutV1}>('SELECT * FROM clip_layout_intent WHERE clip_id=$1 ORDER BY render_version DESC LIMIT 1', [clipId])).rows[0];
+      const intent = (await tx.query<{request_key:string;render_version:number;series_no:number;layout:ScreenFaceLayout}>('SELECT * FROM clip_layout_intent WHERE clip_id=$1 ORDER BY render_version DESC LIMIT 1', [clipId])).rows[0];
       const publishedLayout=c.rendered_layout===null?null:parsePublishedLayout(c.rendered_layout);
       const intentLayout=intent?parseScreenFaceLayout(intent.layout):null;
       const proposal=seed?.status==='ready'?parseScreenFaceLayout({version:1,mode:'screen-face',variant:'03',

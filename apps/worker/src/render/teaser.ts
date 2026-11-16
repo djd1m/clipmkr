@@ -51,22 +51,22 @@ export function layoutTeaser(title: string, width: number): { lines: string[]; f
     return { lines, fontSize };
   } catch { return null; }
 }
-export function buildTeaserFilter(path: string, fontSize: number,screen=false): string {
+export function buildTeaserFilter(path: string, fontSize: number,screen=false, placement?: { x: number; y: number }): string {
   return `drawtext=textfile='${escapeFFmpegPath(path)}':expansion=none:fontfile='${escapeFFmpegPath(FONT_FILE)}':` +
-    `fontsize=${fontSize}:fontcolor=white:text_align=C:x=(w-text_w)/2:y=${screen ? 0.03 : TEASER_Y}*h:` +
+    `fontsize=${fontSize}:fontcolor=white:text_align=C:x=${placement?.x ?? '(w-text_w)/2'}:y=${placement?.y ?? `${screen ? 0.03 : TEASER_Y}*h`}:` +
     `box=1:boxcolor=black@0.55:boxborderw=${TEASER_BOX_BORDER_WIDTH}:enable='lt(t,${TEASER_SECONDS})':` +
     `alpha='if(lt(t,${TEASER_SECONDS - TEASER_FADE_SECONDS}),1,max(0,(${TEASER_SECONDS}-t)/${TEASER_FADE_SECONDS}))'`;
 }
-export async function prepareTeaser(title: string, width: number, directory: string,screen=false) {
+export async function prepareTeaser(title: string, width: number, directory: string,screen=false, placement?: { x: number; y: number; layoutWidth: number }) {
   const skip = (reason: string) => { console.info(JSON.stringify({ event: 'teaser_skipped', reason })); return null; };
   try {
     const normalized = normalize(title);
     if (!normalized) return skip('empty');
     measureText(normalized, TEASER_FONT_SIZE);
-    const layout = layoutTeaser(normalized, width);
+    const layout = layoutTeaser(normalized, placement?.layoutWidth ?? width);
     if (!layout) return skip('layout_failed');
     const path = join(directory, 'teaser.txt');
     await writeFile(path, layout.lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
-    return { result: { lines: layout.lines, font_size: layout.fontSize }, filter: buildTeaserFilter(path, layout.fontSize,screen) };
+    return { result: { lines: layout.lines, font_size: layout.fontSize }, filter: buildTeaserFilter(path, layout.fontSize,screen,placement) };
   } catch (error) { return skip(error instanceof WatermarkGeometryError ? 'glyph_missing' : 'prepare_failed'); }
 }

@@ -1,19 +1,25 @@
 import { afterAll, beforeAll, expect, it,vi } from 'vitest';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, rm,readFile,readdir } from 'node:fs/promises';
+import { mkdtemp, rm,readFile,readdir,writeFile } from 'node:fs/promises';
 import { createServer,type ServerResponse } from 'node:http';
 import { createServer as createTlsServer } from 'node:https';
 import { join } from 'node:path';
 import { buildScreenLayoutGraph,resolveLayoutCamera,proposeLayoutCamera } from '../apps/worker/src/render/screen-layout';
 import { detectFaces } from '../apps/worker/src/render/faces';
 import { renderClip,buildFilterChain } from '../apps/worker/src/render/ffmpeg';
-import { buildWatermarkDrawtext } from '../apps/worker/src/render/watermark';
+import { buildWatermarkDrawtext, SUBTITLE_FONTS } from '../apps/worker/src/render/watermark';
 import { buildCompactionGraph, mapTime } from '../apps/worker/src/render/compaction';
 import { probeDuration,probeVideoStream } from '../apps/worker/src/render/probe';
 import { planDuration } from '@clipmaker/shared/cut-timeline';
-import { parseScreenFaceLayout,type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
+import { parseScreenFaceLayout,type ScreenFaceLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
 
+import original from './fixtures/zoom-layout-original.json';
+import { generateSubtitleFile } from '../apps/worker/src/render/subtitles';
+import { prepareTeaser } from '../apps/worker/src/render/teaser';
+import { prepareCta } from '../apps/worker/src/render/cta-overlay';
+import { watermarkPlateTop } from '@clipmaker/shared/watermark';
+import { escapeFFmpegPath } from '../apps/worker/src/render/escape';
 const exec = promisify(execFile);
 const source = { width: 128, height: 96 };
 const layout: ScreenFaceLayoutV1 = { version: 1, mode: 'screen-face', variant: '02',
@@ -25,11 +31,11 @@ let directory: string;
 // A host proof may explicitly supply a toolbox on PATH. The suite requires no Docker/socket/image.
 async function ffmpeg(args: string[]) {
   return exec('ffmpeg', ['-hide_banner', '-v', 'error', '-filter_threads', '1', '-filter_complex_threads', '1', '-threads', '1', ...args],
-    { encoding: 'buffer', timeout: 45_000, maxBuffer: 2_000_000,
+    { encoding: 'buffer', timeout: 45_000, maxBuffer: 8_000_000,
       env: { PATH: process.env.PATH, NODE_ENV:process.env.NODE_ENV??'test' } });
 }
 const file = (name: string) => join(directory, name);
-async function render(name: string, chosen = layout, cameraAvailable = true,
+async function render(name: string, chosen: ScreenFaceLayout = layout, cameraAvailable = true,
   dimensions: { width: number; height: number; sampleAspectRatio?: number } = source, input = 'source.mkv') {
   const result = buildScreenLayoutGraph(chosen, dimensions, cameraAvailable, '0:v');
   await ffmpeg(['-i', file(input), '-filter_complex', result.graph, '-map', '[screenout]', '-map', '0:a',
@@ -41,9 +47,9 @@ async function samples(name: string, x: number, y: number) {
     '-an', '-fps_mode', 'passthrough', '-pix_fmt', 'rgb24', '-f', 'rawvideo', 'pipe:1']);
   return Array.from({ length: stdout.length / 12 }, (_, n) => [...stdout.subarray(n * 12, n * 12 + 3)]);
 }
-function samePixels(actual: number[][], expected: number[][]) {
+function samePixels(actual: number[][], expected: number[][], context = 'pixel parity') {
   expect(actual.length).toBeGreaterThan(0); expect(actual).toHaveLength(expected.length);
-  actual.forEach((p, i) => p.forEach((v, c) => expect(Math.abs(v - expected[i]![c]!)).toBeLessThanOrEqual(4)));
+  actual.forEach((p, i) => p.forEach((v, c) => expect(Math.abs(v - expected[i]![c]!),`${context}: frame=${i} channel=${c} actual=${v} expected=${expected[i]![c]}`).toBeLessThanOrEqual(4)));
 }
 
 beforeAll(async () => {
@@ -294,3 +300,123 @@ it('non-square-pixel input explicitly renders whole-screen fallback without dist
   const rgb = (await samples('sar-result', d.x + d.width * .9, d.y + d.height * .8))[0]!;
   expect(rgb[0]).toBeGreaterThan(245); expect(rgb[2]).toBeGreaterThan(245);
 }, 60_000);
+
+
+it('v2 native original extents and every live camera frame survive full-canvas composition',async()=>{
+  const camera='gte(X,1496)*lt(Y,180)';
+  // Moving neutral luma isolates extent/timebase from YUV420 chroma-edge ringing.
+  // Camera retains its independent live RGB sequence; every original probe stays fixed.
+  await ffmpeg(['-f','lavfi','-i',`nullsrc=s=1816x968:r=25:d=0.8,format=gbrp,geq=r='if(${camera},40+N*8,180+N*2)':g='if(${camera},20+N*4,180+N*2)':b='if(${camera},10,180+N*2)'`,
+    '-f','lavfi','-i','sine=frequency=900:duration=0.8','-c:v','ffv1','-pix_fmt','bgr0','-c:a','pcm_s16le','-y',file('original-source.mkv')]);
+  const normalize=(r:{x:number;y:number;width:number;height:number})=>({x:r.x/1816,y:r.y/968,width:r.width/1816,height:r.height/968});
+  // Independent fixed RGB expectation for the graph's 0x181818 canvas, not the
+  // moving neutral source: achromaticity alone would accept leaked screen pixels.
+  const expectBackground=async(name:string,x:number,y:number)=>{
+    const actual=await samples(name,x,y);expect(actual).toHaveLength(20);
+    actual.forEach((rgb,frame)=>rgb.forEach((value,channel)=>
+      expect(Math.abs(value-24),`${name} background (${x},${y}): frame=${frame} channel=${channel} actual=${value} expected=24`).toBeLessThanOrEqual(1)));
+  };
+  for(const ref of original.variants){
+    const chosen=parseScreenFaceLayout({version:2,mode:'screen-face',variant:ref.variant,screen:normalize(ref.screenRoi),focus:null,camera:normalize(ref.cameraRoi)});
+    const name=`original-${ref.variant}`;
+    await render(name,chosen,true,original.source,'original-source.mkv');
+    // Independent original bounds sample both the upper camera and content below y1200.
+    const c=ref.cameraBounds,d=ref.screenBounds;
+    const observed=await samples(name,c.x+c.width/2,c.y+c.height/2);
+    expect(observed).toHaveLength(20);samePixels(observed,await samples('original-source',1656,90),`${ref.variant} camera center`);
+    for(const [x,y] of [[4,d.y+4],[4,d.y+d.height-4],[d.width-4,d.y+d.height-4]])
+      samePixels(await samples(name,x!,y!),await samples('original-source',400,400),`${ref.variant} screen (${x},${y})`);
+    for(const y of [d.y-4,d.y+d.height+4])await expectBackground(name,4,y);
+    if(ref.variant==='02'){
+      const noCamera=await render('original-02-absent',chosen,false,original.source,'original-source.mkv');
+      expect(noCamera.camera).toBeNull();
+      samePixels(await samples('original-02-absent',4,d.y+d.height-4),await samples(name,4,d.y+d.height-4));
+      await expectBackground('original-02-absent',c.x+c.width/2,c.y+c.height/2);
+    }
+  }
+},90_000);
+
+it('v2_overlay_bounding_boxes_preserve_content_and_existing_footer_contracts',async()=>{
+  const bounds=async(filter:string)=>{
+    const {stdout}=await ffmpeg(['-f','lavfi','-i','color=c=magenta:s=1080x1920:r=1:d=1,format=rgb24',
+      '-vf',filter,'-frames:v','1','-pix_fmt','rgb24','-f','rawvideo','pipe:1']);
+    expect(stdout.length).toBe(1080*1920*3);
+    let left=1080,top=1920,right=0,bottom=0,count=0;
+    for(let y=0;y<1920;y++)for(let x=0;x<1080;x++){
+      const i=(y*1080+x)*3;
+      if(Math.abs(stdout[i]!-255)>10 || stdout[i+1]!>10 || Math.abs(stdout[i+2]!-255)>10){
+        left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x+1);bottom=Math.max(bottom,y+1);count++;
+      }
+    }
+    expect(count).toBeGreaterThan(100);return {left,top,right,bottom};
+  };
+  for(const phrase of ['СПЕЦИАЛИЗИРОВАННЫЕ СЕТИ ЩЁЛКНИТЕ: SD-WAN, gjpq!',
+    'Программно-определяемые сети: действие и результат','ЙЦУКЕНГШЗХЁ gjpqy ДфруЦЩщцдйё 1234567890']){
+    const words=phrase.split(' ').map((word,i)=>({word,start:i*.1,end:(i+1)*.1}));
+    const ass=generateSubtitleFile(words,0,2,'portrait',{fontSize:46,marginV:458})!;
+    // Real libass glyph/outline/shadow raster; only colors change to expose all ink.
+    const mask=ass.replaceAll('&H00000000','&H00FFFFFF');
+    expect(mask).toContain('\\N');await writeFile(file('mask.ass'),mask);
+    const b=await bounds(`ass='${escapeFFmpegPath(file('mask.ass'))}':fontsdir='${escapeFFmpegPath(SUBTITLE_FONTS)}'`);
+    expect(b.top).toBeGreaterThanOrEqual(1364);expect(b.bottom).toBeLessThanOrEqual(1469);
+    expect(b.left).toBeGreaterThanOrEqual(54);expect(b.right).toBeLessThanOrEqual(1026);
+  }
+  for(const title of ['Важный экран','Программно-определяемые сети: действие и результат '.repeat(8)]){
+    const prepared=await prepareTeaser(title,1080,directory,true,{x:91,y:237,layoutWidth:632});
+    expect(prepared).not.toBeNull();
+    const b=await bounds(prepared!.filter);
+    expect(b.left).toBeGreaterThanOrEqual(65);expect(b.right).toBeLessThanOrEqual(637);
+    expect(b.top).toBeGreaterThanOrEqual(211);expect(b.bottom).toBeLessThanOrEqual(538);
+  }
+  let ctaCount=0;
+  for(const watermark of [true,false])for(const kind of ['watch_full','subscribe','open_link']){
+    const prepared=prepareCta(kind,1080,1920,20,true,watermark,undefined,{top:1481,bottom:1561});
+    if(!watermark && kind==='open_link'){expect(prepared).toBeNull();continue;}
+    expect(prepared).not.toBeNull();expect(prepared!.result.font_size).toBe(48);
+    const b=await bounds('setpts=PTS+19/TB,'+prepared!.filter);ctaCount++;
+    expect(b.top).toBeGreaterThanOrEqual(1481);expect(b.bottom).toBeLessThanOrEqual(1561);
+    expect(b.left).toBeGreaterThanOrEqual(54);expect(b.right).toBeLessThanOrEqual(1026);
+  }
+  expect(ctaCount).toBe(5);
+  const wm=await bounds(buildWatermarkDrawtext(1080,1920,'https://clipmkr.ru','WWWWWW'));
+  expect(wm.top).toBe(watermarkPlateTop(1920));expect(wm.top-1561).toBe(12);
+},90_000);
+
+it('v2-02 renderClip retains cut-plan subtitle timing, title, CTA and watermark in their qualified bands',async()=>{
+  await ffmpeg(['-f','lavfi','-i','color=c=0xb45028:s=128x96:r=2:d=22','-f','lavfi','-i','sine=frequency=700:duration=22',
+    '-c:v','ffv1','-c:a','pcm_s16le','-y',file('v2-long.mkv')]);
+  const chosen=parseScreenFaceLayout({...layout,version:2,screen:{x:0,y:0,width:.75,height:1},camera:null});
+  const result=await renderClip({inputPath:file('v2-long.mkv'),outputPath:file('v2-actual.mp4'),startTime:0,endTime:22,
+    cutPlan:[[0,10],[12,22]],format:'portrait',layout:chosen,words:[{word:'Первая строка подписи',start:18,end:19},{word:'Вторая строка подписи',start:19,end:20}],
+    watermark:true,origin:'https://clipmkr.ru',code:'WWWWWW',teaser:true,title:'Важный экран',cta:'subscribe'});
+  expect(result.rendered_layout?.requested).toEqual(chosen);expect(result.teaser).not.toBeNull();
+  expect(result.cta).toMatchObject({font_size:48,start_seconds:planDuration([[0,10],[12,22]])-2.5});
+  expect(result.duration_seconds).toBeCloseTo(planDuration([[0,10],[12,22]]),1);
+  const bright=async(time:number,y:number,height:number)=>{
+    const {stdout}=await ffmpeg(['-ss',String(time),'-i',file('v2-actual.mp4'),'-vf',`crop=1080:${height}:0:${y}`,
+      '-frames:v','1','-pix_fmt','rgb24','-f','rawvideo','pipe:1']);
+    let n=0;for(let i=0;i<stdout.length;i+=3)if(stdout[i]!>180 && stdout[i+1]!>180 && stdout[i+2]!>180)n++;return n;
+  };
+  expect(await bright(1,192,346)).toBeGreaterThan(100);
+  expect(await bright(8,192,346)).toBe(0);
+  expect(await bright(18,1364,106)).toBeGreaterThan(100);
+  expect(await bright(8,1364,106)).toBe(0);
+  expect(await bright(18,1480,82)).toBeGreaterThan(100);
+  expect(await bright(8,1480,82)).toBe(0);
+  expect(await bright(18,1572,150)).toBeGreaterThan(100);
+},90_000);
+
+
+it('v2 native odd non-square-pixel fallback preserves whole-source display aspect and explicit reason',async()=>{
+  await ffmpeg(['-i',file('source.mkv'),'-vf','scale=127:95,setsar=16/15','-c:v','ffv1','-pix_fmt','yuv444p',
+    '-c:a','copy','-y',file('odd-sar.mkv')]);
+  const chosen=parseScreenFaceLayout({...layout,version:2});
+  const g=await render('v2-odd-sar',chosen,true,{width:127,height:95,sampleAspectRatio:16/15},'odd-sar.mkv');
+  expect(g.reason).toBe('unsupported_geometry');expect(g.camera).toBeNull();
+  expect(g.screen.source).toEqual({x:0,y:0,width:126,height:94});
+  const d=g.screen.destination;
+  expect(Math.abs(d.width/(126*16/15/94)-d.height)).toBeLessThanOrEqual(2);
+  const live=await samples('v2-odd-sar',d.x+d.width/2,d.y+d.height/2);
+  expect(live).toHaveLength(20);samePixels(live,await samples('odd-sar',48,48));
+  for(const rgb of await samples('v2-odd-sar',840,280))expect(Math.max(...rgb)-Math.min(...rgb)).toBeLessThanOrEqual(1);
+},60_000);

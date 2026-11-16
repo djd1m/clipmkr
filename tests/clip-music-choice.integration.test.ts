@@ -11,6 +11,7 @@ import { ScreenService } from '../apps/web/src/server/screen';
 import { watchdogTick } from '../apps/web/src/server/watchdog';
 import { STALLED_AFTER_MS } from '../packages/queue/src';
 import { lockRender, getRenderInput, publishRenderResult, retryRender, setRenderDeferred, saveCutPlan, saveLoudnessMedian } from '../packages/db/src/render';
+import { parseScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 const url = process.env.DATABASE_URL;
 describe.skipIf(!url)('clip music choice / real PostgreSQL', () => {
   let pool: Pool;
@@ -40,6 +41,24 @@ describe.skipIf(!url)('clip music choice / real PostgreSQL', () => {
   const chosen = (clip: string) => ({ clip_id: clip, track });
   async function job(clip: string) { return (await pool.query<Attempt>('SELECT * FROM job_attempt WHERE clip_id=$1 ORDER BY fence DESC LIMIT 1', [clip])).rows[0]!; }
   async function charge() { return Number((await pool.query("SELECT COALESCE(sum(used),0) AS used FROM quota_counter WHERE scope='user_rerenders'")).rows[0].used); }
+  it.each([[1,'01'],[1,'02'],[2,'01'],[2,'02']] as const)('music_rerender_preserves_each_published_composition_version v%s-%s',async(version,variant)=>{
+    const f=await fixture();
+    const requested=parseScreenFaceLayout({version,mode:'screen-face',variant,screen:{x:.1,y:.1,width:.8,height:.8},
+      focus:version===1?{x:.2,y:.2,width:.3,height:.3}:null,camera:{x:.8,y:0,width:.2,height:.2}});
+    const published={version:1 as const,requested,resolved:{cameraVisible:true,reason:null}};
+    await pool.query('UPDATE clip SET rendered_layout=$2 WHERE id=$1',[f.clip,JSON.stringify(published)]);
+    const before=(await pool.query('SELECT rendered_layout,cut_plan,object_key,thumbnail_key FROM clip WHERE id=$1',[f.clip])).rows[0];
+    await service().setMusic(f.account,chosen(f.clip));
+    const attempt=await job(f.clip);
+    expect(await getRenderInput(pool,attempt)).toMatchObject({layout:requested,render_version:2,cut_plan:[[0,20]],music_track_id:track});
+    expect((await pool.query('SELECT rendered_layout,cut_plan,object_key,thumbnail_key FROM clip WHERE id=$1',[f.clip])).rows[0]).toEqual(before);
+    expect((await pool.query('SELECT count(*)::int n FROM clip_layout_intent WHERE clip_id=$1',[f.clip])).rows[0].n).toBe(0);
+    expect(await publishRenderResult(pool,attempt,{object_key:`clips/free/${f.video}/${f.clip}-v2.mp4`,
+      thumbnail_key:`thumbs/${f.video}/${f.clip}-v2.jpg`,bytes:5,watermarked:true,duration_seconds:20,
+      rendered_music_track_id:track,rendered_layout:published},async()=>5)).toBe(true);
+    expect((await pool.query('SELECT rendered_layout,cut_plan FROM clip WHERE id=$1',[f.clip])).rows[0]).toEqual({rendered_layout:published,cut_plan:[[0,20]]});
+    expect(await charge()).toBe(1);
+  });
   it('ownership, active account, state, expiry and equality reject before quota', async () => {
     const f = await fixture(), other = await fixture();
     for (const clip of [f.clip, randomUUID()]) await expect(service().setMusic(other.account, chosen(clip))).rejects.toMatchObject({ status: 404 });

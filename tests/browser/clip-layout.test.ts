@@ -19,11 +19,12 @@ import { createS3Client,deleteObject } from '../../packages/s3/src';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { createQueues,getRedisConnection,jobId } from '../../packages/queue/src';
 import { QueueEvents } from 'bullmq';
-import { planScreenLayout } from '../../packages/shared/src/screen-layout';
+import { planScreenLayout, parseScreenFaceLayout } from '../../packages/shared/src/screen-layout';
 import { createRenderWorker } from '../../apps/worker/src/workers/render';
 import { s3Download } from '../../apps/worker/src/media/download';
 import { renderStorage } from '../../apps/worker/src/render/storage';
 import type { ClipScreen,ClipLayoutInfo,VideoScreen } from '../../apps/web/src/lib/screen-contract';
+import { buildScreenLayoutGraph } from '../../apps/worker/src/render/screen-layout';
 const videoId='11111111-1111-4111-8111-111111111111',clipId='22222222-2222-4222-8222-222222222222',account='33333333-3333-4333-8333-333333333333';
 const revision='a'.repeat(64),storageKey=`n5-clip-layout:v1:${account}:${clipId}`;
 const clip:ClipScreen={clip_id:clipId,index:1,start:0,end:8,title:'Проверка экрана',status:'done',available:true,watermarked:false,expires_at:null,render_version:1,published_render_version:1};
@@ -81,7 +82,60 @@ async function confirm(page:Page){await page.getByRole('button',{name:'Прим�
   await page.getByRole('checkbox',{name:/Я просмотрел/}).check();await page.getByRole('button',{name:'Подтвердить пересборку',exact:true}).click();await expect.poll(()=>page.getByRole('dialog').count()).toBe(0);}
 async function saved(page:Page){return page.evaluate(k=>JSON.parse(sessionStorage.getItem(k)??'null'),storageKey);}
 async function run(work:(page:Page)=>Promise<void>,engine:()=>Browser=()=>chromiumBrowser){const page=await engine().newPage({viewport:{width:1440,height:1000}});try{await work(page);}finally{await page.close();}}
-
+it.each(['01','02'] as const)('C0 saved v2-%s is visible and readonly across refresh and reload',variant=>run(async page=>{
+  const f=await fixture(page);
+  f.info.publishedLayout={version:1,requested:{version:2,mode:'screen-face',variant,
+    screen:{x:0,y:0,width:.4,height:1},focus:null,camera:{x:.75,y:0,width:.25,height:.3}},resolved:{cameraVisible:true,reason:null}};
+  await editor(page,false);
+  await expect.poll(()=>page.getByText(/Изменение оформления временно отключено/).isVisible()).toBe(true);
+  expect(await page.getByRole('radio',{name:new RegExp(`^${variant} —`)}).isChecked()).toBe(true);
+  for(const radio of await page.getByRole('radio').all())expect(await radio.isDisabled()).toBe(true);
+  expect(await page.getByRole('button',{name:'Применить оформление',exact:true}).isDisabled()).toBe(true);
+  await page.getByText('Уточнить области',{exact:true}).click();
+  for(const slider of await page.getByRole('slider',{name:/^(Экран|Камера):/}).all())expect(await slider.isDisabled()).toBe(true);
+  expect(await page.getByRole('combobox',{name:'Уточняемая область'}).isDisabled()).toBe(true);
+  expect(await page.getByRole('checkbox',{name:'Показывать камеру из выбранной области'}).isDisabled()).toBe(true);
+  await refresh(page);await page.reload();await mount(page);await editor(page,false);
+  await expect.poll(()=>page.getByText(/Изменение оформления временно отключено/).isVisible()).toBe(true);
+  expect(await saved(page)).toBeNull();expect(f.applies).toHaveLength(0);
+}));
+it.each([1,2] as const)('C0 unknown v%s submission replays unchanged after reload while a restored v2 draft remains readonly',version=>run(async page=>{
+  const f=await fixture(page),chosen=parseScreenFaceLayout({version:2,mode:'screen-face',variant:'02',screen:{x:0,y:0,width:.4,height:1},focus:null,camera:null});
+  const submitted={request_key:randomUUID(),expected_render_version:1,sourceRevision:revision,
+    layout:parseScreenFaceLayout({...chosen,version,variant:'01'}),draftVersion:1};
+  await page.evaluate(({storageKey,chosen,submitted,account,clipId,revision})=>sessionStorage.setItem(storageKey,JSON.stringify({
+    version:1,accountScope:account,clipId,sourceRevision:revision,baseRenderVersion:1,layout:chosen,draftVersion:2,submitted})),
+    {storageKey,chosen,submitted,account,clipId,revision});
+  await page.reload();await mount(page);await editor(page);
+  expect(f.applies).toHaveLength(0);expect(await page.getByRole('radio',{name:/^03 —/}).isDisabled()).toBe(true);
+  await confirm(page);expect(f.applies).toHaveLength(1);
+  expect(JSON.stringify(f.applies[0])).toBe(JSON.stringify({clip_id:clipId,request_key:submitted.request_key,expected_render_version:1,
+    expected_source_revision:revision,layout:submitted.layout,reviewed_full_clip:true}));
+  expect((await saved(page)).layout).toEqual(chosen);
+  expect((await saved(page)).submitted.layout).toEqual(submitted.layout);
+  expect(await page.getByRole('radio',{name:/^03 —/}).isDisabled()).toBe(true);
+}));
+it.each([360,1440])('v2_native_and_canvas_cover_original_composition_extents width %s',width=>run(async page=>{
+  await page.setViewportSize({width,height:1000});
+  const f=await fixture(page),chosen=parseScreenFaceLayout({version:2,mode:'screen-face',variant:'02',
+    screen:{x:0,y:0,width:.4,height:1},focus:null,camera:{x:.75,y:0,width:.25,height:.3}});
+  f.info.publishedLayout={version:1,requested:chosen,resolved:{cameraVisible:true,reason:null}};
+  await editor(page,false);await expect.poll(()=>page.getByText(/Предпросмотр доступен/).isVisible()).toBe(true);
+  const g=planScreenLayout(chosen,{width:320,height:180},true);
+  expect(g.camera!.destination.y).toBeLessThan(400);
+  expect(g.screen.destination.y+g.screen.destination.height).toBeGreaterThan(1200);
+  const points=[{x:g.camera!.destination.x+g.camera!.destination.width/2,y:g.camera!.destination.y+g.camera!.destination.height/2},
+    {x:g.screen.destination.x+g.screen.destination.width/2,y:g.screen.destination.y+g.screen.destination.height-10}];
+  const graph=buildScreenLayoutGraph(chosen,{width:320,height:180},true,'0:v').graph;
+  for(const p of points){
+    const native=execFileSync('ffmpeg',['-v','error','-filter_complex_threads','1','-threads','1','-i',join(cache,'source.mp4'),
+      '-filter_complex',`${graph};[screenout]crop=2:2:${2*Math.floor(p.x/2)}:${2*Math.floor(p.y/2)}[sample]`,'-map','[sample]',
+      '-frames:v','1','-pix_fmt','rgb24','-f','rawvideo','pipe:1'],{timeout:30_000});
+    const canvas=await page.locator('canvas').evaluate((n:HTMLCanvasElement,p)=>[...n.getContext('2d')!.getImageData(Math.floor(p.x),Math.floor(p.y),1,1).data].slice(0,3),p);
+    for(let c=0;c<3;c++)expect(Math.abs(canvas[c]!-native[c]!)).toBeLessThanOrEqual(5);
+  }
+  expect(f.applies).toHaveLength(0);
+}));
 it('initial_focus_is_whole_screen_until_confirmed_and_seed_is_camera_only',()=>run(async page=>{
   const f=await fixture(page);expect(f.prepares).toBe(0);await editor(page);expect(f.prepares).toBe(1);
   expect(await page.getByRole('radio',{name:/^03 —/}).isChecked()).toBe(true);expect(await page.getByText('Уточнить области',{exact:true}).evaluate(n=>(n.parentElement as HTMLDetailsElement).open)).toBe(false);
@@ -299,7 +353,6 @@ it('every_media_play_pauses_the_other_two including already selected published p
   await page.getByText('Экран + камера',{exact:true}).filter({visible:true}).click();await expect.poll(()=>preview.count()).toBe(0);
   await expect.poll(()=>decoder!.evaluate((n:HTMLVideoElement)=>n.paused&&!n.hasAttribute('src'))).toBe(true);
 }));
-
 it('native Next HTTPS real PG Redis and fenced Cloud source preview admit one durable layout operation',async()=>{
   const database=process.env.DATABASE_URL,redis=process.env.REDIS_URL;
   if(!database || !new URL(database).pathname.endsWith('_test') || !redis || new URL(redis).pathname!=='/14')throw Error('Dedicated *_test PG and Redis14 required');
@@ -430,13 +483,12 @@ it(`native ${engine} real-video canvas responsive ${width} ${theme}`,()=>run(asy
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(f.applies).toHaveLength(0);
   const out=process.env.N5_SCREEN_ARTIFACT_DIR;if(out){mkdirSync(out,{recursive:true,mode:0o700});await page.screenshot({path:join(out,`${engine}-${width}-${theme}.png`),fullPage:true});}
 },()=>engine==='chromium'?chromiumBrowser:webkitBrowser));
-
 for(const failure of ['null-context','throw-draw','healthy']as const)it(`preview ${failure}: readiness requires a successfully drawn decoded frame`,()=>run(async page=>{
   const f=await fixture(page);
   await page.evaluate(mode=>{Reflect.set(window,'layoutPaintCalls',0);
     if(mode==='null-context')HTMLCanvasElement.prototype.getContext=(()=>{Reflect.set(window,'layoutPaintCalls',Reflect.get(window,'layoutPaintCalls')+1);return null;})as typeof HTMLCanvasElement.prototype.getContext;
-    else{const draw=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(...args:any[]){
-      Reflect.set(window,'layoutPaintCalls',Reflect.get(window,'layoutPaintCalls')+1);if(mode==='throw-draw')throw Error('Synthetic canvas drawing failure');return draw.apply(this,args as any);};}},failure);
+    else{const draw=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(this:CanvasRenderingContext2D,...args:[CanvasImageSource,number,number]|[CanvasImageSource,number,number,number,number]|Parameters<typeof draw>){
+      Reflect.set(window,'layoutPaintCalls',Reflect.get(window,'layoutPaintCalls')+1);if(mode==='throw-draw')throw Error('Synthetic canvas drawing failure');return Reflect.apply(draw,this,args);};}},failure);
   await editor(page,false);await expect.poll(()=>page.evaluate(()=>Reflect.get(window,'layoutPaintCalls'))).toBeGreaterThan(0);
   const apply=page.getByRole('button',{name:'Применить оформление',exact:true});
   await expect.poll(()=>page.getByRole('status').filter({hasText:failure==='healthy'?'Предпросмотр доступен.':'Видеопредпросмотр недоступен.'}).count()).toBe(1);

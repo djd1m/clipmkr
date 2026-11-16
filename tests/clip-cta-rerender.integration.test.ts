@@ -12,6 +12,7 @@ import { VideoCtaService } from '../apps/web/src/server/video-cta';
 import { ClipMusicService } from '../apps/web/src/server/clip-music';
 // Фича 27b clip-cta на настоящем PostgreSQL 16: пересборка ВСЕХ клипов записи при смене вида призыва —
 // одна квота на N, отказ целиком при идущей сборке и при нехватке остатка, конкурентные прогоны.
+import { parseScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 const url = process.env.DATABASE_URL;
 const YT = 'https://www.youtube.com/watch?v=ukZyNkgqVho';
 describe.skipIf(!url)('video.setCta: пересборка клипов записи / real PostgreSQL', () => {
@@ -55,6 +56,32 @@ describe.skipIf(!url)('video.setCta: пересборка клипов запи�
   const preconsume = (account: string, used: number) => pool.query(`INSERT INTO quota_counter(scope,scope_key,day,used)
     VALUES('user_rerenders',$1,'2026-09-25',$2)`, [account, used]);
 
+  it('cta_rerender_preserves_mixed_composition_versions',async()=>{
+    const f=await fixture(6);
+    const choices=([[1,'01'],[1,'02'],[2,'01'],[2,'02'],[1,'03']] as const).map(([version,variant])=>({
+      version:1 as const,requested:parseScreenFaceLayout({version,mode:'screen-face',variant,
+        screen:{x:.1,y:.1,width:.8,height:.8},focus:null,camera:null}),resolved:{cameraVisible:false,reason:null}}));
+    const snapshots=[...choices,null];
+    for(const [i,clip] of f.clips.entries())await pool.query('UPDATE clip SET rendered_layout=$2,cut_plan=$3 WHERE id=$1',
+      [clip,snapshots[i]===null?null:JSON.stringify(snapshots[i]),JSON.stringify([[0,5],[10,20]])]);
+    const before=(await pool.query('SELECT id,object_key,thumbnail_key,rendered_layout,cut_plan FROM clip WHERE video_id=$1 ORDER BY "index"',[f.video])).rows;
+    await expect(setWatch(f)).resolves.toMatchObject({rerendering:6});
+    expect(await charge()).toBe(6);expect(await versions(f.video)).toEqual([2,2,2,2,2,2]);
+    expect((await pool.query('SELECT id,object_key,thumbnail_key,rendered_layout,cut_plan FROM clip WHERE video_id=$1 ORDER BY "index"',[f.video])).rows).toEqual(before);
+    const jobs=await attempts(f.video);expect(jobs).toHaveLength(6);
+    for(const job of jobs){
+      const i=f.clips.indexOf(job.clip_id!);expect(i).toBeGreaterThanOrEqual(0);
+      const snapshot=snapshots[i]!;
+      expect(await getRenderInput(pool,job)).toMatchObject({layout:snapshot?.requested??null,cut_plan:[[0,5],[10,20]],cta_kind:'watch_full',render_version:2});
+      expect(await publishRenderResult(pool,job,{object_key:`clips/free/${f.video}/${job.clip_id}-v2.mp4`,
+        thumbnail_key:`thumbs/${f.video}/${job.clip_id}-v2.jpg`,bytes:5,watermarked:true,duration_seconds:15,
+        rendered_layout:snapshot},async()=>5)).toBe(true);
+    }
+    expect((await pool.query('SELECT rendered_layout,cut_plan FROM clip WHERE video_id=$1 ORDER BY "index"',[f.video])).rows)
+      .toEqual(snapshots.map(rendered_layout=>({rendered_layout,cut_plan:[[0,5],[10,20]]})));
+    expect((await pool.query('SELECT count(*)::int n FROM clip_layout_intent')).rows[0].n).toBe(0);
+    expect(await charge()).toBe(6);
+  });
   it('смена вида: все готовые клипы одной серией, квота одним списанием на N, воркер видит вид, но не адрес', async () => {
     const f = await fixture(3);
     await expect(setWatch(f)).resolves.toEqual({ video_id: f.video, cta_kind: 'watch_full', cta_url: YT, rerendering: 3 });
