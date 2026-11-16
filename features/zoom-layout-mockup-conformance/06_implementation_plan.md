@@ -100,7 +100,7 @@ SPARC: completion. Depends: TASK-07, конкретная авторизация
 npm run lint
 npm run typecheck
 npm run build
-npm test -- tests/screen-layout.test.ts tests/screen-layout-conformance.test.ts tests/screen-layout-media.test.ts tests/clip-layout.integration.test.ts tests/clip-music-choice.integration.test.ts tests/clip-cta-rerender.integration.test.ts tests/render.test.ts tests/framing.test.ts tests/framing-media.test.ts tests/teaser.test.ts tests/clip-cta-render.test.ts
+npm test -- tests/zoom-layout-release.test.ts tests/screen-layout.test.ts tests/screen-layout-conformance.test.ts tests/screen-layout-media.test.ts tests/clip-layout.integration.test.ts tests/clip-music-choice.integration.test.ts tests/clip-cta-rerender.integration.test.ts tests/render.test.ts tests/framing.test.ts tests/framing-media.test.ts tests/teaser.test.ts tests/clip-cta-render.test.ts
 npm test -- --config vitest.browser.config.ts tests/browser/clip-layout.test.ts
 node scripts/test-framing-mutations.mjs /tmp/zoom-layout-qe/framing
 node scripts/test-zoom-layout-mutations.mjs /tmp/zoom-layout-qe/conformance
@@ -174,6 +174,8 @@ AM-4 (native/canvas clipping): новый full canvas выводит camera y192
 AM-5 (overlayqualification): captions/title не закрывают исправленный screen/camera, footer contracts сохраняются. Confirmation: real glyph bounding boxes в разрешённых полосах → test `v2_overlay_bounding_boxes_preserve_content_and_existing_footer_contracts` in `tests/screen-layout-media.test.ts` (fails if reverted).
 
 AM-6 (saved selected radio): upgrade старого 01/02 имеет явное отдельное действие. Confirmation: открытие/poll/replay оставляет v1, upgrade button создаёт local v2 → test `legacy_layout_changes_version_only_after_explicit_upgrade` in `tests/browser/clip-layout.test.ts` (fails if reverted).
+
+AM-7 (qcsd-testability QT-01): обязательный Vitest run явно включает `tests/zoom-layout-release.test.ts`; future evidence содержит его count/exit/skip на том же candidate. Confirmation: сам executor прекращает запись при invalid/missing/changed evidence → test `current_vps_apply_fails_before_any_write_on_invalid_or_changed_evidence` in `tests/zoom-layout-release.test.ts` (fails if reverted).
 
 MC-01…MC-08 и ADR-001 связаны с task lines выше. Фактически выполнен recall: `npm run dz -- recall 'zoom original mockup design drift legacy rerender geometry compatibility' --project /home/clipmkr`, exit0, JSON fallback, один результат об UI acceptance. SQLite backend вернул UNREADABLE/native addon error; ограничение не исправлялось в этом документационном scope. Root ранее указал `teach:99a7cc53301d60e1` и `teach:de3e9e3d84558cec`; в плане это независимый original oracle и доступный QA-пример. Здесь новые teach или successful stage не фабриковались. Code/spec anti-drift текущего turn: только три документа ADR/архитектуры/плана, без продуктовых изменений и выпуска.
 
