@@ -15,16 +15,16 @@ export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{vide
     const node=video.current,screen=canvas.current;if(!node || !screen || !active)return;
     let frame:number|undefined,raf:number|undefined,disposed=false;
     onState('loading');
-    function paint(){
-      if(disposed || !node || !screen || node.readyState<2 || !node.videoWidth)return;
+    function paint():boolean{
+      if(disposed || !node || !screen || node.readyState<2 || !node.videoWidth)return false;
       try {
         const g=planScreenLayout(latest.current.layout,{width:node.videoWidth,height:node.videoHeight},true);
         const ctx=screen.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
         ctx.fillStyle='#181818';ctx.fillRect(0,0,1080,1920);ctx.save();ctx.beginPath();ctx.rect(0,400,1080,800);ctx.clip();
         for(const placement of [g.screen,g.camera])if(placement){const {source:s,destination:d}=placement;
           ctx.drawImage(node,s.x,s.y,s.width,s.height,d.x,d.y,d.width,d.height);}
-        ctx.restore();
-      }catch{node.pause();onState('unsupported');}
+        ctx.restore();return true;
+      }catch{node.pause();onState('unsupported');return false;}
     }
     draw.current=paint;
     function tick(){
@@ -40,7 +40,7 @@ export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{vide
       else raf=requestAnimationFrame(tick);
     }
     const loaded=()=>{if(!node)return;node.currentTime=latest.current.segments[0]![0];};
-    const ready=()=>{paint();onState('ready');};
+    const ready=()=>{if(paint())onState('ready');};
     const failed=()=>{node?.pause();onState('unsupported');};
     const play=()=>setPlaying(true),pause=()=>setPlaying(false);
     node.addEventListener('loadedmetadata',loaded);node.addEventListener('loadeddata',ready);

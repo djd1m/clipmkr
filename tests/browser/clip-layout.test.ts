@@ -430,3 +430,17 @@ it(`native ${engine} real-video canvas responsive ${width} ${theme}`,()=>run(asy
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(f.applies).toHaveLength(0);
   const out=process.env.N5_SCREEN_ARTIFACT_DIR;if(out){mkdirSync(out,{recursive:true,mode:0o700});await page.screenshot({path:join(out,`${engine}-${width}-${theme}.png`),fullPage:true});}
 },()=>engine==='chromium'?chromiumBrowser:webkitBrowser));
+
+for(const failure of ['null-context','throw-draw','healthy']as const)it(`preview ${failure}: readiness requires a successfully drawn decoded frame`,()=>run(async page=>{
+  const f=await fixture(page);
+  await page.evaluate(mode=>{Reflect.set(window,'layoutPaintCalls',0);
+    if(mode==='null-context')HTMLCanvasElement.prototype.getContext=(()=>{Reflect.set(window,'layoutPaintCalls',Reflect.get(window,'layoutPaintCalls')+1);return null;})as typeof HTMLCanvasElement.prototype.getContext;
+    else{const draw=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(...args:any[]){
+      Reflect.set(window,'layoutPaintCalls',Reflect.get(window,'layoutPaintCalls')+1);if(mode==='throw-draw')throw Error('Synthetic canvas drawing failure');return draw.apply(this,args as any);};}},failure);
+  await editor(page,false);await expect.poll(()=>page.evaluate(()=>Reflect.get(window,'layoutPaintCalls'))).toBeGreaterThan(0);
+  const apply=page.getByRole('button',{name:'Применить оформление',exact:true});
+  await expect.poll(()=>page.getByRole('status').filter({hasText:failure==='healthy'?'Предпросмотр доступен.':'Видеопредпросмотр недоступен.'}).count()).toBe(1);
+  expect(await apply.isEnabled()).toBe(failure==='healthy');
+  expect(await page.evaluate(()=>Array.from(document.querySelectorAll('video')).some(n=>n.readyState>=2&&n.videoWidth>0))).toBe(true);
+  expect(f.applies).toHaveLength(0);
+}));

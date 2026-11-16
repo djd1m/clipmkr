@@ -1,0 +1,12 @@
+{
+  "kind": "owner-approved-bounded-correction-ledger",
+  "openspec": {
+    "path": "openspec/changes/zoom-screen-focus/canvas-readiness-correction-20261116.md",
+    "sha256": "875a9ea2ce837b283040569c9c28af6e3f79456baa796d557b5ac12381bf2b7d"
+  },
+  "request": {
+    "path": "features/zoom-screen-focus/10_canvas_readiness_request.md",
+    "sha256": "12a33eba49ace62679ddb902e7b07a0a8f4f09f8b3e937cb80de8c144e7dfe8c"
+  },
+  "bundleSha256": "f8bc4ef2b355acddaa3e6370f8d8fbc95dc7de3ca611f83f6a76fa5a9c27fd27"
+}
