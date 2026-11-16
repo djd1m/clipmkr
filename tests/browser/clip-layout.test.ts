@@ -1,13 +1,11 @@
 import { beforeAll,afterAll,expect,it } from 'vitest';
 import { createServer,type ViteDevServer } from 'vite';
 import { chromium,webkit,type Browser,type Page } from 'playwright';
-import { mkdtempSync,readFileSync,rmSync,mkdirSync } from 'node:fs';
+import { mkdtempSync,readFileSync,rmSync,mkdirSync,writeFileSync } from 'node:fs';
 import { resolve,join } from 'node:path';
-import { execFileSync } from 'node:child_process';
-import { spawn,type ChildProcess } from 'node:child_process';
+import { execFileSync,spawn,type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
 import { randomBytes,randomUUID } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
 import { createServer as httpServer,request as httpRequest } from 'node:http';
 import { createServer as httpsServer,type Server as HttpsServer } from 'node:https';
 import { createPool,ClipLayoutRepository,type Pool,type Attempt } from '../../packages/db/src';
@@ -31,10 +29,11 @@ const clip:ClipScreen={clip_id:clipId,index:1,start:0,end:8,title:'Провер�
 const video:VideoScreen={video_id:videoId,status:'done',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),duration_seconds:8,user_state:'успех',stage_label:'Готово',stage_progress:100,clips_done:1,clips_total:1,no_response:false,failure_reason:null,next_action:null,retry_after:null,poll_after_seconds:5,cta_kind:'none',cta_url:null,failed_stage:null};
 const info=():ClipLayoutInfo=>({accountScope:account,sourceRevision:revision,start:0,end:8,cutPlan:[[0,3],[4,8]],renderVersion:1,publishedRenderVersion:1,publishedLayout:null,
   seed:{state:'absent',proposal:null,reason:null},rerenderQuota:{available:true,unlimited:false,limit:7,remaining:6,resetsAt:'2026-11-12T00:00:00Z'},activeIntent:null});
-let vite:ViteDevServer,origin:string,chromiumBrowser:Browser,webkitBrowser:Browser,mp4:Buffer;
+let vite:ViteDevServer,origin:string,chromiumBrowser:Browser,webkitBrowser:Browser,mp4:Buffer,referenceMp4:Buffer;
 const cache=mkdtempSync('/tmp/clipmkr-zoom-phase-b-browser-');
 beforeAll(async()=>{
   execFileSync('ffmpeg',['-v','error','-f','lavfi','-i',"nullsrc=s=320x180:r=25:d=8,format=gbrp,geq=r='if(gte(X,240)*lt(Y,54),10,if(lt(X,240),40+mod(N,160),255))':g='if(gte(X,240)*lt(Y,54),80+mod(N,120),if(lt(X,240),40,0))':b='if(gte(X,240)*lt(Y,54),30,if(lt(X,240),20,255))'",'-f','lavfi','-i','sine=frequency=440:duration=8','-threads','1','-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart','-y',join(cache,'source.mp4')]);
+  execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','testsrc2=s=1816x968:r=2:d=8','-threads','1','-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-movflags','+faststart','-y',join(cache,'reference.mp4')]);referenceMp4=readFileSync(join(cache,'reference.mp4'));
   mp4=readFileSync(join(cache,'source.mp4'));const entry='\0zoom-entry',nav='\0zoom-nav',link='\0zoom-link';
   vite=await createServer({configFile:false,root:process.cwd(),cacheDir:join(cache,'vite'),esbuild:{jsx:'automatic'},
     optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','zod'],exclude:['next/navigation','next/link']},
@@ -80,40 +79,52 @@ async function refresh(page:Page){await page.getByText('Экран + камер�
 async function variant(page:Page,value:'01'|'02'|'03'){await page.getByRole('radio',{name:new RegExp(`^${value} —`)}).check();}
 async function confirm(page:Page){await page.getByRole('button',{name:'Применить оформление',exact:true}).click();
   await page.getByRole('checkbox',{name:/Я просмотрел/}).check();await page.getByRole('button',{name:'Подтвердить пересборку',exact:true}).click();await expect.poll(()=>page.getByRole('dialog').count()).toBe(0);}
+async function range(slider:ReturnType<Page['getByRole']>,value:string){await slider.evaluate((n:HTMLInputElement,value)=>{
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(n,value);n.dispatchEvent(new Event('input',{bubbles:true}));},value);}
 async function saved(page:Page){return page.evaluate(k=>JSON.parse(sessionStorage.getItem(k)??'null'),storageKey);}
 async function run(work:(page:Page)=>Promise<void>,engine:()=>Browser=()=>chromiumBrowser){const page=await engine().newPage({viewport:{width:1440,height:1000}});try{await work(page);}finally{await page.close();}}
-it.each(['01','02'] as const)('C0 saved v2-%s is visible and readonly across refresh and reload',variant=>run(async page=>{
-  const f=await fixture(page);
-  f.info.publishedLayout={version:1,requested:{version:2,mode:'screen-face',variant,
-    screen:{x:0,y:0,width:.4,height:1},focus:null,camera:{x:.75,y:0,width:.25,height:.3}},resolved:{cameraVisible:true,reason:null}};
-  await editor(page,false);
-  await expect.poll(()=>page.getByText(/Изменение оформления временно отключено/).isVisible()).toBe(true);
-  expect(await page.getByRole('radio',{name:new RegExp(`^${variant} —`)}).isChecked()).toBe(true);
-  for(const radio of await page.getByRole('radio').all())expect(await radio.isDisabled()).toBe(true);
-  expect(await page.getByRole('button',{name:'Применить оформление',exact:true}).isDisabled()).toBe(true);
-  await page.getByText('Уточнить области',{exact:true}).click();
-  for(const slider of await page.getByRole('slider',{name:/^(Экран|Камера):/}).all())expect(await slider.isDisabled()).toBe(true);
-  expect(await page.getByRole('combobox',{name:'Уточняемая область'}).isDisabled()).toBe(true);
-  expect(await page.getByRole('checkbox',{name:'Показывать камеру из выбранной области'}).isDisabled()).toBe(true);
-  await refresh(page);await page.reload();await mount(page);await editor(page,false);
-  await expect.poll(()=>page.getByText(/Изменение оформления временно отключено/).isVisible()).toBe(true);
-  expect(await saved(page)).toBeNull();expect(f.applies).toHaveLength(0);
+it.each(['01','02'] as const)('legacy_layout_changes_version_only_after_explicit_upgrade %s',chosen=>run(async page=>{
+  const f=await fixture(page),legacy=parseScreenFaceLayout({version:1,mode:'screen-face',variant:chosen,screen:{x:0,y:0,width:.8,height:1},focus:null,camera:null});
+  f.info.publishedLayout={version:1,requested:legacy,resolved:{cameraVisible:false,reason:null}};await editor(page);
+  await variant(page,chosen);await page.waitForTimeout(5200);await refresh(page);expect(await saved(page)).toBeNull();
+  expect(f.info.publishedLayout.requested).toEqual(legacy);await page.reload();await mount(page);await editor(page);
+  expect(await saved(page)).toBeNull();await page.getByText('Уточнить области',{exact:true}).click();await range(page.getByRole('slider',{name:'Экран: положение по горизонтали, %'}),'10');const local=(await saved(page)).layout;expect(local.version).toBe(1);await page.getByText('Уточнить области',{exact:true}).click();await page.getByRole('button',{name:'Использовать исправленную композицию',exact:true}).click();
+  const before=await saved(page);expect(before.layout).toEqual({...local,version:2});expect(before.submitted).toBeUndefined();
+  expect(await page.getByText(/Новое оформление — только в черновике/).isVisible()).toBe(true);expect(f.applies).toHaveLength(0);
+  f.info.seed={state:'ready',proposal:{x:.8,y:0,width:.2,height:.3},reason:null};await refresh(page);expect(await saved(page)).toEqual(before);
+  await page.reload();await mount(page);await editor(page);expect((await saved(page)).layout).toEqual(before.layout);
+  await page.locator(`[data-select-clip="${videoId}"]`).click();await page.locator(`[data-select-clip="${clipId}"]`).click();await editor(page);
+  expect((await saved(page)).layout).toEqual(before.layout);expect(f.applies).toHaveLength(0);expect(f.info.publishedLayout.requested).toEqual(legacy);
+  await page.getByText('Уточнить области',{exact:true}).click();const width=page.getByRole('slider',{name:'Экран: ширина, %'});
+  await range(width,'60');expect((await saved(page)).layout.screen.width).toBe(.6);await variant(page,'03');expect((await saved(page)).layout.version).toBe(1);
 }));
-it.each([1,2] as const)('C0 unknown v%s submission replays unchanged after reload while a restored v2 draft remains readonly',version=>run(async page=>{
+it.each([1,2] as const)('unknown_v1_submission_replays_without_draft_upgrade submitted v%s',version=>run(async page=>{
   const f=await fixture(page),chosen=parseScreenFaceLayout({version:2,mode:'screen-face',variant:'02',screen:{x:0,y:0,width:.4,height:1},focus:null,camera:null});
-  const submitted={request_key:randomUUID(),expected_render_version:1,sourceRevision:revision,
-    layout:parseScreenFaceLayout({...chosen,version,variant:'01'}),draftVersion:1};
+  const submitted={request_key:randomUUID(),expected_render_version:1,sourceRevision:revision,layout:parseScreenFaceLayout({...chosen,version,variant:'01'}),draftVersion:1};
   await page.evaluate(({storageKey,chosen,submitted,account,clipId,revision})=>sessionStorage.setItem(storageKey,JSON.stringify({
-    version:1,accountScope:account,clipId,sourceRevision:revision,baseRenderVersion:1,layout:chosen,draftVersion:2,submitted})),
-    {storageKey,chosen,submitted,account,clipId,revision});
-  await page.reload();await mount(page);await editor(page);
-  expect(f.applies).toHaveLength(0);expect(await page.getByRole('radio',{name:/^03 —/}).isDisabled()).toBe(true);
+    version:1,accountScope:account,clipId,sourceRevision:revision,baseRenderVersion:1,layout:chosen,draftVersion:2,submitted})),{storageKey,chosen,submitted,account,clipId,revision});
+  await page.reload();await mount(page);await editor(page);expect(f.applies).toHaveLength(0);
+  await page.getByText('Уточнить области',{exact:true}).click();await range(page.getByRole('slider',{name:'Экран: высота, %'}),'80');const edited=(await saved(page)).layout;
   await confirm(page);expect(f.applies).toHaveLength(1);
   expect(JSON.stringify(f.applies[0])).toBe(JSON.stringify({clip_id:clipId,request_key:submitted.request_key,expected_render_version:1,
     expected_source_revision:revision,layout:submitted.layout,reviewed_full_clip:true}));
-  expect((await saved(page)).layout).toEqual(chosen);
-  expect((await saved(page)).submitted.layout).toEqual(submitted.layout);
-  expect(await page.getByRole('radio',{name:/^03 —/}).isDisabled()).toBe(true);
+  expect((await saved(page)).layout).toEqual(edited);expect((await saved(page)).submitted.layout).toEqual(submitted.layout);
+}));
+it('v2_02_height_control_reaches_reference_aspect_without_applying',()=>run(async page=>{
+  const f=await fixture(page);await page.route('**/original',r=>r.fulfill({contentType:'video/mp4',body:referenceMp4}));await editor(page);
+  expect(await page.getByLabel('Исходник для предпросмотра').evaluate((n:HTMLVideoElement)=>[n.videoWidth,n.videoHeight])).toEqual([1816,968]);expect(await page.getByRole('radio',{name:/^03 —/}).isChecked()).toBe(true);
+  expect(await page.getByText('Уточнить области',{exact:true}).evaluate(n=>(n.parentElement as HTMLDetailsElement).open)).toBe(false);
+  f.info.seed={state:'ready',proposal:{x:.7,y:0,width:.2,height:.3},reason:null};await refresh(page);await variant(page,'02');
+  expect(await page.getByText('Показан прежний экран; для крупного плана уточните область',{exact:true}).isVisible()).toBe(true);
+  await page.getByText('Уточнить области',{exact:true}).click();const width=page.getByRole('slider',{name:'Экран: ширина, %'}),height=page.getByRole('slider',{name:'Экран: высота, %'});
+  await range(width,String(930/1816*100));expect(await height.inputValue()).toBe('100');await range(height,String(704/968*100));
+  const roi=(await saved(page)).layout.screen;expect(await height.getAttribute('aria-valuetext')).toContain('высоты исходника');expect(Math.abs(roi.width*1816-930)).toBeLessThan(.002);expect(Math.abs(roi.height*968-704)).toBeLessThan(.002);
+  await range(width,'60');expect((await saved(page)).layout.screen.height).toBe(roi.height);await range(width,String(930/1816*100));
+  const target=page.getByRole('combobox',{name:'Уточняемая область'});await target.selectOption('camera');expect(await height.count()).toBe(0);
+  await target.selectOption('screen');expect((await saved(page)).layout.screen).toEqual(roi);expect((await saved(page)).layout.camera).toEqual(f.info.seed.proposal);await page.getByRole('slider',{name:'Экран: положение по вертикали, %'}).press('End');await height.press('End');expect((await saved(page)).layout.screen.y).toBe(0);
+  await page.getByRole('button',{name:'Применить оформление',exact:true}).click();await page.getByRole('checkbox',{name:/Я просмотрел/}).check();
+  await range(height,'80');expect(await page.getByRole('checkbox',{name:/Я просмотрел/}).isChecked()).toBe(false);await page.getByRole('checkbox',{name:/Я просмотрел/}).check();
+  f.info.sourceRevision='c'.repeat(64);await page.route('**/original?metadata=1',r=>r.fulfill({json:{videoId,state:'ready',available:true,sourceRevision:f.info.sourceRevision,media:{kind:'video'}}}));await expect.poll(()=>page.getByRole('checkbox',{name:/Я просмотрел/}).isChecked(),{timeout:8000}).toBe(false);expect(await saved(page)).toBeNull();await page.keyboard.press('Escape');expect(f.applies).toHaveLength(0);
 }));
 it.each([360,1440])('v2_native_and_canvas_cover_original_composition_extents width %s',width=>run(async page=>{
   await page.setViewportSize({width,height:1000});
@@ -134,14 +145,7 @@ it.each([360,1440])('v2_native_and_canvas_cover_original_composition_extents wid
     const canvas=await page.locator('canvas').evaluate((n:HTMLCanvasElement,p)=>[...n.getContext('2d')!.getImageData(Math.floor(p.x),Math.floor(p.y),1,1).data].slice(0,3),p);
     for(let c=0;c<3;c++)expect(Math.abs(canvas[c]!-native[c]!)).toBeLessThanOrEqual(5);
   }
-  expect(f.applies).toHaveLength(0);
-}));
-it('initial_focus_is_whole_screen_until_confirmed_and_seed_is_camera_only',()=>run(async page=>{
-  const f=await fixture(page);expect(f.prepares).toBe(0);await editor(page);expect(f.prepares).toBe(1);
-  expect(await page.getByRole('radio',{name:/^03 —/}).isChecked()).toBe(true);expect(await page.getByText('Уточнить области',{exact:true}).evaluate(n=>(n.parentElement as HTMLDetailsElement).open)).toBe(false);
-  f.info.seed={state:'ready',proposal:{x:.7,y:0,width:.2,height:.3},reason:null};await refresh(page);
-  expect(await page.getByText(/Показан весь экран/).filter({visible:true}).count()).toBe(1);expect(await page.getByText(/Смена человека и короткое исчезновение/).filter({visible:true}).count()).toBe(1);
-  await variant(page,'02');const draft=await saved(page);expect(draft.layout.focus).toBeNull();expect(draft.layout.camera).toEqual(f.info.seed.proposal);expect(f.applies).toHaveLength(0);
+  await page.getByText('Уточнить области',{exact:true}).click();await range(page.getByRole('slider',{name:'Экран: высота, %'}),'80');expect((await saved(page)).layout.screen.height).toBe(.8);expect(f.applies).toHaveLength(0);
 }));
 it('roi_accessible_values_follow_target_and_clamp',()=>run(async page=>{
   const f=await fixture(page);await editor(page);await page.getByText('Уточнить области',{exact:true}).click();
@@ -250,12 +254,6 @@ it('published camera veto explains its reason and next action once while unchang
   await status.evaluate(n=>{Reflect.set(window,'vetoAnnouncements',0);new MutationObserver(()=>Reflect.set(window,'vetoAnnouncements',Reflect.get(window,'vetoAnnouncements')+1)).observe(n,{childList:true,characterData:true,subtree:true});});
   await page.waitForTimeout(5200);expect(await page.evaluate(()=>Reflect.get(window,'vetoAnnouncements'))).toBe(0);expect(f.applies).toHaveLength(0);
 }));
-it('dirty_layout_survives_navigation_reload_and_late_seed',()=>run(async page=>{
-  const f=await fixture(page);await editor(page);await variant(page,'01');const before=await saved(page);
-  f.info.seed={state:'ready',proposal:{x:.8,y:0,width:.2,height:.3},reason:null};await refresh(page);expect(await saved(page)).toEqual(before);
-  await page.reload();await mount(page);await editor(page);expect(await page.getByRole('radio',{name:/^01 —/}).isChecked()).toBe(true);
-  expect((await saved(page)).layout).toEqual(before.layout);expect(f.applies).toHaveLength(0);
-}));
 it('accepted_reload_failed_restores_editable_layout_draft',()=>run(async page=>{
   const f=await fixture(page);await editor(page);await variant(page,'01');await confirm(page);const before=await saved(page);expect(before.submitted.acceptedRenderVersion).toBe(2);
   expect(f.applies).toHaveLength(1);f.info.activeIntent!.status='failed';await page.reload();await mount(page);await editor(page);
@@ -314,7 +312,7 @@ it('pristine external publication refreshes settings while unknown replay keeps 
 }));
 it('native preview visits retained segments and both canvas regions use the current decoded source frame',()=>run(async page=>{
   const f=await fixture(page);f.info.seed={state:'ready',proposal:{x:.75,y:0,width:.25,height:.3},reason:null};await editor(page);
-  const chosen={version:1 as const,mode:'screen-face' as const,variant:'02' as const,screen:{x:0,y:0,width:1,height:1},focus:null,camera:f.info.seed.proposal};await variant(page,'02');
+  const chosen={version:2 as const,mode:'screen-face' as const,variant:'02' as const,screen:{x:0,y:0,width:1,height:1},focus:null,camera:f.info.seed.proposal};await variant(page,'02');
   const geometry=planScreenLayout(chosen,{width:320,height:180},true);expect(geometry.camera).not.toBeNull();
   const slider=page.getByRole('slider',{name:/Позиция в клипе/});
   for(const [output,source] of [[.08,.08],[2.48,2.48],[2.96,4.04],[3.44,4.52],[6.88,7.96]]){
@@ -476,12 +474,15 @@ const nativeFetch=globalThis.fetch.bind(globalThis);globalThis.fetch=(input,init
 },180_000);
 for(const engine of ['chromium','webkit'] as const)for(const width of [390,1440])for(const theme of ['dark','light'])
 it(`native ${engine} real-video canvas responsive ${width} ${theme}`,()=>run(async page=>{
-  await page.setViewportSize({width,height:1000});const f=await fixture(page);await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);await editor(page);
+  await page.setViewportSize({width,height:1000});const f=await fixture(page);await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);f.info.publishedLayout={version:1,requested:parseScreenFaceLayout({version:1,mode:'screen-face',variant:'02',screen:{x:0,y:0,width:1,height:1},focus:null,camera:{x:.75,y:0,width:.25,height:.3}}),resolved:{cameraVisible:true,reason:null}};await editor(page);
   await page.getByRole('button',{name:'Смотреть весь фрагмент',exact:true}).click();
   await expect.poll(()=>page.getByLabel('Исходник для предпросмотра').evaluate((n:HTMLVideoElement)=>n.currentTime)).toBeGreaterThan(.1);
   expect(await page.locator('canvas').evaluate((n:HTMLCanvasElement)=>n.getContext('2d')!.getImageData(0,400,1080,800).data.some((v,i)=>i%4!==3 && v>100))).toBe(true);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(f.applies).toHaveLength(0);
-  const out=process.env.N5_SCREEN_ARTIFACT_DIR;if(out){mkdirSync(out,{recursive:true,mode:0o700});await page.screenshot({path:join(out,`${engine}-${width}-${theme}.png`),fullPage:true});}
+  const out=process.env.N5_SCREEN_ARTIFACT_DIR;if(out){mkdirSync(out,{recursive:true,mode:0o700});await page.screenshot({path:join(out,`${engine}-${width}-${theme}-old.png`),fullPage:true});}
+  await page.getByRole('button',{name:'Использовать исправленную композицию',exact:true}).click();if(out)await page.screenshot({path:join(out,`${engine}-${width}-${theme}-upgrade.png`),fullPage:true});
+  await page.getByText('Уточнить области',{exact:true}).click();await range(page.getByRole('slider',{name:'Экран: ширина, %'}),'60');await range(page.getByRole('slider',{name:'Экран: высота, %'}),'80');if(out)await page.screenshot({path:join(out,`${engine}-${width}-${theme}-02-height.png`),fullPage:true});
+  await variant(page,'01');expect(await page.getByRole('slider',{name:'Экран: высота, %'}).count()).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(f.applies).toHaveLength(0);if(out)await page.screenshot({path:join(out,`${engine}-${width}-${theme}-01.png`),fullPage:true});
 },()=>engine==='chromium'?chromiumBrowser:webkitBrowser));
 for(const failure of ['null-context','throw-draw','healthy']as const)it(`preview ${failure}: readiness requires a successfully drawn decoded frame`,()=>run(async page=>{
   const f=await fixture(page);

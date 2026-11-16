@@ -2,7 +2,7 @@
 .choice summary{cursor:pointer;font-weight:650;padding:.5rem 0}
 .choice fieldset{border:0;padding:0;margin:1rem 0;display:grid;gap:.7rem}
 .choice label{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
-.choice input[type=range]{width:100%;min-width:0}
+.choice input[type=range]{width:100%;min-width:0;accent-color:var(--workspace-accent)}
 .choice input[type=radio],.choice input[type=checkbox]{width:auto;flex:none}
 .choice button,.choice select{max-width:100%}
 .preview{display:grid;gap:.7rem;margin-block:1rem}
@@ -13,3 +13,24 @@
 .dialog::backdrop{background:#000a}
 .actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
 .warning{font-weight:600}
+
+.choice .option{flex-wrap:nowrap;gap:.85rem;border:1px solid var(--workspace-line);padding:.8rem;cursor:pointer;min-height:5rem;background:var(--workspace-surface)}
+.option:has(input:checked){border-color:var(--workspace-accent);background:var(--workspace-soft)}
+.option input{accent-color:var(--workspace-accent);margin:0}
+.optionText{flex:1;min-width:0}
+.optionText strong{display:block;font-size:.9rem;font-weight:600}
+.optionText small{display:block;font-size:.8rem;margin-top:.15rem;color:var(--workspace-muted)}
+.default{color:var(--workspace-accent);font-size:.7rem;font-weight:500;margin-left:.4rem}
+.mini{position:relative;width:2rem;height:3.25rem;flex:none;background:var(--workspace-paper);border:1px solid var(--workspace-control-border)}
+.mini:before,.mini:after{content:"";position:absolute}
+.mini:before{inset:27% 0 auto;height:33.33%;background:#bdc8c0}
+.mini:after{inset:50% auto auto 72%;width:25%;height:7.91%;background:#24764c}
+.two:before{inset:28% 0 auto;height:42.6%}
+.two:after{inset:10% auto auto 62%;width:32%;height:10.13%}
+.three:before{inset:18% 0 21%;height:auto}
+.three:after{inset:21% 5% 57% 64%;width:auto;height:auto}
+.note{font-size:.85rem;color:var(--workspace-muted)}
+.legacy{padding:.75rem;border:1px solid var(--workspace-line);margin:.8rem 0}
+.legacy p{margin:0 0 .5rem}
+.draft{font-size:.8rem;color:var(--workspace-accent)}
+@media(max-width:720px){.choice .option{padding:.7rem}}
