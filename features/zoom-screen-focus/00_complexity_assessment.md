@@ -3,7 +3,7 @@
 Task kind: feature
 
 Дата: 11.11.2026. База `e66d9addfad16e1b6dcd7bd07bf06c5abb1343f1`.
-Авторский подготовительный пакет; tier и checkpoints ещё не приняты координатором/владельцем.
+Авторский подготовительный пакет; checkpoints ещё не объявлены выполненными. Пересчёт архитектора11.11.2026 после explicit lazy seed-analysis:40 concrete targets, score16, **XL по quick decision tree30+ editable files**, консервативный выбор принят root. Это не выполненный router checkpoint; прежний L14 ниже сохранён как исходная оценка.
 
 | Измерение | Баллы | Основание |
 |---|---:|---|
@@ -20,6 +20,26 @@ Task kind: feature
 Шаг 6 — отдельный планировщик gpt-6-astra xhigh; QCSD — три независимых настоящих агента,
 назначаемые координатором. Автор макета/кода: gpt-6.1-sol high. Финальное review/QE — другая
 модель в новой сессии по `docs/model-matrix.md`. Прежние авторские выводы QE не передаются.
+
+## Пересчёт после конкретной архитектуры
+
+| Измерение | Баллы | Основание |
+|---|---:|---|
+| Файлы |4|40 targets в draft06, включая production, thin wiring, тесты и guards;26 existing +14 new по статической сверке путей |
+| Домены |3|presentation, render execution, quota/access state |
+| Интеграции |1|новых services/queues/ML/dependencies0; native FFmpeg HTTP использует прежний S3 |
+| Breaking/поведение |2|аддитивно, но новый queue message требует worker-before-web rollout |
+| Модели |3|dependent seed cache + layout intent + published layout value |
+| Сквозные свойства |3|ownership/idempotency/data сохранность и failure/degradation |
+| **Всего** |**16**|score соответствуетL; decision tree30+ files даётXL; root принял консервативную полную маршрутизацию |
+
+Искусственный worker Range proxy/новый network subsystem отвергнут координатором; hard малый byte cap не является требованием.40 targets остаются после его удаления. Нельзя уменьшить count исключением обязательных тестов/тонких bindings или слиянием несвязанных modules. После реализации сверить actual diff; это не обещание изменить каждый target без необходимости.
+
+## EDITABLE и READONLY scope
+
+`scope-inventory.json` фиксирует **EDITABLE40**:26 существующих файлов с планируемой правкой и14 новых. Отдельно **READONLY19**:9 pinned baseline dependencies,1 общий server-only helper под ownership Original и9 existing regression test files. Эти READONLY paths не входят в40 и не увеличивают file score; остальные исследовательские чтения также не считаются модификациями. Shared leaf `packages/shared/src/server/original-source.ts` создаёт Original, Zoom только импортирует его.
+
+Расхождение правил показано явно: сумма16 даётL; отдельный dimension4 означает минимумL; quick decision tree для40 editable files даётXL. Принято более консервативноеXL, без выдуманного score20 и без изменения обязательных MADR/DDD/C4/QCSD/fleet этапов.
 
 ## Бюджет (оценка, не обещание срока)
 

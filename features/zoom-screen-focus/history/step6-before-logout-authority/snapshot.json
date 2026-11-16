@@ -1,0 +1,36 @@
+{
+  "purpose": "Preserve previous42editable/20readonly execution authority before ADR003logout wiring amendment",
+  "at": "2026-11-11T20:13:11.558375+00:00",
+  "files": [
+    {
+      "path": "06_implementation_plan.md",
+      "bytes": 17752,
+      "sha256": "103756434538e12df3177f8bed69256093be523ed0ca62be6ea8066a3d9db5a2"
+    },
+    {
+      "path": "scope-inventory.json",
+      "bytes": 4126,
+      "sha256": "aaa1ac580b2faf656eb66d2f2d0df5a255ba1d696f359e066b2ec8574b0c63e2"
+    },
+    {
+      "path": "step6-plan-snapshot.json",
+      "bytes": 27886,
+      "sha256": "6fd1dbf10ad235f8196b2db4ba190737eade8315813aab86d5e423448ec2a22c"
+    },
+    {
+      "path": "phase-b-readiness.md",
+      "bytes": 4669,
+      "sha256": "1d82393ea391242a696bf9fb26155c36ca856620314b206db71b6acd7e158476"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2394,
+      "sha256": "02b42889ca6bf15371befb3769463f8851037642e948524d3852f3074524763c"
+    },
+    {
+      "path": "architecture-handoff.md",
+      "bytes": 4729,
+      "sha256": "891aa10834d91684f4e3201d3f38549b66a9afea71c940cc7bbb9352bf87bbfd"
+    }
+  ]
+}

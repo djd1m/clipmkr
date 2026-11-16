@@ -20,7 +20,7 @@ try {
     ['narrow-dual', format, "if (Math.floor(source.width / 2) < 480) return 'center';", '', 'tests/framing.test.ts', 'narrow'],
     ['watermark-first', ffmpeg, 'if (watermark) filters.push(', 'if (watermark) filters.unshift(', 'tests/framing.test.ts', 'assembly precedes'],
     ['odd-window', format, '2 * Math.floor(value / 2)', 'Math.floor(value)', 'tests/framing-media.test.ts', 'real odd source'],
-    ['both-panels-left', format, 'crop(panelWindow(source, 1))', 'crop(panelWindow(source, 0))', 'tests/framing-media.test.ts', 'real render'],
+    ['both-panels-left', format, 'crop(panelWindow(source, bottom.x, bottom.y), width, height / 2)', 'crop(panelWindow(source, top.x, top.y), width, height / 2)', 'tests/framing-media.test.ts', 'real render'],
     ['ass-before-assembly', ffmpeg, 'if (assFilePath !== null) filters.push(', 'if (assFilePath !== null) filters.unshift(', 'tests/framing.test.ts', 'assembly precedes'],
   ];
   for (const [id, file, before, after, test, title] of mutations) {

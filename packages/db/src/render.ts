@@ -4,7 +4,10 @@ import { transaction } from './quota.js';
 import { effectivePlanSql } from './plan.js';
 import { auditAttempt, leaseAttemptTx, type Attempt } from './attempts.js';
 import { parseTranscript } from '@clipmaker/shared/transcript';
+import { parseScreenFaceLayout, parsePublishedLayout, type ScreenFaceLayoutV1 } from '@clipmaker/shared/screen-layout';
+import type { LayoutPublished } from './clip-layout.js';
 export interface RenderInput {
+  layout: ScreenFaceLayoutV1 | null;
   music_track_id: string | null; render_version: number;
   compact: boolean; loudness_median_db: string | null; cut_plan: [number, number][] | null;
   object_key: string; actual_bytes: string; duration_seconds: string; music: boolean; teaser: boolean; title: string; plan: unknown; cta_kind: string | null;
@@ -26,14 +29,16 @@ export async function lockRender(tx: PoolClient, attempt: Attempt): Promise<bool
 export async function getRenderInput(pool: Pool, attempt: Attempt) {
   return transaction(pool, async tx => {
     if (!await lockRender(tx, attempt)) { auditAttempt('stale_attempt_result', attempt); return null; }
-    const result = await tx.query<RenderInput>(`SELECT c.music_track_id,c.render_version,v.object_key,v.actual_bytes,v.duration_seconds,v.music,v.teaser,v.cta_kind,v.compact,v.loudness_median_db,c.cut_plan,c.title,CASE WHEN EXISTS (SELECT 1 FROM video_credit_charge cc WHERE cc.video_id=v.id AND cc.state IN ('reserved','settled') AND cc.paid_render) THEN 'paid' ELSE ${effectivePlanSql('a')} END AS plan,
+    const result = await tx.query<RenderInput & {stored_layout:unknown;intent_layout:unknown}>(`SELECT c.rendered_layout AS stored_layout,i.layout AS intent_layout,COALESCE(i.layout,c.rendered_layout->'requested') AS layout,c.music_track_id,c.render_version,v.object_key,v.actual_bytes,v.duration_seconds,v.music,v.teaser,v.cta_kind,v.compact,v.loudness_median_db,c.cut_plan,c.title,CASE WHEN EXISTS (SELECT 1 FROM video_credit_charge cc WHERE cc.video_id=v.id AND cc.state IN ('reserved','settled') AND cc.paid_render) THEN 'paid' ELSE ${effectivePlanSql('a')} END AS plan,
       c.index,c.start_seconds,c.end_seconds,l.code,t.words,t.language,t.segments FROM clip c
       JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
-      JOIN clip_link l ON l.clip_id=c.id JOIN transcript t ON t.video_id=v.id WHERE c.id=$1`, [attempt.clip_id]);
+      JOIN clip_link l ON l.clip_id=c.id JOIN transcript t ON t.video_id=v.id
+      LEFT JOIN clip_layout_intent i ON i.clip_id=c.id AND i.render_version=c.render_version WHERE c.id=$1`, [attempt.clip_id]);
     const row = result.rows[0];
     if (!row) throw new Error('Рендер требует ссылку и транскрипт, созданные до задания');
+    if(row.stored_layout!==null)parsePublishedLayout(row.stored_layout);
     const transcript = parseTranscript(row, Number(row.duration_seconds));
-    return { ...row, words: transcript.words };
+    return { ...row, layout:row.layout===null?null:parseScreenFaceLayout(row.layout), words: transcript.words };
   });
 }
 export async function setRenderDeferred(pool: Pool, attempt: Attempt, deferred: boolean) {
@@ -76,7 +81,7 @@ export async function retryRender(pool: Pool, attempt: Attempt, reason: 'ffmpeg_
     return null;
   });
 }
-export interface RenderResult { music_skip_reason?: string | null; rendered_music_track_id?: string; object_key: string; thumbnail_key: string; bytes: number; watermarked: boolean; duration_seconds: number }
+export interface RenderResult { rendered_layout?: LayoutPublished | null; music_skip_reason?: string | null; rendered_music_track_id?: string; object_key: string; thumbnail_key: string; bytes: number; watermarked: boolean; duration_seconds: number }
 // Publish outside the transaction; storage must enforce create-only publication.
 // Concurrent PUTs may adopt the same immutable contract; DB acceptance remains fenced.
 // Rejected versioned objects are removed only when no delivery can still adopt them.
@@ -85,16 +90,24 @@ export async function publishRenderResult(pool: Pool, attempt: Attempt, result: 
   const bytes = await publish();
   const accepted = await transaction(pool, async tx => {
     if (!await lockRender(tx, attempt)) { auditAttempt('stale_attempt_result', attempt); return null; }
+    const expected = (await tx.query<{layout:unknown}>(`SELECT COALESCE(i.layout,c.rendered_layout->'requested') AS layout FROM clip c
+      LEFT JOIN clip_layout_intent i ON i.clip_id=c.id AND i.render_version=c.render_version WHERE c.id=$1`,[attempt.clip_id])).rows[0]?.layout;
+    if(expected!=null) {
+      if(!result.rendered_layout
+        || JSON.stringify(parseScreenFaceLayout(expected))!==JSON.stringify(parsePublishedLayout(result.rendered_layout).requested))
+        throw new Error('Опубликованное оформление не совпадает со снимком попытки');
+    } else if(result.rendered_layout) throw new Error('Оформление отсутствует в авторитетном снимке');
     // Read actual old keys while fenced, including a previous tariff's prefix.
     const previous = (await tx.query<{ object_key: string | null; thumbnail_key: string | null }>(
       'SELECT object_key,thumbnail_key FROM clip WHERE id=$1', [attempt.clip_id])).rows[0]!;
     const written = await tx.query(`UPDATE clip SET status='done',object_key=$4,thumbnail_key=$5,bytes=$6,watermarked=$7,
-      duration_seconds=$8,failure_reason=NULL,rendered_music_track_id=$9,music_skip_reason=$11,
+      duration_seconds=$8,failure_reason=NULL,rendered_music_track_id=$9,music_skip_reason=$11,rendered_layout=$13,
       ready_at=CASE WHEN NOT $12 THEN COALESCE(ready_at,now()) ELSE ready_at END,
       ready_at_source=CASE WHEN NOT $12 AND ready_at IS NULL THEN 'render' ELSE ready_at_source END
       WHERE id=$1 AND video_id=$2 AND render_fence=$3 AND status=$10 RETURNING id`,
     [attempt.clip_id, attempt.video_id, attempt.fence, result.object_key, result.thumbnail_key, bytes,
-      result.watermarked, result.duration_seconds, result.rendered_music_track_id ?? 'none', attempt.rerender ? 'done' : 'rendering', result.music_skip_reason ?? null, !!attempt.rerender]);
+      result.watermarked, result.duration_seconds, result.rendered_music_track_id ?? 'none', attempt.rerender ? 'done' : 'rendering', result.music_skip_reason ?? null, !!attempt.rerender,
+      result.rendered_layout?JSON.stringify(result.rendered_layout):null]);
     if (!written.rowCount) { auditAttempt('stale_attempt_result', attempt); return null; }
     await tx.query(`UPDATE job_attempt SET status='succeeded',wait_reason=NULL,finished_at=now() WHERE video_id=$1 AND fence=$2`,
       [attempt.video_id, attempt.fence]);

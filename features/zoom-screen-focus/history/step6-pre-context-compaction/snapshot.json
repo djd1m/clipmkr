@@ -1,0 +1,21 @@
+{
+  "purpose": "Preserve final30453-byte plan and Step6 metadata before wording-only prompt-size reduction",
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "bytes": 30453,
+      "sha256": "92046710a4316d4913e17f46d0eb220f47bde6d31d9dfd625ff34a6303041c18"
+    },
+    {
+      "path": "features/zoom-screen-focus/step6-plan-snapshot.json",
+      "bytes": 7059,
+      "sha256": "807c76687fc6c3b41d30ca99a0f2ea07b10e074087d0f0dea8d3b23f1d0640a0"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "bytes": 2618,
+      "sha256": "4ae1ac2e0475902b2617c9d2c8270d3bef1491a091350b17b6e6d491c0b11dd4"
+    }
+  ],
+  "closedCore9MustRemainUnchanged": true
+}

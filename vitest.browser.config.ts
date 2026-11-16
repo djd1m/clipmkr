@@ -5,6 +5,8 @@ export default defineConfig({ esbuild: { jsx: 'automatic' },
   // Фича 29: экран записи (VideoDetail) тянет enums, cta и каталог музыки — те же псевдонимы, что в vitest.config.ts.
   resolve: { alias: { '@clipmaker/shared/showcase': path.resolve('packages/shared/src/showcase.ts'),
     '@clipmaker/shared/enums': path.resolve('packages/shared/src/enums.ts'),
+    '@clipmaker/shared/screen-layout': path.resolve('packages/shared/src/screen-layout.ts'),
+    '@clipmaker/shared/cut-timeline': path.resolve('packages/shared/src/cut-timeline.ts'),
     '@clipmaker/shared/cta': path.resolve('packages/shared/src/cta.ts'),
     '@clipmaker/shared/tariff': path.resolve('packages/shared/src/tariff.ts'),
     '@clipmaker/shared/music-catalog': path.resolve('packages/shared/src/music-catalog.ts') } },

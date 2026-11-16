@@ -1,0 +1,22 @@
+{
+  "purpose": "Preserve R3 historical dossier and pre-finalization plan/handoff/README; core9 remain unchanged in place",
+  "ideationRevision": "e66723874cc112533766c6896c800786109567d430efd4f5a7ff1b30382acfdd",
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "9c8f4f0f7eef9c9b4553dc512100f70a81ecd4040277e2ab794a8eb4dcac383b"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "sha256": "a3d31a80dc460a10d68d6c34447f4dc68166bdf11900cb7765e72ba986ee11a9"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "sha256": "8509fa23b23123c5981e86a9e15ed026ee036d4dd5a0fe192a046a6383258b66"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-dossier.json",
+      "sha256": "eadcae9e104befc6a2808aa6539ac948e6002f9ebdc125454edc85c558c03654"
+    }
+  ]
+}

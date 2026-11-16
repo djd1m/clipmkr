@@ -25,7 +25,7 @@ beforeAll(async()=>{
   const markup=renderToString(createElement(VideoUploader,{accountScope:scope}));
   server=await createServer({configFile:false,cacheDir:cacheDirectory,root:process.cwd(),esbuild:{jsx:'automatic'},
     optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-dev-runtime'],exclude:['next/navigation','next/link']},
-    resolve:{alias:{'@clipmaker/shared/enums':resolve('packages/shared/src/enums.ts'),'@clipmaker/shared/upload':resolve('packages/shared/src/upload.ts'),'@clipmaker/shared/cta':resolve('packages/shared/src/cta.ts'),'@clipmaker/shared/tariff':resolve('packages/shared/src/tariff.ts'),'@clipmaker/shared/music-catalog':resolve('packages/shared/src/music-catalog.ts')}},
+    resolve:{alias:{'@clipmaker/shared/enums':resolve('packages/shared/src/enums.ts'),'@clipmaker/shared/upload':resolve('packages/shared/src/upload.ts'),'@clipmaker/shared/cta':resolve('packages/shared/src/cta.ts'),'@clipmaker/shared/tariff':resolve('packages/shared/src/tariff.ts'),'@clipmaker/shared/music-catalog':resolve('packages/shared/src/music-catalog.ts'),'@clipmaker/shared/screen-layout':resolve('packages/shared/src/screen-layout.ts'),'@clipmaker/shared/cut-timeline':resolve('packages/shared/src/cut-timeline.ts')}},
     server:{host:'127.0.0.1',port:0,watch:{ignored:['**/.next/**','**/dist/**']}},plugins:[{name:'upload-lifecycle-fixture',enforce:'pre',
       resolveId(id){if(id==='next/navigation')return navigation;if(id==='next/link')return link;if(id===entry)return entry;},
       load(id){

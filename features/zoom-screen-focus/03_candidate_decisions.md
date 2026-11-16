@@ -40,3 +40,7 @@ failed/stale publication и quota rollback. Инженерно решить reus
 Альтернативы: inherited podcast zones — меньше работы, перекрывает экран; универсальный auto-placement —
 потенциально удобнее, но нужны OCR/saliency/новые доказательства; фиксированные согласованные zones —
 проверяемы, но ограничивают размер action ROI. Confirmation: pixels+browser390/1440+owner media acceptance.
+
+## Архитектурная разработка11.11.2026
+
+Исходные кандидаты раскрыты в `03_adr/001…004`, `03_shift_left.md`, `04_domain_model.md`, `05_architecture.md`. Это proposed dossier для независимого QCSD; accepted ADR/checkpoint этим дополнением не создаётся. Новая cached seed-analysis явно отражена в01/OpenSpec v2.

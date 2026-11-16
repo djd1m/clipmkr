@@ -1,0 +1,22 @@
+flowchart TB
+  Owner[Владелец source] --> Browser[Browser: local draft]
+  Browser --> Web[Existing web: owner API и Original Range]
+  Web --> DB[(PostgreSQL: clip, intent, seed, attempts)]
+  Web --> Queue[(Existing render queue)]
+  Queue --> Worker[Existing worker-video]
+  Worker --> DB
+  Worker --> S3[S3: source и immutable MP4]
+  Web --> S3
+  subgraph Presentation[Компоненты browser]
+    Choice[ClipLayoutChoice] --> Preview[ClipLayoutPreview]
+  end
+  Browser --> Choice
+  subgraph Rendering[Компоненты worker]
+    Dispatch[Render dispatch] --> Seed[Bounded seed handler]
+    Dispatch --> Render[Existing render pipeline]
+    Render --> Graph[Screen compositor]
+    Render --> Publish[Fenced publish]
+  end
+  Worker --> Dispatch
+  Shared[Shared geometry и cut timeline] --> Preview
+  Shared --> Graph

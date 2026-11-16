@@ -1,0 +1,38 @@
+{
+  "purpose": "Полученные публичные байты; unsigned, не cryptographic issuer verification и не runtime-доказательство",
+  "sources": [
+    {
+      "id": "ffmpeg-filters",
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/9bee1e603cdb6e83d2e99c3cb9a452c2002139c5/doc/filters.texi",
+      "final_url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/9bee1e603cdb6e83d2e99c3cb9a452c2002139c5/doc/filters.texi",
+      "status": 200,
+      "sha256_body": "f8c74237ec663c6a403bdaa0ba28d649dd9fa1ed17591a3b174b79501782d4f9",
+      "bytes_len": 987229,
+      "fetched_at": "2026-11-11T14:40:12.010804Z",
+      "content_type": "text/plain; charset=utf-8",
+      "authentic": true
+    },
+    {
+      "id": "opencv-face",
+      "url": "https://raw.githubusercontent.com/opencv/opencv/4.12.0/modules/objdetect/include/opencv2/objdetect/face.hpp",
+      "final_url": "https://raw.githubusercontent.com/opencv/opencv/4.12.0/modules/objdetect/include/opencv2/objdetect/face.hpp",
+      "status": 200,
+      "sha256_body": "bd6e4500bbfc52b6bd9ceac2f3ba634c1cd918fabbe134bae929aab979bbebdb",
+      "bytes_len": 8185,
+      "fetched_at": "2026-11-11T14:40:12.269297Z",
+      "content_type": "text/plain; charset=utf-8",
+      "authentic": true
+    },
+    {
+      "id": "browser-video-callback",
+      "url": "https://html.spec.whatwg.org/multipage/media.html",
+      "final_url": "https://html.spec.whatwg.org/multipage/media.html",
+      "status": 200,
+      "sha256_body": "1f1abd5bbc357b299ef3a02226ad759c6568747c959f2525ced5a9ba5b76e0d9",
+      "bytes_len": 837077,
+      "fetched_at": "2026-11-11T14:40:13.286547Z",
+      "content_type": "text/html; charset=utf-8",
+      "authentic": true
+    }
+  ]
+}

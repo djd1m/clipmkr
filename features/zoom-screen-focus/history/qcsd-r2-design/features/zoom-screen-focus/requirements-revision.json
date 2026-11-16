@@ -1,0 +1,17 @@
+{
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "status": "design-r2-author-rework-pending-origin-verification",
+  "authority": "Owner selector approval unchanged; root R2 instruction clarifies ROI-only camera guarantee, safe whole-screen initial focus, native FFmpeg/security and browser lifecycle; no ideation/checkpoint/code GO claimed",
+  "featureRequirementsSha256": "5464fbeaf78cb01e21440186e89d683903837a4043e7580f30e7937496bd0219",
+  "files": [
+    {
+      "path": "openspec/changes/zoom-screen-focus/proposal.md",
+      "sha256": "e75bdb2005639a300c8bc7816fc85ef833e7d00296e2b90b22546f4ffa47df9c"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "aa2c280f57a0396238dff4f7c68236e6c3d4bcb4c8733ab49bf8792ffc005f18"
+    }
+  ],
+  "r1RequirementsRevisionSha256": "a07c57a27c9090d8782827f02efa32a068aae54545ca15f06d9112dbbfc468cc"
+}

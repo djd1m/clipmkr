@@ -1,6 +1,7 @@
 'use client';
 import { createPortal } from 'react-dom';
 import { revealGuestForm } from './GuestPacks';
+import { ClipLayoutChoice } from './ClipLayoutChoice';
 import { ClipMusicChoice } from './ClipMusicChoice';
 import { ProInterest } from '../dashboard/ProInterest';
 import { useEffect, useRef, useState } from 'react';
@@ -9,8 +10,8 @@ import type { ClipScreen } from '../../lib/screen-contract';
 import { useClipDownload } from './useClipDownload';
 /** `onSendToGuest` is passed only while the guest form is on screen (consent text hash present); without it «Гостю» is disabled.
  *  The card never creates a guest pack: consent is given only in the form (ADR-008). */
-export function ClipCard({ clip, onMusicQueued, onMusicApplyStart, onMusicFailed, musicPending = false, musicNotice, musicResolution, contextRoot, onEditClip, onSendToGuest, paymentsOn = false, creditMode=false, selected = true, onSelect }: {
-  clip: ClipScreen; onMusicQueued?: (track: string, token?: number) => void; onMusicApplyStart?: (track: string, version?: number) => number | null; onMusicFailed?: (token: number) => void; musicPending?: boolean; musicNotice?: string; musicResolution?: 'current' | 'failure' | 'conflict'; onSendToGuest?: (clipId: string) => void; contextRoot?: HTMLElement | null; onEditClip?: (clipId: string | null) => void; paymentsOn?: boolean; creditMode?:boolean; actionsFirst?: boolean; selected?: boolean; onSelect?: (clipId: string) => void;
+export function ClipCard({ clip, videoId, layoutActive=true, onLayoutLeaveGuard, onMusicQueued, onMusicApplyStart, onMusicFailed, musicPending = false, musicNotice, musicResolution, contextRoot, onEditClip, onSendToGuest, paymentsOn = false, creditMode=false, selected = true, onSelect }: {
+  clip: ClipScreen; videoId?:string; layoutActive?:boolean; onLayoutLeaveGuard?:(guard:(()=>boolean)|null)=>void; onMusicQueued?: (track: string, token?: number) => void; onMusicApplyStart?: (track: string, version?: number) => number | null; onMusicFailed?: (token: number) => void; musicPending?: boolean; musicNotice?: string; musicResolution?: 'current' | 'failure' | 'conflict'; onSendToGuest?: (clipId: string) => void; contextRoot?: HTMLElement | null; onEditClip?: (clipId: string | null) => void; paymentsOn?: boolean; creditMode?:boolean; actionsFirst?: boolean; selected?: boolean; onSelect?: (clipId: string) => void;
 }) {
   const { download, downloadingId, error } = useClipDownload();
   const [copying, setCopying] = useState(false);
@@ -51,6 +52,7 @@ export function ClipCard({ clip, onMusicQueued, onMusicApplyStart, onMusicFailed
       <button type="button" className="secondary" disabled={!clip.available || !onSendToGuest} aria-label="Отправить клип гостю" onClick={() => onSendToGuest?.(clip.clip_id)}>Отправить гостю</button>
     </div>
     <div data-context-body hidden={context !== 'edit'}>
+      {videoId && <ClipLayoutChoice videoId={videoId} clip={clip} active={selected && context==='edit' && layoutActive} onLeaveGuard={onLayoutLeaveGuard} />}
       <ClipMusicChoice clip={clip} pending={musicPending} resolution={musicResolution} onApplyStart={onMusicApplyStart} onQueued={onMusicQueued} onFailed={onMusicFailed} onFeedback={setMusicFeedback} />
       {clip.watermarked && <ProInterest creditMode={creditMode} source="clip_card" paymentsOn={paymentsOn} />}
     </div>

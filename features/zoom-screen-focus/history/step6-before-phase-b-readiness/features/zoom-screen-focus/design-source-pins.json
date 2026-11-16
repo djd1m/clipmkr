@@ -1,0 +1,176 @@
+{
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "purpose": "Новый pre-code source snapshot для конкретных existing targets; не заменяет исходныеfont/model pins",
+  "files": [
+    {
+      "path": "packages/db/src/index.ts",
+      "sha256": "e1e99f51ba6acf4f07a83ed2f9b972244fec8a5feadc95e2a1455ba3afd0ae77"
+    },
+    {
+      "path": "packages/db/src/render.ts",
+      "sha256": "81a35ce7131d2f88cbbfaadb102071844942f6d42c4827b699c5b140a86156a0"
+    },
+    {
+      "path": "packages/queue/src/queues.ts",
+      "sha256": "33d9fb6b833677aa31f473bf4203c47dff7c851d244a9f8ea319079a3b8958e7"
+    },
+    {
+      "path": "apps/worker/src/render/compaction.ts",
+      "sha256": "46746ffff26b3b46339fa121cf7fc298f547c840a76d8cb80c24c82ce0024b03"
+    },
+    {
+      "path": "apps/worker/src/render/faces.ts",
+      "sha256": "a557399d9cc4550b5ddbb277707114439d8571ac421f887e8ee6e54c07933fea"
+    },
+    {
+      "path": "apps/worker/assets/scripts/detect_faces.py",
+      "sha256": "e13b51a438f332ba3b9887478941be1a22e453b948972d6f291c81c0c96dc8e0"
+    },
+    {
+      "path": "apps/worker/src/render/teaser.ts",
+      "sha256": "af40a762b702d6929ea935abe27b493a2213bb74a5e59c3d8f58bdbc51ef37bd"
+    },
+    {
+      "path": "apps/worker/src/render/ffmpeg.ts",
+      "sha256": "9a0d8a32a043726a2f33cefbf4915e77412fbed170006da1693cf6eeca2205e9"
+    },
+    {
+      "path": "apps/worker/src/workers/render.ts",
+      "sha256": "edb48ae12d515440c0e094a744b75b9f56541f1c32c2df1f4db47e87b48b3ffd"
+    },
+    {
+      "path": "apps/worker/src/runtime.ts",
+      "sha256": "b826885f3f8b328926a90c480b7cab3629972c6b25477e85464bc6aacf79d21b"
+    },
+    {
+      "path": "apps/web/src/server/screen.ts",
+      "sha256": "5f6aaf6c46bf02c278b884a04714d538db07fa7d99e520f76499939e6c488802"
+    },
+    {
+      "path": "apps/web/src/server/screen-runtime.ts",
+      "sha256": "af1203f377673acf8da11044834d2efcef870acca8a4a5d423a237cc34a8ffe3"
+    },
+    {
+      "path": "apps/web/src/server/trpc.ts",
+      "sha256": "62a68eeefef45e580f8eace4fc045d24032f48ab2c2d8e2bd3e3fa834e58c4a3"
+    },
+    {
+      "path": "apps/web/src/server/queue-runtime.ts",
+      "sha256": "7ec7cf914022cf3324538d66dcf8ebf4eb2725ec9b1646509f22d501e46c7e3b"
+    },
+    {
+      "path": "apps/web/src/server/upload-runtime.ts",
+      "sha256": "60f4132a35b2301cdcc87838e4aad1c1d683e27cb35bdedec865a3cb920ccdd6"
+    },
+    {
+      "path": "apps/web/src/server/watchdog.ts",
+      "sha256": "3a80b6a924165316f89d785413c72ae957367ef252f8c5da5b998e8911ac61f8"
+    },
+    {
+      "path": "apps/web/src/app/api/trpc/[trpc]/route.ts",
+      "sha256": "3467c24915a1c2cad47ea29420530e564009329678f6ce42a041c9e22a2f46f9"
+    },
+    {
+      "path": "apps/web/src/lib/screen-contract.ts",
+      "sha256": "46679b9194673e88282a1f33feb78920ae7dd1810cda4ca6badb6e134e68c01b"
+    },
+    {
+      "path": "apps/web/src/lib/rpc.ts",
+      "sha256": "8d0317153d8ae46102317b0b674514e6745bd87f3cd5312fbf61efb6cbf9e39e"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "sha256": "7a450be39c1b8e393db424bb20a3e97ac56799b339d5e08212fab393162ce9b4"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+      "sha256": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da"
+    },
+    {
+      "path": "tests/render.test.ts",
+      "sha256": "8f889ed4d3da628545205544d631d11b34affb09e06f1cb17388e36dcf25961d"
+    },
+    {
+      "path": "tests/queue-redis.integration.test.ts",
+      "sha256": "996f545f0995e52a33b09aa85846e956f63527f012eb4562b38dbac55a8294e5"
+    },
+    {
+      "path": "scripts/test-framing-mutations.mjs",
+      "sha256": "206f79b0a3b6c3f1b15c1256b239af7ba2661805b60323a16a0059359044c89d"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "0f477caafa30da594689d6e8e3864697945a0fd9a495ed880f808b6dbb014019"
+    },
+    {
+      "path": "vitest.browser.config.ts",
+      "sha256": "7094074a8c9e642184fd7f1fa4335ebd46d96b8eb6a1fad1d210329f23128b2c"
+    }
+  ],
+  "r2ReadOnlyConfirmedAtUtc": "2026-11-11T16:44:04.599600+00:00",
+  "r2AdditionalReadOnlyDependencies": [
+    {
+      "path": "packages/s3/src/client.ts",
+      "sha256": "26cacf63dc70d341668ab849ad2b45461c259ce48ccf1045ada5685482bfc754"
+    },
+    {
+      "path": "packages/s3/src/presign.ts",
+      "sha256": "c3a0adff02383a264556bd4e59998cbb756ed4cccef35482c264f37343b3df3e"
+    },
+    {
+      "path": "packages/shared/src/config.ts",
+      "sha256": "053c6337971faafa079616a1e7d983360863d385e8b0818b6692006475cb46d4"
+    },
+    {
+      "path": "apps/worker/package.json",
+      "sha256": "c83d6d14a8849369f59ee5476cecb4c00c18e6929e9fe0f4102ae54c71a3604b"
+    },
+    {
+      "path": "packages/s3/package.json",
+      "sha256": "560721e0ce049cdb52fddfb536fec38e6e5825a073263c1fa046efe230d012c5"
+    },
+    {
+      "path": "apps/web/src/lib/upload-resume.ts",
+      "sha256": "5632131160b695b027e5fbd0538e834fe282ab9bedca91447578aa2468b73864"
+    },
+    {
+      "path": "apps/web/src/app/upload/Uploader.tsx",
+      "sha256": "0fe093d40de2f829b36755690a234c2ac112d7a8b8d1b49a383aa68079f08722"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipMusicChoice.tsx",
+      "sha256": "6255b32c320366535ac0446567a9bd36e53a16b806429c58c2f0ce65dcd3c729"
+    },
+    {
+      "path": "packages/queue/src/queues.ts",
+      "sha256": "33d9fb6b833677aa31f473bf4203c47dff7c851d244a9f8ea319079a3b8958e7"
+    },
+    {
+      "path": "apps/worker/src/workers/render.ts",
+      "sha256": "edb48ae12d515440c0e094a744b75b9f56541f1c32c2df1f4db47e87b48b3ffd"
+    },
+    {
+      "path": "apps/worker/src/render/faces.ts",
+      "sha256": "a557399d9cc4550b5ddbb277707114439d8571ac421f887e8ee6e54c07933fea"
+    },
+    {
+      "path": "apps/worker/assets/scripts/detect_faces.py",
+      "sha256": "e13b51a438f332ba3b9887478941be1a22e453b948972d6f291c81c0c96dc8e0"
+    },
+    {
+      "path": "packages/db/src/render.ts",
+      "sha256": "81a35ce7131d2f88cbbfaadb102071844942f6d42c4827b699c5b140a86156a0"
+    },
+    {
+      "path": "apps/web/src/server/clip-music.ts",
+      "sha256": "8031bf790fe20cdd97416ba2f8948658a04bed518cdc88473a3510be1674f759"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "de1e085275a78268c5b61c767588fc021cd874d0c146cb9e82935a2befb115f9"
+    }
+  ],
+  "runtimePolicyEvidence": "features/zoom-screen-focus/amendments/r2-source-evidence.json",
+  "r3ReadOnlyConfirmedAtUtc": "2026-11-11T16:56:21.359347+00:00",
+  "r3ScopeNote": "UX-04 document-only correction;26 existing source pins unchanged; tentative Original implementation is not imported or added as accepted source"
+}

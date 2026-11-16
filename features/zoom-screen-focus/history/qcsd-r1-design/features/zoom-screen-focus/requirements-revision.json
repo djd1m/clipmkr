@@ -1,0 +1,16 @@
+{
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "status": "design-v2-ui-approved-seed-analysis-clarified-pre-qcsd",
+  "authority": "Owner approved selector11.11.2026; coordinator clarified cached preparation vs render job; no requirements/ADR/QCSD gate claimed",
+  "featureRequirementsSha256": "0e2760a12f490ef3c5fbeeaf882afd9f5862d5f5ec858e97e252366ac418f137",
+  "files": [
+    {
+      "path": "openspec/changes/zoom-screen-focus/proposal.md",
+      "sha256": "07c7de084e3e1432377a5ece41642ebb1ccaf2bdab2e3a98b5ecce186ceb7ca6"
+    },
+    {
+      "path": "openspec/changes/zoom-screen-focus/specs/screen-face-layout/spec.md",
+      "sha256": "b5f3bf31336a55cfba5aaf2ab16bf3ecf29aee2f80fa44cb16ab5e355d84d83c"
+    }
+  ]
+}

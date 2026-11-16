@@ -65,7 +65,7 @@ beforeAll(async () => {
   const entry='\0billing-mounted-card';
   cardServer=await createViteServer({configFile:false,root:process.cwd(),cacheDir:cardCache,esbuild:{jsx:'automatic'},
     optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime']},
-    resolve:{alias:Object.fromEntries(['enums','cta','tariff','music-catalog'].map(name=>[`@clipmaker/shared/${name}`,resolve(`packages/shared/src/${name}.ts`)]))},
+    resolve:{alias:Object.fromEntries(['enums','cta','tariff','music-catalog','screen-layout','cut-timeline'].map(name=>[`@clipmaker/shared/${name}`,resolve(`packages/shared/src/${name}.ts`)]))},
     server:{host:'127.0.0.1',port:0,watch:null},plugins:[{name:'billing-real-card',
       resolveId(id){if(id===entry)return entry;},
       load(id){if(id===entry)return `import React from 'react';import {createRoot} from 'react-dom/client';import {ClipCard} from '/apps/web/src/app/clips/ClipCard.tsx';function Ready(){React.useEffect(()=>{window.cardReady=true},[]);return null;}createRoot(document.getElementById('root')).render(React.createElement(React.Fragment,null,React.createElement(ClipCard,{clip:window.qaClip,paymentsOn:window.qaPaymentsOn}),React.createElement(Ready)));`;},

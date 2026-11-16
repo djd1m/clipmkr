@@ -1,3 +1,4 @@
+import type { ClipLayoutService } from './clip-layout';
 import type { ClipMusicService } from './clip-music';
 import type { VideoCtaService } from './video-cta';
 import type { ErasureService } from './erasure';
@@ -11,7 +12,7 @@ import type { ShortLinkService } from './short-link';
 import type { GuestPackService } from './guest-pack';
 import { createPartnerCodeSchema, type PartnerService } from './partner';
 import { createVideoSchema, UploadError } from './upload-contract';
-interface Context { cta?: Pick<VideoCtaService, 'setCta'>; music?: Pick<ClipMusicService, 'setMusic'>; referralCookie?: string; erasure?: ErasureService; interest?: Pick<InterestService, 'create'>; partners?: Pick<PartnerService, 'apply' | 'dashboard' | 'createCode' | 'ensurePersonalLink'>; ipPrefix?: string; account: string; idempotencyKey: string | null; requestId: string; video: Pick<VideoService, 'create'>; retry?: Pick<VideoRetryService, 'retry'>; screen?: ScreenService; links?: Pick<ShortLinkService, 'copy'>; guests?: Pick<GuestPackService, 'create' | 'send' | 'revoke'> }
+interface Context { layout?:Pick<ClipLayoutService,'layoutInfo'|'prepareLayout'|'setLayout'>; cta?: Pick<VideoCtaService, 'setCta'>; music?: Pick<ClipMusicService, 'setMusic'>; referralCookie?: string; erasure?: ErasureService; interest?: Pick<InterestService, 'create'>; partners?: Pick<PartnerService, 'apply' | 'dashboard' | 'createCode' | 'ensurePersonalLink'>; ipPrefix?: string; account: string; idempotencyKey: string | null; requestId: string; video: Pick<VideoService, 'create'>; retry?: Pick<VideoRetryService, 'retry'>; screen?: ScreenService; links?: Pick<ShortLinkService, 'copy'>; guests?: Pick<GuestPackService, 'create' | 'send' | 'revoke'> }
 const t = initTRPC.context<Context>().create({ errorFormatter({ shape, error }) {
   const cause = error.cause;
   return { ...shape, data: { ...shape.data, ...(cause instanceof UploadError ? { upload: { code: cause.code, message: cause.message, ...cause.details } } : {}) } };
@@ -53,6 +54,12 @@ async function partnerResult<T>(ctx: Context, operation: (service: NonNullable<C
     throw new TRPCError({ code: status === 403 ? 'FORBIDDEN' : status === 404 ? 'NOT_FOUND' : status === 422 ? 'UNPROCESSABLE_CONTENT' : status === 409 ? 'CONFLICT' : 'INTERNAL_SERVER_ERROR',
       message: cause instanceof UploadError ? cause.message : 'Партнёрские данные временно недоступны. Повторите позже', cause });
   }
+}
+async function layoutResult<T>(ctx:Context,operation:(service:NonNullable<Context['layout']>)=>Promise<T>) {
+  try {if(!ctx.layout)throw new Error('Layout runtime unavailable');return {data:await operation(ctx.layout),meta:{request_id:ctx.requestId}};}
+  catch(cause){const status=cause instanceof UploadError?cause.status:503;
+    throw new TRPCError({code:status===404?'NOT_FOUND':status===409?'CONFLICT':status===422?'UNPROCESSABLE_CONTENT':status===429?'TOO_MANY_REQUESTS':'INTERNAL_SERVER_ERROR',
+      message:cause instanceof UploadError?cause.message:'Оформление временно недоступно',cause});}
 }
 // Flat key preserves canonical HTTP code.apply; apply is reserved as a standalone router key.
 export const appRouter = t.router({
@@ -119,6 +126,9 @@ partner: t.router({
       message: cause instanceof UploadError ? cause.message : 'Не удалось сохранить призыв. Повторите позже', cause });
   }
 }) }), clip: t.router({
+  layoutInfo:validatedProcedure.input(z.unknown()).query(({ctx,input})=>layoutResult(ctx,s=>s.layoutInfo(ctx.account,input))),
+  prepareLayout:validatedProcedure.input(z.unknown()).mutation(({ctx,input})=>layoutResult(ctx,s=>s.prepareLayout(ctx.account,input))),
+  setLayout:validatedProcedure.input(z.unknown()).mutation(({ctx,input})=>layoutResult(ctx,s=>s.setLayout(ctx.account,input))),
   setMusic: validatedProcedure.input(z.unknown()).mutation(async ({ ctx, input }) => {
     try {
       if (!ctx.music) throw new Error('Music runtime unavailable');

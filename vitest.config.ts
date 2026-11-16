@@ -6,6 +6,8 @@ export default defineConfig({
     '@clipmaker/shared/server/original-source': path.resolve('packages/shared/src/server/original-source.ts'),
     '@clipmaker/shared/music-catalog': path.resolve('packages/shared/src/music-catalog.ts'),
     '@clipmaker/shared/formats': path.resolve('packages/shared/src/formats.ts'),
+    '@clipmaker/shared/screen-layout': path.resolve('packages/shared/src/screen-layout.ts'),
+    '@clipmaker/shared/cut-timeline': path.resolve('packages/shared/src/cut-timeline.ts'),
     '@clipmaker/shared/watermark': path.resolve('packages/shared/src/watermark.ts'),
     '@clipmaker/shared/clip-code': path.resolve('packages/shared/src/clip-code.ts'),
     '@clipmaker/shared/config': path.resolve('packages/shared/src/config.ts'),

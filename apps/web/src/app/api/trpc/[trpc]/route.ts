@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const body = await readUploadJson(request);
     const bounded = new Request(request.url, { method: 'POST', headers: request.headers, body: JSON.stringify(body) });
     const response = await fetchRequestHandler({ endpoint: '/api/trpc', req: bounded, router: appRouter, allowBatching: false,
-      createContext: () => ({ account, referralCookie: request.headers.get('cookie') ?? '', idempotencyKey: request.headers.get('idempotency-key'), requestId, video: deps.video, erasure: deps.erasure, interest: deps.interest, music: deps.music, cta: deps.cta, retry: deps.retry, screen: deps.screen, links: deps.links, guests: deps.guests, partners: deps.partners, ipPrefix: ipPrefix(clientIp(request.headers, deps.trustedProxyHops)) }),
+      createContext: () => ({ account, referralCookie: request.headers.get('cookie') ?? '', idempotencyKey: request.headers.get('idempotency-key'), requestId, video: deps.video, erasure: deps.erasure, interest: deps.interest, layout:deps.layout, music: deps.music, cta: deps.cta, retry: deps.retry, screen: deps.screen, links: deps.links, guests: deps.guests, partners: deps.partners, ipPrefix: ipPrefix(clientIp(request.headers, deps.trustedProxyHops)) }),
       responseMeta: ({ errors }) => ({ status: errors.length ? undefined : new URL(request.url).pathname === '/api/trpc/code.apply' ? 200 : 202, headers: { 'Cache-Control': 'private, no-store' } }) });
     if (response.ok && new URL(request.url).pathname === '/api/trpc/account.delete') {
       response.headers.append('Set-Cookie', erasureCookie(account, getRuntime().config.sessionSecret));
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     }
     if (!session) return Response.json({ error: { message: 'Войдите в аккаунт' } }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     return await fetchRequestHandler({ endpoint: '/api/trpc', req: request, router: appRouter, allowBatching: false,
-      createContext: () => ({ account: session.account_id, idempotencyKey: null, requestId, screen: deps.screen, partners: deps.partners,
+      createContext: () => ({ account: session.account_id, idempotencyKey: null, requestId, screen: deps.screen, layout:deps.layout, partners: deps.partners,
         video: { create: async () => { throw new Error('GET cannot create'); } } }),
       responseMeta: () => ({ headers: { 'Cache-Control': 'private, no-store' } }) });
   } catch (error) { return uploadFailure(error, requestId); }

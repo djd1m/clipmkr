@@ -310,7 +310,7 @@ describe('выбранный player и гостевая форма в насто
     const entry = '\0selected-player-fixture', navigation = '\0selected-player-navigation', link = '\0selected-player-link';
     server = await createServer({ configFile: false, cacheDir: cache, root: process.cwd(), esbuild: { jsx: 'automatic' },
       optimizeDeps: { include: ['react', 'react-dom/client', 'react/jsx-runtime'], exclude: ['next/navigation', 'next/link'] },
-      resolve: { alias: { '@clipmaker/shared/enums': resolve('packages/shared/src/enums.ts'),
+      resolve: { alias: { '@clipmaker/shared/screen-layout': resolve('packages/shared/src/screen-layout.ts'), '@clipmaker/shared/cut-timeline': resolve('packages/shared/src/cut-timeline.ts'), '@clipmaker/shared/enums': resolve('packages/shared/src/enums.ts'),
         '@clipmaker/shared/cta': resolve('packages/shared/src/cta.ts'), '@clipmaker/shared/tariff': resolve('packages/shared/src/tariff.ts'),
         '@clipmaker/shared/music-catalog': resolve('packages/shared/src/music-catalog.ts') } },
       server: { host: '127.0.0.1', port: 0, watch: { ignored: ['**/.next/**', '**/dist/**'] } },

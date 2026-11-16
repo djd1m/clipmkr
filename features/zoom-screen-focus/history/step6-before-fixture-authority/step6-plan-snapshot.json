@@ -1,0 +1,737 @@
+{
+  "status": "logout-authority-gates-complete-expandedGO-currentLiteralRead-pending",
+  "createdAtUtc": "2026-11-11T17:09:44.460654+00:00",
+  "baseRevision": "1a7f17f66d83bacf07dd07c513a3cfad03837330",
+  "planner": "gpt-6-astra xhigh",
+  "coder": "gpt-6.1-sol high",
+  "stage6DocumentReady": true,
+  "stage6Checkpoint": {
+    "status": "actual-recorded-current-logout-authority",
+    "command": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/plan-checkpoint.command.json",
+      "sha256": "7e77f96d36de49fd66fb353bbf397ea16143eb861fcc232960bb5957d7d8df81"
+    },
+    "result": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/plan-checkpoint.stdout.json",
+      "sha256": "ff2d2a3e94002bcf0f887b8b987b88457409daf6d376bb75606d566865499f23"
+    },
+    "exitCode": 0,
+    "witnessed": [
+      "06_implementation_plan.md",
+      "05_architecture.md",
+      "scope-inventory.json"
+    ]
+  },
+  "codeAdmission": false,
+  "gates": {
+    "Task0": "accepted Original integration proof preserved",
+    "previousPhaseB": "earlier42scope author work exists; complete root freeze now active",
+    "currentK1": "actual final author4names free, exit0, scan complete508files",
+    "currentK2": "actual exit0 PASS0fail/1warnC8/1skipC4; explicit20ID trace",
+    "currentAdmissionContext": "actual admitted/complete exit0; source66stable",
+    "rootExpandedScopeGO": "not-issued",
+    "coderLiteralRead": "current97428-byte literal fully read by sameSol required"
+  },
+  "ideation": {
+    "nonce": "0276c1f3-2f7b-4e38-96c4-10258020aca1",
+    "revision": "e66723874cc112533766c6896c800786109567d430efd4f5a7ff1b30382acfdd",
+    "evaluateVerdict": "closed",
+    "rootReportedExitCode": 0,
+    "unresolved": [],
+    "rawResultPath": "/root/.config/clipmkr/zoom-screen-focus-20261111/ideation-evaluate-r3.raw.json",
+    "rawResultSha256": "ce82fdcc673fa033cc2218d820c32f3e081112c78d903e9bb176990035944c5b",
+    "hostPath": "features/zoom-screen-focus/.fa-state/review-convergence-ideation-host.json",
+    "reviewPath": "features/zoom-screen-focus/.fa-state/review-convergence-ideation-review.json",
+    "conditions": [
+      "ACC-01",
+      "ACC-02",
+      "ACC-03",
+      "RISK-01",
+      "SEC-01",
+      "SEC-02",
+      "TST-01",
+      "UX-01",
+      "UX-02",
+      "UX-03",
+      "UX-04"
+    ],
+    "scope": "Closed core9; final06 is a later planner artifact, not separately independently reviewed by six origins"
+  },
+  "canonicalIdeationReport": {
+    "path": "features/zoom-screen-focus/03.5_ideation_report.md",
+    "owner": "root",
+    "mutationByPlanner": false,
+    "note": "Root-authored canonical Step3.5 report; excluded from planner-owned freeze while root prepares it"
+  },
+  "closedCoreManifest": [
+    {
+      "path": "features/zoom-screen-focus/00_complexity_assessment.md",
+      "digest": "b1e0bfff540b8305008f7b16bf47b50a08b9315632baa6ff9f056d120ab0d635"
+    },
+    {
+      "path": "features/zoom-screen-focus/01_requirements.md",
+      "digest": "5464fbeaf78cb01e21440186e89d683903837a4043e7580f30e7937496bd0219"
+    },
+    {
+      "path": "features/zoom-screen-focus/02_research.md",
+      "digest": "35acaf4a9f4a5fcad9bfdb591043134a01122dd6eb2b1c6907541218f8df13e9"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/001-compose-confirmed-source-regions.md",
+      "digest": "1130c07890eb4643e4ed724204bb7d06f4cc3e89fdd569ffeb5f29b1f4811583"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/002-persist-fenced-layout-intents.md",
+      "digest": "92f83aa54c70be194b90b695b4db70a89fdbeb69c0db10012a7e9a2d451975c5"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/003-preview-layout-on-source-timeline.md",
+      "digest": "8af1603968eac40106712e9bffcbbc48dab855392a4a0c43eef21d9e5ee1c3ef"
+    },
+    {
+      "path": "features/zoom-screen-focus/03_adr/004-cache-bounded-camera-seeds.md",
+      "digest": "03dab088aafb6ee22fe8fa60de68a5b6574f6250233f21ab5f2a1d69c0502f8b"
+    },
+    {
+      "path": "features/zoom-screen-focus/04_domain_model.md",
+      "digest": "fc60cec149fd9312ed9afb12fa0a2d8d4863557479662d26ad263531189eb718"
+    },
+    {
+      "path": "features/zoom-screen-focus/05_architecture.md",
+      "digest": "2daa5b4b8b14146b02bea42ab954561c82fbed9e8acbfe0260a27fdc47e592a8"
+    }
+  ],
+  "historicalDesignDossier": {
+    "path": "features/zoom-screen-focus/design-dossier.json",
+    "sha256": "eadcae9e104befc6a2808aa6539ac948e6002f9ebdc125454edc85c558c03654",
+    "archivedPath": "features/zoom-screen-focus/history/ideation-r3-closed-plan/features/zoom-screen-focus/design-dossier.json",
+    "note": "Preserved R3 historical snapshot; not a live manifest of final06"
+  },
+  "priorPlanArchive": {
+    "path": "features/zoom-screen-focus/history/ideation-r3-closed-plan/snapshot.json",
+    "sha256": "4a53e3ff4bf977d0d1aeef0c3b0c99e95c1a034ee77a722d9d3437dcd3783e46",
+    "files": 4
+  },
+  "task0DependencyProof": {
+    "state": "accepted-original-integrated",
+    "originalSourceAcceptanceReceipt": {
+      "path": "/root/.config/clipmkr/original-video-access-20261111/source-qe-closed.raw.json",
+      "sha256": "d2ccc2d5d9d9e77be561427cbd9ef385aab2e122b19cd7906c8df10bcc842040",
+      "verdict": "closed",
+      "revision": "3258a156402c6770b3c9d9446534205dc3a822faa6ee348727b7429b8c83628d",
+      "nonce": "30a1c508-14fb-44e3-a78a-81e9c1d67b5e",
+      "rounds": 2,
+      "unresolved": [],
+      "reasons": []
+    },
+    "sourceAcceptanceCommand": {
+      "path": "/root/.config/clipmkr/original-video-access-20261111/source-qe-closed-command.private.json",
+      "sha256": "6605907356e7a34486e27f52e2eb959b13703060b201ac5f6a07afac0a9abb32"
+    },
+    "acceptedOriginalRevision": "98e647e2cf4ee83eb38f2f5557fb8fc024386294",
+    "acceptedCommitProof": {
+      "path": "/root/.config/clipmkr/original-video-access-20261111/accepted-source-commit.private.json",
+      "sha256": "cb9cc4e137760d2096049b76c1a06f5ac3b3b12a1ff7f96175240fe8cf7d9f2e"
+    },
+    "integratedRevision": "c66b9ef4227580adad8fb5664c6a7650764518f1",
+    "rootDependencyCheck": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/original-integration/integration-result.private.json",
+      "sha256": "87dabcfd925a0cb15ed5947711c11c818d0372b3779f1165cdf2eb8c8a2e7f0e"
+    },
+    "integratedSourceHashes": [
+      {
+        "path": "packages/shared/src/server/original-source.ts",
+        "sha256": "9455c5460e579a68aa6f0bfa16b57ec28ea3a19db29df13ce4a586c4e3fbf502",
+        "acceptedSha256": "9455c5460e579a68aa6f0bfa16b57ec28ea3a19db29df13ce4a586c4e3fbf502",
+        "matchesAcceptedSource": true
+      },
+      {
+        "path": "apps/web/src/app/api/videos/[videoId]/original/route.ts",
+        "sha256": "7ec1a97f36c845eeb806697a7c533424abb2a65f9c7446447c69b7cf8cc3223c",
+        "acceptedSha256": "7ec1a97f36c845eeb806697a7c533424abb2a65f9c7446447c69b7cf8cc3223c",
+        "matchesAcceptedSource": true
+      },
+      {
+        "path": "apps/web/src/app/videos/[videoId]/OriginalSource.tsx",
+        "sha256": "4fc57f0ac98e2953e6c2228836539d904e40c98ddb4dc97faf31a3155e7572e3",
+        "acceptedSha256": "4fc57f0ac98e2953e6c2228836539d904e40c98ddb4dc97faf31a3155e7572e3",
+        "matchesAcceptedSource": true
+      },
+      {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "sha256": "80031dfc619466da8aaaa036f27bea50faf9a4f34629731056473c554185b4d2",
+        "acceptedSha256": "80031dfc619466da8aaaa036f27bea50faf9a4f34629731056473c554185b4d2",
+        "matchesAcceptedSource": true
+      },
+      {
+        "path": "apps/web/src/server/original-file.ts",
+        "sha256": "8cfebd098173ef9a38eab2d45181901a48efb695fef1f3975d6d6ad2198e75b1",
+        "acceptedSha256": "8cfebd098173ef9a38eab2d45181901a48efb695fef1f3975d6d6ad2198e75b1",
+        "matchesAcceptedSource": true
+      },
+      {
+        "path": "apps/web/src/server/original-runtime.ts",
+        "sha256": "2589c4ce7bbb6570ca4f06b09af6735d1f376a6b6586612ba43ad1f03250f95f",
+        "acceptedSha256": "2589c4ce7bbb6570ca4f06b09af6735d1f376a6b6586612ba43ad1f03250f95f",
+        "matchesAcceptedSource": true
+      },
+      {
+        "path": "packages/shared/src/index.ts",
+        "sha256": "e02a74b6c350ec2989cd9538d24399ed39df84553e99bfdd407e53d00ed4f8d6",
+        "acceptedSha256": "e02a74b6c350ec2989cd9538d24399ed39df84553e99bfdd407e53d00ed4f8d6",
+        "matchesAcceptedSource": true
+      }
+    ],
+    "rootVerifiedGitBlobs": 83,
+    "plannerWorkingFileObservation": {
+      "exact": 82,
+      "total": 83,
+      "difference": "vitest.config.ts includes accepted Original aliases plus two unchanged PhaseA aliases; root integration explicitly resolves this"
+    },
+    "seamObservation": "Read-only source inspection confirms canonical helper/metadata/GET/HEAD/Range and mounted OriginalSource with native sibling pause. Full three-media Zoom coordination remains TASK-5; no new runtime verification.",
+    "originalAcceptedEditableCount": 23,
+    "ZoomExpandsOriginalAuthority": false,
+    "phaseBAdmission": "pending"
+  },
+  "measuredTargets": 66,
+  "editableTargets": 44,
+  "readOnlyTargets": 22,
+  "files": [
+    {
+      "path": "features/zoom-screen-focus/06_implementation_plan.md",
+      "sha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15"
+    },
+    {
+      "path": "features/zoom-screen-focus/architecture-handoff.md",
+      "sha256": "2a8e7e581e423bec80dbf8452390fbe21883616717e279df5bb5e40924600e72"
+    },
+    {
+      "path": "features/zoom-screen-focus/README.md",
+      "sha256": "c46663eb4dd1e829f8007e987fca1499e524592a2880e338d7ace574bba76a33"
+    },
+    {
+      "path": "features/zoom-screen-focus/requirements-revision.json",
+      "sha256": "5f5be3a9c21609634df8079ece73c4833dfeb944c57d3ed2142f6cd35078013f"
+    },
+    {
+      "path": "features/zoom-screen-focus/source-pins.json",
+      "sha256": "4d7a9be7be1cda4e09b6d4bdc9f6da8100155464484a9cc198104c0f57a0d6bc"
+    },
+    {
+      "path": "features/zoom-screen-focus/design-source-pins.json",
+      "sha256": "da91e28c02e1a59fdd50d55650bb04e38c554cd070cb4909ed435e10192e3656"
+    },
+    {
+      "path": "features/zoom-screen-focus/scope-inventory.json",
+      "sha256": "67cf8bbe7741239e70161be1ba85795bf696c8fd0f96edc57c35e7cf799ce03c"
+    }
+  ],
+  "wordingRevisionAtUtc": "2026-11-11T17:36:12.103519+00:00",
+  "phaseOrderingRevisionAtUtc": "2026-11-11T18:00:23.665170+00:00",
+  "phaseOrdering": {
+    "PhaseA": {
+      "status": "reworkR2-frozen-originating-focused-fix-verified-not-SourceQE",
+      "codeWritten": true,
+      "historicalRootAdmissionExercised": true,
+      "historicalReadiness": {
+        "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/readiness.json",
+        "sha256": "d0e9e74dba0b39692e3228ef4bd8736be177416950fe6bd1d4868e31fbeb3c7d"
+      },
+      "historicalPlanSha256": "85339c04e8afb53ee45bccb782b64de97e17945f0b61d7a3cc67dee8677964d4",
+      "historicalK1": [
+        {
+          "outcome": "free",
+          "exit": 0,
+          "results": [
+            {
+              "kind": "module",
+              "name": "screen-layout",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "NormalizedRect",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "ScreenFaceLayoutV1",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "ScreenLayoutGeometry",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "CutTimeline",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "planScreenLayout",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "parseScreenFaceLayout",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "mapOutputTime",
+              "verdict": "free",
+              "where": ""
+            },
+            {
+              "kind": "export",
+              "name": "buildScreenLayoutGraph",
+              "verdict": "free",
+              "where": ""
+            }
+          ]
+        },
+        {
+          "outcome": "free",
+          "exit": 0,
+          "results": [
+            {
+              "kind": "module",
+              "name": "cut-timeline",
+              "verdict": "free",
+              "where": ""
+            }
+          ]
+        }
+      ],
+      "historicalK2": {
+        "exitCode": 0,
+        "stdout": "NOTE  C9: twin scan over 59 target(s), 44 on disk, 0 unlisted twins (byte-identical only; drifted copies need identity tests)\nSKIP  C4: no acid corpus declared (no --acid, no `| A<n> |` table in 00_complexity_assessment.md) — acid-naming check SKIPPED\nWARN  C8: 01_requirements.md declares NO requirement ids in the contract shapes (FR-N / NFR-N / AC-N / C-N at line start) — nothing to cover\nK2 plan-completeness: PASS (0 failure(s), 1 warning(s), 1 skip(s)) over 4 ADRs, tier XL, in /home/clipmkr-zoom-screen-focus/features/zoom-screen-focus\n",
+        "supplementalExactTrace": {
+          "count": 20,
+          "missing": []
+        }
+      },
+      "historicalSupportedCheckpoints": {
+        "research": {
+          "ok": true,
+          "stage": "research",
+          "witnessed": [
+            "02_research.md",
+            "02_reuse_inventory.md",
+            "research-source-fetches.json"
+          ]
+        },
+        "ddd": {
+          "ok": true,
+          "stage": "ddd",
+          "witnessed": [
+            "04_domain_model.md"
+          ]
+        },
+        "plan": {
+          "ok": true,
+          "stage": "plan",
+          "witnessed": [
+            "06_implementation_plan.md",
+            "05_architecture.md",
+            "scope-inventory.json"
+          ]
+        }
+      },
+      "fullLiteralReadConfirmation": {
+        "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/literal-read-confirmation.json",
+        "sha256": "6b610f6e0baba28299ca6b3cfbee731e00fad97b51cc00127598381dd471a57b"
+      },
+      "authorReworkEvidence": {
+        "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/rework-r1/phase-a-frozen-r1.json",
+        "sha256": "38a33b09714bfcd382a978863947d62c6e1329f981f5d79a95956460d849eebb"
+      },
+      "authorValidation": "R2 author25 checks/types/lint PASS on frozen packet; author evidence, not fullQE",
+      "integratedSixHashes": {
+        "packages/shared/src/screen-layout.ts": "f0395986003b25653545d06aa0f2c3d65f11b68f9dc226529ff29435cb1d2f02",
+        "packages/shared/src/cut-timeline.ts": "43950ee31f812c0a678619bbba1caa09249eb973968f7bfc9ce8e120cdabd881",
+        "apps/worker/src/render/screen-layout.ts": "ea456244d05fd3c00ef02c3208b1e4a3f2c531c1dc6ff91f5feb844d4e04aaf1",
+        "tests/screen-layout.test.ts": "ac26fca87b0a25eef374da92fbfad89208bd0824739eadfb8f3af5002213fc23",
+        "tests/screen-layout-media.test.ts": "571355d54dce1c4471dcb85ff10007cf0b2f51c880a07fbba88abaf662dde039",
+        "vitest.config.ts": "f24957a363183aff6dde4b6338d3ea0dea5ea613200484254b3edfe0218ea75d"
+      },
+      "fiveSourceShaUnchanged": true,
+      "vitestResolution": "accepted Original aliases plus same two PhaseA aliases, nothing else",
+      "independentStatus": "Originating focused R2 exact unused-focus01/02 counterexample eliminated, no new scoped concerns; pure probe terminal exit0, six hashes stable; not SourceQE",
+      "findingSource": "Root message during PhaseB readiness task; no reviewer receipt manufactured",
+      "currentFrozenPacket": {
+        "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/rework-r2/frozen-r2.json",
+        "sha256": "09d761ae4d8aac37a377db41a22ddd568de9f7655a37f102f1abd3cc0ea6d09b"
+      },
+      "currentFrozenDigest": "239546d6192d915bcc109b95b4b7ff87dae31a251df1fa3301e63d5f7e57b65d",
+      "currentSourceHashes": [
+        {
+          "path": "packages/shared/src/screen-layout.ts",
+          "sha256": "3e156bd305a264a496f26746c0a02a48b526b8564d5592be1e67f55fcc8083cb",
+          "bytes": 9539
+        },
+        {
+          "path": "packages/shared/src/cut-timeline.ts",
+          "sha256": "43950ee31f812c0a678619bbba1caa09249eb973968f7bfc9ce8e120cdabd881",
+          "bytes": 2682
+        },
+        {
+          "path": "apps/worker/src/render/screen-layout.ts",
+          "sha256": "ea456244d05fd3c00ef02c3208b1e4a3f2c531c1dc6ff91f5feb844d4e04aaf1",
+          "bytes": 1640
+        },
+        {
+          "path": "tests/screen-layout.test.ts",
+          "sha256": "e2e0311b88e99082609509553d6eb1bcc7657ef48159acfe3da66a32903305bf",
+          "bytes": 10355
+        },
+        {
+          "path": "tests/screen-layout-media.test.ts",
+          "sha256": "571355d54dce1c4471dcb85ff10007cf0b2f51c880a07fbba88abaf662dde039",
+          "bytes": 10570
+        },
+        {
+          "path": "vitest.config.ts",
+          "sha256": "f24957a363183aff6dde4b6338d3ea0dea5ea613200484254b3edfe0218ea75d",
+          "bytes": 1924
+        }
+      ],
+      "originatingFocusedReport": {
+        "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-a-entry/code-critic.ru.private.md",
+        "sha256": "4a2487b18c2d5ffdd6e025eb46950525308faf76c371f276e1fca685eb2c186d"
+      }
+    },
+    "PhaseB": {
+      "status": "implementation-frozen-current-logout-authority-gates-complete",
+      "codeAdmission": false,
+      "writerAuthorized": false,
+      "requires": [
+        "sameSol full current97428-byte literal read",
+        "explicit root expanded44scopeGO",
+        "K1 before any additional public name declaration"
+      ],
+      "acceptedOriginalDependency": "satisfied by task0DependencyProof",
+      "addedEditable": [
+        "apps/worker/src/render/probe.ts",
+        "packages/shared/src/enums.ts"
+      ],
+      "addedReadOnly": [
+        "tests/enums.test.ts"
+      ],
+      "tasks": [
+        "TASK-1B",
+        "TASK-2",
+        "TASK-3",
+        "TASK-4B",
+        "TASK-5",
+        "TASK-6",
+        "TASK-7",
+        "TASK-8"
+      ]
+    },
+    "dag": "gates→1A→4A parallel Original/0; {0,1A}→1B→2; {1B,2}→3; {0,1B,2,4A}→4B; {0,1B,2,3}→5;4B→6;{3,4B,5,6}→7→8",
+    "scope": {
+      "editable": 44,
+      "readOnly": 22,
+      "measured": 66,
+      "tier": "XL"
+    },
+    "priorPlanArchive": {
+      "path": "features/zoom-screen-focus/history/step6-before-phase-b-readiness/snapshot.json",
+      "sha256": "c5ae64fb782f7978297e81cbacf2935606fe651e9a88b5fe91892e4beb35f6ba"
+    }
+  },
+  "executionRevisionAtUtc": "2026-11-11T18:55:11.520744+00:00",
+  "executionRevision": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+  "phaseBAddedTargetPins": [
+    {
+      "path": "apps/worker/src/render/probe.ts",
+      "sha256": "4097fadf763a2347ae42a3c07585aedbf5fbed15bcf035776acc47ad09363935",
+      "authority": "editable",
+      "purpose": "SAR producer"
+    },
+    {
+      "path": "packages/shared/src/enums.ts",
+      "sha256": "e899a5f54d71104e75810fff5e8f9e32a98ffdba2f95b00910b4b1100365d85c",
+      "authority": "editable",
+      "purpose": "canonical032 enum producer"
+    },
+    {
+      "path": "tests/enums.test.ts",
+      "sha256": "23bff85e98dcfd87264348bef42ec00eda6b82d90b41e5a9db329427897b31cd",
+      "authority": "read-only",
+      "purpose": "unchanged canonical CHECK catch-all guard"
+    }
+  ],
+  "integrationPinChanges": {
+    "source-pins.json": [
+      {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "before": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da",
+        "after": "80031dfc619466da8aaaa036f27bea50faf9a4f34629731056473c554185b4d2",
+        "basis": "accepted Original SOURCE"
+      }
+    ],
+    "design-source-pins.json": [
+      {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "before": "c878b80619a14579f23ef8e9368dca3869ee1e9442d018d2c86d4233ca1a29da",
+        "after": "80031dfc619466da8aaaa036f27bea50faf9a4f34629731056473c554185b4d2",
+        "basis": "accepted Original SOURCE"
+      },
+      {
+        "path": "vitest.config.ts",
+        "before": "0f477caafa30da594689d6e8e3864697945a0fd9a495ed880f808b6dbb014019",
+        "after": "f24957a363183aff6dde4b6338d3ea0dea5ea613200484254b3edfe0218ea75d",
+        "basis": "root integration: accepted Original aliases plus unchanged PhaseA aliases; not byte-identical Original SOURCE config"
+      }
+    ]
+  },
+  "previousInstrumentalPlanRevision": {
+    "classification": "Engineering phase ordering plus repeated-prose compression; core9 contracts unchanged",
+    "previousPlanBytes": 19302,
+    "currentPlanBytes": 16453,
+    "previousPlanArchive": {
+      "path": "features/zoom-screen-focus/history/step6-before-parallel-pure/snapshot.json",
+      "sha256": "e2dae015227068345e3791a4d49aaadc456374747b9c8080bfd261169d1a7d09"
+    },
+    "tasks": 9,
+    "exactAmendmentRowsPreserved": 12,
+    "preservedConditionIds": 11,
+    "targets": {
+      "measured": 59,
+      "editable": 40,
+      "readOnly": 19
+    },
+    "readinessOnly": true,
+    "sourcePreflight": {
+      "command": "node /home/clipmkr/.agents/skills/feature-adr/scripts/check-code-targets.mjs --repo /home/clipmkr-zoom-screen-focus --feature /home/clipmkr-zoom-screen-focus/features/zoom-screen-focus",
+      "status": "admitted",
+      "exitCode": 0,
+      "reusableCodeAdmission": false
+    },
+    "coderContext": {
+      "command": "node /home/clipmkr/.agents/skills/feature-adr/scripts/build-coder-context.mjs /home/clipmkr-zoom-screen-focus/features/zoom-screen-focus --tier=XL",
+      "status": "complete",
+      "exitCode": 0,
+      "promptBytes": 94937,
+      "limitBytes": 98304,
+      "requestedMaximumBytes": 95000,
+      "headroomBytes": 3367,
+      "promptSha256": "f9af98e928cb9e084b492cd90d272a807d4ab8a1df9d3aca7df597039208f6ab",
+      "contextDigest": "e47022a12b4145353d1f9d6e76436961bf581c08c085c8ec2b9ab76f3b79e211",
+      "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/readiness-parallel-pure.prompt.md",
+      "rawPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/readiness-parallel-pure-context.raw.json",
+      "diagnostics": [],
+      "literalTruncated": false,
+      "limitRaised": false
+    },
+    "helperHashes": {
+      "check-code-targets.mjs": "bfbad12b54508d5d4c71de640c5e19b3d19317f660e2986d02338ef502f8007e",
+      "build-coder-context.mjs": "19c3991bfb5e88205c9ff6d4d44037c136a190581bab199d3928196e4616fe15"
+    },
+    "readinessResultsPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/readiness-parallel-pure-results.json",
+    "gateBoundary": "PhaseA gates/root GO pending; PhaseB additionally requires genuine Task0 and fresh admission/context"
+  },
+  "instrumentalPlanRevision": {
+    "status": "actual-complete-current-logout-authority",
+    "planBytes": 18944,
+    "planSha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15",
+    "promptBytes": 97428,
+    "limitBytes": 98304,
+    "contextDigest": "12d0edc7f030eae9c85ae5ff5b572fcfe0d9ab9eb73abed798cbe47c1e6ca552",
+    "promptSha256": "bd7caefa33fc1b0b0fb1bfd884a7e4eb45b7962b171b23624e2f5792c3536e0d",
+    "actualCurrentHelperExecuted": true,
+    "literalTruncated": false,
+    "limitRaised": false,
+    "fullPromptPrivatePath": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/coder-context.literal.prompt.md",
+    "coderFullyRead": false,
+    "rawResult": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/coder-context.stdout.json",
+      "sha256": "340a174b0208f06add874942c06f85efd9f1dc71631e167bcc85fa39d022604b"
+    },
+    "codeTargetAdmission": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/code-targets.stdout.json",
+      "sha256": "a3f0f843c034c17e9727aa0834ac32b3cbe27863b3e19df7dedd17b56f88dab0"
+    }
+  },
+  "historicalChecksBeforePhaseBUpdate": {
+    "terminal": "PARALLEL PURE PLAN INTEGRITY AND READINESS PASS",
+    "exitCode": 0,
+    "core9Unchanged": true,
+    "OpenSpecUnchanged": true,
+    "approvedUiUnchanged": true,
+    "historicalDossierUnchanged": true,
+    "taskCount": 9,
+    "amendmentCount": 12,
+    "preservedConditionCount": 11,
+    "amendmentOraclesUnchanged": true,
+    "measuredTargets": 59,
+    "editable": 40,
+    "readOnly": 19,
+    "gitDiffCheckExitCode": 0,
+    "noIndexDiffMeaning": "exit1 means changed files; no whitespace diagnostics",
+    "notRun": [
+      "K1",
+      "K2",
+      "SOURCE admission",
+      "product tests",
+      "DB/S3/runtime",
+      "commit/push"
+    ],
+    "OpenSpecStrictRerun": "not needed: spec bytes unchanged from R3 strict exit0",
+    "wordingCompression": "12AM rows and raw59-target block exact; full requirements/ADR Decision/Confirmation plus current plan in complete literal94937bytes",
+    "phaseAAllowlistSubsetOfExistingEditable": true,
+    "phaseAAllowlistCount": 6,
+    "phaseAImplemented": false,
+    "phaseBTask0StillPending": true,
+    "phaseOrderingOnlyCore9Unchanged": true,
+    "docDiffWhitespaceChecks": [
+      {
+        "path": "06_implementation_plan.md",
+        "exitCode": 1,
+        "whitespaceDiagnostics": []
+      },
+      {
+        "path": "README.md",
+        "exitCode": 1,
+        "whitespaceDiagnostics": []
+      },
+      {
+        "path": "architecture-handoff.md",
+        "exitCode": 1,
+        "whitespaceDiagnostics": []
+      }
+    ]
+  },
+  "checks": {
+    "status": "current-document-authority-integrity-and-gates-PASS-not-QE",
+    "evidence": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/document-integrity.json",
+      "sha256": "9bc74b367974571d74d6309b7a7fee7ccc569e2434d0abd942ebcf321aa97f13"
+    },
+    "K1": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/k1.stdout.json",
+      "sha256": "96d3a85377f48893f12f3355603e743d18680b09794b2b5bc91317e7e1e57664"
+    },
+    "K2": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/k2.stdout",
+      "sha256": "1d96087ee17dda37627ded9a37ac0b9f1965c91c6a9dc1de84bc7144cd35efd4"
+    },
+    "ZF_AC_Trace": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/zf-ac-task-trace.json",
+      "sha256": "599564b03a1692d45c97bfbafd5ed8b84ed35109031d23a8c50a6ea5930de6eb"
+    },
+    "core9Unchanged": true,
+    "OpenSpecUnchanged": true,
+    "UIUnchanged": true,
+    "R3DossierUnchanged": true,
+    "sourceFrozen66Stable": true,
+    "newTestsWrittenOrRun": false,
+    "GitCommandsByPlanner": false,
+    "noSourceEdits": true
+  },
+  "resumeCheckpoint": {
+    "state": "source frozen; current logout authority gates complete; waitrootGO/samecoderfullread",
+    "headFromRootFreeze": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+    "baseRefPreserved": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
+    "pending": [
+      "sameSol full current97428-byte literal read",
+      "explicit root expanded44scopeGO",
+      "K1 before any additional public name declaration"
+    ],
+    "noNewCoder": true,
+    "noSourceEditsByPlanner": true
+  },
+  "resumeAtUtc": "2026-11-11T19:19:22.891667+00:00",
+  "phaseBReadinessAtUtc": "2026-11-11T19:24:03.502399+00:00",
+  "phaseBReadinessDocument": {
+    "path": "features/zoom-screen-focus/phase-b-readiness.md",
+    "sha256": "89b79a018baa9ab3bda012c62e01f757f6d928f79a9a4eeec40edbef7c473adf"
+  },
+  "logoutAuthorityAtUtc": "2026-11-11T20:18:06.076378+00:00",
+  "currentSourceFreeze": {
+    "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-author/scope-amendment-freeze.json",
+    "sha256": "12b1ba921c4720f1bcfbd5d82659f5d81cbe6f46fd7592c78d51f5562bf893a3",
+    "head": "1a9749e76be35bb3f66e55787104eda1a8d42ca6",
+    "baseRef": "8a807d17dc2802c1b7dccc06a26719478f8c99c1",
+    "root62Digest": "c560081cb3e41f3dd1ff2aa1394e25d39d6ca98aafa61903956d73c2f0fd720e",
+    "measured66Pins": {
+      "path": "/root/.config/clipmkr/zoom-screen-focus-20261111/phase-b-logout-amendment/source-freeze-before.json",
+      "sha256": "6439b9a1991e617137cb3b8b452a3d6944f2ebdcd235239e84204b4d8a2a673e"
+    },
+    "stableThroughGates": true
+  },
+  "logoutAuthority": {
+    "existingRequirement": "ADR-003 logout/account cleanup",
+    "core9Change": false,
+    "document": {
+      "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/phase-b-logout-authority.md",
+      "sha256": "bd2310e78f9d367567053bebdc7685743b9bf2b04bf9590b62dff27e2472add1"
+    },
+    "addedEditable": [
+      "apps/web/src/app/support/SignOut.tsx",
+      "apps/web/src/lib/clip-layout-draft.ts"
+    ],
+    "addedReadOnly": [
+      "apps/web/src/lib/support-client.ts",
+      "apps/web/src/server/auth-handler.ts"
+    ],
+    "old42EditableAnd20ReadonlyPreserved": true,
+    "exactNames": {
+      "module": "clip-layout-draft",
+      "exports": [
+        "CLIP_LAYOUT_DRAFT_PREFIX",
+        "CLIP_LAYOUT_DRAFT_CLEAR_EVENT",
+        "clearClipLayoutDrafts"
+      ],
+      "existingNotNew": "SignOut",
+      "prefix": "n5-clip-layout:v1:",
+      "scope": {
+        "editable": 44,
+        "readOnly": 22,
+        "measured": 66
+      },
+      "sources": [
+        "ADR-003 draft logout/account lifecycle",
+        "root exact technical authority",
+        "existing SignOut success HTTP response branch"
+      ],
+      "status": "pending-actual-K1",
+      "exactAuthorNamesFromRoot": true,
+      "supersedesCandidateOnly": "CLIP_LAYOUT_SESSION_CLEARED was root provisional; not selected by author"
+    },
+    "additionalDependencyPins": [
+      {
+        "path": "apps/web/src/app/support/SignOut.tsx",
+        "sha256": "54b3397981e916a3eda571e7b937dc2f6cd1afb44fcc358f7fb2e318ff9d0436"
+      },
+      {
+        "path": "apps/web/src/lib/clip-layout-draft.ts",
+        "sha256": null
+      },
+      {
+        "path": "apps/web/src/lib/support-client.ts",
+        "sha256": "34402b86e435fc3ccc74b99078451ef10b842875da5d565c8a2a021e8a073c95"
+      },
+      {
+        "path": "apps/web/src/server/auth-handler.ts",
+        "sha256": "f3c92eca69584170077e25d26db393e1c70ee91b73c0790efeac848f1fa12c79"
+      }
+    ],
+    "testTargetUnchanged": "tests/browser/clip-layout.test.ts",
+    "archive": {
+      "path": "/home/clipmkr-zoom-screen-focus/features/zoom-screen-focus/history/step6-before-logout-authority/snapshot.json",
+      "sha256": "e9817c052fe95942d80c07814b032365b61425707e6a70ccdc7cbff0fdad4a3d"
+    }
+  }
+}

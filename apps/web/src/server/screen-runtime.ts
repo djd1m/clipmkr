@@ -6,9 +6,12 @@ import { PartnerService } from './partner';
 import { createClipFileHandler } from './clip-file';
 import { streamGuestFile } from './guest-file';
 import { createShowcaseFileHandler } from './showcase-file';
+import { ClipLayoutRepository } from '@clipmaker/db';
+import { ClipLayoutService } from './clip-layout';
 export function getScreenRuntime() {
   const runtime = getRuntime();
-  return { ...runtime, partners: new PartnerService(runtime.pool, runtime.config.sessionSecret), screen: new ScreenService(runtime.pool) };
+  return { ...runtime, partners: new PartnerService(runtime.pool, runtime.config.sessionSecret), screen: new ScreenService(runtime.pool),
+    layout:new ClipLayoutService(new ClipLayoutRepository(runtime.pool,runtime.config.limits),async()=>{throw new Error('Read-only runtime');},async()=>{throw new Error('Read-only runtime');}) };
 }
 export function clipRoute(kind: 'file' | 'thumbnail') {
   return async (request: Request, { params }: { params: Promise<{ clipId: string }> }) => {

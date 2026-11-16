@@ -1,0 +1,36 @@
+{
+  "purpose": "Preserve44editable22readonly authority before inline Vite fixture alias compatibility",
+  "at": "2026-11-11T21:05:02.633939+00:00",
+  "files": [
+    {
+      "path": "06_implementation_plan.md",
+      "sha256": "9717c9023e5558410fc4f4d101af260b467b1ec1ae34a4f75734c777ca63bb15",
+      "bytes": 18944
+    },
+    {
+      "path": "scope-inventory.json",
+      "sha256": "67cf8bbe7741239e70161be1ba85795bf696c8fd0f96edc57c35e7cf799ce03c",
+      "bytes": 4865
+    },
+    {
+      "path": "step6-plan-snapshot.json",
+      "sha256": "64b7b8df43afd2ae71ed61cc114c0ff3776aa515775d260f3e2f12914c29a9fa",
+      "bytes": 30737
+    },
+    {
+      "path": "phase-b-readiness.md",
+      "sha256": "89b79a018baa9ab3bda012c62e01f757f6d928f79a9a4eeec40edbef7c473adf",
+      "bytes": 1636
+    },
+    {
+      "path": "README.md",
+      "sha256": "c46663eb4dd1e829f8007e987fca1499e524592a2880e338d7ace574bba76a33",
+      "bytes": 1315
+    },
+    {
+      "path": "architecture-handoff.md",
+      "sha256": "2a8e7e581e423bec80dbf8452390fbe21883616717e279df5bb5e40924600e72",
+      "bytes": 1958
+    }
+  ]
+}

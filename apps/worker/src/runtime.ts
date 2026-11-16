@@ -1,8 +1,8 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Worker, DelayedError, type Job } from 'bullmq';
-import { createPool, type Attempt } from '@clipmaker/db';
-import { createS3Client } from '@clipmaker/s3';
+import { createPool, ClipLayoutRepository, type Attempt } from '@clipmaker/db';
+import { createS3Client,generateDownloadUrl } from '@clipmaker/s3';
 import { loadWorkerConfig, loadS3Config, loadSttConfig, loadLlmConfig, required, type Environment, type ServiceRole } from '@clipmaker/shared/config';
 import { createQueues, getRedisConnection, DEFER_DELAY_MS, type AttemptJob } from '@clipmaker/queue';
 import { checkFfprobe } from './media/probe.js';
@@ -36,8 +36,9 @@ export async function startWorker(role: Exclude<ServiceRole, 'web'>, env: Enviro
   const pool = createPool(config.databaseUrl);
   pool.on('error', (error) => console.error('Воркер: соединение БД потеряно', error));
   const transport = createQueues(config);
-  const storage = s3Config ? { client: createS3Client(s3Config), bucket: s3Config.bucket } : null;
-  let worker: Worker<AttemptJob>;
+  const storage = s3Config ? { client: createS3Client(role === 'worker-video'
+    ? { ...s3Config, publicEndpoint: s3Config.endpoint } : s3Config), bucket: s3Config.bucket } : null;
+  let worker: Worker;
   if (role === 'worker-stt' && directory && storage && transcriber && sttConfig && spendPath && 'limits' in config) {
     worker = new Worker<AttemptJob>('stt', async (job: Job<AttemptJob>, token?: string) => {
       const row = await pool.query<Attempt>('SELECT * FROM job_attempt WHERE video_id=$1 AND fence=$2 AND stage=$3',
@@ -78,7 +79,11 @@ export async function startWorker(role: Exclude<ServiceRole, 'web'>, env: Enviro
         spendPath, enqueue: transport.enqueue });
     }, { connection, concurrency: 2, maxStalledCount: 1 });
   } else if (role === 'worker-video' && directory && storage && 'publicOrigin' in config) {
+    const endpoint=new URL(s3Config!.endpoint);
+    if(!s3Config!.forcePathStyle)endpoint.hostname=`${s3Config!.bucket}.${endpoint.hostname}`;
     worker = createRenderWorker(connection, { pool, directory, origin: config.publicOrigin,
+      seed:{repository:new ClipLayoutRepository(pool,null),sign:(key,notAfter)=>generateDownloadUrl(storage,key,undefined,notAfter),
+        origin:endpoint.origin,allowHttp:endpoint.protocol==='http:' && env.NODE_ENV==='test'},
       download: s3Download(storage), storage: renderStorage(storage), enqueue: transport.enqueue });
   } else { throw new Error('Непригодная конфигурация воркера'); }
   worker.on('error', (error) => console.error('Воркер: транспорт недоступен', error));
