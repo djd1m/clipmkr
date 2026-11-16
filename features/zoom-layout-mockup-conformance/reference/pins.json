@@ -1,0 +1,66 @@
+{
+  "originalCommit": "9e19f5746a28bad89c9551ce8cd9934f0f0a4f8e",
+  "originalPath": "docs/research/zoom-screen-layout/mockup.html",
+  "originalSha256": "7b83572176b7c48c38c5d9d3ed141148c482cc11bb98493c07fcef59fe6f4ad0",
+  "kind": "unchanged public mockup with placeholders; no private source media",
+  "browserVersion": "148.0.7778.96",
+  "externalRequests": 0,
+  "pageErrors": [],
+  "files": [
+    {
+      "file": "original-01.png",
+      "sha256": "ddf98428987d06041e637b9f940977205db7ae2bc28334f608741cf653f3fba4",
+      "rect": {
+        "x": 540,
+        "y": 361.28125,
+        "width": 360,
+        "height": 640
+      }
+    },
+    {
+      "file": "original-02.png",
+      "sha256": "8a6ada7a15bd718007a01288e0dcde95ff56c4a16f02e57eb9f12c71f141a25e",
+      "rect": {
+        "x": 540,
+        "y": 361.28125,
+        "width": 360,
+        "height": 640
+      }
+    }
+  ],
+  "proposal": {
+    "status": "not-approved",
+    "baseSelectorSha256": "76acda5003083138245031f5e96c6697e74844a8b5324e1007d397ac993eb1f0",
+    "files": [
+      {
+        "file": "selector-v2-01-390.png",
+        "sha256": "ed184455d5f9916a1aaaf51d72356e56de237d815b7ca8ad2848a88b74e0f551"
+      },
+      {
+        "file": "selector-v2-02-390.png",
+        "sha256": "1d946b7f8cf0e4b0f3f6e4dbdedd1f3773edc12ffd9edf077888111b0b40762d"
+      },
+      {
+        "file": "selector-v2-02-cta-390.png",
+        "sha256": "e1b90a783303bf05ff0a4c15ece6e499cff6b5fb1244f684e162e0d6c59cdac3"
+      },
+      {
+        "file": "selector-v2-mockup.html",
+        "sha256": "5fdbd7611b7e4a975df03d94a246f9620b64c79580b88748087a655b213f9ee6"
+      },
+      {
+        "file": "selector-v2-old-390.png",
+        "sha256": "4a7c6fa1185106be1977139c39dbeb79e83a873c5a9bddbd05e6c0990d3ebd58"
+      },
+      {
+        "file": "selector-v2-roi-390.png",
+        "sha256": "dea412ce07a8fb16f6a4e28e8b5e77789b52ea93610278de9f6bdb24d2659471"
+      },
+      {
+        "file": "selector-v2-upgrade-390.png",
+        "sha256": "c2e223c466ee393e3bdd47aeda8f9e4029c853d3091eda7d7cf99d8f41dd92bb"
+      }
+    ],
+    "notAnIndependentOracle": true
+  }
+}
