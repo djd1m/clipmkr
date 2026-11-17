@@ -7,6 +7,7 @@ import { resolve, join } from 'node:path';
 import { verifyZoomLayoutConformance, validateZoomVitestEvidence } from '../scripts/check-zoom-layout-conformance.mjs';
 import { runZoomLayoutMutationAttempt } from '../scripts/test-zoom-layout-mutations.mjs';
 import { applyZoomLayoutCurrentVps } from '../scripts/apply-zoom-layout-current-vps.mjs';
+import { registerFramingNativeEvidenceTests } from './zoom-layout-framing-evidence';
 // Unit reports/resources are invented. Original nine orchestrator cases stay; new cases execute
 // real fixedExecutor and its generated queue/health programs at mocked Docker/DB/HTTP boundaries. No real rollout proof.
 const project=process.cwd(), dir=mkdtempSync(join(tmpdir(),'zoom-release-unit-')), repo=join(dir,'repo');
@@ -14,7 +15,7 @@ const feature='features/zoom-layout-mockup-conformance/';
 const digest=(b: string|Buffer)=>createHash('sha256').update(b).digest('hex');
 const git=(...args:string[])=>execFileSync('git',args,{cwd:repo,encoding:'utf8'}).trim();
 let candidate:string, tree:string;
-const files=['scripts/test-zoom-layout-mutations.mjs','scripts/check-zoom-layout-conformance.mjs','scripts/apply-zoom-layout-current-vps.mjs','tests/zoom-layout-release.test.ts'];
+const files=['scripts/test-zoom-layout-mutations.mjs','scripts/check-zoom-layout-conformance.mjs','scripts/apply-zoom-layout-current-vps.mjs','tests/zoom-layout-release.test.ts','tests/zoom-layout-framing-evidence.ts',feature+'06_implementation_plan.md'];
 beforeAll(()=>{
   execFileSync('git',['clone','--shared','--quiet',project,repo]);
   for(const file of [...files,'features/zoom-layout-mockup-conformance/reference/pins.json','tests/fixtures/zoom-layout-original.json']) cpSync(resolve(project,file),resolve(repo,file));
@@ -373,41 +374,7 @@ it.each(['missing','source','raw','skipped','runtime','unrelated','nonterminal']
   }
   writeFileSync(f.options.evidence,JSON.stringify(f.evidence));expect(()=>verifyZoomLayoutConformance(f.options,f.deps)).toThrow();
 });
-// Invented unit evidence mirrors the native failure shape; actual mutation artifacts stay private.
-const oddWindowFailure='Error: Command failed: ffmpeg -v error -f lavfi -i color=red:s=1923x1081,format=yuv444p -vf crop=961:854:962:56:exact=1 -frames:v 1 -c:v libx264 -pix_fmt yuv420p -threads 1 /tmp/n5-framing-odd-unit/window.mp4\n'
-  +'[libx264 @ 0x123abc] width not divisible by 2 (961x854)\n'
-  +'[vost#0:0/libx264 @ 0x456def] Error while opening encoder - maybe incorrect parameters such as bit_rate, rate, width or height.\n';
-it.each(['native','other-id','other-test','other-file','source','crop','pixel-format','wrong-width','missing-width','missing-command','missing-encoder','generic-encoder','spawn','import','runtime'] as const)(
-  'framing_odd_window_native_RED_%s_is_narrowly_classified',kind=>{
-    const f=fixture(),id=kind==='other-id'?'both-panels-left':'odd-window',path=join(f.privateDir,`${id}-red.json`),raw=JSON.parse(readFileSync(path,'utf8'));
-    const suite=raw.testResults[0],assertion=suite.assertionResults[0];
-    suite.name=join(repo,'tests/framing-media.test.ts');
-    assertion.fullName='FR-1 real odd source: exact window encodes as yuv420p without implicit crop rounding';
-    assertion.failureMessages=[oddWindowFailure];
-    if(kind==='other-id'){
-      suite.assertionResults.push({fullName:'FR-1 real render: target still fails behaviorally',status:'failed',failureMessages:['AssertionError: expected right panel']});
-      raw.numTotalTests=raw.numFailedTests=2;
-      const results=JSON.parse(readFileSync(f.evidence.framingMutations.results.path,'utf8'));results.find((r:{id:string})=>r.id===id).red.failed=2;
-      f.evidence.framingMutations.results=f.save(results);writeFileSync(f.options.evidence,JSON.stringify(f.evidence));
-    }
-    if(kind==='other-test')assertion.fullName='FR-1 real odd source: unrelated native encoding';
-    if(kind==='other-file')suite.name=join(repo,'tests/framing.test.ts');
-    const replace=(from:string,to:string)=>{assertion.failureMessages[0]=assertion.failureMessages[0].replace(from,to);};
-    if(kind==='source')replace('1923x1081','1920x1080');
-    if(kind==='crop')replace('crop=961:854:962:56:exact=1','crop=960:854:962:56:exact=1');
-    if(kind==='pixel-format')replace('yuv420p','yuv444p');
-    if(kind==='wrong-width')replace('width not divisible by 2 (961x854)','width not divisible by 2 (963x854)');
-    if(kind==='missing-width')replace('[libx264 @ 0x123abc] width not divisible by 2 (961x854)\n','');
-    if(kind==='missing-command')assertion.failureMessages[0]=assertion.failureMessages[0].split('\n').slice(1).join('\n');
-    if(kind==='missing-encoder')replace('Error while opening encoder','Some other encoder error');
-    if(kind==='generic-encoder')assertion.failureMessages=['Error: Error while opening encoder'];
-    if(kind==='spawn')assertion.failureMessages=['Error: spawn ffmpeg ENOENT'];
-    if(kind==='import')assertion.failureMessages.push('ReferenceError: native import missing');
-    if(kind==='runtime')raw.numRuntimeErrorTestSuites=1;
-    writeFileSync(path,JSON.stringify(raw));
-    if(kind==='native')expect(verifyZoomLayoutConformance(f.options,f.deps).tests).toBeGreaterThan(0);
-    else expect(()=>verifyZoomLayoutConformance(f.options,f.deps)).toThrow();
-  });
+registerFramingNativeEvidenceTests(fixture,repo);
 it.each(['identity','config','upstreams','source'] as const)('fixed_executor_invalid_ingress_%s_fails_before_writes',async kind=>{
   const f=fixedFixture(),binding=structuredClone(f.binding);
   if(kind==='identity')binding.ingress.containerId='f'.repeat(64);

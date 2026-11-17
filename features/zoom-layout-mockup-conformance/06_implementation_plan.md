@@ -179,6 +179,12 @@ AM-7 (qcsd-testability QT-01): обязательный Vitest run явно вк
 
 MC-01…MC-08 и ADR-001 связаны с task lines выше. Фактически выполнен recall: `npm run dz -- recall 'zoom original mockup design drift legacy rerender geometry compatibility' --project /home/clipmkr`, exit0, JSON fallback, один результат об UI acceptance. SQLite backend вернул UNREADABLE/native addon error; ограничение не исправлялось в этом документационном scope. Root ранее указал `teach:99a7cc53301d60e1` и `teach:de3e9e3d84558cec`; в плане это независимый original oracle и доступный QA-пример. Здесь новые teach или successful stage не фабриковались. Code/spec anti-drift текущего turn: только три документа ADR/архитектуры/плана, без продуктовых изменений и выпуска.
 
+## Уточнение тестовой структуры, 17.11.2026
+
+Фактический lint кандидата `cda8707407c242a07ef1c8536f0624fe2f7b7e68` отклонил тестовый файл: 532 строки при проектном пределе 500 (QER-02). Новые 15 проверок native odd-window выносим в `tests/zoom-layout-framing-evidence.ts`; основная suite передаёт им существующую общую fixture, без её дублирования. Все 79 случаев и названия сохраняются. Новый support-модуль включён в обязательный sourceHash inventory ниже. Требования, геометрия, макеты, production-код и лимит lint не меняются.
+
+До следующего commit/build выполнить быстрый фактический lint и адресную проверку перенесённых случаев вместе с положительным путём checker. Затем — существующие обязательные проверки на стабильном кандидате и независимое origin review. Прежние результаты и отказ lint сохраняются как исторические доказательства; успешный новый прогон ими не подменяется. Это уточнение организации тестов к исходному плану SHA `83f3d971e21b0624b2003baeb169cc9a4ace592ebad5cae51fb8470bf5b4a9d4`, без новой продуктовой функции.
+
 EXPECTED_CODE_TARGETS:
 - packages/shared/src/screen-layout.ts
 - packages/db/src/clip-layout.ts
@@ -208,3 +214,4 @@ EXPECTED_CODE_TARGETS:
 - scripts/apply-zoom-layout-current-vps.mjs
 - tests/zoom-layout-release.test.ts
 - scripts/test-zoom-layout-mutations.mjs
+- tests/zoom-layout-framing-evidence.ts
