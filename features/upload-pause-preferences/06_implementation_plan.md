@@ -28,6 +28,10 @@ Inputs read: `01_requirements.md`, `02_reuse_inventory.md`, `03_adr/001-upload-f
    подтверждённая первая часть, применение последних настроек и один слот.
    Для одновременных и повторных Complete проверить один итоговый набор и
    отсутствие повторной постановки/резерва. Точечный RED до реализации.
+   Существующие тесты параметров загрузчика ожидали блокировку после выбора файла.
+   FR-2 явно меняет этот контракт: уточнить эти тесты для редактируемого черновика
+   при неизменном теле create. В проверке CTA сохранить охрану исходного тела
+   и адаптировать условие заполнения при восстановлении.
 6. Автор `gpt-6.2-sol high`, отдельный проверяющий `gpt-6-astra xhigh`, чистая
    сессия с входными документами. Один набор целевых тестов и типизация,
    адресное повторение только при ошибке или изменении. Сверить фактический diff
@@ -45,3 +49,7 @@ EXPECTED_CODE_TARGETS:
 - tests/browser/upload-lifecycle.test.ts
 - tests/upload-resume.test.ts
 - tests/upload.integration.test.ts
+- tests/clip-cta.test.ts
+- tests/compaction-uploader.test.ts
+- tests/music-uploader.test.ts
+- tests/teaser-uploader.test.ts
