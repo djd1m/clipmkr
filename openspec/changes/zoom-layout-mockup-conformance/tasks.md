@@ -11,12 +11,14 @@
 ## 2. Контракт и реализация
 
 - [x] 2.1 Зафиксировать независимый originaloracle/pins и содержательный RED существующей неправильной01/02.
-- [ ] 2.2 Добавить совместимуюversion2только01/02, сохранитьv1/03/старыеmusicCTA и применитьминимальнуюаддитивнуюDDLпосле необходимыхпроверок.
-- [ ] 2.3 Реализовать version-specific full-canvas geometry, UIpreview/nativeMP4, ROIheight/явныйupgrade и согласованныеоверлеи.
-- [ ] 2.4 Включить блокирующий visual/source/image-evidence guard в конкретныйпутьвыкладкитекущегоVPS; legacytwo-targetCloudscriptнеиспользовать.
+- [x] 2.2 Добавить совместимуюversion2только01/02, сохранитьv1/03/старыеmusicCTA и применитьминимальнуюаддитивнуюDDLпосле необходимыхпроверок.
+- [x] 2.3 Реализовать version-specific full-canvas geometry, UIpreview/nativeMP4, ROIheight/явныйupgrade и согласованныеоверлеи.
+- [x] 2.4 Включить блокирующий visual/source/image-evidence guard в конкретныйпутьвыкладкитекущегоVPS; legacytwo-targetCloudscriptнеиспользовать.
 
 ## 3. Доказательства и поставка
 
-- [ ] 3.1 Пройти целевые unit/media/browser/DBcompat и bounded mutation checks, реальное независимое cross-model QE на стабильномснимке, code/spec anti-drift.
-- [ ] 3.2 Подготовить проверенныйсовместимыйrollbackartifact и выполнитьограниченнуюпоставку наclipmkr.ruпосле допуска;старыефайлысохранить.
+- [x] 3.1 Пройти целевые unit/media/browser/DBcompat и bounded mutation checks, реальное независимое cross-model QE на стабильномснимке, code/spec anti-drift.
+- [x] 3.2 Подготовить проверенныйсовместимыйrollbackartifact и выполнитьограниченнуюпоставку наclipmkr.ruпосле допуска;старыефайлысохранить.
 - [ ] 3.3 Проверить через настоящийUI01/02 искачивание вQAкабинете,датьвладельцуURL/инструкциюи отдельно зафиксироватьего визуальнуюприёмку. Cloud/DNSнеобновлять.
+
+Автоматическая проверка двух клипов в опубликованном UI завершена. Ручная визуальная приёмка владельцем ожидается. Доказательства: `features/zoom-layout-mockup-conformance/08_qe_report.md`.
