@@ -1,6 +1,6 @@
 # План UPLOAD-001 — продолжение с изменёнными настройками
 
-Статус — к согласованию владельцем. Цель — один проход от паузы до готового клипа.
+Макет согласован владельцем, допуск к реализации фиксируется отдельно. Цель — один проход от паузы до готового клипа.
 Требования и варианты решения изложены в 01 и ADR-001. OpenSpec хранит [дельту требований](../../openspec/changes/upload-pause-preferences/specs/upload-resume/spec.md).
 
 Inputs read: `01_requirements.md`, `02_reuse_inventory.md`, `03_adr/001-upload-final-settings.md`, `05_architecture.md` и базовый код Uploader/VideoService.
