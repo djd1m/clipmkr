@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipmkr — почта перед покупкой</title>
+<style>
+  :root {color-scheme:dark;--paper:#111;--surface:#1a1a1a;--ink:#f1f1ef;--muted:#bdbdb9;--line:#454543;--accent:#8fd4a4;--button:#151515;--warning:#f0cd7a}
+  :root[data-theme=light] {color-scheme:light;--paper:#f4f4f3;--surface:#fdfdfc;--ink:#202020;--muted:#565656;--line:#d0d0ce;--accent:#305d45;--button:#fff;--warning:#7c5919}
+  * {box-sizing:border-box}
+  body {margin:0;background:var(--paper);color:var(--ink);font:100%/1.45 system-ui,sans-serif}
+  [hidden] {display:none!important}
+  .demo {border-bottom:1px solid var(--line);padding:.6rem max(1rem,calc((100vw - 74rem)/2));display:flex;flex-wrap:wrap;align-items:center;gap:.7rem}
+  .demo label {font-size:.82rem;color:var(--muted)}
+  select {font:inherit;padding:.35rem .5rem;border:1px solid var(--line);border-radius:4px;color:var(--ink);background:var(--surface);max-width:100%}
+  .workspace {max-width:74rem;margin:auto;padding:1.3rem 1.6rem 3rem}
+  header {display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap;padding-bottom:1rem;border-bottom:1px solid var(--line)}
+  header strong {font-size:1.25rem;letter-spacing:-.035em}
+  nav {display:flex;gap:1.15rem;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.875rem}
+  nav span[aria-current] {color:var(--ink);border-bottom:2px solid var(--accent)}
+  main {padding-top:2.3rem;max-width:53rem}
+  h1 {font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.08;letter-spacing:-.045em;margin:.2rem 0 .7rem}
+  h2 {font-size:1.22rem;line-height:1.3;margin:0 0 .55rem}
+  p {margin:0 0 1rem;max-width:55ch}
+  .muted {color:var(--muted)}
+  .package {display:flex;justify-content:space-between;gap:.8rem;border-block:1px solid var(--line);padding:1rem 0;margin:1.5rem 0 1rem}
+  .package p {margin:0}
+  .box {background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1.1rem 1.25rem;margin-top:1rem;max-width:40rem;overflow-wrap:anywhere}
+  .box h2 + p {margin-bottom:.65rem}
+  .status {margin:.75rem 0;color:var(--accent)}
+  .error {color:var(--warning)}
+  .actions {display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin-top:1.15rem}
+  button {min-height:2.875rem;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:var(--button);font:650 .95rem/1.25 system-ui,sans-serif;padding:.65rem .9rem;cursor:pointer}
+  button.secondary {background:transparent;color:var(--ink);border-color:var(--line)}
+  button:focus-visible,select:focus-visible {outline:2px solid var(--accent);outline-offset:3px}
+  @media(max-width:520px) {.workspace {padding-inline:1rem}main {padding-top:1.65rem}.box {padding:1rem}.actions {align-items:stretch;flex-direction:column}.actions button {width:100%} header {gap:.55rem}nav {gap:.78rem}}
+</style>
+</head>
+<body>
+<aside class="demo" aria-label="Настройки макета">
+  <label>Состояние <select id="demo-state">
+    <option value="unverified">Почта не подтверждена</option><option value="sent">Письмо отправлено</option>
+    <option value="link">Открыта ссылка из письма</option>
+    <option value="error">Ссылка недействительна</option><option value="verified">Почта подтверждена</option>
+    <option value="paid">Оплата подтверждена</option><option value="accepted">Квитанция передана в отправку</option><option value="receipt-error">Доставка требует проверки</option>
+  </select></label>
+  <label>Тема <select id="demo-theme"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></label>
+</aside>
+<div class="workspace">
+  <header><strong>clipmkr</strong><nav aria-label="Кабинет"><span>Новая запись</span><span>Мои записи</span><span aria-current="page">Пакеты</span><span>Аккаунт</span></nav></header>
+  <main>
+    <h1 id="title" tabindex="-1">Пакеты кредитов</h1>
+    <section class="package" aria-label="Выбранный пакет">
+      <div><strong>Про</strong><p class="muted">30 дней · разовая оплата</p></div>
+      <strong id="amount">3 990 ₽</strong>
+    </section>
+    <section id="unverified" class="box" aria-labelledby="verify-heading">
+      <h2 id="verify-heading">Подтвердите почту перед оплатой</h2>
+      <p>Квитанция придёт на <strong>demo@example.test</strong>.</p>
+      <p class="muted">Сохраним выбранный пакет, пока вы подтверждаете адрес.</p>
+      <div class="actions"><button type="button" data-next="sent">Отправить письмо</button></div>
+    </section>
+    <section id="sent" class="box" hidden aria-labelledby="sent-heading">
+      <h2 id="sent-heading">Проверьте почту</h2>
+      <p>Письмо отправлено на <strong>demo@example.test</strong>. Откройте ссылку в письме.</p>
+      <div class="actions"><button type="button" class="secondary" data-resend>Отправить новое письмо</button></div>
+      <p id="resend-note" class="status" role="status" hidden>Запрос нового письма принят.</p>
+    </section>
+    <section id="link" class="box" hidden aria-labelledby="link-heading">
+      <h2 id="link-heading">Подтвердите адрес</h2>
+      <p>Вы вошли как <strong>demo@example.test</strong>. Подтвердите адрес, затем вернитесь к пакету «Про».</p>
+      <div class="actions"><button type="button" data-next="verified">Подтвердить почту</button></div>
+    </section>
+    <section id="error" class="box" hidden aria-labelledby="error-heading">
+      <h2 id="error-heading">Ссылка недействительна</h2>
+      <p class="error">Проверьте, что вы вошли в аккаунт с адресом <strong>demo@example.test</strong>.</p>
+      <div class="actions"><button type="button" data-next="sent">Отправить новое письмо</button></div>
+    </section>
+    <section id="verified" class="box" hidden aria-labelledby="ready-heading">
+      <h2 id="ready-heading">Почта подтверждена</h2>
+      <p>Квитанция придёт на <strong>demo@example.test</strong>.</p>
+      <div class="actions"><button type="button" data-next="paid">Оплатить пакет «Про»</button><button class="secondary" type="button" data-next="unverified">Посмотреть пакеты</button></div>
+    </section>
+    <section id="paid" class="box" hidden aria-labelledby="paid-heading">
+      <h2 id="paid-heading">Пакет оплачен</h2>
+      <p role="status">Готовим квитанцию для <strong>demo@example.test</strong>.</p>
+    </section>
+    <section id="accepted" class="box" hidden aria-labelledby="accepted-heading">
+      <h2 id="accepted-heading">Пакет оплачен</h2>
+      <p role="status">Почтовый сервис принял квитанцию к отправке на <strong>demo@example.test</strong>.</p>
+    </section>
+    <section id="receipt-error" class="box" hidden aria-labelledby="receipt-error-heading">
+      <h2 id="receipt-error-heading">Пакет оплачен</h2>
+      <p class="error" role="status">Квитанция пока не отправлена. Если письмо не придёт, обратитесь в поддержку.</p>
+    </section>
+  </main>
+</div>
+<script>
+  const selector = document.getElementById('demo-state');
+  const title = document.getElementById('title');
+  const views = ['unverified', 'sent', 'link', 'error', 'verified', 'paid', 'accepted', 'receipt-error'];
+  const titles = { sent: 'Подтвердите почту', link: 'Подтвердите почту', error: 'Подтвердите почту', verified: 'Пакеты кредитов', paid: 'Результат покупки', accepted: 'Результат покупки', 'receipt-error': 'Результат покупки' };
+  function show(view, focus = false) {
+    for (const value of views) document.getElementById(value).hidden = value !== view;
+    document.getElementById('resend-note').hidden = true;
+    selector.value = view;
+    title.textContent = titles[view] ?? 'Пакеты кредитов';
+    if (focus) title.focus();
+  }
+  selector.addEventListener('change', () => show(selector.value));
+  document.getElementById('demo-theme').addEventListener('change', event => { document.documentElement.dataset.theme = event.target.value; });
+  for (const button of document.querySelectorAll('[data-next]')) button.addEventListener('click', () => show(button.dataset.next, true));
+  document.querySelector('[data-resend]').addEventListener('click', () => { document.getElementById('resend-note').hidden = false; });
+</script>
+</body>
+</html>
