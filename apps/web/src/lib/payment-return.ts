@@ -1,6 +1,8 @@
 // из N6: projects/06-rag-sales-chatbase/apps/web/src/lib/payment-return.ts — адаптировано (фича 30 payments, AC-10,
 // long-running-job): ШЕСТЬ различимых состояний, а не два; план один (`paid`); `?next=` — только оформление N5.
 // Молчание (сбой опроса, pending) — это «выполняется», пока не истёк предел; после — «не подтверждено», не «отказ».
+import { isCreditSku, type CreditSku } from '@clipmaker/shared/tariff';
+
 export const RETURN_POLL_INTERVAL_MS = 2000;
 export const RETURN_MAX_ATTEMPTS = 30;
 // Предел ожидания — по ВРЕМЕНИ, а не только по числу попыток: зависший запрос не растягивает «выполняется» бесконечно
@@ -8,7 +10,7 @@ export const RETURN_MAX_ATTEMPTS = 30;
 export const RETURN_DEADLINE_MS = 60_000;
 export const RETURN_FETCH_TIMEOUT_MS = 5000;
 
-export interface CheckoutSnapshot { sku?: unknown; package_title?: unknown; grant_seconds?: unknown; period_start?: unknown; period_end?: unknown; status?: unknown; plan_paid_until?: unknown; account_plan?: unknown }
+export interface CheckoutSnapshot { sku?: unknown; package_title?: unknown; grant_seconds?: unknown; period_start?: unknown; period_end?: unknown; status?: unknown; plan_paid_until?: unknown; account_plan?: unknown; receipt_status?: unknown; receipt_email?: unknown }
 export type ReturnState =
   | { kind: 'package'; title:string; credits:number; start:string; end:string; scheduled:boolean }
   | { kind: 'waiting'; attempts: number }
@@ -47,5 +49,32 @@ export const readUpgradeFrom = (value: unknown): UpgradeFrom | null =>
 // человек платил — ревью фичи 30, круг 1, находка 3); любой другой next игнорируется (открытый редирект).
 const NEXT_ALLOWED = /^\/upgrade(\?from=(clip_card|partner_dashboard|guest_page)|\/return\?intent=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 export function safeNextPath(value: unknown): string | null {
-  return typeof value === 'string' && NEXT_ALLOWED.test(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  if (NEXT_ALLOWED.test(value)) return value;
+  if (value.startsWith('/upgrade?sku=') && isCreditSku(value.slice('/upgrade?sku='.length))) return value;
+  return null;
+}
+
+export const CHECKOUT_OWNER_HEADER = 'X-Checkout-Owner';
+export const selectedPackagePath = (sku: CreditSku) => `/upgrade?sku=${sku}`;
+
+export interface CheckoutAttempt { key: string; intentId?: string }
+const attemptPath = (owner: string, sku?: CreditSku) => `clipmkr:checkout:${owner}:${sku ?? 'legacy'}`;
+export function readCheckoutAttempt(owner: string, sku?: CreditSku): CheckoutAttempt | null {
+  try {
+    const attempt: unknown = JSON.parse(sessionStorage.getItem(attemptPath(owner, sku)) ?? 'null');
+    if (attempt && typeof attempt === 'object' && 'key' in attempt && typeof attempt.key === 'string') return attempt as CheckoutAttempt;
+  } catch { /* Private browsing may block browser storage. */ }
+  return null;
+}
+
+export function storeCheckoutAttempt(owner: string, attempt: CheckoutAttempt, sku?: CreditSku) {
+  try { sessionStorage.setItem(attemptPath(owner, sku), JSON.stringify(attempt)); }
+  catch { /* The current form still keeps the key in memory. */ }
+}
+
+export function clearCheckoutAttempt(owner: string, intentId: string, sku?: CreditSku) {
+  if (readCheckoutAttempt(owner, sku)?.intentId !== intentId) return;
+  try { sessionStorage.removeItem(attemptPath(owner, sku)); }
+  catch { /* Storage is unavailable. */ }
 }

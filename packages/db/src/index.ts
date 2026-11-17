@@ -17,6 +17,7 @@ export * from './render.js';
 export * from './clip-layout.js';
 export * from './plan.js';
 export * from './payments.js';
+export * from './payment-receipt-delivery.js';
 
 export * from './credits.js';
 

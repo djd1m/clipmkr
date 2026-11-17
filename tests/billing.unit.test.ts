@@ -289,12 +289,12 @@ it('compact packages retain canonical amounts, actual TEST marker and per-offer 
 it('upgrade guards precede private reads and header uses exactly one existing credit read', async () => {
   vi.resetModules();
   let authenticated = true;
-  const readBilling = vi.fn(async () => ({ billing_policy: 'credits_v1', plan: 'free', plan_source: 'default', plan_paid_until: null, owner_unlimited: false }));
+  const readBilling = vi.fn(async () => ({ billing_policy: 'credits_v1', plan: 'free', plan_source: 'default', plan_paid_until: null, owner_unlimited: false, email: 'billing@example.test', email_verified: false }));
   const readBalance = vi.fn(async (_pool: unknown, _accountId: string): Promise<{ available_seconds: number; reserved_seconds: number; next_expiry: null } | null> => ({ available_seconds: 121, reserved_seconds: 0, next_expiry: null }));
   const readWindows = vi.fn(async () => null);
   vi.doMock('@clipmaker/db', () => ({ readAccountBilling: readBilling, readCreditBalance: readBalance, readCreditPurchaseWindows: readWindows }));
   vi.doMock('../apps/web/src/server/runtime', () => ({ getRuntime: () => ({ pool: {}, payments: null,
-    config: { sessionSecret: 'synthetic-unit-session-secret-32-chars', billingMode: 'credits_v1', payments: { mode: 'off' }, limits: { N5_LIMIT_PAID_USER_MINUTES: 270 } },
+    config: { sessionSecret: 'synthetic-unit-session-secret-32-chars', billingMode: 'credits_v1', payments: { mode: 'off' }, mail: { mode: 'disabled' }, limits: { N5_LIMIT_PAID_USER_MINUTES: 270 } },
     auth: { authenticate: async () => authenticated ? { account_id: '11111111-1111-4111-8111-111111111111' } : null } }) }));
   vi.doMock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'private-test-session' }) }), headers: async () => new Headers({ cookie: 'n5_theme=light' }) }));
   vi.doMock('next/navigation', () => ({ redirect: (path: string) => { throw new Error(`REDIRECT ${path}`); }, useRouter: () => ({ refresh() {}, push() {} }) }));

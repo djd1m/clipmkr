@@ -1,4 +1,5 @@
 import { billingNoticesTick } from './billing-notices';
+import { paymentReceiptsTick } from './payment-receipts';
 import { retentionNoticesTick } from './retention-notices';
 import type { SupportMailer } from './support/mail';
 import { retentionTick, RETENTION_INTERVAL_MS, type RetentionStorage } from './retention';
@@ -7,7 +8,7 @@ import { lockCreditAccountForVideo, finalizeVideoCreditsTx, transaction, ensureI
 import { DEFER_DELAY_MS, STALLED_AFTER_MS, WATCHDOG_INTERVAL_MS } from '@clipmaker/queue';
 // Per-process cursor keeps retained jobs from starving attempts beyond the batch boundary.
 const recoveryCursor = new WeakMap<Pool, string>();
-export async function watchdogTick(pool: Pool, enqueue: (job: Attempt, delay?: number) => Promise<void>, time:Date|(()=>Date) = () => new Date(), batch = 100, storage?: RetentionStorage, notices?: {mailer:Pick<SupportMailer,'sendRetention'|'retentionSender'>;publicOrigin:string;billingEnabled?:boolean;checkoutAllowed?:(accountId:string,billingPolicy:string)=>boolean}) {
+export async function watchdogTick(pool: Pool, enqueue: (job: Attempt, delay?: number) => Promise<void>, time:Date|(()=>Date) = () => new Date(), batch = 100, storage?: RetentionStorage, notices?: {mailer:Pick<SupportMailer,'sendRetention'|'retentionSender'> & Partial<Pick<SupportMailer,'isTestCapture'>>;publicOrigin:string;billingEnabled?:boolean;checkoutAllowed?:(accountId:string,billingPolicy:string)=>boolean}) {
   const clock=typeof time==='function'?time:()=>time, now=clock();
   let step = 'закрытие зависших задач';
   try {
@@ -85,6 +86,10 @@ export async function watchdogTick(pool: Pool, enqueue: (job: Attempt, delay?: n
     step = 'retention';
     const result = await retentionTick(pool, storage, clock, batch);
     if (result && !result.backlog) retentionLastRun.set(pool, clock().getTime());
+  }
+  if (notices) {
+    try { await paymentReceiptsTick(pool, notices.mailer, notices.publicOrigin, clock); }
+    catch { console.error('Сторож: квитанции недоступны; повтор на следующем проходе'); }
   }
   if (notices?.billingEnabled && notices.checkoutAllowed) {
     await billingNoticesTick(pool,notices.mailer,notices.publicOrigin,{enabled:true,checkoutAllowed:notices.checkoutAllowed,clock});

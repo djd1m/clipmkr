@@ -70,7 +70,7 @@ beforeAll(async () => {
   mkdirSync(evidence, { mode: 0o700 });
   pool = createPool(database, schema); await pool.query(`CREATE SCHEMA ${schema}`); await migrate(pool);
   const password = 'synthetic-next-checkout-password'; const hash = await bcrypt.hash(password, 10);
-  for (const id of [A, B, C, D]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy) VALUES($1,$2,$3,'credits_v1')", [id, `${id}@test.invalid`, hash]);
+  for (const id of [A, B, C, D]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy,email_verified_at) VALUES($1,$2,$3,'credits_v1',now())", [id, `${id}@test.invalid`, hash]);
   await pool.query('UPDATE account SET owner_unlimited=true WHERE id=$1',[A]);
   await pool.query('UPDATE account SET is_blogger=true,blogger_commission_percent=20 WHERE id=ANY($1::uuid[])',[[B,C]]);
   const partner=(await pool.query("INSERT INTO partner(account_id,display_name) VALUES($1,'Synthetic blogger') RETURNING id",[B])).rows[0].id;

@@ -66,7 +66,7 @@ beforeAll(async () => {
   mkdirSync(evidence, { mode: 0o700 });
   pool = createPool(database, schema); await pool.query(`CREATE SCHEMA ${schema}`); await migrate(pool);
   const password = 'synthetic-next-checkout-password'; const hash = await bcrypt.hash(password, 10);
-  for (const id of [A, B]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy) VALUES($1,$2,$3,'credits_v1')", [id, `${id}@test.invalid`, hash]);
+  for (const id of [A, B]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy,email_verified_at) VALUES($1,$2,$3,'credits_v1',now())", [id, `${id}@test.invalid`, hash]);
   const auth = new AuthService(new PgAuthStore(pool, 'credits_v1'), secret);
   tokens = {};
   for (const id of [A, B]) { tokens[id] = (await auth.login(`${id}@test.invalid`, password, '198.51.100.0/24'))!; expect(await auth.authenticate(tokens[id]!)).toMatchObject({ account_id: id }); }

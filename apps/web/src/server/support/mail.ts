@@ -66,6 +66,7 @@ export class SupportMailer {
   get retentionSender():string|null {
     return this.config.mode==='resend'?this.config.from:this.config.mode==='test'&&this.captureRetention?'Clipmkr <sender@example.test>':null;
   }
+  get isTestCapture(): boolean { return this.config.mode === 'test' && this.captureRetention !== undefined; }
   async sendRetention(message:RetentionNoticeMessage, providerKey:string):Promise<{state:'accepted'|'failed'|'unknown';receipt:string|null}> {
     const result=(state:'accepted'|'failed'|'unknown',receipt:string|null=null)=>({state,receipt});
     if(!this.retentionSender||this.budget.active>=4||!/^[A-Za-z0-9_-]{1,256}$/.test(providerKey))return result('failed');

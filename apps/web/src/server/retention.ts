@@ -35,6 +35,7 @@ export async function eraseAccount(pool: Pool, storage: RetentionStorage, accoun
     // Фича 30: деньги остаются в учёте (payment), но без связи с человеком; намерения — его данные, стираются.
     await tx.query('UPDATE payment SET account_id=NULL,intent_id=NULL WHERE account_id=$1', [account]);
     await tx.query('UPDATE operator_action SET account_id=NULL WHERE account_id=$1', [account]);
+    // The intent also owns the receipt delivery; deleting it clears its frozen payload.
     await tx.query('DELETE FROM payment_intent WHERE account_id=$1', [account]);
     await tx.query(`UPDATE attribution SET status='partner_deleted',partner_code_id=NULL,reject_reason=NULL
       WHERE account_id<>$1 AND partner_code_id IN

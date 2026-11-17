@@ -65,8 +65,8 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     };
   }
   async function account(plan = 'free') {
-    const id = (await pool.query<{ id: string }>(`INSERT INTO account (email, password_hash, plan) VALUES ($1, 'x', $2) RETURNING id`,
-      [`b${randomBytes(6).toString('hex')}@example.ru`, plan])).rows[0]!.id;
+    const id = (await pool.query<{ id: string }>(`INSERT INTO account (email, password_hash, plan, email_verified_at) VALUES ($1, 'x', $2, now()) RETURNING id`,
+      [`b${randomBytes(6).toString('hex')}@example.test`, plan])).rows[0]!.id;
     const token = randomBytes(32).toString('base64url');
     sessions.set(token, id);
     return { id, token };
@@ -425,7 +425,7 @@ describe.skipIf(!databaseUrl)('оплата ЮKassa на настоящем Post
     beforeAll(async () => {
       const config = loadWebConfig(env); context = { config, auth: new AuthService(new PgAuthStore(pool, 'credits_v1'), config.sessionSecret) };
       const hash = await bcrypt.hash('synthetic-checkout-password', 10);
-      for (const id of [A, B]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy) VALUES($1,$2,$3,'credits_v1')", [id, `${id}@test.invalid`, hash]);
+      for (const id of [A, B]) await pool.query("INSERT INTO account(id,email,password_hash,billing_policy,email_verified_at) VALUES($1,$2,$3,'credits_v1',now())", [id, `${id}@test.invalid`, hash]);
       a = (await context.auth.login(`${A}@test.invalid`, 'synthetic-checkout-password', '198.51.100.0/24'))!;
       b = (await context.auth.login(`${B}@test.invalid`, 'synthetic-checkout-password', '198.51.100.0/24'))!;
       expect(await context.auth.authenticate(a)).toMatchObject({ account_id: A }); expect(await context.auth.authenticate(b)).toMatchObject({ account_id: B });

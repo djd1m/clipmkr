@@ -37,7 +37,7 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
   },60_000);
   afterAll(async()=>{if(pool){await pool.query(`DROP SCHEMA ${schema} CASCADE`);await pool.end();}});
   async function account(policy='credits_v1') {
-    return (await pool.query<{id:string}>(`INSERT INTO account(email,password_hash,plan,billing_policy) VALUES($1,'x','free',$2) RETURNING id`,[`${key()}@test.invalid`,policy])).rows[0]!.id;
+    return (await pool.query<{id:string}>(`INSERT INTO account(email,password_hash,plan,billing_policy,email_verified_at) VALUES($1,'x','free',$2,now()) RETURNING id`,[`${key()}@test.invalid`,policy])).rows[0]!.id;
   }
   async function video(accountId:string) {
     return (await pool.query<{id:string}>(`INSERT INTO video(account_id,idempotency_key,source,declared_bytes,status,object_key,actual_bytes)
@@ -258,7 +258,8 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
     const oldPool=createPool(url!,oldSchema);
     try{
       await oldPool.query(`CREATE SCHEMA ${oldSchema}`);
-      for(const name of await readdir('packages/db/migrations')) if(name.endsWith('.sql') && !name.startsWith('022_') && !name.startsWith('029_') && !name.startsWith('030_'))await copyFile(path.join('packages/db/migrations',name),path.join(directory,name));
+      const purchases = /^(022|029|030|034)_/;
+      for(const name of await readdir('packages/db/migrations')) if(name.endsWith('.sql') && !purchases.test(name))await copyFile(path.join('packages/db/migrations',name),path.join(directory,name));
       await migrate(oldPool,directory);
       const a=(await oldPool.query<{id:string}>(`INSERT INTO account(email,password_hash,plan,plan_source,plan_paid_until)
         VALUES('old-paid@test.invalid','x','paid','payment','2031-01-01'),('old-operator@test.invalid','x','paid','operator',NULL),('old-free@test.invalid','x','free','none',NULL) RETURNING id`)).rows;
@@ -267,6 +268,7 @@ describe.skipIf(!url)('credit packages on isolated PostgreSQL',()=>{
       await migrate(oldPool);await migrate(oldPool);
       expect((await oldPool.query("SELECT count(*)::int n FROM _schema_migration WHERE name='029_payment_receipt_snapshot.sql'")).rows[0].n).toBe(1);
       expect((await oldPool.query('SELECT receipt_snapshot FROM payment_intent WHERE id=$1',[i])).rows[0].receipt_snapshot).toBeNull();
+      expect((await oldPool.query('SELECT receipt_recipient_email FROM payment_intent WHERE id=$1',[i])).rows[0].receipt_recipient_email).toBeNull();
       expect((await oldPool.query('SELECT DISTINCT billing_policy FROM account')).rows).toEqual([{billing_policy:'legacy_daily_v1'}]);
       expect((await oldPool.query('SELECT DISTINCT billing_policy FROM video')).rows).toEqual([{billing_policy:'legacy_daily_v1'}]);
       expect((await oldPool.query('SELECT count(*)::int n FROM credit_grant')).rows[0].n).toBe(0);

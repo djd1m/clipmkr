@@ -2,9 +2,15 @@
 // Catalogue visibility is independent of checkout availability.
 import { useEffect, useRef, useState } from 'react';
 import { CREDIT_SKUS,formatRubles,type CreditSku,type CreditPurchaseWindows } from '@clipmaker/shared/tariff';
+import { CHECKOUT_OWNER_HEADER, clearCheckoutAttempt, readCheckoutAttempt, selectedPackagePath, storeCheckoutAttempt, type CheckoutAttempt } from '../../lib/payment-return';
+import { supportRequest } from '../../lib/support-client';
 
 export interface UpgradeCurrent { plan: 'free' | 'paid'; plan_source: string; plan_paid_until: string | null }
-export interface UpgradeProps { testMode?: boolean; ownerUnlimited?: boolean; purchaseWindows?: CreditPurchaseWindows; creditMode?: boolean; catalogOnly?: boolean; salesEnabled?: boolean; title: string; price: string; days: number; paidMinutes: number; current: UpgradeCurrent }
+export interface UpgradeProps {
+  testMode?: boolean; ownerUnlimited?: boolean; purchaseWindows?: CreditPurchaseWindows; creditMode?: boolean; catalogOnly?: boolean; salesEnabled?: boolean;
+  title: string; price: string; days: number; paidMinutes: number; current: UpgradeCurrent;
+  checkoutOwner?: string; selectedSku?: CreditSku; email?: string; emailVerified?: boolean; mailAvailable?: boolean;
+}
 
 function newKey(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -22,8 +28,7 @@ export function CurrentPlanNote({ current, title }: { current: UpgradeCurrent; t
 }
 
 export function UpgradeScreen(p: UpgradeProps) {
-  const [key] = useState(newKey);
-  const [keys]=useState(()=>({start_v1:newKey(),pro_v1:newKey(),addon_v1:newKey()}));
+  const attempts = useRef<Partial<Record<CreditSku | 'legacy', CheckoutAttempt>>>({});
   const pending = useRef<AbortController | null>(null);
   const mounted = useRef(false);
   useEffect(() => {
@@ -38,31 +43,115 @@ export function UpgradeScreen(p: UpgradeProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [checkoutSku, setCheckoutSku] = useState<CreditSku | null>(null);
+  const { selectedSku } = p;
+  const verified = p.emailVerified !== false;
+  const [sent, setSent] = useState(false);
+  const [mailStatus, setMailStatus] = useState('');
+  const [needsReview, setNeedsReview] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const errorMessage = useRef<HTMLParagraphElement>(null);
+  useEffect(() => { if (error) errorMessage.current?.focus(); }, [error]);
+  useEffect(() => { if (selectedSku) heading.current?.focus(); }, [selectedSku]);
+  const canPurchase = !p.ownerUnlimited && !!p.salesEnabled && !p.catalogOnly && !!p.purchaseWindows;
+  const choosePackage = (sku: CreditSku) => window.location.assign(selectedPackagePath(sku));
+  const sendVerification = async (sku: CreditSku) => {
+    if (pending.current || !p.mailAvailable) return;
+    const request = new AbortController();
+    pending.current = request;
+    setBusy(true); setError(''); setMailStatus('');
+    try {
+      await supportRequest('/api/auth/email/send', { sku });
+      if (pending.current !== request) return;
+      setMailStatus(sent ? 'Запрос нового письма принят.' : 'Письмо отправлено.');
+      setSent(true);
+    } catch (cause) {
+      if (pending.current !== request) return;
+      setError(cause instanceof Error ? cause.message : 'Письмо недоступно. Повторите позже.');
+    } finally {
+      if (pending.current === request) { pending.current = null; setBusy(false); }
+    }
+  };
   const pay = async (sku?:CreditSku) => {
     if (!mounted.current || p.ownerUnlimited === true || pending.current || (p.creditMode && (!p.salesEnabled || p.catalogOnly || !p.purchaseWindows))) return;
+    if (sku && !verified) { choosePackage(sku); return; }
     const attempt = new AbortController();
     pending.current = attempt;
     const alive = () => mounted.current && pending.current === attempt && !attempt.signal.aborted;
-    setBusy(true); setError(''); setCheckoutSku(sku ?? null);
+    const owner = p.checkoutOwner;
+    const slot = sku ?? 'legacy';
+    const saved = (owner ? readCheckoutAttempt(owner, sku) : null) ?? attempts.current[slot] ?? { key: newKey() };
+    attempts.current[slot] = saved;
+    if (owner) storeCheckoutAttempt(owner, saved, sku);
+    setBusy(true); setError(''); setNeedsReview(false); setCheckoutSku(sku ?? null);
     try {
-      const response = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sku ? {idempotency_key:keys[sku],sku} : { idempotency_key: key }), cache: 'no-store', signal: attempt.signal });
+      const scope = owner ? { [CHECKOUT_OWNER_HEADER]: owner } : undefined;
+      const response = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', ...scope },
+        body: JSON.stringify({ idempotency_key: saved.key, ...(sku ? { sku } : {}) }), cache: 'no-store', signal: attempt.signal });
       if (!alive()) return;
-      const body = await response.json().catch(() => null) as { data?: { intent_id: string; redirect_url: string | null }; error?: { message?: string } } | null;
+      const body = await response.json().catch(() => null) as { data?: { intent_id: string; redirect_url: string | null }; error?: { code?: string; message?: string } } | null;
       if (!alive()) return;
-      if ((response.status === 201 || response.status === 200) && body?.data) {
-        window.location.assign(body.data.redirect_url ?? `/upgrade/return?intent=${encodeURIComponent(body.data.intent_id)}`);
+      if ((response.status === 201 || response.status === 200) && typeof body?.data?.intent_id === 'string') {
+        const id = body.data.intent_id;
+        const returnTo = `/upgrade/return?intent=${encodeURIComponent(id)}`;
+        let target = body.data.redirect_url ?? returnTo;
+        if (owner) {
+          const authority = await fetch(`/api/checkout/${encodeURIComponent(id)}`, { headers: scope, cache: 'no-store', signal: attempt.signal });
+          const checked = await authority.json().catch(() => null) as { data?: { intent_id?: string; status?: string } } | null;
+          if (!alive()) return;
+          if (!authority.ok || checked?.data?.intent_id !== id) throw new Error('Не удалось проверить текущий аккаунт. Обновите страницу пакетов.');
+          const bound = { key: saved.key, intentId: id };
+          attempts.current[slot] = bound;
+          storeCheckoutAttempt(owner, bound, sku);
+          if (checked.data.status === 'succeeded' || checked.data.status === 'canceled') {
+            clearCheckoutAttempt(owner, id, sku);
+            target = returnTo;
+          }
+        }
+        const address = new URL(target, window.location.origin);
+        if (address.protocol !== 'https:' && address.origin !== window.location.origin) throw new Error('Форма оплаты недоступна.');
+        window.location.assign(address.href);
         return;
       }
-      setError(body?.error?.message ?? 'Не удалось начать оплату. Повторите');
+      if (sku && body?.error?.code === 'email_verification_required') {
+        choosePackage(sku);
+      } else {
+        setNeedsReview(body?.error?.code === 'payment_reconciliation_required' || body?.error?.code === 'payment_identity_conflict');
+        setError(body?.error?.message ?? 'Не удалось начать оплату. Повторите');
+      }
     } catch {
       if (!alive()) return;
-      setError('Нет связи с сервером. Повторите');
+      setError('Не удалось начать оплату. Проверьте текущий аккаунт и повторите.');
     }
     if (!alive()) return;
     pending.current = null;
     setBusy(false);
   };
+  const selected = selectedSku && canPurchase ? CREDIT_SKUS[selectedSku] : null;
+  if (selected && selectedSku) return <section className="packages-screen billing-selection" aria-labelledby="credit-title">
+    <h1 id="credit-title" tabIndex={-1}>Пакеты кредитов</h1>
+    {p.testMode && <span className="workspace-test studio-test">TEST · Тестовая оплата</span>}
+    <section className="billing-selected-package" aria-label="Выбранный пакет">
+      <div><strong>{selected.title}</strong><p className="muted">{selected.days} дней · разовая оплата</p></div>
+      <strong>{formatRubles(selected.priceMinor)}</strong>
+    </section>
+    <section className="status-panel" aria-labelledby="billing-step-heading">
+      <h2 id="billing-step-heading" ref={heading} tabIndex={-1}>{verified ? 'Почта подтверждена' : sent ? 'Проверьте почту' : 'Подтвердите почту перед оплатой'}</h2>
+      {sent && !verified ? <p>Письмо отправлено на <strong>{p.email}</strong>. Откройте ссылку в письме.</p>
+        : <p>Квитанция придёт на <strong>{p.email}</strong>.</p>}
+      {!verified && !sent && <p className="muted">Сохраним выбранный пакет, пока вы подтверждаете адрес.</p>}
+      {!verified && !p.mailAvailable && <p>Отправка писем сейчас недоступна.</p>}
+      <div className="billing-selection-actions">
+        {verified
+          ? <button type="button" disabled={busy} onClick={() => void pay(selectedSku)}>{busy ? 'Переходим к оплате…' : `Оплатить пакет «${selected.title}»`}</button>
+          : <button type="button" disabled={busy || !p.mailAvailable} className={sent ? 'secondary' : undefined} onClick={() => void sendVerification(selectedSku)}>
+            {busy ? 'Отправляем…' : sent ? 'Отправить новое письмо' : 'Отправить письмо'}</button>}
+        <a className="button secondary" href="/upgrade">Посмотреть пакеты</a>
+      </div>
+      <p role="status" aria-atomic="true" className="billing-selection-message">{mailStatus}</p>
+      {error && <p className="package-checkout-error" role="alert" tabIndex={-1} ref={errorMessage}>{error}</p>}
+      {needsReview && <a href="/support">Поддержка</a>}
+    </section>
+  </section>;
   if (p.creditMode) return <section className="packages-screen" aria-labelledby="credit-title">
     <div className="studio-plans">
       <div className="workspace-title studio-plans-intro">
@@ -93,7 +182,8 @@ export function UpgradeScreen(p: UpgradeProps) {
                 {!p.ownerUnlimited && !p.catalogOnly && ' Даты предварительные; итоговые даты покажем после подтверждения оплаты.'}</p>
               {reason && <p id={`offer-reason-${sku}`} className="muted">{reason}</p>}
               <button disabled={busy || reason !== null} type="button" className={sku === 'pro_v1' ? 'action-primary' : 'action-secondary secondary'} aria-describedby={error && checkoutSku === sku ? `offer-error-${sku}` : reason ? `offer-reason-${sku}` : undefined} onClick={() => void pay(sku)}>{p.ownerUnlimited ? 'Покупка не требуется' : busy && checkoutSku === sku ? 'Переходим к оплате…' : reason ? 'Покупка пока недоступна' : offer.kind === 'addon' ? 'Купить сейчас' : `Купить ${offer.title} на следующий период`}</button>
-              {error && checkoutSku === sku && <p id={`offer-error-${sku}`} className="package-checkout-error" role="alert">{error}</p>}
+              {error && checkoutSku === sku && <p id={`offer-error-${sku}`} className="package-checkout-error" role="alert" tabIndex={-1} ref={errorMessage}>{error}</p>}
+              {needsReview && checkoutSku === sku && <a href="/support">Поддержка</a>}
             </div>
           </section>;
         })}

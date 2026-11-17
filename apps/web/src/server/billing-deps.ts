@@ -8,6 +8,11 @@ import type { ReceiptConfig } from '@clipmaker/shared/tariff';
 import type { BillingMode } from '@clipmaker/shared/config';
 import type { BillingDependencies } from './billing-handler';
 import type { PaymentProvider } from './payments/provider';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+export function checkoutOwnerScope(secret: string, accountId: string): string {
+  return createHmac('sha256', secret).update(`checkout-owner-v1:${accountId}`).digest('hex');
+}
 
 export interface BillingWiring {
   pool: Pool;
@@ -16,6 +21,7 @@ export interface BillingWiring {
   checkoutAllowed: BillingDependencies['checkoutAllowed'];
   publicOrigin: string;
   trustedProxyHops: number;
+  sessionSecret?: string;
   provider: PaymentProvider | null;
   allowMutation: (ip: string, account?: string) => Promise<boolean>;
   allowRead: (ip: string, account?: string) => Promise<boolean>;
@@ -28,6 +34,8 @@ export function createBillingDependencies(w: BillingWiring): BillingDependencies
   return {
     receiptConfig:w.receiptConfig, billingMode:w.billingMode ?? 'legacy', checkoutAllowed: w.checkoutAllowed,
     billingPolicy: async accountId => (await pool.query<{billing_policy:string}>(`SELECT billing_policy FROM account WHERE id=$1 AND status='active'`,[accountId])).rows[0]?.billing_policy ?? null,
+    matchesOwnerScope: (scope, accountId) => !!w.sessionSecret && /^[a-f0-9]{64}$/.test(scope) &&
+      timingSafeEqual(Buffer.from(scope, 'hex'), Buffer.from(checkoutOwnerScope(w.sessionSecret, accountId), 'hex')),
     publicOrigin: w.publicOrigin, trustedProxyHops: w.trustedProxyHops, authenticate: w.authenticate,
     allowMutation: w.allowMutation, allowRead: w.allowRead, provider: w.provider, log: w.log,
     createIntent: (input) => createPaymentIntent(pool, input),

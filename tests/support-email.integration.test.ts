@@ -10,6 +10,8 @@ import {widgetSession} from '../apps/web/src/server/support/widget';
 import {supportContext} from '../apps/web/src/server/support/context';
 import {ErasureService} from '../apps/web/src/server/erasure';
 import {eraseAccount} from '../apps/web/src/server/retention';
+import {createEmailHandler} from '../apps/web/src/server/support/email-handler';
+import {SupportMailer,type SupportMessage} from '../apps/web/src/server/support/mail';
 const databaseUrl=process.env.DATABASE_URL;
 describe.skipIf(!databaseUrl)('support PostgreSQL authority',()=>{
  let pool:Pool,auth:AuthService,store:SupportEmailStore;
@@ -37,6 +39,34 @@ describe.skipIf(!databaseUrl)('support PostgreSQL authority',()=>{
   const a=await account(),b=await account();const t=await store.issue('verify',a.email,randomUUID(),randomUUID(),a.authority);
   expect(await store.confirm(t!.token,b.authority)).toBe(false);await auth.logout(a.token);
   expect(await store.confirm(t!.token,a.authority)).toBe(false);
+ });
+ it('package email preserves only the allowlisted SKU and existing token authority',async()=>{
+  const buyer=await account(),foreign=await account(),expired=await account();
+  const letters:SupportMessage[]=[], publicOrigin='https://clipmkr.test';
+  const deps={auth,store,mailer:new SupportMailer({mode:'test'},async message=>{letters.push(message);}),
+    mailAvailable:true,publicOrigin,trustedProxyHops:1,secret:randomUUID(),allowIP:async()=>true,after:()=>{}};
+  const action=(kind:'send'|'confirm',session:string,body:object)=>createEmailHandler(kind,deps)(new Request(
+    publicOrigin+'/api/auth/email/'+kind,{method:'POST',headers:{origin:publicOrigin,'content-type':'application/json',
+      cookie:`__Host-n5_session=${session}`,'x-forwarded-for':'192.0.2.1,127.0.0.1'},body:JSON.stringify(body)}));
+  const fragment=(message:SupportMessage)=>new URLSearchParams(new URL(message.url).hash.slice(1)).get('token')!;
+  expect((await action('send',buyer.token,{sku:'https://untrusted.example/'})).status).toBe(422);
+  expect(letters).toHaveLength(0);
+  expect((await action('send',buyer.token,{sku:'pro_v1'})).status).toBe(202);
+  expect(letters[0]).toMatchObject({to:buyer.email,purpose:'verify'});
+  const url=new URL(letters[0]!.url),token=fragment(letters[0]!);
+  expect(url.pathname+url.search).toBe('/verify-email?sku=pro_v1');
+  expect(url.hash).toBe('#token='+token);
+  expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  expect((await action('confirm',foreign.token,{token})).status).toBe(422);
+  expect((await action('confirm',buyer.token,{token:randomBytes(32).toString('base64url')})).status).toBe(422);
+  expect((await action('confirm',buyer.token,{token})).status).toBe(200);
+  expect((await action('confirm',buyer.token,{token})).status).toBe(422);
+  expect((await action('send',expired.token,{sku:'addon_v1'})).status).toBe(202);
+  await pool.query('UPDATE support_email_token SET expires_at=clock_timestamp() WHERE account_id=$1',[expired.id]);
+  expect((await action('confirm',expired.token,{token:fragment(letters[1]!)})).status).toBe(422);
+  const verified=(await pool.query('SELECT id FROM account WHERE id=ANY($1::uuid[]) AND email_verified_at IS NOT NULL',
+    [[buyer.id,foreign.id,expired.id]])).rows;
+  expect(verified).toEqual([{id:buyer.id}]);
  });
  for(let run=1;run<=5;run++)it(`concurrent one-use reset, revocation and no credit regrant run ${run}`,async()=>{
   const a=await account(),t=await store.issue('reset',a.email,randomUUID(),randomUUID());

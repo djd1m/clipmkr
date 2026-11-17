@@ -26,6 +26,7 @@ export const MAX_NOTIFICATION_BYTES = 64 * 1024;
 const MAX_CHECKOUT_BYTES = 1024;
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9_-]{8,128}$/;
 const INTENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CHECKOUT_OWNER = 'X-Checkout-Owner';
 export const PAYMENT_DESCRIPTION = paymentDescription('legacy_pro990_v1');
 
 export interface BillingDependencies {
@@ -36,6 +37,7 @@ export interface BillingDependencies {
   publicOrigin: string;
   trustedProxyHops: number;
   authenticate: (token: string) => Promise<{ account_id: string } | null>;
+  matchesOwnerScope?: (scope: string, accountId: string) => boolean;
   allowMutation: (ip: string, account?: string) => Promise<boolean>;
   allowRead: (ip: string, account?: string) => Promise<boolean>;
   // null — оплата выключена (N5_PAYMENTS_MODE не задан или off): все маршруты оплаты — 404.
@@ -110,6 +112,10 @@ export function createCheckoutHandler(deps: BillingDependencies) {
     if (!provider) return notFound();
     const entry = await guardMutation(request, deps);
     if (entry instanceof Response) return entry;
+    const ownerScope = request.headers.get(CHECKOUT_OWNER);
+    if (ownerScope !== null && !deps.matchesOwnerScope?.(ownerScope, entry.accountId)) {
+      return fail(403, 'checkout_session_changed', 'Аккаунт изменился. Обновите страницу пакетов');
+    }
     const policy = await deps.billingPolicy?.(entry.accountId) ?? null;
     if (!deps.checkoutAllowed(entry.accountId, policy)) return fail(503, 'checkout_paused', 'Оформление оплаты временно приостановлено. Попробуйте позже');
     if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail(422, 'invalid_body', 'Ожидается JSON');
@@ -129,8 +135,12 @@ export function createCheckoutHandler(deps: BillingDependencies) {
     const created = await deps.createIntent({ identity: provider.identity, accountId: entry.accountId, priceMinor: isCreditSku(sku)?CREDIT_SKUS[sku].priceMinor:PAID_PRICE_MINOR,
       idempotencyKey: key,...(deps.receiptConfig ? {receiptConfig:deps.receiptConfig}:{}),...(isCreditSku(sku)?{sku,billingMode:deps.billingMode}:{}) });
     if (created.kind === 'account_inactive') return fail(401, 'unauthorized', 'Войдите, чтобы оплатить тариф');
+    if (created.kind === 'email_verification_required') return fail(403, 'email_verification_required', 'Подтвердите почту перед оплатой');
     if (created.kind === 'conflict') return fail(409, 'idempotency_conflict', 'Этот ключ уже использован. Обновите страницу');
     const intent = created.intent;
+    if (intent.status === 'created' && !intent.provider_payment_id && intent.receipt_recipient_email === null) {
+      return fail(409, 'payment_reconciliation_required', 'Требуется проверка предыдущей попытки оплаты');
+    }
     if (!matchesIdentity(intent, provider.identity)) return fail(409, 'payment_identity_conflict', 'Требуется проверка предыдущей попытки оплаты');
     if (intent.status !== 'created') return json({ data: { intent_id: intent.id, redirect_url: null, status: intent.status } });
     try {
@@ -195,9 +205,12 @@ export function createCheckoutStatusHandler(deps: BillingDependencies) {
     if (!await deps.allowRead(ip, session?.account_id)) return fail(429, 'rate_limited', 'Слишком много запросов. Повторите через минуту');
     if (!session) return fail(401, 'unauthorized', 'Войдите в аккаунт, из которого оплачивали');
     if (!INTENT_ID.test(intentId)) return notFound();
+    const ownerScope = request.headers.get(CHECKOUT_OWNER);
+    if (ownerScope !== null && !deps.matchesOwnerScope?.(ownerScope, session.account_id)) return notFound();
     const view = await deps.readIntent(intentId, session.account_id);
     if (!view) return notFound();
     let status: 'pending' | 'succeeded' | 'canceled' = view.status === 'created' ? 'pending' : view.status;
+    if (ownerScope !== null) return json({ data: { intent_id: view.id, status } });
     // Отмену видит только провайдер (payment.canceled мы не принимаем): спросить его. Сбой опроса — «неизвестно», то есть
     // по-прежнему pending, а не отказ оплаты.
     if (status === 'pending' && view.provider_payment_id) {
@@ -212,7 +225,8 @@ export function createCheckoutStatusHandler(deps: BillingDependencies) {
     }
     // План — ДЕЙСТВУЮЩИЙ (AC-10): старое успешное намерение при истёкшем или снятом плане — не «включено».
     const plan = view.effective_plan ?? effectivePlan(view.account_plan, view.plan_source, view.plan_paid_until, (deps.clock ?? (() => new Date()))());
-    return json({ data: { ...(isCreditSku(view.sku)?{sku:view.sku,package_title:CREDIT_SKUS[view.sku].title,grant_seconds:view.grant_seconds,period_start:view.period_start,period_end:view.period_end}:{}),intent_id: view.id, status, account_plan: plan, plan_paid_until: plan === 'paid' ? view.plan_paid_until : null } });
+    return json({ data: { ...(isCreditSku(view.sku)?{sku:view.sku,package_title:CREDIT_SKUS[view.sku].title,grant_seconds:view.grant_seconds,period_start:view.period_start,period_end:view.period_end}:{}),intent_id: view.id, status, account_plan: plan, plan_paid_until: plan === 'paid' ? view.plan_paid_until : null,
+      receipt_status: view.receipt_status ?? null, receipt_email: view.receipt_email ?? null } });
   });
 }
 

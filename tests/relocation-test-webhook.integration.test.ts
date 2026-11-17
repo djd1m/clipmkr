@@ -72,7 +72,7 @@ describe('QA TEST callback admission на настоящем PostgreSQL', () => 
   }
   async function localIntent() {
     const id = randomUUID();
-    await pool.query("INSERT INTO account(id,email,password_hash,billing_policy) VALUES($1,$2,'x','credits_v1')", [id, `${id}@test.invalid`]);
+    await pool.query("INSERT INTO account(id,email,password_hash,billing_policy,email_verified_at) VALUES($1,$2,'x','credits_v1',now())", [id, `${id}@test.invalid`]);
     const result = await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: id, priceMinor: 99000, idempotencyKey: randomUUID(), sku: 'start_v1', billingMode: 'credits_v1' });
     if (result.kind !== 'created') throw new Error('expected created intent');
     return { account: id, intent: result.intent.id };

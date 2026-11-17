@@ -13,14 +13,15 @@ import type { PaymentProviderName } from '@clipmaker/shared/enums';
 import { transaction } from './quota.js';
 import { fulfillCreditIntentTx } from './credits.js';
 import { effectivePlanSql } from './plan.js';
+import { enqueuePaymentReceiptTx, TEST_PAYMENT_RECEIPT_EMAIL, type PaymentReceiptStatus } from './payment-receipt-delivery.js';
 import type { BillingMode } from '@clipmaker/shared/config';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: unknown): value is string => typeof value === 'string' && UUID.test(value);
 
 export interface IntentRow { payment_provider: 'fake' | 'yookassa' | null; payment_environment: 'unknown' | 'test' | 'live'; payment_merchant_id: string | null; sku?: string; offer_version?: string; grant_seconds?: number; period_start?: Date | null; period_end?: Date | null; id: string; price_minor: number; status: 'created' | 'succeeded' | 'canceled'; provider_payment_id: string | null }
-export interface CheckoutIntentRow extends IntentRow { created_at: Date; receipt_snapshot: ReceiptSnapshot | null }
-export type CreateIntentResult = { kind: 'created' | 'existing'; intent: CheckoutIntentRow } | { kind: 'conflict' } | { kind: 'account_inactive' };
+export interface CheckoutIntentRow extends IntentRow { created_at: Date; receipt_snapshot: ReceiptSnapshot | null; receipt_recipient_email: string | null }
+export type CreateIntentResult = { kind: 'created' | 'existing'; intent: CheckoutIntentRow } | { kind: 'conflict' } | { kind: 'account_inactive' } | { kind: 'email_verification_required' };
 
 // Намерение выдаётся ДО ухода к провайдеру (long-running-job): повтор с тем же ключом клиента — то же намерение.
 // «Вставить, иначе прочитать» атомарно: UNIQUE (account_id, idempotency_key) + ON CONFLICT DO NOTHING (донор N4/N6).
@@ -28,20 +29,21 @@ export async function createPaymentIntent(pool: Pool, input: { identity: Payment
   const offer = input.sku ? CREDIT_SKUS[input.sku] : null;
   if (input.sku && (!isCreditSku(input.sku) || input.billingMode!=='credits_v1' || input.priceMinor!==offer?.priceMinor)) return {kind:'conflict'};
   return transaction(pool,async tx=>{
-    const owner=(await tx.query<{status:string;email:string}>('SELECT status,email FROM account WHERE id=$1 FOR SHARE',[input.accountId])).rows[0];
+    const owner=(await tx.query<{status:string;email:string;email_verified_at:Date|null}>('SELECT status,email,email_verified_at FROM account WHERE id=$1 FOR SHARE',[input.accountId])).rows[0];
     if(owner?.status!=='active') return {kind:'account_inactive'} as const;
+    if (!owner.email_verified_at) return { kind: 'email_verification_required' } as const;
   const receipt = input.receiptConfig ? { ...input.receiptConfig, email: owner.email, description: paymentDescription(input.sku) } : null;
-  const inserted = (await tx.query<CheckoutIntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id,referral_partner_code_id)
+  const inserted = (await tx.query<CheckoutIntentRow>(`INSERT INTO payment_intent (account_id, price_minor, idempotency_key,sku,offer_version,grant_seconds,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id,referral_partner_code_id,receipt_recipient_email)
     SELECT id, $2, $3, $4, $5, $6, $7, $8, $9, $10, (SELECT a.partner_code_id FROM attribution a
       JOIN partner_code c ON c.id=a.partner_code_id JOIN partner p ON p.id=c.partner_id
-      WHERE a.account_id=account.id AND a.status IN ('pending','activated') AND p.account_id<>account.id)
+      WHERE a.account_id=account.id AND a.status IN ('pending','activated') AND p.account_id<>account.id), $11
     FROM account WHERE id = $1 AND status = 'active'
     AND NOT EXISTS (SELECT 1 FROM payment_intent WHERE account_id=$1 AND idempotency_key=$3)
     AND (($4='legacy_pro990_v1' AND billing_policy='legacy_daily_v1') OR ($4<>'legacy_pro990_v1' AND billing_policy='credits_v1'))
-    ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id`,
-  [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0,receipt,input.identity.provider,input.identity.environment,input.identity.merchantId])).rows[0];
+    ON CONFLICT (account_id, idempotency_key) DO NOTHING RETURNING id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id,receipt_recipient_email`,
+  [input.accountId, input.priceMinor, input.idempotencyKey,input.sku ?? 'legacy_pro990_v1',offer ? CREDIT_OFFER_VERSION : 'legacy_v1',offer?.seconds ?? 0,receipt,input.identity.provider,input.identity.environment,input.identity.merchantId,owner.email])).rows[0];
   if (inserted) return { kind: 'created', intent: inserted };
-  const existing = (await tx.query<CheckoutIntentRow>(`SELECT id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id FROM payment_intent
+  const existing = (await tx.query<CheckoutIntentRow>(`SELECT id, price_minor, status, provider_payment_id,sku,offer_version,grant_seconds,created_at,receipt_snapshot,payment_provider,payment_environment,payment_merchant_id,receipt_recipient_email FROM payment_intent
     WHERE account_id = $1 AND idempotency_key = $2`, [input.accountId, input.idempotencyKey])).rows[0];
   // Нет строки: аккаунт не активен (стирается) — намерение не создаётся. Тот же ключ с другой ценой — не повтор.
   if (!existing) return { kind: 'account_inactive' };
@@ -69,13 +71,21 @@ export async function markIntentCanceled(pool: Pool, intentId: string, proof: Ve
   });
 }
 
-export interface IntentView extends IntentRow { effective_plan?: 'free'|'paid'; account_plan: string; plan_source: string; plan_paid_until: string | null }
+export interface IntentView extends IntentRow { effective_plan?: 'free'|'paid'; account_plan: string; plan_source: string; plan_paid_until: string | null; receipt_status?: PaymentReceiptStatus | null; receipt_email?: string | null }
 // Чужое и несуществующее намерение — один ответ null (инвариант N5: чужой ресурс — 404).
 export async function readPaymentIntent(pool: Pool, intentId: string, accountId: string): Promise<IntentView | null> {
   if (!isUuid(intentId) || !isUuid(accountId)) return null;
-  const row = (await pool.query<IntentRow & { account_plan: string; plan_source: string; plan_paid_until: Date | null }>(`SELECT i.id, i.price_minor, i.status,
-      i.provider_payment_id,i.payment_provider,i.payment_environment,i.payment_merchant_id,i.sku,i.offer_version,i.grant_seconds,i.period_start,i.period_end,${effectivePlanSql('a')} AS effective_plan, a.plan AS account_plan, a.plan_source, a.plan_paid_until
-    FROM payment_intent i JOIN account a ON a.id = i.account_id WHERE i.id = $1 AND i.account_id = $2`, [intentId, accountId])).rows[0];
+  const row = (await pool.query<Omit<IntentView, 'plan_paid_until'> & { plan_paid_until: Date | null }>(`SELECT i.id, i.price_minor, i.status,
+      i.provider_payment_id,i.payment_provider,i.payment_environment,i.payment_merchant_id,i.sku,i.offer_version,i.grant_seconds,i.period_start,i.period_end,${effectivePlanSql('a')} AS effective_plan, a.plan AS account_plan, a.plan_source, a.plan_paid_until,
+      CASE WHEN d.status='accepted' THEN d.status
+           WHEN d.intent_id IS NOT NULL AND (p.status<>'succeeded' OR p.needs_review OR a.email_verified_at IS NULL
+             OR a.email IS DISTINCT FROM i.receipt_recipient_email OR d.lease_until<=now()) THEN 'problem'
+           ELSE d.status END AS receipt_status,
+      CASE WHEN d.intent_id IS NOT NULL AND a.email_verified_at IS NOT NULL AND a.email=i.receipt_recipient_email
+           THEN CASE p.payment_environment WHEN 'test' THEN $3 WHEN 'live' THEN i.receipt_recipient_email END END AS receipt_email
+    FROM payment_intent i JOIN account a ON a.id = i.account_id
+    LEFT JOIN payment_receipt_delivery d ON d.intent_id=i.id LEFT JOIN payment p ON p.id=d.payment_id
+    WHERE i.id = $1 AND i.account_id = $2 AND a.status='active'`, [intentId, accountId, TEST_PAYMENT_RECEIPT_EMAIL])).rows[0];
   if (!row) return null;
   return { ...row, plan_paid_until: row.plan_paid_until?.toISOString() ?? null };
 }
@@ -118,7 +128,7 @@ export function applyVerifiedPayment(pool: Pool, input: PaymentEvent): Promise<A
     const owned = isUuid(lockedIntentId) ? (await tx.query('SELECT account_id FROM payment_intent WHERE id=$1', [lockedIntentId])).rows[0] : undefined;
     const accountId = candidate?.account_id ?? owned?.account_id;
     const owner = accountId ? (await tx.query('SELECT status FROM account WHERE id=$1 FOR NO KEY UPDATE', [accountId])).rows[0] : undefined;
-    const intent = owned ? (await tx.query<IntentRow & {account_id: string;sku: string;grant_seconds: number;fulfilled_at: Date | null}>(`SELECT * FROM payment_intent WHERE id=$1 FOR UPDATE`, [lockedIntentId])).rows[0] : undefined;
+    const intent = owned ? (await tx.query<IntentRow & {account_id: string;sku: string;grant_seconds: number;fulfilled_at: Date | null;receipt_recipient_email:string|null}>(`SELECT * FROM payment_intent WHERE id=$1 FOR UPDATE`, [lockedIntentId])).rows[0] : undefined;
     const prior = (await tx.query('SELECT * FROM payment WHERE provider=$1 AND provider_payment_id=$2 FOR UPDATE', [input.provider, payment.id])).rows[0];
     if (prior) {
       validateKnownIdentity(prior, payment, input.provider);
@@ -134,9 +144,9 @@ export function applyVerifiedPayment(pool: Pool, input: PaymentEvent): Promise<A
     }
     if (!await claimEvent(tx, input.provider, input.eventKey, input.payloadSha256)) return { applied: false, reason: 'duplicate' } as const;
     const paidAt = payment.paidAt ?? new Date().toISOString();
-    const record = (intentId: string | null, accountId: string | null, review: string | null) => tx.query(`INSERT INTO payment
+    const record = (intentId: string | null, accountId: string | null, review: string | null) => tx.query<{ id: string }>(`INSERT INTO payment
       (intent_id,account_id,provider,provider_payment_id,amount_minor,fee_minor,needs_review,review_reason,paid_at,payment_environment,payment_merchant_id)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [intentId,accountId,input.provider,payment.id,payment.amountMinor,payment.feeMinor,review !== null,review,paidAt,payment.identity.environment,payment.identity.merchantId]);
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`, [intentId,accountId,input.provider,payment.id,payment.amountMinor,payment.feeMinor,review !== null,review,paidAt,payment.identity.environment,payment.identity.merchantId]);
     if (!owned) { await record(null,null,'unknown_intent'); return {applied:false,reason:'unknown_intent'} as const; }
     if (!intent) { await record(null,null,'account_erasing'); return {applied:false,reason:'account_erasing'} as const; }
     if (intent.price_minor !== payment.amountMinor) { await record(intent.id,intent.account_id,'amount_mismatch'); return {applied:false,reason:'amount_mismatch'} as const; }
@@ -144,7 +154,8 @@ export function applyVerifiedPayment(pool: Pool, input: PaymentEvent): Promise<A
     if (intent.fulfilled_at) { await record(intent.id,intent.account_id,'intent_already_fulfilled'); return {applied:false,reason:'intent_already_fulfilled'} as const; }
     if (intent.status !== 'created') throw new PaymentProvenanceConflict();
     await tx.query(`UPDATE payment_intent SET provider_payment_id=COALESCE(provider_payment_id,$2),payment_provider=$3,payment_environment=$4,payment_merchant_id=$5 WHERE id=$1`, [intent.id,payment.id,input.provider,payment.identity.environment,payment.identity.merchantId]);
-    await record(intent.id,intent.account_id,null);
+    const recorded = (await record(intent.id,intent.account_id,null)).rows[0]!;
+    if (intent.receipt_recipient_email) await enqueuePaymentReceiptTx(tx, intent.id, recorded.id);
     if (isCreditSku(intent.sku)) {
       const period=await fulfillCreditIntentTx(tx,{...intent,sku:intent.sku},new Date(paidAt));
       return {applied:true,plan:'paid',paidUntil:period.end.toISOString()} as const;
@@ -210,10 +221,10 @@ export async function expirePaidPlans(pool: Pool, batch: number): Promise<number
   return expired.rowCount ?? 0;
 }
 
-export interface AccountBilling { owner_unlimited?: boolean; billing_policy?: string; effective_plan?: 'free'|'paid'; plan: string; plan_source: string; plan_paid_until: string | null }
+export interface AccountBilling { owner_unlimited?: boolean; billing_policy?: string; effective_plan?: 'free'|'paid'; plan: string; plan_source: string; plan_paid_until: string | null; email: string; email_verified: boolean }
 export async function readAccountBilling(pool: Pool, accountId: string): Promise<AccountBilling | null> {
   if (!isUuid(accountId)) return null;
-  const row = (await pool.query<{ owner_unlimited: boolean; billing_policy: string; effective_plan: 'free'|'paid'; plan: string; plan_source: string; plan_paid_until: Date | null }>(`SELECT a.owner_unlimited,a.plan,a.plan_source,a.plan_paid_until,a.billing_policy,${effectivePlanSql('a')} AS effective_plan
+  const row = (await pool.query<Omit<AccountBilling, 'plan_paid_until'> & { plan_paid_until: Date | null }>(`SELECT a.owner_unlimited,a.plan,a.plan_source,a.plan_paid_until,a.billing_policy,a.email,a.email_verified_at IS NOT NULL AS email_verified,${effectivePlanSql('a')} AS effective_plan
     FROM account a WHERE id = $1 AND status = 'active'`, [accountId])).rows[0];
   return row ? { ...row,plan: row.plan, plan_source: row.plan_source, plan_paid_until: row.plan_paid_until?.toISOString() ?? null } : null;
 }

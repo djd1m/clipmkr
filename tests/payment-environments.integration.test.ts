@@ -28,7 +28,7 @@ describe.skipIf(!url)('payment environments real PG and canonical HTTP', () => {
     pool=createPool(url,schema); await pool.query(`CREATE SCHEMA ${schema}`); await migrate(pool); yk=await startFakeYooKassa({test:false});
   });
   afterAll(async () => { await yk?.close(); if(pool){await pool.query(`DROP SCHEMA ${schema} CASCADE`);await pool.end();} });
-  const account = async (extra='') => (await pool.query(`INSERT INTO account(email,password_hash,billing_policy ${extra ? ','+extra : ''}) VALUES($1,'synthetic','credits_v1' ${extra ? ',true' : ''}) RETURNING id`,[`${randomUUID()}@test.invalid`])).rows[0].id as string;
+  const account = async (extra='') => (await pool.query(`INSERT INTO account(email,password_hash,billing_policy,email_verified_at ${extra ? ','+extra : ''}) VALUES($1,'synthetic','credits_v1',now() ${extra ? ',true' : ''}) RETURNING id`,[`${randomUUID()}@test.invalid`])).rows[0].id as string;
   async function intent(who: string, identity: PaymentIdentity=live, sku: CreditSku='start_v1') {
     const result=await createPaymentIntent(pool,{accountId:who,identity,sku,billingMode:'credits_v1',priceMinor:CREDIT_SKUS[sku].priceMinor,idempotencyKey:randomUUID()});
     if(result.kind!=='created') throw new Error('Intent fixture failed'); return result.intent;

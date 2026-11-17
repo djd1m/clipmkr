@@ -5,7 +5,8 @@
 // (long-running-job: два неразличимых на экране состояния — одно состояние). Опрос — GET /api/checkout/{intent_id}.
 import { observePayment } from '../../../lib/acquisition-analytics';
 import { useEffect, useState } from 'react';
-import { RETURN_FETCH_TIMEOUT_MS, RETURN_MAX_ATTEMPTS, RETURN_POLL_INTERVAL_MS, decideReturnState, type CheckoutSnapshot, type ReturnState } from '../../../lib/payment-return';
+import { isCreditSku } from '@clipmaker/shared/tariff';
+import { RETURN_DEADLINE_MS, RETURN_FETCH_TIMEOUT_MS, RETURN_MAX_ATTEMPTS, RETURN_POLL_INTERVAL_MS, clearCheckoutAttempt, decideReturnState, type CheckoutSnapshot, type ReturnState } from '../../../lib/payment-return';
 
 const date = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow' });
 
@@ -48,10 +49,12 @@ export function ReturnView({ state }: { state: ReturnState }) {
   }
 }
 
-export function ReturnScreen({ intentId }: { intentId: string }) {
+export function ReturnScreen({ intentId, checkoutOwner }: { intentId: string; checkoutOwner: string }) {
   const [state, setState] = useState<ReturnState>({ kind: 'waiting', attempts: 0 });
+  const [receipt, setReceipt] = useState<{ status: 'pending' | 'accepted' | 'problem'; email: string | null } | null>(null);
   useEffect(() => {
     let attempts = 0, stopped = false, timer: ReturnType<typeof setTimeout> | undefined;
+    let paid: ReturnState | null = null;
     const started = Date.now();
     const poll = async () => {
       if (stopped) return;
@@ -67,12 +70,39 @@ export function ReturnScreen({ intentId }: { intentId: string }) {
       } catch { snapshot = null; /* сбой опроса — не отказ оплаты */ }
       if (stopped) return;
       attempts += 1;
-      const next = decideReturnState(snapshot, attempts, Date.now() - started);
-      setState(next);
-      if (next.kind === 'waiting') timer = setTimeout(() => { void poll(); }, RETURN_POLL_INTERVAL_MS);
+      const elapsed = Date.now() - started;
+      const next = decideReturnState(snapshot, attempts, elapsed);
+      if (snapshot && snapshot !== 'not_found' && (snapshot.status === 'succeeded' || snapshot.status === 'canceled')) {
+        clearCheckoutAttempt(checkoutOwner, intentId, isCreditSku(snapshot.sku) ? snapshot.sku : undefined);
+      }
+      if (next.kind === 'package' || next.kind === 'succeeded' || next.kind === 'paid_inactive') paid = next;
+      if (snapshot === 'not_found') {
+        setState(next); setReceipt(null);
+        return;
+      }
+      setState(paid ?? next);
+      if (paid) {
+        const status = snapshot?.receipt_status;
+        const email = typeof snapshot?.receipt_email === 'string' ? snapshot.receipt_email : null;
+        if (status === 'accepted' || status === 'problem') { setReceipt({ status, email }); return; }
+        if (status !== 'pending' && snapshot !== null) return;
+        if (elapsed >= RETURN_DEADLINE_MS || attempts >= RETURN_MAX_ATTEMPTS) {
+          setReceipt({ status: 'problem', email: null });
+          return;
+        }
+        if (status === 'pending') setReceipt({ status, email });
+      }
+      if (paid || next.kind === 'waiting') timer = setTimeout(() => { void poll(); }, RETURN_POLL_INTERVAL_MS);
     };
     void poll();
     return () => { stopped = true; if (timer) clearTimeout(timer); };
-  }, [intentId]);
-  return <section className="status-panel" aria-live="polite"><ReturnView state={state} /></section>;
+  }, [intentId, checkoutOwner]);
+  return <section className="status-panel billing-return">
+    <div aria-live="polite"><ReturnView state={state} /></div>
+    <div role="status" aria-atomic="true" className="billing-selection-message" data-receipt-status={receipt?.status}>
+      {receipt?.status === 'pending' && <p>Готовим квитанцию{receipt.email && <> для <strong>{receipt.email}</strong></>}.</p>}
+      {receipt?.status === 'accepted' && <p>Почтовый сервис принял квитанцию к отправке{receipt.email && <> на <strong>{receipt.email}</strong></>}.</p>}
+      {receipt?.status === 'problem' && <p className="package-checkout-error">Квитанция пока не отправлена. Если письмо не придёт, обратитесь в <a href="/support">поддержку</a>.</p>}
+    </div>
+  </section>;
 }

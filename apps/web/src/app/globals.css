@@ -196,6 +196,12 @@ button,.button { min-width:2.75rem; }
 .status-panel > * + * { margin-top:var(--space-3); }
 .status-panel h2 { margin-bottom:0; }
 .status-panel p { margin-bottom:0; }
+.billing-selection,.billing-return { max-inline-size:49rem; min-inline-size:0; overflow-wrap:anywhere; }
+.billing-selected-package { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--space-3); margin-block:var(--space-4); padding:var(--space-4); border:1px solid var(--line); border-radius:.75rem; }
+.billing-selected-package p { margin:0; }
+.billing-selection-actions { display:flex; flex-wrap:wrap; gap:var(--space-3); }
+.billing-selection-actions > * { max-inline-size:100%; min-inline-size:0; text-align:center; white-space:normal; }
+.billing-selection-message:empty { margin:0; }
 .progress-ribbon { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:var(--space-2); font-size:0.8125rem; }
 .progress-ribbon li { display:inline-flex; align-items:center; gap:var(--space-1); min-width:0; }
 .progress-ribbon li + li::before { content:"→" / ""; margin-inline-end:var(--space-1); color:var(--muted); }

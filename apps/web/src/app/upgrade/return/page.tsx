@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getRuntime } from '../../../server/runtime';
+import { checkoutOwnerScope } from '../../../server/billing-deps';
 import { ThemeToggle } from '../../ThemeToggle';
 import { requestTheme } from '../../theme-server';
 import { AuthFlowNotice } from '../../AuthFlow';
@@ -12,13 +13,15 @@ import { ReturnScreen } from './ReturnScreen';
 export const dynamic = 'force-dynamic';
 const INTENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function UpgradeReturnPage({ searchParams }: { searchParams: Promise<{ intent?: string }> }) {
-  const { auth, payments } = getRuntime();
+  const { auth, config, payments } = getRuntime();
   if (!payments) notFound();
   const raw = (await searchParams).intent;
   const intent = typeof raw === 'string' && INTENT_ID.test(raw) ? raw.toLowerCase() : null;
   const token = (await cookies()).get('__Host-n5_session')?.value;
   // Без сессии — на вход С ВОЗВРАТОМ сюда же: иначе оплативший человек теряет экран подтверждения своего платежа.
-  if (!token || !await auth.authenticate(token)) redirect(intent ? `/?next=${encodeURIComponent(`/upgrade/return?intent=${intent}`)}#auth` : '/#auth');
+  const session = token ? await auth.authenticate(token) : null;
+  if (!session) redirect(intent ? `/?next=${encodeURIComponent(`/upgrade/return?intent=${intent}`)}#auth` : '/#auth');
+  const owner = checkoutOwnerScope(config.sessionSecret, session.account_id);
   return <><nav className="navigation"><Link className="brand" href="/dashboard"><span>◧</span> КлипМейкер</Link><Link href="/dashboard">Мои записи</Link><ThemeToggle initial={await requestTheme()} /></nav><AuthFlowNotice />
-    <main className="container"><ReturnScreen intentId={intent ?? 'unknown'} /></main></>;
+    <main className="container"><ReturnScreen key={owner + (intent ?? '')} intentId={intent ?? 'unknown'} checkoutOwner={owner} /></main></>;
 }

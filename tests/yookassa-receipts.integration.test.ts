@@ -5,7 +5,7 @@ import type { AddressInfo } from 'node:net';
 import { createPool, type Pool } from '../packages/db/src/index';
 import { migrate } from '../packages/db/src/migrate';
 import { createPaymentIntent, type CheckoutIntentRow } from '../packages/db/src/payments';
-import { createBillingDependencies } from '../apps/web/src/server/billing-deps';
+import { checkoutOwnerScope, createBillingDependencies } from '../apps/web/src/server/billing-deps';
 import { createCheckoutHandler, createCheckoutStatusHandler, createPaymentWebhookHandler, type BillingDependencies } from '../apps/web/src/server/billing-handler';
 import { createYooKassaProvider } from '../apps/web/src/server/payments/yookassa';
 import { getBillingDependencies } from '../apps/web/src/server/billing-runtime';
@@ -61,14 +61,15 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
   });
   const provider = () => createYooKassaProvider({ shopId: SHOP_ID, secretKey: SECRET, testMode: true, apiBase });
   const countPosts = () => received.filter(x => x.method === 'POST').length;
+  const sessionSecret = randomBytes(32).toString('hex');
   async function account(credits = false) {
     const email = `buyer-${randomUUID()}@test.invalid`;
-    const id = (await pool.query("INSERT INTO account(email,password_hash,billing_policy) VALUES($1,'x',$2) RETURNING id", [email, credits ? 'credits_v1' : 'legacy_daily_v1'])).rows[0].id as string;
+    const id = (await pool.query("INSERT INTO account(email,password_hash,billing_policy,email_verified_at) VALUES($1,'x',$2,now()) RETURNING id", [email, credits ? 'credits_v1' : 'legacy_daily_v1'])).rows[0].id as string;
     const token = randomBytes(32).toString('base64url'); sessions.set(token, id); return { id, token, email };
   }
   function wire(receiptConfig: ReceiptConfig | null | undefined = fiscal) {
     return createBillingDependencies({ pool, billingMode: 'credits_v1', receiptConfig, checkoutAllowed: () => true, publicOrigin: PUBLIC, trustedProxyHops: 2,
-      provider: provider(), authenticate: async token => sessions.has(token) ? { account_id: sessions.get(token)! } : null,
+      provider: provider(), sessionSecret, authenticate: async token => sessions.has(token) ? { account_id: sessions.get(token)! } : null,
       allowMutation: async () => true, allowRead: async () => true, log: line => logs.push(line) });
   }
   const headers = (token: string) => ({ origin: PUBLIC, cookie: `__Host-n5_session=${token}`, 'content-type': 'application/json', 'x-forwarded-for': '198.51.100.7,10.0.0.2,10.0.0.3' });
@@ -183,6 +184,46 @@ describe.skipIf(!databaseUrl)('YooKassa receipts on PostgreSQL and sockets', () 
   it('unbound legacy intent is not retrofitted with receipt', async () => {
     const a = await account(), key = randomUUID(); await createPaymentIntent(pool, { identity: {provider:'yookassa',environment:'test',merchantId:'123456'}, accountId: a.id, priceMinor: 99000, idempotencyKey: key }); const before = countPosts();
     const response = await checkout(a, key); expect(response.status).toBe(409); expect((await response.json()).error.code).toBe('receipt_snapshot_missing'); expect(countPosts()).toBe(before);
+  });
+  it('known-provenance checkout written without a recipient requires reconciliation before a provider call', async () => {
+    const buyer = await account(), key = randomUUID();
+    await pool.query(`INSERT INTO payment_intent(account_id,price_minor,idempotency_key,payment_provider,payment_environment,payment_merchant_id)
+      VALUES($1,99000,$2,'yookassa','test',$3)`, [buyer.id, key, SHOP_ID]);
+    const calls = received.length;
+    const response = await checkout(buyer, key);
+    expect(response.status).toBe(409);
+    expect((await response.json()).error.code).toBe('payment_reconciliation_required');
+    expect(received).toHaveLength(calls);
+  });
+  it('checks email and owner scope before creating checkout; the scoped GET performs only an ownership read', async () => {
+    const buyer = await account(), other = await account(), key = randomUUID(), deps = wire();
+    const owner = checkoutOwnerScope(sessionSecret, buyer.id);
+    const post = (token: string, scope: string) => createCheckoutHandler(deps)(new Request(PUBLIC + '/api/checkout', {
+      method: 'POST', headers: { ...headers(token), 'X-Checkout-Owner': scope }, body: JSON.stringify({ idempotency_key: key }),
+    }));
+    const get = (id: string, token: string, scope: string) => createCheckoutStatusHandler(deps)(new Request(PUBLIC + '/api/checkout/' + id, {
+      headers: { ...headers(token), 'X-Checkout-Owner': scope },
+    }), id);
+    await pool.query('UPDATE account SET email_verified_at=NULL WHERE id=$1', [buyer.id]);
+    const calls = received.length;
+    expect((await post('', owner)).status).toBe(401);
+    const blocked = await post(buyer.token, owner);
+    expect(blocked.status).toBe(403);
+    expect((await blocked.json()).error.code).toBe('email_verification_required');
+    expect((await pool.query('SELECT id FROM payment_intent WHERE account_id=$1', [buyer.id])).rows).toEqual([]);
+    expect(received).toHaveLength(calls);
+    await pool.query('UPDATE account SET email_verified_at=now() WHERE id=$1', [buyer.id]);
+    expect((await (await post(other.token, owner)).json()).error.code).toBe('checkout_session_changed');
+    const created = await post(buyer.token, owner);
+    expect(created.status).toBe(201);
+    const id = (await created.json()).data.intent_id;
+    expect((await pool.query('SELECT receipt_recipient_email FROM payment_intent WHERE id=$1', [id])).rows).toEqual([{ receipt_recipient_email: buyer.email }]);
+    expect((await get(id, other.token, owner)).status).toBe(404);
+    expect((await get(id, other.token, checkoutOwnerScope(sessionSecret, other.id))).status).toBe(404);
+    expect((await (await get(id, buyer.token, owner)).json()).data).toEqual({ intent_id: id, status: 'pending' });
+    expect(received).toHaveLength(calls + 1);
+    expect((await (await checkout(buyer, key)).json()).data.intent_id).toBe(id);
+    expect(received).toHaveLength(calls + 2);
   });
   it('bound intent retry uses GET without a new receipt', async () => {
     const a = await account(), key = randomUUID(), absent = wire(); delete absent.receiptConfig;

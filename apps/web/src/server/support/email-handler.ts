@@ -2,16 +2,17 @@ import { createHmac } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { SupportEmailStore } from '@clipmaker/db';
+import { isCreditSku, type CreditSku } from '@clipmaker/shared/tariff';
 import { BCRYPT_COST, type AuthService } from '../auth';
 import { readSessionCookie } from '../auth-handler';
 import { ipPrefix } from '../ip';
 import { supportBody,supportJSON,supportFailure,SupportError } from './boundary';
 import type { SupportMailer } from './mail';
 const token=z.string().regex(/^[A-Za-z0-9_-]{43}$/);
-const schemas={send:z.object({}).strict(),confirm:z.object({token}).strict(),
+const schemas={send:z.object({sku:z.custom<CreditSku>(isCreditSku).optional()}).strict(),confirm:z.object({token}).strict(),
   forgot:z.object({email:z.string().trim().email().max(254).transform(v=>v.toLowerCase())}).strict(),
   reset:z.object({token,password:z.string().min(8).refine(v=>Buffer.byteLength(v)<=72)}).strict()};
-export interface EmailDeps {auth:AuthService;store:SupportEmailStore;mailer:SupportMailer;mailAvailable:boolean;
+export interface EmailDeps {auth:AuthService;store:Pick<SupportEmailStore,'confirm'|'currentEmail'|'issue'|'delivery'|'peek'|'reset'>;mailer:SupportMailer;mailAvailable:boolean;
   publicOrigin:string;trustedProxyHops:number;secret:string;allowIP:(ip:string)=>Promise<boolean>;after:(task:()=>Promise<void>)=>void}
 export function createEmailHandler(action:keyof typeof schemas,deps:EmailDeps) {
   return async(request:Request)=>{
@@ -42,7 +43,9 @@ export function createEmailHandler(action:keyof typeof schemas,deps:EmailDeps) {
       catch {if(action!=='forgot')throw new SupportError('unavailable',503);}
       const deliver=async()=>{
         if(!issued)return;
-        const url=new URL(action==='send'?'/verify-email':'/reset',deps.publicOrigin);url.hash=`token=${issued.token}`;
+        const url=new URL(action==='send'?'/verify-email':'/reset',deps.publicOrigin);
+        if(action==='send'&&isCreditSku(body.sku))url.searchParams.set('sku',body.sku);
+        url.hash=`token=${issued.token}`;
         const state=await deps.mailer.send({to:issued.email,url:url.toString(),purpose:action==='send'?'verify':'reset'});
         await deps.store.delivery(issued.id,state);
         return state;
