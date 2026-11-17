@@ -5,6 +5,7 @@ import type { Limits, ExecutionProvider } from '@clipmaker/shared/config';
 import type { VideoFailureReason } from '@clipmaker/shared/enums';
 import { validateFragments, type Fragment } from '@clipmaker/shared/fragments';
 import { parseTranscript, TranscriptError, type TranscriptResult } from '@clipmaker/shared/transcript';
+import { moscowDay } from '@clipmaker/shared/upload';
 import { transaction, checkAndConsumeQuota } from './quota.js';
 import { auditAttempt, leaseAttemptTx, type Attempt } from './attempts.js';
 import { effectivePlanSql } from './plan.js';
@@ -24,10 +25,19 @@ async function failTx(tx: PoolClient, attempt: Attempt, reason: VideoFailureReas
     [attempt.video_id, attempt.fence, reason, now]);
   await finalizeVideoCreditsTx(tx,attempt.video_id,now);
 }
-export async function failSelection(pool: Pool, attempt: Attempt, reason: VideoFailureReason, now = new Date()) {
+export async function failSelection(pool: Pool, attempt: Attempt, reason: VideoFailureReason, now = new Date(), quotaDay?: string) {
   return transaction(pool, async tx => {
-    if (!await lockCurrent(tx, attempt)) { auditAttempt('stale_attempt_result', attempt); return false; }
-    await failTx(tx, attempt, reason, now); return true;
+    const row = await lockCurrent(tx, attempt);
+    if (!row) { auditAttempt('stale_attempt_result', attempt); return false; }
+    if (quotaDay !== undefined && (!row.llm_dispatched || row.unit_count !== 1)) return false;
+    await failTx(tx, attempt, reason, now);
+    if (quotaDay !== undefined) {
+      // Finalize credits before locking quota, in the same order as VideoRetryService.
+      const refund = await tx.query(`UPDATE quota_counter SET used=used-1
+        WHERE scope='user_llm' AND scope_key=$1 AND day=$2 AND used>0`, [row.account_id, quotaDay]);
+      if (!refund.rowCount) throw new Error('Списание личной квоты не найдено');
+    }
+    return true;
   });
 }
 async function readTranscript(tx: PoolClient, video: string, duration: number): Promise<TranscriptResult> {
@@ -65,7 +75,7 @@ export async function authorizeSelection(pool: Pool, attempt: Attempt, limits: L
     await tx.query(`UPDATE job_attempt SET unit_count=1,provider=$4,model=$3
       WHERE video_id=$1 AND fence=$2`, [attempt.video_id, attempt.fence, model, provider]);
     await tx.query('UPDATE video SET updated_at=$3 WHERE id=$1 AND fence=$2', [attempt.video_id, attempt.fence, now]);
-    return { transcript, duration };
+    return { transcript, duration, quotaDay: moscowDay(claim.unit_count === 0 ? now : row.started_at) };
   });
 }
 export async function acceptSelection(pool: Pool, attempt: Attempt, fragments: Fragment[], now = new Date()): Promise<Attempt[] | null> {

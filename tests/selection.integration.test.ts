@@ -3,14 +3,14 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createPool, type Pool } from '../packages/db/src/index';
+import { createPool, readCreditBalance, transaction, type Pool } from '../packages/db/src/index';
 import { migrate } from '../packages/db/src/migrate';
-import { leaseAttempt } from '../packages/db/src/attempts';
-import { authorizeSelection, acceptSelection } from '../packages/db/src/selection';
-import { loadLimits } from '../packages/shared/src/config';
+import { leaseAttempt, leaseAttemptTx, type Attempt } from '../packages/db/src/attempts';
+import { authorizeSelection, acceptSelection, failSelection } from '../packages/db/src/selection';
+import { loadLimits, loadLlmConfig } from '../packages/shared/src/config';
 import { moscowDay } from '../packages/shared/src/upload';
 import { validateFragments } from '../packages/shared/src/fragments';
-import { SelectionProviderError } from '../apps/worker/src/llm/provider';
+import { createSelector, SelectionProviderError } from '../apps/worker/src/llm/provider';
 import { selectFragments } from '../apps/worker/src/workers/select';
 import { createFakeSelector, fakeFragment } from '../apps/worker/src/llm/fake';
 import { VideoRetryService } from '../apps/web/src/server/video-retry';
@@ -19,6 +19,8 @@ import { ensureTestDatabase } from '../scripts/test-db.mjs';
 import { environment } from './fixtures/environment';
 const url = process.env.DATABASE_URL, limits = loadLimits(environment());
 const model = 'anthropic/claude-sonnet-5';
+const cloudru = loadLlmConfig({ ...environment(), N5_MODEL_PROVIDER: 'live', N5_LLM_PROVIDER: 'cloudru',
+  N5_LLM_MODEL: 'deepseek-ai/DeepSeek-V4-Pro', CLOUDRU_FM_API_KEY: 'synthetic-fm-key' });
 const transcript = { language: 'ru', words: Array.from({ length: 360 }, (_, i) => ({ word: 'слово', start: i, end: i + 1 })), segments: [] };
 describe.skipIf(!url)('Selection PostgreSQL concurrency and persistence', () => {
   let pool: Pool;
@@ -31,16 +33,45 @@ describe.skipIf(!url)('Selection PostgreSQL concurrency and persistence', () => 
   });
   beforeEach(async () => { await pool.query('TRUNCATE account,quota_counter CASCADE'); });
   afterAll(async () => { if (pool) { await pool.query(`DROP SCHEMA ${schema} CASCADE`); await pool.end(); } });
-  async function fixture() {
-    const account = (await pool.query("INSERT INTO account(email,password_hash) VALUES ($1,'test') RETURNING id", [`${randomUUID()}@test.invalid`])).rows[0].id as string;
+  async function createAccount(policy = 'legacy_daily_v1') {
+    return (await pool.query<{ id: string }>("INSERT INTO account(email,password_hash,billing_policy) VALUES ($1,'test',$2) RETURNING id",
+      [`${randomUUID()}@test.invalid`, policy])).rows[0]!.id;
+  }
+  async function fixture(options: { startedAt?: Date; account?: string } = {}) {
+    const account = options.account ?? await createAccount();
+    const startedAt = options.startedAt ?? new Date();
     const video = (await pool.query(`INSERT INTO video(account_id,idempotency_key,source,declared_bytes,actual_bytes,object_key,status,duration_seconds,upload_day)
       VALUES ($1,$2,'upload',100,100,'source','selecting',360,$3) RETURNING id`, [account, randomUUID(), moscowDay(new Date())])).rows[0].id as string;
     await pool.query('INSERT INTO transcript(video_id,language,duration_seconds,chunk_count,words,segments) VALUES ($1,$2,360,1,$3,$4)',
       [video, 'ru', JSON.stringify(transcript.words), '[]']);
-    const attempt = (await leaseAttempt(pool, video, 'select', 1))!;
+    const attempt = (await transaction(pool, tx => leaseAttemptTx(tx, video, 'select', 1, null, startedAt)))!;
     return { account, video, attempt };
   }
-  const used = async (account: string, scope = 'user_llm') => (await pool.query('SELECT used FROM quota_counter WHERE scope_key=$1 AND scope=$2', [account, scope])).rows[0]?.used ?? 0;
+  const used = async (account: string, scope = 'user_llm', day = moscowDay(new Date())) => (await pool.query(
+    'SELECT used FROM quota_counter WHERE scope_key=$1 AND scope=$2 AND day=$3', [account, scope, day])).rows[0]?.used ?? 0;
+  async function retryFixture(f: Awaited<ReturnType<typeof fixture>>, now: Date) {
+    await expect(failSelection(pool, f.attempt, 'stalled', now)).resolves.toBe(true);
+    const enqueue = vi.fn<(attempt: Attempt) => Promise<void>>();
+    await new VideoRetryService(pool, limits, enqueue, () => now).retry(f.account, f.video);
+    expect(enqueue).toHaveBeenCalledOnce();
+    return enqueue.mock.calls[0]![0];
+  }
+  async function creditFixture(now: Date) {
+    const account = await createAccount('credits_v1');
+    await pool.query(`INSERT INTO credit_grant(account_id,source,source_key,total_seconds,remaining_seconds,available_at)
+      VALUES ($1,'signup',$2,720,720,$3)`, [account, `trial:${account}`, now]);
+    return fixture({ account, startedAt: now });
+  }
+  async function waitForBlocked(blocker: number, queryFragment: string) {
+    for (let poll = 0; poll < 100; poll++) {
+      const waiting = await pool.query<{ pid: number }>(`SELECT pid FROM pg_stat_activity
+        WHERE application_name=$1 AND $2=ANY(pg_blocking_pids(pid)) AND query LIKE $3`,
+      [schema, blocker, `%${queryFragment}%`]);
+      if (waiting.rows[0]) return waiting.rows[0].pid;
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    throw new Error(`PostgreSQL did not observe ${queryFragment} blocked by PID ${blocker}`);
+  }
   it('two parallel repeat commands: exactly one new series and one charge, no double charge in worker', async () => {
     const f = await fixture(); await authorizeSelection(pool, f.attempt, limits, model);
     await pool.query("UPDATE video SET status='failed',failure_reason='no_fragments' WHERE id=$1", [f.video]);
@@ -104,6 +135,190 @@ describe.skipIf(!url)('Selection PostgreSQL concurrency and persistence', () => 
       expect.objectContaining({ provider: 'cloudru', phase: 'attempt' }),
       expect.objectContaining({ provider: 'cloudru', phase: 'outcome', result: 'timeout' }),
     ]);
+  });
+  it('Cloud.ru HTTP 403 returns the first dispatch debit and allows one retry of the saved transcript', async () => {
+    const beforeMidnight = new Date('2026-11-17T20:59:00Z');
+    const afterMidnight = new Date('2026-11-17T21:01:00Z');
+    const f = await fixture({ startedAt: beforeMidnight }), dir = await mkdtemp(join(tmpdir(), 'n5-cloudru-refund-'));
+    const spendPath = join(dir, 'model-spend.jsonl');
+    const request = vi.fn<typeof fetch>()
+      .mockImplementationOnce(async () => {
+        expect(await used(f.account)).toBe(2);
+        expect(await used('all', 'global_llm')).toBe(1);
+        return new Response('synthetic-refusal-body', { status: 403 });
+      })
+      .mockResolvedValueOnce(Response.json({ choices: [{ message: { content: JSON.stringify({ fragments: [fakeFragment()] }) } }] }));
+    const deps = { pool, limits, selector: createSelector(cloudru, request), provider: cloudru.provider,
+      model: cloudru.model, spendPath, enqueue: vi.fn() };
+    const input = () => pool.query(`SELECT v.object_key,v.actual_bytes,t.id,t.words,t.segments FROM video v
+      JOIN transcript t ON t.video_id=v.id WHERE v.id=$1`, [f.video]);
+    const savedInput = (await input()).rows;
+    await pool.query(`INSERT INTO quota_counter(scope,scope_key,day,used) VALUES
+      ('user_llm',$1,$2,1), ('user_llm',$1,$3,1)`, [f.account, moscowDay(beforeMidnight), moscowDay(afterMidnight)]);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(afterMidnight);
+    try {
+      await expect(selectFragments(f.attempt, deps)).rejects.toMatchObject({ kind: 'http', status: 403 });
+      expect(await used(f.account)).toBe(1);
+      expect(await used(f.account, 'user_llm', moscowDay(beforeMidnight))).toBe(1);
+      expect(await used('all', 'global_llm')).toBe(1);
+      expect(request).toHaveBeenCalledOnce();
+      expect(deps.enqueue).not.toHaveBeenCalled();
+      expect((await pool.query('SELECT status,failure_reason FROM video WHERE id=$1', [f.video])).rows)
+        .toEqual([{ status: 'failed', failure_reason: 'stalled' }]);
+      expect((await pool.query('SELECT status,llm_dispatched,unit_count FROM job_attempt WHERE video_id=$1', [f.video])).rows)
+        .toEqual([{ status: 'failed', llm_dispatched: true, unit_count: 1 }]);
+      expect((await input()).rows).toEqual(savedInput);
+
+      const enqueueRetry = vi.fn<(attempt: Attempt) => Promise<void>>();
+      const retry = new VideoRetryService(pool, limits, enqueueRetry);
+      await expect(retry.retry(f.account, f.video)).resolves.toEqual({ video_id: f.video, status: 'selecting' });
+      expect(enqueueRetry).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ video_id: f.video, stage: 'select', series_no: 2 }));
+      await selectFragments(enqueueRetry.mock.calls[0]![0], deps);
+      expect(request).toHaveBeenCalledTimes(2);
+      expect(request.mock.calls[1]![1]?.body).toBe(request.mock.calls[0]![1]?.body);
+      expect(deps.enqueue).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ stage: 'render' }));
+      expect((await input()).rows).toEqual(savedInput);
+      expect(await used(f.account)).toBe(2);
+      expect(await used('all', 'global_llm')).toBe(2);
+      const ledger = (await readFile(spendPath, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
+      expect(ledger).toEqual([
+        expect.objectContaining({ fence: f.attempt.fence, phase: 'attempt', result: 'started' }),
+        expect.objectContaining({ fence: f.attempt.fence, phase: 'outcome', result: 'provider_error' }),
+        expect.objectContaining({ series_no: 2, phase: 'attempt', result: 'started' }),
+        expect.objectContaining({ series_no: 2, phase: 'outcome', result: 'success' }),
+      ]);
+    } finally {
+      vi.useRealTimers();
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+  it('Cloud.ru HTTP 401 returns the prepaid retry debit from before Moscow midnight', async () => {
+    const beforeMidnight = new Date('2026-11-17T20:59:00Z');
+    const afterMidnight = new Date('2026-11-17T21:01:00Z');
+    const debitDay = moscowDay(beforeMidnight), nextDay = moscowDay(afterMidnight);
+    const f = await creditFixture(beforeMidnight);
+    const attempt = await retryFixture(f, beforeMidnight);
+    expect(await readCreditBalance(pool, f.account, beforeMidnight)).toMatchObject({ available_seconds: 360, reserved_seconds: 360 });
+    await pool.query(`INSERT INTO quota_counter(scope,scope_key,day,used) VALUES
+      ('user_llm',$1,$2,1), ('global_llm','all',$2,1)`, [f.account, nextDay]);
+    const request = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(null, { status: 401 }));
+    const spend = vi.fn(), enqueue = vi.fn();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(afterMidnight);
+    try {
+      await expect(selectFragments(attempt, { pool, limits, selector: createSelector(cloudru, request), provider: cloudru.provider,
+        model: cloudru.model, spendPath: '/unused', spend, enqueue })).rejects.toMatchObject({ kind: 'http', status: 401 });
+    } finally { vi.useRealTimers(); }
+    expect(request).toHaveBeenCalledOnce();
+    expect(enqueue).not.toHaveBeenCalled();
+    expect(await used(f.account, 'user_llm', debitDay)).toBe(0);
+    expect(await used(f.account, 'user_llm', nextDay)).toBe(1);
+    expect(await used('all', 'global_llm', debitDay)).toBe(1);
+    expect(await used('all', 'global_llm', nextDay)).toBe(1);
+    expect(await readCreditBalance(pool, f.account, afterMidnight)).toMatchObject({ available_seconds: 720, reserved_seconds: 0 });
+    expect((await pool.query('SELECT status,finished_at FROM job_attempt WHERE video_id=$1 AND fence=$2',
+      [f.video, attempt.fence])).rows).toEqual([{ status: 'failed', finished_at: afterMidnight }]);
+  });
+  it('one refund for concurrent completion of the same fence', async () => {
+    const now = new Date(), day = moscowDay(now);
+    const f = await creditFixture(now);
+    await pool.query("INSERT INTO quota_counter(scope,scope_key,day,used) VALUES ('user_llm',$1,$2,1)", [f.account, day]);
+    const attempt = await retryFixture(f, now);
+    expect(await authorizeSelection(pool, attempt, limits, cloudru.model, now, 'cloudru')).toMatchObject({ quotaDay: day });
+    expect(await used(f.account, 'user_llm', day)).toBe(2);
+    const holder = await pool.connect();
+    const closing: Promise<boolean>[] = [];
+    try {
+      await holder.query('BEGIN');
+      await holder.query("SELECT used FROM quota_counter WHERE scope='user_llm' AND scope_key=$1 AND day=$2 FOR UPDATE", [f.account, day]);
+      const holderPid = (await holder.query<{ pid: number }>('SELECT pg_backend_pid() AS pid')).rows[0]!.pid;
+      const first = failSelection(pool, attempt, 'stalled', now, day);
+      closing.push(first);
+      void first.catch(() => {}); // Observed after the blocking transaction releases.
+      const firstPid = await waitForBlocked(holderPid, 'UPDATE quota_counter SET used=used-1');
+      const second = failSelection(pool, attempt, 'stalled', new Date(now.getTime() + 100), day);
+      closing.push(second);
+      void second.catch(() => {});
+      expect(await waitForBlocked(firstPid, 'FOR UPDATE OF v')).not.toBe(firstPid);
+    } finally {
+      await holder.query('ROLLBACK');
+      holder.release();
+      await Promise.allSettled(closing);
+    }
+    expect(await Promise.all(closing)).toEqual([true, false]);
+    expect(await used(f.account, 'user_llm', day)).toBe(1);
+    expect(await used('all', 'global_llm', day)).toBe(1);
+    expect((await pool.query('SELECT status,finished_at FROM video WHERE id=$1', [f.video])).rows)
+      .toEqual([{ status: 'failed', finished_at: now }]);
+    expect((await pool.query('SELECT status,finished_at FROM job_attempt WHERE video_id=$1 AND fence=$2', [f.video, attempt.fence])).rows)
+      .toEqual([{ status: 'failed', finished_at: now }]);
+    expect((await pool.query('SELECT state,finished_at FROM video_credit_charge WHERE video_id=$1', [f.video])).rows)
+      .toEqual([{ state: 'released', finished_at: now }]);
+    expect(await readCreditBalance(pool, f.account, now)).toMatchObject({ available_seconds: 720, reserved_seconds: 0 });
+  });
+  it('credit lock precedes selecting quota refund', async () => {
+    const now = new Date(), day = moscowDay(now);
+    const f = await creditFixture(now), other = await fixture({ account: f.account, startedAt: now });
+    const attempt = await retryFixture(f, now);
+    expect(await authorizeSelection(pool, attempt, limits, cloudru.model, now, 'cloudru')).toMatchObject({ quotaDay: day });
+    await failSelection(pool, other.attempt, 'stalled', now);
+    const enqueue = vi.fn(), retry = new VideoRetryService(pool, limits, enqueue, () => now);
+    const holder = await pool.connect();
+    let finish: Promise<boolean> | undefined;
+    let restart: ReturnType<VideoRetryService['retry']> | undefined;
+    try {
+      await holder.query('BEGIN');
+      await holder.query("SELECT used FROM quota_counter WHERE scope='user_llm' AND scope_key=$1 AND day=$2 FOR UPDATE", [f.account, day]);
+      const holderPid = (await holder.query<{ pid: number }>('SELECT pg_backend_pid() AS pid')).rows[0]!.pid;
+      finish = failSelection(pool, attempt, 'stalled', now, day);
+      void finish.catch(() => {});
+      const refundPid = await waitForBlocked(holderPid, 'UPDATE quota_counter SET used=used-1');
+      restart = retry.retry(f.account, other.video);
+      void restart.catch(() => {});
+      expect(await waitForBlocked(refundPid, 'pg_advisory_xact_lock')).not.toBe(refundPid);
+    } finally {
+      await holder.query('ROLLBACK');
+      holder.release();
+      await Promise.allSettled([finish, restart]);
+    }
+    await expect(finish).resolves.toBe(true);
+    await expect(restart).resolves.toEqual({ video_id: other.video, status: 'selecting' });
+    expect(enqueue).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ video_id: other.video, stage: 'select' }));
+    expect(await used(f.account, 'user_llm', day)).toBe(1);
+    expect(await used('all', 'global_llm', day)).toBe(2);
+    expect((await pool.query('SELECT video_id,state FROM video_credit_charge')).rows)
+      .toEqual(expect.arrayContaining([{ video_id: f.video, state: 'released' }, { video_id: other.video, state: 'reserved' }]));
+    expect(await readCreditBalance(pool, f.account, now)).toMatchObject({ available_seconds: 360, reserved_seconds: 360 });
+  });
+  it('rejects an undispatched or stale refund even if the account has a personal debit', async () => {
+    const now = new Date(), day = moscowDay(now);
+    const f = await fixture({ startedAt: now });
+    await pool.query("INSERT INTO quota_counter(scope,scope_key,day,used) VALUES ('user_llm',$1,$2,1)", [f.account, day]);
+    await expect(failSelection(pool, f.attempt, 'stalled', now, day)).resolves.toBe(false);
+    expect(await authorizeSelection(pool, f.attempt, limits, cloudru.model, now, 'cloudru')).not.toBeNull();
+    const fresh = await leaseAttempt(pool, f.video, 'select', 2);
+    await expect(failSelection(pool, f.attempt, 'stalled', now, day)).resolves.toBe(false);
+    expect(await used(f.account, 'user_llm', day)).toBe(2);
+    expect((await pool.query('SELECT status,fence FROM video WHERE id=$1', [f.video])).rows)
+      .toEqual([{ status: 'selecting', fence: fresh?.fence }]);
+  });
+  it.each(['absent', 'zero'] as const)('rolls back terminal status and credits with %s personal quota', async state => {
+    const now = new Date(), day = moscowDay(now);
+    const f = await creditFixture(now);
+    const attempt = await retryFixture(f, now);
+    expect(await authorizeSelection(pool, attempt, limits, cloudru.model, now, 'cloudru')).not.toBeNull();
+    const removeDebit = state === 'absent' ? 'DELETE FROM quota_counter' : 'UPDATE quota_counter SET used=0';
+    await pool.query(`${removeDebit} WHERE scope='user_llm' AND scope_key=$1 AND day=$2`, [f.account, day]);
+    await expect(failSelection(pool, attempt, 'stalled', now, day)).rejects.toThrow('Списание личной квоты не найдено');
+    expect((await pool.query('SELECT status,finished_at FROM video WHERE id=$1', [f.video])).rows)
+      .toEqual([{ status: 'selecting', finished_at: null }]);
+    expect((await pool.query('SELECT status,finished_at FROM job_attempt WHERE video_id=$1 AND fence=$2', [f.video, attempt.fence])).rows)
+      .toEqual([{ status: 'running', finished_at: null }]);
+    expect((await pool.query('SELECT state,finished_at FROM video_credit_charge WHERE video_id=$1', [f.video])).rows)
+      .toEqual([{ state: 'reserved', finished_at: null }]);
+    expect(await readCreditBalance(pool, f.account, now)).toMatchObject({ available_seconds: 360, reserved_seconds: 360 });
+    expect(await used('all', 'global_llm', day)).toBe(1);
   });
   it('one strong fragment is persisted as the honest count', async () => {
     const f = await fixture();
