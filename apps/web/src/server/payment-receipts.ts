@@ -8,7 +8,8 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&a
 export async function paymentReceiptsTick(pool: Pool, mailer: Pick<SupportMailer, 'retentionSender' | 'sendRetention'> & Partial<Pick<SupportMailer, 'isTestCapture'>>,
   publicOrigin: string, clock: () => Date = () => new Date()) {
   const counts = { attempted: 0, accepted: 0, failed: 0, unknown: 0, problem: 0, superseded: 0, unavailable: 0 };
-  const ids = await listDuePaymentReceipts(pool, clock(), 4);
+  // Leave two shared mail slots for verification and password recovery.
+  const ids = await listDuePaymentReceipts(pool, clock(), 2);
   if (!ids.length) return counts;
   const from = mailer.retentionSender;
   if (!from) {

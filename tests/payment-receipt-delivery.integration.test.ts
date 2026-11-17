@@ -200,7 +200,9 @@ describe.skipIf(!database)('verified purchase receipts on PostgreSQL', () => {
     await pool.query("UPDATE payment_intent SET status='succeeded',fulfilled_at=now(),provider_payment_id=$2 WHERE id=$1", [unclear.id, unclear.remote]);
     await pool.query('INSERT INTO payment_receipt_delivery(intent_id,payment_id) VALUES($1,$2)', [unclear.id, unclassifiedPayment]);
     const transport = mailer(), clock = activeClock();
-    expect(await paymentReceiptsTick(pool, transport, origin, clock.now)).toMatchObject({ attempted: 0, problem: 4 });
+    for (let pass = 0; pass < 2; pass++) {
+      expect(await paymentReceiptsTick(pool, transport, origin, clock.now)).toMatchObject({ attempted: 0, problem: 2 });
+    }
     expect(transport.sendRetention).not.toHaveBeenCalled();
     expect(await readPaymentIntent(pool, moved.id, moved.account)).toMatchObject({ receipt_status: 'problem', receipt_email: null });
     for (const buyer of [refunded, moved, erased, unclear]) expect(await row(buyer.id)).toMatchObject({ status: 'problem', payload: null, attempts: 0 });
@@ -226,5 +228,46 @@ describe.skipIf(!database)('verified purchase receipts on PostgreSQL', () => {
     expect(await paymentReceiptsTick(pool, captureMailer, origin, activeClock().now)).toMatchObject({ attempted: 1, accepted: 1 });
     expect(local).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ to: 'receipt@example.test' }));
     expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it('receipt delivery leaves shared mail slots for verification and password recovery', async () => {
+    const buyers = await Promise.all([checkout(), checkout(), checkout(), checkout()]);
+    for (const buyer of buyers) {
+      buyer.pay();
+      expect((await buyer.settle()).status).toBe(200);
+      expect(await row(buyer.id)).toMatchObject({ status: 'pending', attempts: 0 });
+    }
+    let releaseReceipts!: () => void;
+    const holdReceipts = new Promise<void>(resolve => { releaseReceipts = resolve; });
+    const request = vi.fn<typeof fetch>().mockImplementation(async (_input, init) => {
+      if (new Headers(init?.headers).has('idempotency-key')) await holdReceipts;
+      return Response.json({ id: 'synthetic-provider-id' });
+    });
+    const config = { mode: 'resend', apiKey: 'fixture', from: 'sender@example.test' } as const;
+    const receipts = new SupportMailer(config, undefined, undefined, request);
+    const access = new SupportMailer(config, undefined, undefined, request);
+    const query = vi.spyOn(pool, 'query');
+    const tick = paymentReceiptsTick(pool, receipts, origin, activeClock().now);
+    // Wait for every receipt selected by the real due query to reach the held transport.
+    const batch = query.mock.results[0]?.value as unknown as Promise<{ rowCount: number }>;
+    query.mockRestore();
+    let counts: Awaited<typeof tick>;
+    try {
+      const { rowCount } = await batch;
+      expect(rowCount).toBeGreaterThanOrEqual(2);
+      await expect.poll(() => request.mock.calls.length, { timeout: 2000, interval: 20 }).toBe(rowCount);
+      const accessOutcomes = await Promise.all([
+        access.send({ purpose: 'verify', to: 'verify@example.test', url: origin + '/verify-email' }),
+        access.send({ purpose: 'reset', to: 'reset@example.test', url: origin + '/reset' }),
+      ]);
+      expect(accessOutcomes).toEqual(['accepted', 'accepted']);
+    } finally {
+      releaseReceipts();
+      counts = await tick;
+    }
+    expect(counts).toMatchObject({ attempted: 2, accepted: 2 });
+    expect(request).toHaveBeenCalledTimes(4);
+    const wire = request.mock.calls.map(([, init]) => JSON.parse(String(init?.body)).subject);
+    expect(wire.slice(2).sort()).toEqual(['Восстановление пароля КлипМейкер', 'Подтвердите почту КлипМейкер']);
   });
 });
