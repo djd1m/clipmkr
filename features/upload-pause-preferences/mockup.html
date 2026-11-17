@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clipmkr · Продолжение загрузки</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page:#f5f7f3; --surface:#fff; --surface-soft:#f0f5f1; --ink:#19302b;
+      --muted:#526760; --line:#d5e1d9; --accent:#126a5b; --accent-hover:#0c5248;
+      --accent-light:#d9f0e5; --focus:#a45508; --shadow:0 18px 46px rgba(27,62,46,.07);
+      --rail:#e9f0eb; --warning:#fff2db; --warning-line:#d2a345; --track:#dce8e1;
+    }
+    *, *::before, *::after { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; background:var(--page); color:var(--ink); font:1rem/1.5 system-ui,sans-serif; }
+    button, select, input { font:inherit; min-width:0; max-width:100%; }
+    button, summary { cursor:pointer; }
+    button:disabled { cursor:not-allowed; opacity:.52; }
+    :focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+    summary:focus-visible { outline-offset:-4px; }
+    h1, p { margin:0; }
+    small { font-size:.82rem; }
+    .app { display:grid; grid-template-columns:3.75rem minmax(0,1fr); min-height:100svh; }
+    .rail { background:var(--rail); border-right:1px solid var(--line); padding:1rem .35rem; }
+    .brand { display:flex; align-items:center; justify-content:center; gap:.65rem; font-weight:800; }
+    .brand-mark { display:grid; place-items:center; flex:none; width:2.5rem; height:2.5rem; border-radius:.85rem; color:var(--surface); background:var(--accent); font-size:1.35rem; }
+    .brand-word { display:none; }
+    .workspace { min-width:0; padding:0 .75rem 2rem; }
+    .topbar { min-height:3.75rem; display:flex; align-items:center; border-bottom:1px solid var(--line); font-weight:750; }
+    .content { max-width:60rem; margin:auto; min-width:0; }
+    .mock-tools { display:grid; gap:.25rem; margin:.65rem 0; padding:.55rem .85rem .7rem; background:var(--surface); border:1px solid var(--line); border-radius:.7rem; }
+    .mock-tools label { color:var(--muted); font-size:.82rem; font-weight:700; }
+    .mock-tools select { width:min(100%,25rem); }
+    .notice { background:var(--warning); border:1px solid var(--warning-line); border-radius:.7rem; padding:.55rem .7rem; font-size:.82rem; }
+    .screen-head { margin:1.1rem 0; }
+    h1 { font-size:clamp(1.65rem,1.32rem + 1.6vw,2.65rem); line-height:1.12; letter-spacing:-.045em; margin-bottom:.65rem; }
+    .lead, .muted { color:var(--muted); }
+    .split { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; align-items:start; }
+    .progress-card { min-width:0; padding:clamp(.9rem,2.5vw,1.5rem); background:var(--surface); border:1px solid var(--line); border-radius:1.05rem; box-shadow:var(--shadow); }
+    .pause-mark, .file-icon { display:grid; place-items:center; flex:none; width:2.7rem; height:2.7rem; font-size:1.3rem; }
+    .pause-mark { border-radius:50%; background:var(--warning); margin-bottom:.85rem; }
+    .file-icon { border-radius:.7rem; background:var(--accent-light); color:var(--accent); }
+    .file-line { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; }
+    .file-line div { min-width:0; }
+    .file-line strong, .file-line small { display:block; overflow-wrap:anywhere; }
+    .progress-top { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:.2rem .6rem; font-size:.85rem; }
+    .progress-top strong { color:var(--accent); }
+    progress { display:block; width:100%; height:.8rem; margin:.5rem 0 .8rem; appearance:none; border:0; border-radius:999px; overflow:hidden; background:var(--track); }
+    progress::-webkit-progress-bar { background:var(--track); }
+    progress::-webkit-progress-value { background:var(--accent); border-radius:999px; }
+    progress::-moz-progress-bar { background:var(--accent); border-radius:999px; }
+    .actions { display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0; }
+    .button { min-height:2.75rem; border:1px solid var(--accent); border-radius:.7rem; padding:.6rem 1rem; color:var(--page); background:var(--accent); font-weight:720; line-height:1.2; overflow-wrap:anywhere; }
+    .button:hover:not(:disabled) { background:var(--accent-hover); border-color:var(--accent-hover); }
+    .secondary { color:var(--accent); background:transparent; }
+    .secondary:hover:not(:disabled) { color:var(--accent); background:var(--accent-light); border-color:var(--accent); }
+    .status { color:var(--accent); font-size:.85rem; font-weight:650; }
+    .info-strip { min-width:0; padding:.85rem 1rem; border:1px solid var(--line); border-radius:.8rem; background:var(--surface-soft); font-size:.86rem; }
+    .info-strip p { margin-top:.25rem; color:var(--muted); }
+    details { border:1px solid var(--line); border-radius:.8rem; margin-top:1rem; overflow:hidden; }
+    summary { min-height:2.75rem; padding:.65rem .85rem; font-weight:700; color:var(--accent); }
+    details[open] summary { border-bottom:1px solid var(--line); }
+    .details-body { padding:.85rem; }
+    fieldset { min-width:0; margin:0; padding:0; border:0; }
+    .option-line { display:flex; align-items:center; gap:.65rem; min-height:2.75rem; font-size:.9rem; }
+    .option-line input { width:1.2rem; height:1.2rem; flex:none; margin:0; accent-color:var(--accent); }
+    #settings:disabled .option-line { color:var(--muted); }
+    .field { display:grid; gap:.3rem; min-width:0; margin-top:.55rem; font-size:.9rem; }
+    .field label { font-weight:650; }
+    select, input[type="url"] { width:100%; min-height:2.75rem; padding:.5rem .65rem; border:1px solid var(--line); border-radius:.7rem; background:var(--surface); color:var(--ink); }
+    select:disabled, input:disabled { color:var(--muted); }
+    .error { color:var(--focus); font-weight:650; }
+    [aria-invalid="true"] { border-color:var(--focus) !important; }
+    @media (min-width:42rem) {
+      .app { grid-template-columns:12.5rem minmax(0,1fr); }
+      .rail { padding:1.3rem 1.1rem; }
+      .brand { justify-content:flex-start; }
+      .brand-word { display:inline; font-size:1.12rem; }
+      .workspace { padding-inline:1.5rem; }
+    }
+    @media (min-width:65rem) {
+      .workspace { padding-inline:2.5rem; }
+      .split { grid-template-columns:minmax(0,1.4fr) minmax(15rem,.8fr); }
+      .screen-head { margin:1.6rem 0 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" aria-label="Clipmkr">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">◩</span><span class="brand-word">clipmkr</span></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><div>Кабинет</div></header>
+      <div class="content">
+        <nav class="mock-tools" aria-label="Навигация по макету">
+          <label for="scenario">Сценарий макета</label>
+          <select id="scenario">
+            <option value="paused">Пауза в той же вкладке</option>
+            <option value="reloaded">После перезагрузки</option>
+            <option value="unknown">Итог завершения неизвестен</option>
+          </select>
+        </nav>
+        <p class="notice">Демо для согласования. Выбор файла и продолжение загрузки имитируются.</p>
+        <main>
+          <header class="screen-head">
+            <h1 id="title">Загрузка остановлена</h1>
+            <p class="lead" id="lead">Передача ещё не завершена. Обработка начнётся после загрузки.</p>
+          </header>
+          <div class="split">
+            <section class="progress-card" aria-labelledby="title">
+              <div class="pause-mark" id="mark" aria-hidden="true">Ⅱ</div>
+              <div class="file-line">
+                <span class="file-icon" aria-hidden="true">▣</span>
+                <div><strong>Демонстрационная запись</strong><small class="muted" id="file-state">Исходный файл проверен</small></div>
+              </div>
+              <div class="progress-top">
+                <span id="progress-label">Подтверждённая передача</span>
+                <strong id="amount">10 из 23 МБ</strong>
+              </div>
+              <progress id="progress" max="23" value="10" aria-labelledby="progress-label" aria-describedby="amount"></progress>
+              <div class="actions">
+                <button type="button" class="button" id="pick" hidden>Выбрать исходный файл</button>
+                <button type="button" class="button" id="resume">Продолжить загрузку</button>
+              </div>
+              <p class="status" id="status" role="status"></p>
+              <details id="options">
+                <summary id="options-label">Дополнительные настройки</summary>
+                <div class="details-body">
+                  <p id="lock-note" class="muted" hidden><small>Настройки зафиксированы при завершении передачи.</small></p>
+                  <fieldset id="settings" aria-labelledby="options-label">
+                    <label class="option-line"><input id="music" type="checkbox"> Добавить музыку и финальный акцент</label>
+                    <label class="option-line"><input id="teaser" type="checkbox" checked> Заголовок в начале клипа</label>
+                    <label class="option-line"><input id="compact" type="checkbox" checked> Убрать паузы</label>
+                    <div class="field">
+                      <label for="cta-kind">Что сделать зрителю в конце</label>
+                      <select id="cta-kind">
+                        <option value="none">Без призыва</option>
+                        <option value="watch_full">Смотреть полный выпуск</option>
+                        <option value="subscribe">Подписаться</option>
+                        <option value="open_link">Перейти по ссылке</option>
+                      </select>
+                    </div>
+                    <div class="field" id="cta-field" hidden>
+                      <label for="cta-url">Ссылка для призыва</label>
+                      <input id="cta-url" type="url" inputmode="url" autocomplete="off" maxlength="2048" placeholder="https://example.invalid/" aria-describedby="cta-error">
+                      <p id="cta-error" class="error" role="alert"></p>
+                    </div>
+                  </fieldset>
+                </div>
+              </details>
+            </section>
+            <aside class="info-strip">
+              <strong id="note-title">Прерванная передача</strong>
+              <p id="note">При продолжении загрузки уже подтверждённая часть будет использована повторно.</p>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+  <script>
+    const byId = id => document.getElementById(id);
+    const scenario = byId('scenario');
+    const pick = byId('pick');
+    const resume = byId('resume');
+    const status = byId('status');
+    const options = byId('options');
+    const settings = byId('settings');
+    const kind = byId('cta-kind');
+    const url = byId('cta-url');
+    const fields = ['music', 'teaser', 'compact'].map(byId);
+    const readSettings = () => ({ checks: fields.map(field => field.checked), kind: kind.value, url: url.value });
+    let draft = readSettings();
+    let saved = draft;
+    let selected = true;
+    let mode = 'paused';
+
+    function syncCtaField() {
+      byId('cta-field').hidden = kind.value === 'none';
+      byId('cta-error').textContent = '';
+      url.removeAttribute('aria-invalid');
+    }
+
+    function showScenario() {
+      mode = scenario.value;
+      const unknown = mode === 'unknown';
+      selected = mode === 'paused';
+      const values = unknown ? saved : draft;
+      fields.forEach((field, index) => { field.checked = values.checks[index]; });
+      kind.value = values.kind;
+      url.value = values.url;
+      syncCtaField();
+
+      byId('title').textContent = unknown ? 'Итог завершения неизвестен' : 'Загрузка остановлена';
+      byId('lead').textContent = unknown
+        ? 'Сервер мог уже начать обработку. Повторно выберите исходный файл, затем проверьте результат.'
+        : 'Передача ещё не завершена. Обработка начнётся после загрузки.';
+      byId('mark').textContent = unknown ? '?' : 'Ⅱ';
+      byId('file-state').textContent = selected ? 'Исходный файл проверен' : 'Нужно выбрать исходный файл';
+      byId('amount').textContent = unknown ? '23 из 23 МБ' : mode === 'reloaded' ? 'Уточним при продолжении' : '10 из 23 МБ';
+      if (mode === 'reloaded') byId('progress').removeAttribute('value');
+      else byId('progress').value = unknown ? 23 : 10;
+      byId('note-title').textContent = unknown ? 'Настройки зафиксированы' : 'Прерванная передача';
+      byId('note').textContent = unknown
+        ? 'Если завершение нужно повторить, будут использованы те же настройки.'
+        : 'Загрузка продолжится с учётом уже подтверждённых частей.';
+      byId('lock-note').hidden = !unknown;
+      settings.disabled = unknown;
+      options.open = unknown;
+      pick.hidden = selected;
+      resume.disabled = !selected;
+      resume.textContent = unknown ? 'Проверить и продолжить' : 'Продолжить загрузку';
+      status.textContent = '';
+    }
+
+    scenario.addEventListener('change', showScenario);
+    settings.addEventListener('input', () => {
+      draft = readSettings();
+      syncCtaField();
+      status.textContent = '';
+    });
+
+    pick.addEventListener('click', () => {
+      selected = true;
+      byId('file-state').textContent = 'Исходный файл проверен';
+      resume.disabled = false;
+      status.textContent = 'Файл совпадает. Нажмите «' + resume.textContent + '».';
+      pick.hidden = true;
+      resume.focus();
+    });
+
+    resume.addEventListener('click', () => {
+      if (!selected) return;
+      if (mode === 'unknown') {
+        status.textContent = 'Демо: проверяем результат с зафиксированными настройками.';
+        return;
+      }
+      if (kind.value !== 'none') {
+        let target;
+        try { target = new URL(url.value.trim()); } catch {}
+        if (!target || target.protocol !== 'https:' || target.username || target.password || /\s/.test(url.value.trim())) {
+          options.open = true;
+          url.setAttribute('aria-invalid', 'true');
+          byId('cta-error').textContent = url.value.trim() ? 'Укажите HTTPS-ссылку без пробелов, логина и пароля.' : 'Укажите ссылку для призыва.';
+          url.focus();
+          return;
+        }
+      }
+      saved = readSettings();
+      status.textContent = 'Демо: настройки сохранены. Передача продолжится с учётом уже подтверждённых частей.';
+    });
+
+    showScenario();
+  </script>
+</body>
+</html>
