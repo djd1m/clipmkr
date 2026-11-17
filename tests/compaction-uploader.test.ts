@@ -42,7 +42,7 @@ beforeEach(() => {
   host.values=[];host.cursor=0;host.effects=[];host.initialized=false;storage=new Map();
   vi.stubGlobal('sessionStorage',{getItem:(key:string)=>storage.get(key)??null,setItem:(key:string,value:string)=>storage.set(key,value),removeItem:(key:string)=>storage.delete(key)});
   vi.stubGlobal('window',{addEventListener:vi.fn(),removeEventListener:vi.fn()});
-  vi.stubGlobal('document',{addEventListener:vi.fn(),removeEventListener:vi.fn()});
+  vi.stubGlobal('document',{addEventListener:vi.fn(),removeEventListener:vi.fn(),getElementById:vi.fn(()=>null)});
   vi.mocked(rpc).mockRejectedValue(new Error('offline'));
 });
 afterEach(()=>{vi.unstubAllGlobals();vi.clearAllMocks();});
@@ -50,7 +50,7 @@ async function choose(selected=file) {
   input(render(),'file').props.onChange!({target:{files:[selected],value:'chosen'}});
   await vi.waitFor(()=>expect(render().find(n=>n.type==='button'&&n.props.className?.includes('upload-start'))!.props.disabled).toBe(false));
 }
-it('default and selected compact survive failed create and lock immutable options',async()=>{
+it('default and selected compact persist in the initial create while the request runs',async()=>{
   expect(input(render(),'checkbox').props.checked).toBe(true);
   await choose();input(render(),'checkbox').props.onChange!({target:{checked:true}});
   render().find(n=>n.type==='button'&&n.props.className?.includes('upload-start'))!.props.onClick!();
@@ -59,15 +59,17 @@ it('default and selected compact survive failed create and lock immutable option
   expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({compact:true,account_scope:scope});
   expect(JSON.parse(storage.get(storageKey)!).options.compact).toBe(true);
 });
-it.each([true,false])('strict v2 restores locked compact %s after full hash and separate Continue',async value=>{
+it.each([true,false])('strict v2 restores editable compact %s without changing the initial create',async value=>{
   const {createHash}=await import('node:crypto');
   const contentSha256=createHash('sha256').update('test bytes').digest('hex');
   storage.set(storageKey,JSON.stringify({version:2,accountScope:scope,key,identityAlgorithm:'sha256',contentSha256,size:file.size,originalFilename:'original.mp3',
     options:{...{music:false,teaser:true,compact:true,ctaKind:'none',ctaUrl:null}, compact:value}}));
   await choose();expect(vi.mocked(rpc)).not.toHaveBeenCalled();
-  expect(input(render(),'checkbox').props.checked).toBe(value);expect(input(render(),'checkbox').props.disabled).toBe(true);
+  expect(input(render(),'checkbox').props.checked).toBe(value);expect(input(render(),'checkbox').props.disabled).toBe(false);
+  input(render(),'checkbox').props.onChange!({target:{checked:!value}});
   render().find(n=>n.type==='button'&&n.props.className?.includes('upload-start'))!.props.onClick!();await vi.waitFor(()=>expect(vi.mocked(rpc)).toHaveBeenCalled());
   expect(vi.mocked(rpc).mock.calls[0]![3]).toBe(key);expect(vi.mocked(rpc).mock.calls[0]![1]).toMatchObject({compact:value,filename:'original.mp3'});
+  expect(JSON.parse(storage.get(storageKey)!).draftOptions.compact).toBe(!value);
 });
 it('legacy never automatically resumes or assigns new hash to old parts',async()=>{
   storage.set('n5-upload-resume',JSON.stringify({key:'legacy',fingerprint:'podcast.mp3:10:123'}));

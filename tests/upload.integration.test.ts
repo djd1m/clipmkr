@@ -15,8 +15,10 @@ const limits = loadLimits(environment());
 const now = new Date('2026-09-22T10:00:00Z');
 const body = { declared_bytes: 24, filename: 'выпуск.mp4', source: 'upload' };
 const goodFile = Buffer.alloc(24); goodFile.writeUInt32BE(24); goodFile.write('ftyp', 4); goodFile.write('isom', 8);
+const finalPreferences = { music: true, teaser: true, compact: true, cta_kind: 'subscribe', cta_url: 'https://example.invalid/' };
+const preferencesConflict = { status: 409, details: { reason: 'final_preferences_conflict' } };
 
-describe.skipIf(!dbUrl)('PostgreSQL: конкурентная квота', () => {
+describe.skipIf(!dbUrl)('PostgreSQL: конкурентная квота и завершение загрузки', () => {
   let pool: Pool;
   const schema = `quota_${randomBytes(8).toString('hex')}`;
   beforeAll(async () => {
@@ -72,6 +74,87 @@ describe.skipIf(!dbUrl)('PostgreSQL: конкурентная квота', () =>
     expect(denied.granted).toBe(false); expect(granted.granted).toBe(true);
     expect((await charge(a, 'upload', 2, new Date('2026-09-22T21:01:00Z'))).granted).toBe(true);
     expect(await used(a, 'user_uploads', '2026-09-23')).toBe(2);
+  });
+  async function completionFixture() {
+    const id = (await pool.query("INSERT INTO account(email,password_hash) VALUES ($1,'test-hash') RETURNING id",
+      [`${randomUUID()}@example.invalid`])).rows[0].id as string;
+    const storage = {
+      initiate: async () => 'multipart', list: async () => [],
+      sign: async () => [{part_number:1,url:'https://example.invalid/part',expires_at:new Date(now.getTime()+60000).toISOString()}],
+      complete: vi.fn(async () => {}), head: async () => BigInt(goodFile.length), bytes: async () => goodFile,
+      abort: async () => {}, delete: async () => {},
+    } satisfies UploadStorage;
+    const queue = vi.fn(async (_id: string, _fence: number) => {});
+    const service = new VideoService(pool, limits, storage, queue, () => now);
+    const key = randomUUID(), upload = await service.create(id, key, body);
+    const input = {video_id:upload.video_id,parts:[{part_number:1,etag:'part'}]};
+    const readVideo = async () => (await pool.query(
+      'SELECT status,music,teaser,compact,cta_kind,cta_url FROM video WHERE id=$1', [upload.video_id])).rows[0];
+    return { id, key, storage, queue, service, input, readVideo };
+  }
+  it('FOR UPDATE: конкурирующий Complete сравнивает настройки победителя', async () => {
+    const { id, key, storage, queue, service, input, readVideo } = await completionFixture();
+    await expect(service.create(id, key, {...body,music:true})).rejects.toMatchObject({status:409});
+    let validated!: () => void, release!: () => void;
+    const beforeLock = new Promise<void>(resolve => {validated=resolve;});
+    const waitForWinner = new Promise<void>(resolve => {release=resolve;});
+    const competitor = new VideoService(pool, limits, {...storage, bytes: async () => {
+      validated();await waitForWinner;return goodFile;
+    }}, queue, () => now);
+    const losing = competitor.complete(id, {...input,final_preferences:{...finalPreferences,compact:false}});
+    try {
+      await Promise.race([beforeLock,losing]);
+      queue.mockImplementationOnce(async () => {
+        expect(await readVideo()).toEqual({status:'queued',...finalPreferences});
+      });
+      await expect(service.complete(id, {...input,final_preferences:finalPreferences})).resolves.toMatchObject({status:'queued'});
+    } finally {release();}
+    await expect(losing).rejects.toMatchObject(preferencesConflict);
+    expect(await readVideo()).toEqual({status:'queued',...finalPreferences});
+    expect(queue.mock.calls).toEqual([[input.video_id,1]]);
+    expect((await pool.query('SELECT id FROM video WHERE account_id=$1',[id])).rowCount).toBe(1);
+    expect(await used(id)).toBe(1);expect(await used(id,'user_minutes')).toBe(0);
+  });
+  it('Complete проверяет поля до S3 и сравнивает настройки во всех ветках повтора', async () => {
+    const { id, storage, queue, service, input, readVideo } = await completionFixture();
+    const prefs = {...finalPreferences,cta_url:'https://EXAMPLE.invalid'};
+    const payload = {...input,final_preferences:prefs}, conflict = {...input,final_preferences:{...prefs,teaser:false}};
+    for (const final_preferences of [
+      null, {...prefs,extra:true}, {...prefs,compact:undefined}, {...prefs,cta_url:undefined},
+      {...prefs,music:1}, {...prefs,cta_kind:'custom'}, {...prefs,cta_url:'x'.repeat(2049)},
+    ]) {
+      await expect(service.complete(id,{...input,final_preferences})).rejects.toMatchObject({status:422});
+    }
+    await expect(service.complete(id,{...input,final_preferences:{...prefs,cta_url:'http://example.invalid'}}))
+      .rejects.toMatchObject({status:422,details:{field:'cta_url'}});
+    await expect(service.complete(randomUUID(),payload)).rejects.toMatchObject({status:404});
+    expect(storage.complete).not.toHaveBeenCalled();expect(queue).not.toHaveBeenCalled();
+    expect(await readVideo()).toMatchObject({status:'uploading',music:false,teaser:false,compact:false,cta_kind:'none',cta_url:null});
+
+    queue.mockRejectedValueOnce(new Error('Redis offline'));
+    await expect(service.complete(id,payload)).rejects.toThrow('Redis offline');
+    await expect(service.complete(id,conflict)).rejects.toMatchObject(preferencesConflict); // queued, ещё без отметки
+    expect(queue).toHaveBeenCalledTimes(1);
+    await expect(service.complete(id,{...input,final_preferences:finalPreferences})).resolves.toMatchObject({status:'queued'});
+    await expect(service.complete(id,conflict)).rejects.toMatchObject(preferencesConflict); // queued, уже доставлена
+    for (const status of ['transcribing','selecting','rendering','done','failed']) {
+      // Снимаем отметку доставки, чтобы независимо проверить ветки статуса и actual_bytes.
+      await pool.query('UPDATE video SET status=$2,upload_enqueued_at=NULL WHERE id=$1',[input.video_id,status]);
+      await expect(service.complete(id,conflict)).rejects.toMatchObject(preferencesConflict);
+      await expect(service.complete(id,payload)).resolves.toMatchObject({status:'queued'});
+      await expect(service.complete(id,input)).resolves.toMatchObject({status:'queued'}); // Запрос прежнего клиента.
+      expect(await readVideo()).toEqual({status,...finalPreferences});
+    }
+    expect(storage.complete).toHaveBeenCalledTimes(1);expect(queue.mock.calls).toEqual([[input.video_id,1],[input.video_id,1]]);
+    expect(await used(id)).toBe(1);expect(await used(id,'user_minutes')).toBe(0);
+  });
+  it('Непригодный файл не применяет итоговые настройки и не попадает в очередь', async () => {
+    const { id, storage, queue, input, readVideo } = await completionFixture();
+    const service = new VideoService(pool, limits, {...storage,bytes:async()=>Buffer.alloc(goodFile.length)}, queue, () => now);
+    await expect(service.complete(id,{...input,final_preferences:finalPreferences}))
+      .rejects.toMatchObject({status:422,details:{reason:'not_media'}});
+    expect(await readVideo()).toEqual({status:'failed',music:false,teaser:false,compact:false,cta_kind:'none',cta_url:null});
+    expect(queue).not.toHaveBeenCalled();expect(await used(id)).toBe(0);expect(await used(id,'user_upload_refunds')).toBe(1);
   });
 });
 
@@ -166,18 +249,31 @@ describe.skipIf(!dbUrl || process.env.N5_PREFIX_RUN_S3 !== '1')('PostgreSQL + Cl
     expect(row).toMatchObject({ status: 'failed', failure_reason: 'too_large' });
     await expect(storage.head(row.object_key)).rejects.toMatchObject({ name: 'NotFound' });
   });
-  it('Файл больше 10 MiB идёт двумя прямыми частями; размер после HEAD совпадает', async () => {
+  it('S3: подтверждённая часть сохраняется при продолжении, итоговые настройки фиксируются один раз', async () => {
     const id = await account(), file = Buffer.alloc(11 * 1024 * 1024); goodFile.copy(file);
-    const upload = await service.create(id, randomUUID(), { ...body, declared_bytes: file.length });
+    const key = randomUUID(), initial = {...body,declared_bytes:file.length};
+    const upload = await service.create(id, key, initial);
     expect(upload.parts).toHaveLength(2);
-    const parts = [];
-    for (const part of upload.parts) {
+    const putPart = async (part: UploadData['parts'][number]) => {
       const start = (part.part_number - 1) * upload.part_size;
       const response = await safety.fetch(part.url, { method: 'PUT', body: file.subarray(start, start + upload.part_size) }, scope, 120_000);
-      expect(response.status).toBe(200); parts.push({ part_number: part.part_number, etag: response.headers.get('etag')! });
-    }
-    expect(await service.complete(id, { video_id: upload.video_id, parts })).toMatchObject({ status: 'queued' });
-    expect(Number((await pool.query('SELECT actual_bytes FROM video WHERE id=$1', [upload.video_id])).rows[0].actual_bytes)).toBe(file.length);
+      expect(response.status).toBe(200);expect(response.headers.get('etag')).toBeTruthy();
+      return {part_number:part.part_number,etag:response.headers.get('etag')!};
+    };
+    await putPart(upload.parts[0]!);
+    await expect(service.create(id,key,{...initial,compact:true})).rejects.toMatchObject({status:409});
+    const resumed = await service.create(id,key,initial);
+    expect(resumed).toMatchObject({video_id:upload.video_id,upload_id:upload.upload_id,completed_parts:[{part_number:1}]});
+    expect(resumed.parts.map(part=>part.part_number)).toEqual([2]);
+    const input = {video_id:upload.video_id,parts:[resumed.completed_parts![0]!,await putPart(resumed.parts[0]!)],final_preferences:finalPreferences};
+    const before = queue.mock.calls.length;
+    expect(await service.complete(id,input)).toMatchObject({status:'queued'});
+    expect(await service.complete(id,input)).toMatchObject({status:'queued'});
+    const rows = (await pool.query('SELECT actual_bytes,music,teaser,compact,cta_kind,cta_url FROM video WHERE account_id=$1',[id])).rows;
+    expect(rows).toEqual([{actual_bytes:String(file.length),...finalPreferences}]);
+    expect(queue.mock.calls.slice(before)).toEqual([[upload.video_id,1]]);
+    expect(await count(id)).toBe(1);expect(await count(id,'user_minutes')).toBe(0);
+    expect((await pool.query('SELECT video_id FROM video_credit_charge WHERE video_id=$1',[upload.video_id])).rowCount).toBe(0);
   }, 300_000);
   it('Чужой и отсутствующий id дают одинаковый 404, без S3', async () => {
     const owner = await account(), stranger = await account(), upload = await service.create(owner, randomUUID(), body);

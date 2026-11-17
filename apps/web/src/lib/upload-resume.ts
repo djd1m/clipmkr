@@ -4,13 +4,21 @@ import { CTA_KIND } from '@clipmaker/shared/enums';
 import { parseCtaTarget } from '@clipmaker/shared/cta';
 
 export const UPLOAD_RESUME_VERSION = 2;
+const optionsSchema = z.object({
+  music:z.boolean(), teaser:z.boolean(), compact:z.boolean(), ctaKind:z.enum(CTA_KIND), ctaUrl:z.string().nullable(),
+}).strict().refine(options => {
+  try {parseCtaTarget(options.ctaKind,options.ctaUrl); return true;} catch {return false;}
+});
+export type UploadOptions = z.infer<typeof optionsSchema>;
+
 const schema = z.object({
   version: z.literal(UPLOAD_RESUME_VERSION), accountScope: z.string().uuid(), key: z.string().uuid(),
   identityAlgorithm: z.literal('sha256'), contentSha256: z.string().regex(/^[0-9a-f]{64}$/),
   size: z.number().int().positive().max(MAX_UPLOAD_BYTES),
   originalFilename: z.string().trim().min(1).max(255).refine(s => !/[\x00-\x1f/\\]/.test(s)),
-  options: z.object({music:z.boolean(),teaser:z.boolean(),compact:z.boolean(),ctaKind:z.enum(CTA_KIND),ctaUrl:z.string().nullable()}).strict()
-    .refine(options => {try {parseCtaTarget(options.ctaKind,options.ctaUrl); return true;} catch {return false;}}),
+  options: optionsSchema, // Исходные настройки video.create.
+  draftOptions: optionsSchema.optional(),
+  finalOptions: optionsSchema.optional(),
   videoId: z.string().uuid().optional(),
   partSize: z.number().int().min(10 * 1024 * 1024).max(Math.max(10 * 1024 * 1024, Math.ceil(MAX_UPLOAD_BYTES / 100))).optional(),
   parts: z.array(z.object({part_number:z.number().int().min(1).max(200),etag:z.string().min(1).max(256)}).strict()).min(1).max(200).optional(),
@@ -18,6 +26,8 @@ const schema = z.object({
   if ((value.videoId === undefined) !== (value.partSize === undefined)) ctx.addIssue({code:'custom',message:'Неполный server receipt'});
   if (value.parts && (!value.videoId || !value.partSize || value.parts.length !== Math.ceil(value.size/value.partSize) ||
     value.parts.some((part,index) => part.part_number !== index+1))) ctx.addIssue({code:'custom',message:'Неполный manifest частей'});
+  if ((value.finalOptions && !value.parts) || (value.parts && value.draftOptions && !value.finalOptions))
+    ctx.addIssue({code:'custom',message:'Итоговые настройки должны быть сохранены вместе с манифестом'});
 });
 export type UploadResumeV2 = z.infer<typeof schema>;
 export type UploadResumeRead = {kind:'found';value:UploadResumeV2} | {kind:'absent'|'legacy'|'invalid'|'storageUnavailable'};

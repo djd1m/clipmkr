@@ -5,7 +5,7 @@ import type { Limits } from '@clipmaker/shared/config';
 import type { VideoFailureReason, VideoStatus } from '@clipmaker/shared/enums';
 import { MAX_UPLOAD_BYTES, moscowDay, sourceLimitSeconds } from '@clipmaker/shared/upload';
 import { calculatePartSize, UploadTooLarge, type SignedPart, type CompletedPart } from '@clipmaker/s3';
-import { createVideoSchema, completeUploadSchema, UploadError, quotaError } from './upload-contract';
+import { createVideoSchema, completeUploadSchema, UploadError, quotaError, type CompleteUploadInput } from './upload-contract';
 import { isAllowedMedia } from './media-type';
 import { CtaError, parseCtaTarget } from '@clipmaker/shared/cta';
 import type { CtaKind } from '@clipmaker/shared/enums';
@@ -32,6 +32,23 @@ const unavailable = () => new UploadError('unavailable', 'Хранилище в�
 const admitted = (row: VideoRow) => ['transcribing', 'selecting', 'rendering', 'done'].includes(row.status)
   || (row.status !== 'uploading' && Boolean(row.upload_enqueued_at))
   || (row.status === 'failed' && Number(row.actual_bytes) > 0);
+function finalPreferences(input: CompleteUploadInput['final_preferences']) {
+  if (!input) return undefined;
+  try {
+    const cta = parseCtaTarget(input.cta_kind, input.cta_url);
+    return { ...input, cta_kind: cta.kind, cta_url: cta.url };
+  } catch (error) {
+    if (error instanceof CtaError) throw new UploadError('invalid', error.message, 422, { field: 'cta_url' });
+    throw error;
+  }
+}
+function checkFinalPreferences(row: VideoRow, prefs: ReturnType<typeof finalPreferences>) {
+  if (prefs && (row.music !== prefs.music || row.teaser !== prefs.teaser || row.compact !== prefs.compact ||
+    row.cta_kind !== prefs.cta_kind || row.cta_url !== prefs.cta_url)) {
+    throw new UploadError('conflict', 'Запись уже принята с другими настройками. Откройте запись', 409,
+      { reason: 'final_preferences_conflict' });
+  }
+}
 export class VideoService {
   constructor(private readonly pool: Pool, private readonly limits: Limits, private readonly storage: UploadStorage,
     private readonly enqueue: (videoId: string, fence: number) => Promise<void>, private readonly clock = () => new Date()) {}
@@ -135,11 +152,15 @@ export class VideoService {
     const body = parsed.data;
     const row = (await this.pool.query<VideoRow>(`${selectVideo} WHERE id=$1 AND account_id=$2 AND deleted_at IS NULL`, [body.video_id, account])).rows[0];
     if (!row) throw new UploadError('not_found', 'Запись не найдена', 404);
+    const prefs = finalPreferences(body.final_preferences);
     if (row.status === 'failed' && (row.failure_reason === 'too_large' || row.failure_reason === 'not_media')) {
       await this.cleanupFile(row); throw this.fileError(row.failure_reason);
     }
-    if (admitted(row)) return { video_id: row.id, status: 'queued' };
-    if (row.status === 'queued') return this.publish(row.id);
+    const alreadyAdmitted = admitted(row);
+    if (alreadyAdmitted || row.status === 'queued') {
+      checkFinalPreferences(row, prefs);
+      return alreadyAdmitted ? { video_id: row.id, status: 'queued' } : this.publish(row.id);
+    }
     if (row.status !== 'uploading') throw new UploadError('conflict', 'Загрузка уже завершена', 409);
     if (!row.upload_id) throw unavailable();
     const count = Math.ceil(Number(row.declared_bytes) / row.upload_part_size);
@@ -170,12 +191,20 @@ export class VideoService {
       if (current.status === 'failed' && (current.failure_reason === 'too_large' || current.failure_reason === 'not_media')) {
         return { row: current, reason: current.failure_reason };
       }
-      if (admitted(current)) return null;
-      if (current.status === 'queued') return current.id;
+      const alreadyAdmitted = admitted(current);
+      if (alreadyAdmitted || current.status === 'queued') {
+        checkFinalPreferences(current, prefs);
+        return alreadyAdmitted ? null : current.id;
+      }
       if (current.status !== 'uploading' || current.upload_id !== row.upload_id) throw new UploadError('conflict', 'Состояние загрузки изменилось', 409);
       if (bytes !== undefined) await tx.query('UPDATE video SET actual_bytes=$2 WHERE id=$1', [row.id, bytes]);
       if (reason) return this.failFile(tx, current, reason);
-      await tx.query("UPDATE video SET status='queued', updated_at=now() WHERE id=$1", [row.id]);
+      if (prefs) {
+        await tx.query(`UPDATE video SET status='queued', updated_at=now(), music=$2, teaser=$3, compact=$4, cta_kind=$5, cta_url=$6
+          WHERE id=$1`, [row.id, prefs.music, prefs.teaser, prefs.compact, prefs.cta_kind, prefs.cta_url]);
+      } else {
+        await tx.query("UPDATE video SET status='queued', updated_at=now() WHERE id=$1", [row.id]);
+      }
       return row.id;
     });
     if (outcome === null) return { video_id: row.id, status: 'queued' };

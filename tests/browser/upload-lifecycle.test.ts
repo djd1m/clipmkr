@@ -46,11 +46,14 @@ afterAll(async()=>{await server?.close();rmSync(cacheDirectory,{recursive:true,f
 const poll=<T,>(callback:()=>T|Promise<T>)=>expect.poll(callback,{timeout:10000});
 async function saved(page:Page){return page.evaluate(k=>{const raw=sessionStorage.getItem(k);return raw?JSON.parse(raw):null;},storageKey);}
 async function choose(page:Page,selected=file){await page.locator('#source-file').setInputFiles(selected);await poll(async()=>`${await page.getByRole('status').textContent()} ${await page.getByRole('alert').allTextContents()}`).toMatch(/Файл совпадает|Файл проверен|Выбран другой файл/);}
-async function continueUpload(page:Page){await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).click();}
-async function setup(browser:Browser,run:(page:Page,c:{release:()=>void;creates:()=>number;puts:()=>number;completes:()=>number;bodies:()=>Record<string,unknown>[];keys:()=>string[];setStatus:(value:number)=>void;setScopeMismatch:()=>void})=>Promise<void>,options:{session?:object;legacy?:boolean;completeStatus?:number;hold?:'put'|'create'|'complete';storageFail?:string;acceptedPart?:boolean;putStatus?:number;actualStage?:'done'|'failed'|'transcribing'|'uploading'}={}){
+const resumeButton=(page:Page)=>page.getByRole('button',{name:'Продолжить загрузку',exact:true});
+const verifyButton=(page:Page)=>page.getByRole('button',{name:'Проверить и продолжить',exact:true});
+async function continueUpload(page:Page){await resumeButton(page).click();}
+async function setup(browser:Browser,run:(page:Page,c:{release:()=>void;creates:()=>number;puts:()=>number;completes:()=>number;bodies:()=>Record<string,unknown>[];completeBodies:()=>string[];savedAtCreate:()=>unknown[];keys:()=>string[];setStatus:(value:number)=>void;setScopeMismatch:()=>void})=>Promise<void>,options:{session?:object;legacy?:boolean;completeStatus?:number;hold?:'put'|'create'|'complete';storageFail?:string;acceptedPart?:boolean;putStatus?:number;actualStage?:'done'|'failed'|'transcribing'|'uploading'}={}){
   const context=await browser.newContext(),page=await context.newPage();page.setDefaultTimeout(10000);const pageErrors:string[]=[];page.on('pageerror',error=>{pageErrors.push(error.message);process.stdout.write(`Browser fixture: ${error.message}\n`);});let release!:()=>void;
   const gate=new Promise<void>(resolveGate=>{release=resolveGate;});let creates=0,puts=0,completes=0,status=options.completeStatus??202,mismatch=false;
   const bodies:Record<string,unknown>[]=[],keys:string[]=[],completed=new Set<number>(options.acceptedPart?[1]:[]);
+  const completeBodies:string[]=[],savedAtCreate:unknown[]=[];
   await context.addInitScript(({storageKey,session,legacy,storageFail})=>{
     if(session&&!sessionStorage.getItem('initialized')){sessionStorage.setItem(storageKey,JSON.stringify(session));sessionStorage.setItem('initialized','yes');}
     if(legacy)sessionStorage.setItem('n5-upload-resume','{"fingerprint":"old"}');
@@ -63,6 +66,7 @@ async function setup(browser:Browser,run:(page:Page,c:{release:()=>void;creates:
   await page.route('**/api/trpc/video.get?*',route=>route.fulfill({json:{result:{data:{data:screen}}}}));
   await page.route('**/api/trpc/clip.list?*',route=>route.fulfill({json:{result:{data:{data:{clips:[]}}}}}));
   await page.route('**/api/trpc/video.create',async route=>{
+    savedAtCreate.push(await saved(page));
     creates++;bodies.push(route.request().postDataJSON());keys.push(route.request().headers()['idempotency-key']!);
     if(options.hold==='create')await gate;
     if(mismatch){await route.fulfill({status:409,json:{error:{message:'Аккаунт изменился. Обновите страницу'}}});return;}
@@ -74,25 +78,38 @@ async function setup(browser:Browser,run:(page:Page,c:{release:()=>void;creates:
     if(options.hold!=='create'&&options.hold!=='complete')await gate;completed.add(part);
     await route.fulfill({status:options.putStatus??200,headers:{etag:`"part-${part}"`}}).catch(()=>{});
   });
-  await page.route('**/api/upload/complete',async route=>{completes++;expect(route.request().postDataJSON()).toMatchObject({video_id:videoId,parts:[{part_number:1},{part_number:2}]});
-    if(options.hold==='complete')await gate;await route.fulfill({status,json:status===202?{data:{video_id:videoId,status:'queued'}}:{error:{message:'Завершение временно недоступно'}}}).catch(()=>{});
+  await page.route('**/api/upload/complete',async route=>{completes++;completeBodies.push(route.request().postData()!);
+    expect(route.request().postDataJSON()).toMatchObject({video_id:videoId,parts:[{part_number:1},{part_number:2}]});
+    if(options.hold==='complete')await gate;
+    await route.fulfill({status,json:status===202?{data:{video_id:videoId,status:'queued'}}:status===409?
+      {error:{reason:'final_preferences_conflict',message:'Запись уже принята с другими настройками. Откройте запись'}}:
+      {error:{message:'Завершение временно недоступно'}}}).catch(()=>{});
   });
   try{await page.goto(`${origin}/fixture.html`);await page.waitForFunction(()=>!!(window as Window&{uploadRoot?:unknown}).uploadRoot);
-    await run(page,{release,creates:()=>creates,puts:()=>puts,completes:()=>completes,bodies:()=>bodies,keys:()=>keys,setStatus:value=>{status=value;},setScopeMismatch:()=>{mismatch=true;}});expect(pageErrors).toEqual([]);
+    await run(page,{release,creates:()=>creates,puts:()=>puts,completes:()=>completes,bodies:()=>bodies,completeBodies:()=>completeBodies,
+      savedAtCreate:()=>savedAtCreate,keys:()=>keys,setStatus:value=>{status=value;},setScopeMismatch:()=>{mismatch=true;}});expect(pageErrors).toEqual([]);
   }finally{release();await context.close();}
 }
 for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload recovery ${name}`,()=>{
   let browser:Browser;beforeAll(async()=>{browser=await engine.launch();});afterAll(async()=>{await browser?.close();});
-  it('pause_reselect_requires_separate_continue',async()=>{
+  it.each(['create','put'] as const)('pause keeps verified file and requires separate continue during %s',async hold=>{
     await setup(browser,async(page,c)=>{
-      await choose(page);expect(c.creates()).toBe(0);await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.puts).toBe(2);
+      await choose(page);expect(c.creates()).toBe(0);await page.getByRole('button',{name:'Создать клипы →'}).click();
+      if(hold==='create')await poll(c.creates).toBe(1);else await poll(c.puts).toBe(2);
       const before=await saved(page);await page.getByRole('button',{name:'Приостановить загрузку'}).click();
-      expect(await page.locator('#source-file').inputValue()).toBe('');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
-      await choose(page);expect(c.creates()).toBe(1);expect(c.completes()).toBe(0);expect(await saved(page)).toEqual(before);
-      const chooserEvent=page.waitForEvent('filechooser');await page.locator('#source-file-picker').click();await (await chooserEvent).setFiles([]);
-      expect(await saved(page)).toEqual(before);expect(c.creates()).toBe(1);expect(await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).isDisabled()).toBe(true);
-      await choose(page);await continueUpload(page);await poll(c.creates).toBe(2);expect(c.keys()[0]).toBe(c.keys()[1]);c.release();await poll(()=>page.url()).toContain(`/dashboard/videos/${videoId}`);
-    });
+      expect(await resumeButton(page).isEnabled()).toBe(true);
+      expect(await resumeButton(page).evaluate(el=>el===document.activeElement)).toBe(true);
+      expect(await page.locator('#source-file-picker').isVisible()).toBe(false);
+      expect(await page.locator('#source-file-help').textContent()).toContain('Исходный файл проверен');
+      await page.locator('.workspace-upload-options > summary').click();
+      await page.getByLabel('Добавить музыку и финальный акцент').check();
+      expect(c.creates()).toBe(1);expect(c.completes()).toBe(0);expect(await saved(page)).toEqual(before);
+      await page.evaluate(()=>{Blob.prototype.arrayBuffer=async()=>{throw new Error('Повторное хеширование при паузе');};});
+      await continueUpload(page);await poll(c.creates).toBe(2);expect(c.keys()[0]).toBe(c.keys()[1]);
+      expect(c.bodies()[0]).toEqual(c.bodies()[1]);
+      c.release();await poll(()=>page.url()).toContain(`/dashboard/videos/${videoId}`);
+      expect(JSON.parse(c.completeBodies()[0]!).final_preferences.music).toBe(true);
+    },{hold});
   });
   it('native_picker_and_options_survive_layout',async()=>{
     await setup(browser,async(page,c)=>{
@@ -117,7 +134,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
       expect(await page.getByLabel('Добавить музыку и финальный акцент').isChecked()).toBe(true);
       expect(await saved(page)).toEqual(before);expect(c.creates()).toBe(1);expect(c.completes()).toBe(0);
       await page.getByRole('button',{name:'Приостановить загрузку'}).click();
-      expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
+      expect(await resumeButton(page).evaluate(el=>el===document.activeElement)).toBe(true);
     });
   });
   it('paused_progress_never_becomes_full_manifest',async()=>{
@@ -144,22 +161,52 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
       expect(await page.locator('.workspace-transfer progress').getAttribute('value')).toBe(String(bytes.length));
       expect(await page.locator('.workspace-transfer').textContent()).toContain('100%');
       expect(await page.locator('.workspace-transfer').textContent()).toContain('ещё не означает начало обработки');
-      await choose(page);expect(c.creates()).toBe(0);expect(c.completes()).toBe(0);await continueUpload(page);
+      expect(await verifyButton(page).isDisabled()).toBe(true);
+      expect(await page.getByLabel('Добавить музыку и финальный акцент').isDisabled()).toBe(true);
+      await choose(page);expect(c.creates()).toBe(0);expect(c.completes()).toBe(0);await verifyButton(page).click();
       await poll(c.completes).toBe(1);expect(c.puts()).toBe(0);expect(c.creates()).toBe(0);
+      expect(c.completeBodies()).toEqual([JSON.stringify({video_id:videoId,parts:full.parts})]);
       c.release();await poll(()=>page.url()).toContain(`/dashboard/videos/${videoId}`);
     },{session:full,hold:'complete'});
   });
   it('resume_uses_same_key_and_missing_parts',async()=>{
     await setup(browser,async(page,c)=>{
-      await choose(page,{...file,name:'renamed.mp4'});expect(c.creates()).toBe(0);await continueUpload(page);await poll(c.puts).toBe(1);
-      expect(c.keys()).toEqual([key]);expect(c.bodies()[0]).toMatchObject({filename:'original.mp4',music:true,teaser:false,compact:false,account_scope:scope});
+      await choose(page);
+      await page.locator('.workspace-upload-options > summary').click();
+      const music=page.getByLabel('Добавить музыку и финальный акцент');
+      const teaser=page.getByLabel('Заголовок в начале клипа'),compact=page.getByLabel('Убрать паузы');
+      const cta=page.locator('#upload-cta-kind'),url=page.locator('#upload-cta-url');
+      await music.uncheck();await teaser.check();await compact.check();await cta.selectOption('subscribe');await url.fill('http://example.test');
+      await choose(page,{...file,name:'renamed.mp4'});
+      expect(await music.isChecked(),'повторный выбор исходного файла сохраняет правки').toBe(false);
+      await continueUpload(page);expect(await page.locator('#upload-cta-error').textContent()).toContain('Разрешены только ссылки https://');
+      expect(await url.getAttribute('aria-describedby')).toBe('upload-cta-error');
+      expect(await url.evaluate(el=>el===document.activeElement)).toBe(true);
+      expect(await saved(page)).toEqual(manifest);expect(c.creates()).toBe(0);
+      await url.fill('https://example.test/channel');
+      await continueUpload(page);await poll(c.puts).toBe(1);
+      const draftOptions={music:false,teaser:true,compact:true,ctaKind:'subscribe',ctaUrl:'https://example.test/channel'};
+      expect(c.savedAtCreate()[0]).toEqual({...manifest,draftOptions});
+      await page.getByRole('button',{name:'Приостановить загрузку'}).click();
+      await page.reload();await poll(()=>resumeButton(page).isDisabled()).toBe(true);
+      await choose(page,{...file,name:'renamed.mp4'});expect(c.creates()).toBe(1);expect(c.completes()).toBe(0);
+      await page.locator('.workspace-upload-options > summary').click();
+      expect(await music.isChecked()).toBe(false);expect(await teaser.isChecked()).toBe(true);expect(await compact.isChecked()).toBe(true);
+      expect(await cta.inputValue()).toBe(draftOptions.ctaKind);expect(await url.inputValue()).toBe(draftOptions.ctaUrl);
+      await continueUpload(page);await poll(c.puts).toBe(2);
+      expect(c.keys()).toEqual([key,key]);expect(c.bodies()[1]).toEqual(c.bodies()[0]);
+      expect(c.bodies()[0]).toMatchObject({filename:'original.mp4',music:true,teaser:false,compact:false,cta_kind:'none',cta_url:null,account_scope:scope});
       c.release();await poll(()=>page.locator('#accepted-screen').count()).toBe(1);expect(c.completes()).toBe(1);
+      expect(JSON.parse(c.completeBodies()[0]!).final_preferences).toEqual({
+        music:false,teaser:true,compact:true,cta_kind:'subscribe',cta_url:'https://example.test/channel',
+      });
     },{session:manifest,acceptedPart:true});
   });
   it('hash_mismatch_never_mixes_parts',async()=>{
     await setup(browser,async(page,c)=>{const changed=Buffer.from(bytes);changed[partSize/2]=66;await choose(page,{...file,buffer:changed});
       expect(await page.getByRole('alert').textContent()).toContain('Выбран другой файл');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);expect(c.creates()).toBe(0);expect(await saved(page)).toEqual(manifest);
-      await page.locator('#source-file').dispatchEvent('cancel');expect(c.puts()).toBe(0);expect(await saved(page)).toEqual(manifest);
+      const chooserEvent=page.waitForEvent('filechooser');await page.locator('#source-file-picker').click();await (await chooserEvent).setFiles([]);
+      expect(await resumeButton(page).isDisabled()).toBe(true);expect(c.puts()).toBe(0);expect(await saved(page)).toEqual(manifest);
     },{session:manifest});
   });
   it('legacy_or_lost_cache_never_autostarts',async()=>{
@@ -167,10 +214,18 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
       expect(await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).count()).toBe(0);
     },{legacy:true});
   });
-  it('new_upload_requires_explicit_intent',async()=>{
-    await setup(browser,async(page,c)=>{await choose(page);expect(c.creates()).toBe(0);expect(await page.locator('.upload-controls').textContent()).toContain('отдельный слот');
-      await page.getByRole('button',{name:'Начать новую загрузку'}).click();await poll(c.creates).toBe(1);expect(c.keys()[0]).not.toBe(key);
-    },{legacy:true});
+  it.each(['legacy','frozen'] as const)('new_upload_requires_explicit_intent %s',async kind=>{
+    const changed=Buffer.from(bytes);changed[partSize/2]=66;
+    const options=kind==='legacy'?{legacy:true}:{session:{
+      ...manifest,videoId,partSize,parts:[{part_number:1,etag:'a'},{part_number:2,etag:'b'}],finalOptions:manifest.options,
+    }};
+    await setup(browser,async(page,c)=>{
+      await choose(page,kind==='legacy'?file:{...file,buffer:changed});
+      expect(c.creates()).toBe(0);
+      expect(await page.locator('.upload-controls').textContent()).toContain('отдельный слот');
+      await page.getByRole('button',{name:'Начать новую загрузку'}).click();
+      await poll(c.creates).toBe(1);expect(c.keys()[0]).not.toBe(key);
+    },options);
   });
   it.each(['before-create','receipt','parts','noop'])('storage_failure_blocks_complete %s',async failure=>{
     await setup(browser,async(page,c)=>{await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();c.release();
@@ -178,10 +233,18 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
       expect(c.creates()).toBe(failure==='before-create'||failure==='noop'?0:1);
       expect(await page.getByRole('button',{name:'Повторить сохранение'}).evaluate(el=>el===document.activeElement)).toBe(true);
       expect(await page.locator('#source-file').getAttribute('aria-invalid')).toBe('true');
+      if(failure==='parts'){
+        const teaser=page.getByLabel('Заголовок в начале клипа');
+        expect(await teaser.isDisabled()).toBe(false);
+        expect((await saved(page)).parts).toBeUndefined();
+        await page.locator('.workspace-upload-options > summary').click();
+        await teaser.uncheck();
+      }
       await page.evaluate(()=>(window as Window&{restoreStorage?:()=>void}).restoreStorage?.());
       await page.getByRole('button',{name:'Повторить сохранение'}).press('Enter');
       await poll(()=>page.locator('#accepted-screen .status-panel').textContent()).toContain('Клипы готовы');
       expect(c.completes()).toBe(1);expect(new Set(c.keys()).size).toBe(1);
+      if(failure==='parts')expect(JSON.parse(c.completeBodies()[0]!).final_preferences.teaser).toBe(false);
     },{storageFail:failure});
   });
   it('navigation_denial_keeps_put_alive',async()=>{
@@ -194,14 +257,36 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
     await setup(browser,async(page,c)=>{await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.creates).toBe(1);
       page.once('dialog',dialog=>void dialog.accept());await page.getByRole('link',{name:'Другая страница'}).click();await page.waitForURL('**/away.html');c.release();await page.waitForTimeout(100);expect(c.completes()).toBe(0);
       await page.goBack();await page.waitForSelector('#source-file-picker');expect(await page.locator('.upload-controls').textContent()).toContain('fixture.mp4');expect(c.creates()).toBe(1);
+      expect(await resumeButton(page).isDisabled()).toBe(true);
     },{hold:'create'});
   });
   it.each(['done','failed','transcribing'] as const)('admitted_repeat_keeps_actual_stage %s',async actualStage=>{
-    await setup(browser,async(page,c)=>{await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();c.release();await poll(c.completes).toBe(1);
-      await poll(()=>page.getByRole('status').textContent()).toContain('Результат завершения неизвестен');expect((await saved(page)).parts).toHaveLength(2);
-      const creates=c.creates(),puts=c.puts();c.setStatus(202);await choose(page);expect(c.completes()).toBe(1);await continueUpload(page);await poll(c.completes).toBe(2);
+    await setup(browser,async(page,c)=>{
+      await page.locator('.workspace-upload-options > summary').click();await page.locator('#upload-cta-kind').selectOption('subscribe');
+      await page.locator('#upload-cta-url').fill('https://Example.test/channel');
+      await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();c.release();await poll(c.completes).toBe(1);
+      await poll(()=>page.getByRole('status').textContent()).toContain('Результат завершения неизвестен');
+      const full=await saved(page);expect(full.parts).toHaveLength(2);expect(full.finalOptions.ctaUrl).toBe('https://Example.test/channel');
+      expect(await page.locator('#upload-cta-url').isDisabled()).toBe(true);
+      expect(await verifyButton(page).isDisabled()).toBe(true);
+      const creates=c.creates(),puts=c.puts();c.setStatus(202);
+      await page.reload();await poll(()=>verifyButton(page).isDisabled()).toBe(true);
+      await choose(page);expect(c.completes()).toBe(1);expect(await page.locator('#upload-cta-url').isDisabled()).toBe(true);
+      expect(await page.locator('#upload-cta-url').inputValue()).toBe(full.finalOptions.ctaUrl);expect(await saved(page)).toEqual(full);
+      await verifyButton(page).click();await poll(c.completes).toBe(2);
+      expect(c.completeBodies()[1]).toBe(c.completeBodies()[0]);
       expect(c.creates()).toBe(creates);expect(c.puts()).toBe(puts);await poll(()=>page.locator('#accepted-screen .status-panel').textContent()).toContain(actualStage==='done'?'Клипы готовы':actualStage==='failed'?'Обработка не завершена':'Расшифровываем');
     },{completeStatus:503,actualStage});
+  });
+  it('complete_preferences_conflict_offers_existing_record',async()=>{
+    await setup(browser,async(page,c)=>{
+      await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();c.release();
+      const open=page.getByRole('link',{name:'Открыть запись'});
+      expect(await open.getAttribute('href')).toBe(`/dashboard/videos/${videoId}`);
+      expect(await page.getByRole('alert').textContent()).toContain('Запись уже принята с другими настройками');
+      expect(await verifyButton(page).count()).toBe(0);expect(await saved(page)).toBeNull();
+      expect(c.creates()).toBe(1);expect(c.completes()).toBe(1);
+    },{completeStatus:409});
   });
   it('success_redirect_is_once_without_guard',async()=>{
     await setup(browser,async(page,c)=>{let dialogs=0;page.on('dialog',dialog=>{dialogs++;void dialog.dismiss();});await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();c.release();
@@ -212,7 +297,8 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   });
   it.each([false,true])('stale_cookie_scope_blocks_create_and_refresh receipt=%s',async receipt=>{
     await setup(browser,async(page,c)=>{c.setScopeMismatch();await choose(page);await continueUpload(page);await poll(()=>page.getByRole('alert').textContent()).toContain('Аккаунт изменился');
-      expect(c.bodies()[0]!.account_scope).toBe(scope);expect(c.puts()).toBe(0);expect(c.completes()).toBe(0);expect(await saved(page)).toEqual(receipt?{...manifest,videoId,partSize}:manifest);
+      expect(c.bodies()[0]!.account_scope).toBe(scope);expect(c.puts()).toBe(0);expect(c.completes()).toBe(0);
+      expect(await saved(page)).toEqual({...manifest,...(receipt?{videoId,partSize}:{}),draftOptions:manifest.options});
     },{session:receipt?{...manifest,videoId,partSize}:manifest});
   });
   it('stale_cookie_scope_blocks_refresh_after_403',async()=>{
@@ -239,7 +325,8 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   it('history_remount_uses_saved_session',async()=>{
     await setup(browser,async(page,c)=>{await choose(page);await page.getByRole('button',{name:'Создать клипы →'}).click();await poll(c.puts).toBe(2);
       await page.getByRole('button',{name:'Приостановить загрузку'}).click();const before=await saved(page);
-      await page.locator('#away').click();await page.goBack();await page.waitForSelector('#source-file-picker');await choose(page);
+      await page.locator('#away').click();await page.goBack();await page.waitForSelector('#source-file-picker');
+      expect(await resumeButton(page).isDisabled()).toBe(true);await choose(page);
       expect(c.creates()).toBe(1);expect(await saved(page)).toEqual(before);await continueUpload(page);await poll(c.creates).toBe(2);expect(c.keys()[0]).toBe(c.keys()[1]);
     });
   });
@@ -280,7 +367,7 @@ for(const [name,engine]of Object.entries({chromium,webkit}))describe(`upload rec
   it('keyboard_recovery_focus_and_live_status',async()=>{
     await setup(browser,async(page,c)=>{await choose(page);expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite');
       await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).focus();await page.keyboard.press('Enter');await poll(c.puts).toBe(2);
-      await page.getByRole('button',{name:'Приостановить загрузку'}).focus();await page.keyboard.press('Space');expect(await page.locator('#source-file-picker').evaluate(el=>el===document.activeElement)).toBe(true);
+      await page.getByRole('button',{name:'Приостановить загрузку'}).focus();await page.keyboard.press('Space');expect(await resumeButton(page).evaluate(el=>el===document.activeElement)).toBe(true);
       await choose(page);expect(await page.getByRole('button',{name:'Продолжить загрузку',exact:true}).evaluate(el=>el===document.activeElement)).toBe(true);
       expect(await page.locator('#source-file').getAttribute('aria-describedby')).toContain('source-file-help');
       for(const theme of ['dark','light'])for(const width of [320,375,390,768,1440]){await page.setViewportSize({width,height:900});await page.locator('html').evaluate((el,theme)=>{el.dataset.theme=theme;},theme);

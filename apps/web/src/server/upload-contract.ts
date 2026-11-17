@@ -10,6 +10,10 @@ export const createVideoSchema = z.object({ account_scope: z.string().uuid().opt
   cta_kind: z.enum(CTA_KIND).optional(), cta_url: z.string().max(CTA_URL_MAX + 1).nullable().optional() }).strict();
 export const completeUploadSchema = z.object({ video_id: z.string().uuid(),
   parts: z.array(z.object({ part_number: z.number().int().min(1).max(10000), etag: z.string().min(1).max(256) }).strict()).min(1).max(200),
+  final_preferences: z.object({
+    music: z.boolean(), teaser: z.boolean(), compact: z.boolean(), cta_kind: z.enum(CTA_KIND),
+    cta_url: z.string().max(CTA_URL_MAX).nullable(),
+  }).strict().optional(),
 }).strict().refine((input) => {
   const sorted = input.parts.map((p) => p.part_number).sort((a, b) => a - b);
   return sorted.every((number, index) => number === index + 1);

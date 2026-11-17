@@ -20,7 +20,30 @@ it('resume_manifest_requires_complete_parts', () => {
     {videoId:key,partSize:10485760,parts:[{part_number:1,etag:''}]}]) {
     store.setItem(uploadResumeStorageKey(scope),JSON.stringify({...session,...patch})); expect(readUploadResume(scope,store).kind).toBe('invalid');
   }
-  expect(writeUploadResume({...session,videoId:key,partSize:10485760,parts:[{part_number:1,etag:'opaque'}]},store).ok).toBe(true);
+  const legacy = {...session,videoId:key,partSize:10485760,parts:[{part_number:1,etag:'opaque'}]};
+  expect(writeUploadResume(legacy,store).ok).toBe(true);
+  expect(readUploadResume(scope,store)).toEqual({kind:'found',value:legacy});
+});
+it('resume_round_trips_create_draft_and_final_options', () => {
+  const store = storage();
+  const draftOptions = {...session.options,music:true,teaser:false,ctaKind:'subscribe' as const,ctaUrl:'https://Example.test/channel'};
+  const draft = {...session,draftOptions};
+  const complete = {...draft,videoId:key,partSize:10485760,parts:[{part_number:1,etag:'opaque'}],finalOptions:draftOptions};
+  for (const value of [draft,complete]) {
+    expect(writeUploadResume(value,store).ok).toBe(true);
+    expect(readUploadResume(scope,store)).toEqual({kind:'found',value});
+  }
+  for (const value of [
+    {...draft,finalOptions:draftOptions},
+    {...complete,finalOptions:undefined},
+    {...complete,finalOptions:{...draftOptions,ctaUrl:'http://example.test'}},
+    {...complete,finalOptions:{...draftOptions,teaser:undefined}},
+    {...complete,finalOptions:{...draftOptions,extra:true}},
+    {...draft,draftOptions:{...draftOptions,music:1}},
+  ]) {
+    store.setItem(uploadResumeStorageKey(scope),JSON.stringify(value));
+    expect(readUploadResume(scope,store).kind).toBe('invalid');
+  }
 });
 it('storage_failures_are_explicit', () => {
   const store = storage(), throwing = {...store,getItem: () => {throw new Error('blocked');}};
