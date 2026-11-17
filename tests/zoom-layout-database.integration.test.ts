@@ -12,6 +12,7 @@ import { qualifyZoomLayoutDatabase, backupZoomLayoutDatabase, migrateZoomLayoutD
 const qeName='clipmkr-release-qe-20261103-db-1',qeAddress='172.28.5.3';
 const suffix=randomBytes(8).toString('hex'),sourceName=`zoom_src_${suffix}_test`,restoreName=`zoom_dst_${suffix}_test`,role=`zoom_rt_${suffix}`;
 const password=randomBytes(24).toString('hex'),directory=mkdtempSync(join(tmpdir(),'zoom-db-real-'));
+const sourcePayload=randomBytes(3*1024*1024);
 chmodSync(directory,0o700);
 const runtimeIds:string[]=[];
 let admin:Pool,source:Pool,restored:Pool,db:Inspect,image:string,config:Record<string,string>,context:Parameters<typeof qualifyZoomLayoutDatabase>[0];
@@ -54,7 +55,8 @@ beforeAll(async()=>{
   const {mkdirSync}=await import('node:fs');mkdirSync(migrations);
   for(const name of Object.keys(migrationHashes).filter(n=>n!==migration))copyFileSync(join('packages/db/migrations',name),join(migrations,name));
   await migrate(source,migrations);
-  await source.query(`CREATE TABLE zoom_source_sentinel(value text NOT NULL); INSERT INTO zoom_source_sentinel VALUES('only-the-owned-source')`);
+  await source.query('CREATE TABLE zoom_source_sentinel(value text NOT NULL,payload bytea NOT NULL)');
+  await source.query("INSERT INTO zoom_source_sentinel VALUES('only-the-owned-source',$1)",[sourcePayload]);
   await restored.query(`CREATE TABLE zoom_decoy_sentinel(value text NOT NULL); INSERT INTO zoom_decoy_sentinel VALUES('wrong-owned-database')`);
   await source.query(`REVOKE CREATE ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA public TO ${role}; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO ${role}`);
   accountId=(await source.query("INSERT INTO account(email,password_hash) VALUES('zoom-db@test.invalid','fixture') RETURNING id")).rows[0].id;
@@ -88,7 +90,7 @@ it('actual_database_backup_ignores_container_default_and_restores_exact_rows',as
   const dump=join(directory,'owned-source.dump');
   docker(['stop','-t','2',...runtimeIds]);
   try{const stopped=qualifyZoomLayoutDatabase(context);stopped.revalidate(true);archive=backupZoomLayoutDatabase(qualified,dump);}finally{for(const id of runtimeIds)docker(['start',id]);}
-  expect(archive).toMatchObject({exit:0,signal:null,identity:{name:sourceName}});expect(archive.size).toBeGreaterThan(0);
+  expect(archive).toMatchObject({exit:0,signal:null,identity:{name:sourceName}});expect(archive.size).toBeGreaterThan(2*1024*1024);
   writeFileSync(join(process.env.N5_SCREEN_ARTIFACT_DIR??directory,`zoom-backup-${suffix}.private.json`),JSON.stringify({image,...archive,syntheticRestoreOnly:true}),{mode:0o600});
   expect(archive.toc).toContain('zoom_source_sentinel');expect(archive.toc).not.toContain('zoom_decoy_sentinel');
   // Wrong-target negative uses only our second logical DB, never the container's real default archive.
@@ -96,7 +98,7 @@ it('actual_database_backup_ignores_container_default_and_restores_exact_rows',as
   expect(decoy).toContain('zoom_decoy_sentinel');expect(decoy).not.toContain('zoom_source_sentinel');
   await restored.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public');
   docker(['exec','-i',db.Id,'pg_restore','-U',config.POSTGRES_USER!,'-d',restoreName,'--exit-on-error','--no-owner'],readFileSync(dump));
-  expect((await restored.query('SELECT value FROM zoom_source_sentinel')).rows).toEqual([{value:'only-the-owned-source'}]);
+  expect((await restored.query('SELECT value,payload FROM zoom_source_sentinel')).rows).toEqual([{value:'only-the-owned-source',payload:sourcePayload}]);
   expect((await restored.query("SELECT to_regclass('public.zoom_decoy_sentinel') AS decoy")).rows[0].decoy).toBeNull();
   expect((await restored.query('SELECT name,sha256 FROM _schema_migration ORDER BY name')).rows).toEqual((await source.query('SELECT name,sha256 FROM _schema_migration ORDER BY name')).rows);
 },60000);

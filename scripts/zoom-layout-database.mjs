@@ -13,8 +13,8 @@ const stable=v=>JSON.stringify(v,(_k,x)=>x && typeof x==='object' && !Array.isAr
 function need(ok,phase) { if(!ok)throw new Error(`zoom database: ${phase}`); }
 function native(args,input,fd,timeout=20000) {
   const env={...process.env};for(const k of ['DOCKER_HOST','DOCKER_CONTEXT','DOCKER_TLS_VERIFY','DOCKER_CERT_PATH'])delete env[k];
-  const r=spawnSync('docker',['--host','unix:///var/run/docker.sock',...args],{env,input,encoding:'utf8',timeout,killSignal:'SIGKILL',maxBuffer:8*1024*1024,
-    ...(fd===undefined?{}:{stdio:['pipe',fd,'pipe']})});
+  const r=spawnSync('docker',['--host','unix:///var/run/docker.sock',...args],{env,input:typeof input==='number'?undefined:input,encoding:'utf8',timeout,killSignal:'SIGKILL',maxBuffer:8*1024*1024,
+    stdio:[typeof input==='number'?input:'pipe',fd===undefined?'pipe':fd,'pipe']});
   if(r.error || r.signal || r.status!==0) {
     const e=new Error('zoom database: child failed');e.exit=r.status;e.signal=r.signal??null;e.unknown=!!r.error||!!r.signal;
     try {const diagnostic=JSON.parse(r.stdout);if(/^[A-Z0-9]{5}$/.test(diagnostic.sqlstate))e.sqlstate=diagnostic.sqlstate;} catch { /* Non-JSON child output is never included in errors. */ }
@@ -171,7 +171,8 @@ export function backupZoomLayoutDatabase(qualified,file) {
   if(failure){failure.unknown=true;diagnostics(s,'backup',failure,s.identity,{backendApplicationName:tag,terminal:false});throw new Error('zoom database: backup UNKNOWN; reconcile child/backend before retry');}
   need(backendCount(s,tag),'backup backend terminal unknown');
   const size=lstatSync(file).size;need(size>0 && (lstatSync(file).mode&0o777)===0o600,'empty/unprotected backup');
-  const toc=s.docker(['exec','-i',s.db.Id,'pg_restore','--list'],readFileSync(file),undefined,20000);
+  const archiveFd=openSync(file,'r');let toc;
+  try {toc=s.docker(['exec','-i',s.db.Id,'pg_restore','--list'],archiveFd,undefined,20000);} finally {closeSync(archiveFd);}
   need(toc.includes('_schema_migration') && toc.includes('clip_layout_intent'),'backup TOC incomplete');
   const evidence={identity:s.identity,exit:0,signal:null,size,sha256:hash(readFileSync(file)),tocSha256:hash(toc),toc};
   writeFileSync(file+'.private.json',JSON.stringify(evidence),{mode:0o600,flag:'wx'});return evidence;
