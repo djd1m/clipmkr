@@ -1,0 +1,10 @@
+# Адресная проверка C0 на неизменяемой копии
+
+16.11.2026. Root запустил совместимость из отдельного checkout `654361daf6b8cb9d276bc72477d5fc7b43f6c3be`; tree и terminal-команды записаны в приватные `c0-compatibility-*.run.json`. Текущие TASK-06 исходники не подменяют этот снимок. Это повтор для получения полных машинных привязок PID/времени/команды/хешей, требуемых выпускным барьером; прежние результаты не заменены вымышленными метаданными.
+
+- `npm test -- tests/screen-layout.test.ts tests/clip-layout.integration.test.ts tests/clip-music-choice.integration.test.ts tests/clip-cta-rerender.integration.test.ts --reporter=json --outputFile=<private>`: exit0, **85/85 PASS**, 39,29с. Настоящая выделенная PostgreSQL `clipmkr_zoom_conformance_test`; собственные schemas удалены штатным teardown.
+- `node node_modules/vitest/vitest.mjs run --config vitest.browser.config.ts tests/browser/clip-layout.test.ts -t "C0 saved v2-|C0 unknown v[12] submission" --reporter=json --outputFile=<private>`: exit0, **4 PASS, 37 отфильтрованы**, 17,36с. Сохранённые v2-01/v2-02 доступны только для чтения, неизвестные v1/v2 повторяются с прежним submitted request. Это целевые проверки C0, не общая приёмка41 сценария.
+
+В checkout скопированы только игнорируемые compiled `packages/*/dist` из сохранённого build image той же C0 ревизии, временный extraction container удалён. Исходники Git не менялись. Первый browser draft отказал до сбора tests из-за отсутствующего compiled shared/upload; это проблема неполного checkout, не meaningful RED продукта. После извлечения compiled packages целевые4 прошли, но npm test вернул exit1: стандартный acceptance-reporter запрещает37 отфильтрованных tests. Этот исход сохранён, PASS процесса ему не приписан. Последующий запуск явно использует прямой Vitest для частичного C0 compatibility proof; его37 фильтрованных tests не считаются прошедшими. Финальный C1 acceptance обязан пройти полный обязательный набор без пропусков.
+
+Секреты и приватные media не опубликованы. C1→C0 Docker/PG rollback rehearsal, bounded apply и POST-APPLY UI этим повтором не выполнены.

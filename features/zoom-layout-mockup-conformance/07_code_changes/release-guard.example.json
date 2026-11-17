@@ -1,0 +1,918 @@
+{
+  "TEMPLATE_NOT_EVIDENCE": "Это словарь будущих файлов, а не готовый manifest или PASS. Невалидные placeholders заменить только фактическими измерениями; файлов на VPS этот пример не создаёт. Исходы exit/status ниже показывают требуемую форму, а не состоявшееся исполнение. Все вложенные файлы и raw logs/reports вне Git, owned 0600 с owned 0700 parent; путь без symlink.",
+  "referenceApproval": {
+    "commit": "0cbe2e9194eaff9597341f91f04528097da2711a",
+    "originalCommit": "9e19f5746a28bad89c9551ce8cd9934f0f0a4f8e",
+    "originalSha256": "7b83572176b7c48c38c5d9d3ed141148c482cc11bb98493c07fcef59fe6f4ad0",
+    "uiSha256": "5fdbd7611b7e4a975df03d94a246f9620b64c79580b88748087a655b213f9ee6"
+  },
+  "images": {
+    "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+    "tree": "REQUIRED_FINAL_TREE_40_HEX",
+    "images": {
+      "web": {
+        "id": "sha256:REQUIRED_BUILT_IMAGE_ID_64_HEX",
+        "ociRevision": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX"
+      },
+      "worker": {
+        "id": "sha256:REQUIRED_BUILT_IMAGE_ID_64_HEX",
+        "ociRevision": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX"
+      }
+    },
+    "c0": {
+      "revision": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be",
+      "images": {
+        "web": {
+          "id": "sha256:79590752c3dac432b75ea5bb6254d4cf86c94e0fdd7de153f00777b1b116107e",
+          "ociRevision": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be"
+        },
+        "worker": {
+          "id": "sha256:5105ac5234f9503942f17fde27694a5b0ceafb8acdd6cd0a593acbacb0d6c365",
+          "ociRevision": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be"
+        }
+      }
+    }
+  },
+  "evidence": {
+    "schema": 1,
+    "state": "PRE-APPLY",
+    "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+    "tree": "REQUIRED_FINAL_TREE_40_HEX",
+    "sourceHashes": {
+      "packages/shared/src/screen-layout.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "packages/db/src/clip-layout.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "packages/db/src/render.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "packages/db/migrations/033_clip_layout_composition_v2.sql": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/worker/src/render/screen-layout.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/worker/src/render/ffmpeg.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/worker/src/render/teaser.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/worker/src/render/subtitles.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/worker/src/render/cta-overlay.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/web/src/lib/screen-contract.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/web/src/app/clips/ClipLayoutChoice.tsx": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/web/src/app/clips/ClipLayoutPreview.tsx": "REQUIRED_MEASURED_FILE_SHA256",
+      "apps/web/src/app/clips/clip-layout.module.css": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/screen-layout.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/screen-layout-conformance.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/fixtures/zoom-layout-original.json": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/screen-layout-media.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/clip-layout.integration.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/clip-music-choice.integration.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/clip-cta-rerender.integration.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/browser/clip-layout.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/render.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/teaser.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/clip-cta-render.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "scripts/check-zoom-layout-conformance.mjs": "REQUIRED_MEASURED_FILE_SHA256",
+      "scripts/apply-zoom-layout-current-vps.mjs": "REQUIRED_MEASURED_FILE_SHA256",
+      "tests/zoom-layout-release.test.ts": "REQUIRED_MEASURED_FILE_SHA256",
+      "scripts/test-zoom-layout-mutations.mjs": "REQUIRED_MEASURED_FILE_SHA256"
+    },
+    "tests": [
+      {
+        "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+        "tree": "REQUIRED_FINAL_TREE_40_HEX",
+        "argv": [
+          "REQUIRED_REAL_EXECUTABLE",
+          "REQUIRED_REAL_ARGV"
+        ],
+        "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+        "exit": 0,
+        "signal": null,
+        "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+        "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+        "log": {
+          "path": "/PRIVATE_OWNED_0700/command.log",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        },
+        "report": {
+          "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        }
+      }
+    ],
+    "checks": {
+      "lint": {
+        "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+        "tree": "REQUIRED_FINAL_TREE_40_HEX",
+        "argv": [
+          "REQUIRED_REAL_EXECUTABLE",
+          "REQUIRED_REAL_ARGV"
+        ],
+        "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+        "exit": 0,
+        "signal": null,
+        "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+        "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+        "log": {
+          "path": "/PRIVATE_OWNED_0700/command.log",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        }
+      },
+      "typecheck": {
+        "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+        "tree": "REQUIRED_FINAL_TREE_40_HEX",
+        "argv": [
+          "REQUIRED_REAL_EXECUTABLE",
+          "REQUIRED_REAL_ARGV"
+        ],
+        "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+        "exit": 0,
+        "signal": null,
+        "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+        "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+        "log": {
+          "path": "/PRIVATE_OWNED_0700/command.log",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        }
+      },
+      "build": {
+        "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+        "tree": "REQUIRED_FINAL_TREE_40_HEX",
+        "argv": [
+          "REQUIRED_REAL_EXECUTABLE",
+          "REQUIRED_REAL_ARGV"
+        ],
+        "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+        "exit": 0,
+        "signal": null,
+        "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+        "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+        "log": {
+          "path": "/PRIVATE_OWNED_0700/command.log",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        }
+      }
+    },
+    "review": {
+      "path": "/PRIVATE_OWNED_0700/independent-review.json",
+      "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+    },
+    "c0Tests": [
+      {
+        "candidate": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be",
+        "tree": "REQUIRED_C0_TREE_40_HEX",
+        "argv": [
+          "REQUIRED_REAL_EXECUTABLE",
+          "REQUIRED_REAL_ARGV"
+        ],
+        "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+        "exit": 0,
+        "signal": null,
+        "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+        "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+        "log": {
+          "path": "/PRIVATE_OWNED_0700/command.log",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        },
+        "report": {
+          "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+          "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+        }
+      }
+    ],
+    "rehearsal": {
+      "path": "/PRIVATE_OWNED_0700/isolated-c1-to-c0.json",
+      "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+    },
+    "mutations": {
+      "path": "/PRIVATE_OWNED_0700/mutations-results.json",
+      "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+    },
+    "host": {
+      "path": "/PRIVATE_OWNED_0700/current-vps-binding.private.json",
+      "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+    },
+    "framingMutations": {
+      "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+      "tree": "REQUIRED_FINAL_TREE_40_HEX",
+      "argv": [
+        "/ABSOLUTE_NODE22/bin/node",
+        "scripts/test-framing-mutations.mjs",
+        "/PRIVATE_FRESH_FRAMING_ATTEMPT"
+      ],
+      "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+      "exit": 0,
+      "signal": null,
+      "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+      "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+      "log": {
+        "path": "/PRIVATE_OWNED_0700/command.log",
+        "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+      },
+      "results": {
+        "path": "/PRIVATE_FRESH_FRAMING_ATTEMPT/results.json",
+        "sha256": "REQUIRED_REAL_SUMMARY_SHA256"
+      },
+      "sourceHashes": {
+        "scripts/test-framing-mutations.mjs": "REQUIRED_MEASURED_CANDIDATE_FILE_SHA256",
+        "apps/worker/src/render/format.ts": "REQUIRED_MEASURED_CANDIDATE_FILE_SHA256",
+        "apps/worker/src/render/ffmpeg.ts": "REQUIRED_MEASURED_CANDIDATE_FILE_SHA256",
+        "tests/framing.test.ts": "REQUIRED_MEASURED_CANDIDATE_FILE_SHA256",
+        "tests/framing-media.test.ts": "REQUIRED_MEASURED_CANDIDATE_FILE_SHA256"
+      }
+    }
+  },
+  "review": {
+    "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+    "tree": "REQUIRED_FINAL_TREE_40_HEX",
+    "model": "gpt-6-astra",
+    "effort": "xhigh",
+    "authorModel": "gpt-6.1-sol",
+    "sessionId": "REQUIRED_REAL_FRESH_REVIEW_SESSION_ID",
+    "inputHashes": {
+      "01_requirements.md": "REQUIRED_MEASURED_INPUT_SHA256",
+      "03_adr/001-original-composition-compatibility.md": "REQUIRED_MEASURED_INPUT_SHA256",
+      "05_architecture.md": "REQUIRED_MEASURED_INPUT_SHA256",
+      "06_implementation_plan.md": "REQUIRED_MEASURED_INPUT_SHA256"
+    },
+    "findings": [],
+    "raw": {
+      "path": "/PRIVATE_OWNED_0700/fresh-review-transcript.txt",
+      "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+    }
+  },
+  "host": {
+    "repo": "/home/clipmkr",
+    "publicTarget": "77.83.87.178",
+    "origin": "https://clipmkr.ru",
+    "machineIdSha256": "1afc81d837f8b8d306903c2db510f8ed7a22b71ec65976ba73b7e81ea6689c10",
+    "composePath": "/root/.config/clipmkr/relocate-workspace-20261109/activation-20261110/app-subset.compose.private.json",
+    "composeSha256": "19865efa20b5e3415c13326a92d4f33e745911aa957ff3ec6ec67de9b4d0dbba",
+    "containers": {
+      "web": {
+        "containerId": "REQUIRED_OBSERVED_CONTAINER_ID_64_HEX",
+        "imageId": "sha256:REQUIRED_OBSERVED_IMAGE_ID_64_HEX",
+        "project": "clipmkr-stage-20261028",
+        "service": "web",
+        "volumes": [
+          {
+            "type": "REQUIRED_OBSERVED_TYPE",
+            "name": "REQUIRED_OBSERVED_NAME_OR_NULL",
+            "destination": "REQUIRED_OBSERVED_DESTINATION"
+          }
+        ],
+        "networks": [
+          "REQUIRED_OBSERVED_NETWORK"
+        ],
+        "ports": {
+          "REQUIRED_OBSERVED_PORT": [
+            {
+              "HostIp": "REQUIRED_OBSERVED_BIND_IP",
+              "HostPort": "REQUIRED_OBSERVED_BIND_PORT"
+            }
+          ]
+        }
+      },
+      "worker-video": {
+        "containerId": "REQUIRED_OBSERVED_CONTAINER_ID_64_HEX",
+        "imageId": "sha256:REQUIRED_OBSERVED_IMAGE_ID_64_HEX",
+        "project": "clipmkr-stage-20261028",
+        "service": "worker-video",
+        "volumes": [
+          {
+            "type": "REQUIRED_OBSERVED_TYPE",
+            "name": "REQUIRED_OBSERVED_NAME_OR_NULL",
+            "destination": "REQUIRED_OBSERVED_DESTINATION"
+          }
+        ],
+        "networks": [
+          "REQUIRED_OBSERVED_NETWORK"
+        ],
+        "ports": {
+          "REQUIRED_OBSERVED_PORT": [
+            {
+              "HostIp": "REQUIRED_OBSERVED_BIND_IP",
+              "HostPort": "REQUIRED_OBSERVED_BIND_PORT"
+            }
+          ]
+        }
+      },
+      "worker-llm": {
+        "containerId": "REQUIRED_OBSERVED_CONTAINER_ID_64_HEX",
+        "imageId": "sha256:REQUIRED_OBSERVED_IMAGE_ID_64_HEX",
+        "project": "clipmkr-stage-20261028",
+        "service": "worker-llm",
+        "volumes": [
+          {
+            "type": "REQUIRED_OBSERVED_TYPE",
+            "name": "REQUIRED_OBSERVED_NAME_OR_NULL",
+            "destination": "REQUIRED_OBSERVED_DESTINATION"
+          }
+        ],
+        "networks": [
+          "REQUIRED_OBSERVED_NETWORK"
+        ],
+        "ports": {
+          "REQUIRED_OBSERVED_PORT": [
+            {
+              "HostIp": "REQUIRED_OBSERVED_BIND_IP",
+              "HostPort": "REQUIRED_OBSERVED_BIND_PORT"
+            }
+          ]
+        }
+      },
+      "worker-stt": {
+        "containerId": "REQUIRED_OBSERVED_CONTAINER_ID_64_HEX",
+        "imageId": "sha256:REQUIRED_OBSERVED_IMAGE_ID_64_HEX",
+        "project": "clipmkr-stage-20261028",
+        "service": "worker-stt",
+        "volumes": [
+          {
+            "type": "REQUIRED_OBSERVED_TYPE",
+            "name": "REQUIRED_OBSERVED_NAME_OR_NULL",
+            "destination": "REQUIRED_OBSERVED_DESTINATION"
+          }
+        ],
+        "networks": [
+          "REQUIRED_OBSERVED_NETWORK"
+        ],
+        "ports": {
+          "REQUIRED_OBSERVED_PORT": [
+            {
+              "HostIp": "REQUIRED_OBSERVED_BIND_IP",
+              "HostPort": "REQUIRED_OBSERVED_BIND_PORT"
+            }
+          ]
+        }
+      },
+      "db": {
+        "containerId": "058637c0d0d06315e9d86cf577b4d13a75a4b681bf382bf363607679116e32fa",
+        "imageId": "sha256:REQUIRED_OBSERVED_IMAGE_ID_64_HEX",
+        "project": "clipmkr-stage-20261028",
+        "service": "db",
+        "volumes": [
+          {
+            "type": "REQUIRED_OBSERVED_TYPE",
+            "name": "REQUIRED_OBSERVED_NAME_OR_NULL",
+            "destination": "REQUIRED_OBSERVED_DESTINATION"
+          }
+        ],
+        "networks": [
+          "REQUIRED_OBSERVED_NETWORK"
+        ],
+        "ports": {
+          "REQUIRED_OBSERVED_PORT": [
+            {
+              "HostIp": "REQUIRED_OBSERVED_BIND_IP",
+              "HostPort": "REQUIRED_OBSERVED_BIND_PORT"
+            }
+          ]
+        }
+      },
+      "redis": {
+        "containerId": "7cd8b347b8820424d518ccfdf76f752d3d3db3eb366e1a22e40c89078e34084f",
+        "imageId": "sha256:REQUIRED_OBSERVED_IMAGE_ID_64_HEX",
+        "project": "clipmkr-stage-20261028",
+        "service": "redis",
+        "volumes": [
+          {
+            "type": "REQUIRED_OBSERVED_TYPE",
+            "name": "REQUIRED_OBSERVED_NAME_OR_NULL",
+            "destination": "REQUIRED_OBSERVED_DESTINATION"
+          }
+        ],
+        "networks": [
+          "REQUIRED_OBSERVED_NETWORK"
+        ],
+        "ports": {
+          "REQUIRED_OBSERVED_PORT": [
+            {
+              "HostIp": "REQUIRED_OBSERVED_BIND_IP",
+              "HostPort": "REQUIRED_OBSERVED_BIND_PORT"
+            }
+          ]
+        }
+      }
+    },
+    "ingress": {
+      "containerId": "4efd6fbf569889f473e879267f0ea231bc6f205311daae2710d815e070e1d809",
+      "imageId": "sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f",
+      "startedAt": "2026-10-14T07:06:54.123797373Z",
+      "mounts": [
+        {
+          "source": "/var/lib/docker/volumes/n8-interior-local_tls-config/_data",
+          "destination": "/config",
+          "rw": true
+        },
+        {
+          "source": "/var/lib/docker/volumes/n8-interior-local_tls-data/_data",
+          "destination": "/data",
+          "rw": true
+        },
+        {
+          "source": "/home/2026-AUG-PU-Projects/projects/08-interior-ai-redesign/config/public/Caddyfile",
+          "destination": "/etc/caddy/Caddyfile",
+          "rw": false
+        }
+      ],
+      "activeConfigSha256": "02ce065baf7447ec36170c785944bc250a51fe3f8883daa6716e29b8b6668cca",
+      "upstreamPaths": [
+        "/apps/http/servers/srv0/routes/6/handle/0/routes/0/handle/1/routes/1/handle/0/routes/0/handle/0/routes/0/handle/0/upstreams/0",
+        "/apps/http/servers/srv0/routes/6/handle/0/routes/0/handle/1/routes/2/handle/0/routes/1/handle/1/upstreams/0",
+        "/apps/http/servers/srv0/routes/7/handle/0/routes/0/handle/1/routes/0/handle/0/routes/2/handle/0/upstreams/0",
+        "/apps/http/servers/srv0/routes/7/handle/0/routes/0/handle/1/routes/1/handle/0/routes/2/handle/0/upstreams/0"
+      ],
+      "sourceConfig": {
+        "path": "/home/2026-AUG-PU-Projects/projects/08-interior-ai-redesign/config/public/Caddyfile",
+        "sha256": "48bfa82de9f737cbdd612a64487aeacb3703fbe92b74b226ce7c2d008f172135"
+      },
+      "importHashes": {
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/main-tls.caddy": "889e12f3fde870ec3b98fcf1f9941602ded7462a2720bc237a8284c8c21b2b0c",
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/candidate.caddy": "ba883a48d72f3e18b7204e77b7b999d7840e19a8e23fe255f20eae000c3fb4a4",
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/www-tls.caddy": "f1d4bc96797af72b4790108967cbea6932afd3bc22a8b00c607aab459f07c661",
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/existing-sites.caddy": "e20b10b7cc100af00d022bcb3b993afa8d57b590e777036f01ec56845fa8a0d7",
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/support-repair.caddy": "945bab6e88ec8a229a6a49d8a634031fe94a437bd0821b111044c7ddb56502ef",
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/qa-auth.caddy": "d2f62ebca636c8dcfb5635c647a68acf63c8b45f9274b40904ea3a8d959cd155",
+        "/var/lib/docker/volumes/n8-interior-local_tls-config/_data/clipmkr-relocation/support-tls.caddy": "543180ab40268f2411bdd25757407083b945cecc095699eb9d9a77870809198e"
+      },
+      "fixedUpstream": "172.29.8.1:5811",
+      "activeConfig": {
+        "path": "/PRIVATE_OWNED_0700/ingress-active-config.private.json",
+        "sha256": "02ce065baf7447ec36170c785944bc250a51fe3f8883daa6716e29b8b6668cca"
+      }
+    }
+  },
+  "mutations": {
+    "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+    "tree": "REQUIRED_FINAL_TREE_40_HEX",
+    "results": [
+      {
+        "id": "camera01above",
+        "file": "REQUIRED_ACTUAL_MUTATED_PLAN_TARGET",
+        "sourceHash": "REQUIRED_CANDIDATE_FILE_SHA256",
+        "sourceRestored": true,
+        "red": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 1,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_CHANGED_SOURCE_SHA256"
+        },
+        "green": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 0,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_RESTORED_SOURCE_SHA256"
+        }
+      },
+      {
+        "id": "camera02below",
+        "file": "REQUIRED_ACTUAL_MUTATED_PLAN_TARGET",
+        "sourceHash": "REQUIRED_CANDIDATE_FILE_SHA256",
+        "sourceRestored": true,
+        "red": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 1,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_CHANGED_SOURCE_SHA256"
+        },
+        "green": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 0,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_RESTORED_SOURCE_SHA256"
+        }
+      },
+      {
+        "id": "screen02shrink",
+        "file": "REQUIRED_ACTUAL_MUTATED_PLAN_TARGET",
+        "sourceHash": "REQUIRED_CANDIDATE_FILE_SHA256",
+        "sourceRestored": true,
+        "red": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 1,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_CHANGED_SOURCE_SHA256"
+        },
+        "green": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 0,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_RESTORED_SOURCE_SHA256"
+        }
+      },
+      {
+        "id": "fullcanvaspanecrop",
+        "file": "REQUIRED_ACTUAL_MUTATED_PLAN_TARGET",
+        "sourceHash": "REQUIRED_CANDIDATE_FILE_SHA256",
+        "sourceRestored": true,
+        "red": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 1,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_CHANGED_SOURCE_SHA256"
+        },
+        "green": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 0,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_RESTORED_SOURCE_SHA256"
+        }
+      },
+      {
+        "id": "musicv1silentupgrade",
+        "file": "REQUIRED_ACTUAL_MUTATED_PLAN_TARGET",
+        "sourceHash": "REQUIRED_CANDIDATE_FILE_SHA256",
+        "sourceRestored": true,
+        "red": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 1,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_CHANGED_SOURCE_SHA256"
+        },
+        "green": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 0,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_RESTORED_SOURCE_SHA256"
+        }
+      },
+      {
+        "id": "pinsoracleswap",
+        "file": "REQUIRED_ACTUAL_MUTATED_PLAN_TARGET",
+        "sourceHash": "REQUIRED_CANDIDATE_FILE_SHA256",
+        "sourceRestored": true,
+        "red": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 1,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_CHANGED_SOURCE_SHA256"
+        },
+        "green": {
+          "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+          "tree": "REQUIRED_FINAL_TREE_40_HEX",
+          "argv": [
+            "REQUIRED_REAL_EXECUTABLE",
+            "REQUIRED_REAL_ARGV"
+          ],
+          "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+          "exit": 0,
+          "signal": null,
+          "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+          "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+          "log": {
+            "path": "/PRIVATE_OWNED_0700/command.log",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "report": {
+            "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+            "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+          },
+          "sourceSha256": "REQUIRED_RESTORED_SOURCE_SHA256"
+        }
+      }
+    ]
+  },
+  "rehearsal": {
+    "run": {
+      "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+      "tree": "REQUIRED_FINAL_TREE_40_HEX",
+      "argv": [
+        "REQUIRED_REAL_EXECUTABLE",
+        "REQUIRED_REAL_ARGV"
+      ],
+      "pid": "REQUIRED_REAL_POSITIVE_INTEGER",
+      "exit": 0,
+      "signal": null,
+      "startedAt": "REQUIRED_REAL_ISO_TIMESTAMP",
+      "finishedAt": "REQUIRED_REAL_TERMINAL_TIMESTAMP",
+      "log": {
+        "path": "/PRIVATE_OWNED_0700/command.log",
+        "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+      },
+      "report": {
+        "path": "/PRIVATE_OWNED_0700/raw-vitest.json",
+        "sha256": "REQUIRED_REAL_SHA256_64_HEX"
+      }
+    },
+    "images": {
+      "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+      "tree": "REQUIRED_FINAL_TREE_40_HEX",
+      "images": {
+        "web": {
+          "id": "sha256:REQUIRED_BUILT_IMAGE_ID_64_HEX",
+          "ociRevision": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX"
+        },
+        "worker": {
+          "id": "sha256:REQUIRED_BUILT_IMAGE_ID_64_HEX",
+          "ociRevision": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX"
+        }
+      },
+      "c0": {
+        "revision": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be",
+        "images": {
+          "web": {
+            "id": "sha256:79590752c3dac432b75ea5bb6254d4cf86c94e0fdd7de153f00777b1b116107e",
+            "ociRevision": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be"
+          },
+          "worker": {
+            "id": "sha256:5105ac5234f9503942f17fde27694a5b0ceafb8acdd6cd0a593acbacb0d6c365",
+            "ociRevision": "654361daf6b8cb9d276bc72477d5fc7b43f6c3be"
+          }
+        }
+      }
+    },
+    "isolated": true,
+    "databaseName": "REQUIRED_ISOLATED_DATABASE_test",
+    "assertions": [
+      {
+        "name": "v1_v2_read",
+        "status": "passed"
+      },
+      {
+        "name": "pending_v2_replay",
+        "status": "passed"
+      },
+      {
+        "name": "music_cta_versions",
+        "status": "passed"
+      },
+      {
+        "name": "old_mp4_access",
+        "status": "passed"
+      },
+      {
+        "name": "033_retained",
+        "status": "passed"
+      }
+    ]
+  },
+  "manifest": {
+    "schema": 1,
+    "candidate": "REQUIRED_FINAL_CANDIDATE_COMMIT_40_HEX",
+    "referenceApproval": "/PRIVATE_OWNED_0700/reference-approval.json",
+    "evidence": "/PRIVATE_OWNED_0700/evidence.json",
+    "images": "/PRIVATE_OWNED_0700/images.json",
+    "mode": "candidate",
+    "directory": "/PRIVATE_FRESH_OWNED_0700_ATTEMPT"
+  },
+  "framingSummary": [
+    {
+      "id": "center-instead-of-dual",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    },
+    {
+      "id": "vertical-dual",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    },
+    {
+      "id": "narrow-dual",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    },
+    {
+      "id": "watermark-first",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    },
+    {
+      "id": "odd-window",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    },
+    {
+      "id": "both-panels-left",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    },
+    {
+      "id": "ass-before-assembly",
+      "red": {
+        "exit": 1,
+        "failed": "REQUIRED_ACTUAL_FAILED_COUNT_GT_ZERO",
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT"
+      },
+      "green": {
+        "exit": 0,
+        "failed": 0,
+        "passed": "REQUIRED_ACTUAL_PASSED_COUNT_GT_ZERO"
+      }
+    }
+  ]
+}
