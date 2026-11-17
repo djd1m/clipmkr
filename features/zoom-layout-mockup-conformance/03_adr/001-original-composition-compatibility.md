@@ -33,6 +33,12 @@ Planner ветвится по request.version **до** variant: V1 идёт по
 
 UI хранит существующий envelope version1 и sessionStorage prefix; внутри layout/submitted.layout допускает union. Envelope, layout version и draftVersion — разные счётчики. Старый v1 draft восстанавливается как v1. Для v2-02 выбор radio сохраняет ROI как черновик и показывает: «Показан прежний экран; для крупного плана уточните область». Ручная правка ROI и существующий reviewed_full_clip в окончательном диалоге подтверждают выбор, дополнительный checkbox не нужен. Новый независимый control «Высота» и эти состояния проходят конкретный UI mockup и одобрение до UI-кода. В production не появляется preset930×704 для всех записей.
 
+### Дополнение Decision QER-03/QER-04,17.11.2026
+
+Для выпуска разделить runtime DML и admin DDL. До pauseAttempted и любых Caddy/stop операций отдельная readonly qualification связывает четыре runtime SQL/DNS назначения с exact bound DB container и app database name/OID. Admin connection с существующими credentials того же DB container отдельно подтверждает system_identifier, name/OID/schema/search_path, prior journal и authority. Restricted app не получает повышенных прав.
+
+Backup переиспользует existing explicit actualDB pg_dump/TOC pattern. Canonical exported migrate(pool) исполняется из pinned candidate в ephemeral Node с network=container:<boundDB>, без приложения/providers/volumes; Pool(config) получает admin connection только через bounded stdin JSON. Admin secret остаётся в памяти родителя/ребёнка, не попадает в argv/envfile/Docker Config.Env или runtime DATABASE_URL. Не вводятся новый migration engine, secret manager, persistent admin profile или GRANT. Existing032/prior hashes должны совпасть. Initial candidate допускает pending033; already033 exact допускает idempotent forward/recovery при отсутствии других pending entries; rollbackC0 требует033 exact и не вызывает DDL. Unknown/other pending entries отвергаются. Effective inherited ownership/superuser проверяется без SET ROLE, не по одному MEMBER; admin Pool использует trusted search_path=public, journal/intent разрешаются в exact public objects, runtime search_path не меняется. Qualification ошибка до pause не вызывает automatic close; после реально начатого pause действует прежняя fail-closed ветка.
+
 ## Альтернативы
 
 | Вариант | Плюсы | Причина отказа / цена |
@@ -66,3 +72,8 @@ UI хранит существующий envelope version1 и sessionStorage pre
 BDD: Given опубликованный v1-02 и клип v2-01 одной записи, When пользователь меняет CTA, Then оба новых задания получают свои прежние request.version/ROI; никакой второй layout intent или upgrade не появляется. Given неизвестный исход submitted v1, When пользователь переключил черновик на v2 и повторил запрос, Then повтор использует прежний v1/key, новый draft ждёт отдельного применения.
 
 Риск HIGH: смешанный deploy reader/writer. Снижение: вначале остановить новые admissions и дождаться terminal running jobs; миграция и все v2 readers до v2 writer, затем smoke и открытие. При недоступной БД переход не начинается. Проверки изолируемы через PG fixtures без реального списания денег; отсутствие инфраструктуры — INCONCLUSIVE. После VPS приёмки провести один review фактических времени/ошибок и записать подтверждённый урок pinned dz, не открывая исторические циклы `zoom-screen-focus` заново.
+
+
+### Confirmation QER-03/QER-04 (ещё не выполнена)
+
+`tests/zoom-layout-database.integration.test.ts`: actual_database_backup_ignores_container_default_and_restores_exact_rows; admin033_preserves_restricted_runtime_and_prior_journal. `tests/zoom-layout-release.test.ts` через единую fixture/support: database_qualification_failure_has_zero_pause_close_or_stop; database_identity_or_authority_drift_blocks_backup_and_migration. Проверки обязаны использовать actual helper и canonical migrate, реальные две own logical DB/restricted role на existing QE PostgreSQL, без нового DB/Redis stack или постоянных services; ephemeral pinned Node для реального stdin boundary допустим. Ни synthetic unit PASS, ни прежний compatibility run не заменяет эту границу. До независимого review дополнения, actual K1/K2 и root authorization implementation NOT STARTED.

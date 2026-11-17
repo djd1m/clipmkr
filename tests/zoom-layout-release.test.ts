@@ -7,6 +7,7 @@ import { resolve, join } from 'node:path';
 import { verifyZoomLayoutConformance, validateZoomVitestEvidence } from '../scripts/check-zoom-layout-conformance.mjs';
 import { runZoomLayoutMutationAttempt } from '../scripts/test-zoom-layout-mutations.mjs';
 import { applyZoomLayoutCurrentVps } from '../scripts/apply-zoom-layout-current-vps.mjs';
+import { registerZoomLayoutDatabaseEvidenceTests } from './zoom-layout-database-evidence';
 import { registerFramingNativeEvidenceTests } from './zoom-layout-framing-evidence';
 // Unit reports/resources are invented. Original nine orchestrator cases stay; new cases execute
 // real fixedExecutor and its generated queue/health programs at mocked Docker/DB/HTTP boundaries. No real rollout proof.
@@ -15,7 +16,7 @@ const feature='features/zoom-layout-mockup-conformance/';
 const digest=(b: string|Buffer)=>createHash('sha256').update(b).digest('hex');
 const git=(...args:string[])=>execFileSync('git',args,{cwd:repo,encoding:'utf8'}).trim();
 let candidate:string, tree:string;
-const files=['scripts/test-zoom-layout-mutations.mjs','scripts/check-zoom-layout-conformance.mjs','scripts/apply-zoom-layout-current-vps.mjs','tests/zoom-layout-release.test.ts','tests/zoom-layout-framing-evidence.ts',feature+'06_implementation_plan.md'];
+const files=['scripts/test-zoom-layout-mutations.mjs','scripts/check-zoom-layout-conformance.mjs','scripts/apply-zoom-layout-current-vps.mjs','tests/zoom-layout-release.test.ts','tests/zoom-layout-framing-evidence.ts','scripts/zoom-layout-database.mjs','tests/zoom-layout-database-evidence.ts','tests/zoom-layout-database.integration.test.ts',feature+'06_implementation_plan.md'];
 beforeAll(()=>{
   execFileSync('git',['clone','--shared','--quiet',project,repo]);
   for(const file of [...files,'features/zoom-layout-mockup-conformance/reference/pins.json','tests/fixtures/zoom-layout-original.json']) cpSync(resolve(project,file),resolve(repo,file));
@@ -25,10 +26,11 @@ beforeAll(()=>{
   candidate=git('rev-parse','HEAD');tree=git('rev-parse','HEAD^{tree}');
 },30000);
 afterAll(()=>rmSync(dir,{recursive:true,force:true}));
-const suites=['zoom-layout-release','screen-layout','screen-layout-conformance','screen-layout-media','clip-layout.integration',
+const suites=['zoom-layout-release','zoom-layout-database.integration','screen-layout','screen-layout-conformance','screen-layout-media','clip-layout.integration',
   'clip-music-choice.integration','clip-cta-rerender.integration','render','framing','framing-media','teaser','clip-cta-render','browser/clip-layout'];
 const cases:Record<string,string[]>={
-  'zoom-layout-release':['current_vps_apply_fails_before_any_write_on_invalid_or_changed_evidence'],
+  'zoom-layout-release':['current_vps_apply_fails_before_any_write_on_invalid_or_changed_evidence','database_qualification_failure_has_zero_pause_close_or_stop','database_identity_or_authority_drift_blocks_backup_and_migration'],
+  'zoom-layout-database.integration':['actual_database_backup_ignores_container_default_and_restores_exact_rows','admin033_preserves_restricted_runtime_and_prior_journal'],
   'screen-layout':['v2_parser_is_strict_and_v1_canonical_bytes_are_unchanged'],
   'clip-layout.integration':['033_preserves_v1_rows_and_accepts_only_supported_v2_intents','publication_rejects_composition_version_substitution'],
   'clip-music-choice.integration':['music_rerender_preserves_each_published_composition_version v1-01','music_rerender_preserves_each_published_composition_version v1-02','music_rerender_preserves_each_published_composition_version v2-01','music_rerender_preserves_each_published_composition_version v2-02'],
@@ -67,7 +69,7 @@ function fixture() {
     importHashes:{},upstreamPaths:Array.from({length:4},(_,i)=>`/apps/http/servers/srv0/routes/${i}/handle/0/upstreams/0`)};
   const originalPath=join(privateDir,'original-source.txt');writeFileSync(originalPath,ingressSource,{mode:0o600});
   const ingress={...ingressPins,activeConfig,originalSource:{path:originalPath,sha256:digest(ingressSource)}};
-  const binding={ingress,repo:'/home/clipmkr',publicTarget:'77.83.87.178',origin:'https://clipmkr.ru',machineIdSha256:'1afc81d837f8b8d306903c2db510f8ed7a22b71ec65976ba73b7e81ea6689c10',composePath:compose.path,composeSha256:compose.sha256,containers};
+  const binding={database:{databaseName:'synthetic_test',databaseOid:'123',systemIdentifier:'456'},ingress,repo:'/home/clipmkr',publicTarget:'77.83.87.178',origin:'https://clipmkr.ru',machineIdSha256:'1afc81d837f8b8d306903c2db510f8ed7a22b71ec65976ba73b7e81ea6689c10',composePath:compose.path,composeSha256:compose.sha256,containers};
   const sourceHashes=Object.fromEntries(readFileSync(join(repo,feature,'06_implementation_plan.md'),'utf8').split('EXPECTED_CODE_TARGETS:')[1]!.trim().split('\n').map(l=>l.slice(2)).map(p=>[p,digest(readFileSync(join(repo,p)))]));
   const inputHashes=Object.fromEntries(['01_requirements.md','03_adr/001-original-composition-compatibility.md','05_architecture.md','06_implementation_plan.md'].map(p=>[p,digest(readFileSync(join(repo,feature,p)))]));
   const mutations={candidate,tree,results:['camera01above','camera02below','screen02shrink','fullcanvaspanecrop','musicv1silentupgrade','pinsoracleswap'].map(id=>{
@@ -95,7 +97,8 @@ function fixture() {
   const observed={machineIdSha256:binding.machineIdSha256,containers:structuredClone(containers),imageRevisions:Object.fromEntries([...Object.values(images.images),...Object.values(images.c0.images)].map(i=>[i.id,i.ociRevision]))};
   const apps=Object.fromEntries(['web','worker-video','worker-llm','worker-stt'].map(s=>[s,{containerId:containers[s]!.containerId,imageId:containers[s]!.imageId}]));
   const calls:string[]=[];
-  const deps={repo,composePath:compose.path,ingressPins,ingressProbe:()=>({...ingressPins,running:true,config:ingressConfig}),probe:()=>observed,checkResources:()=>{},appState:()=>structuredClone(apps),execute:async(phase:string)=>{
+  const database={qualify:()=>({revalidate:(_live?:boolean)=>{}}),backup:()=>{},migrate:()=>{}};
+  const deps={database,repo,composePath:compose.path,ingressPins,ingressProbe:()=>({...ingressPins,running:true,config:ingressConfig}),probe:()=>observed,checkResources:()=>{},appState:()=>structuredClone(apps),execute:async(phase:string)=>{
     calls.push(phase);for(const s of phase==='workers'?['worker-video','worker-llm','worker-stt']:phase==='web'?['web']:[]) apps[s]!.imageId=images.images[s==='web'?'web':'worker'].id;
   }};
   const manifest=save({...options,schema:1,mode:'candidate',directory:privateDir}).path;
@@ -296,7 +299,8 @@ function fixedFixture(faults:ResourceFaults={},rollback=false) {
     throw new Error('unexpected unit Docker boundary');
   }
   const {execute:_execute,appState:_appState,checkResources:_resources,ingressProbe:_ingressProbe,...boundaries}=f.deps;
-  const deps={...boundaries,docker,machineIdSha256:f.binding.machineIdSha256,now:()=>clock,sleep:async()=>{clock+=45001;}};
+  const database={...boundaries.database,backup:()=>{trace.push('backup');},migrate:()=>{if(JSON.parse(readFileSync(f.manifest,'utf8')).mode==='candidate'){trace.push('migration');if(faults.migration)throw new Error('unit migration refused');snapshot.journal[migration]=migrationHash;}}};
+  const deps={...boundaries,database,docker,machineIdSha256:f.binding.machineIdSha256,now:()=>clock,sleep:async()=>{clock+=45001;}};
   function fresh(mode='rollback-c0') {
     const next=mkdtempSync(join(dir,'fresh-inventory-'));chmodSync(next,0o700);snapshotCount=0;f.binding.ingress.startedAt=ingress.State.StartedAt;
     for(const [service,m] of Object.entries(models)) {
@@ -357,22 +361,6 @@ it('fixed_executor_C0_rollback_retains_033_without_executing_any_DDL',async()=>{
   const f=fixedFixture({},true);await expect(applyZoomLayoutCurrentVps(f.manifest,f.deps)).resolves.toMatchObject({postApply:'pending'});
   expect(f.trace).not.toContain('migration');expect(f.trace.filter(s=>s==='snapshot')).toHaveLength(2);
   for(const [s,m] of Object.entries(f.models))if(s==='web'||s.startsWith('worker-'))expect(m.Image).toBe(f.images.c0.images[s==='web'?'web':'worker'].id);
-});
-it.each(['missing','source','raw','skipped','runtime','unrelated','nonterminal'] as const)('mandatory_framing_gate_rejects_%s_proof',kind=>{
-  const f=fixture(),framing=f.evidence.framingMutations;
-  if(kind==='missing')delete (f.evidence as Partial<typeof f.evidence>).framingMutations;
-  if(kind==='source')framing.sourceHashes['apps/worker/src/render/format.ts']='wrong';
-  if(kind==='nonterminal')framing.exit=1;
-  const path=join(f.privateDir,'center-instead-of-dual-green.json');
-  if(kind==='raw')rmSync(path);
-  if(['skipped','runtime','unrelated'].includes(kind)) {
-    const raw=JSON.parse(readFileSync(path,'utf8'));
-    if(kind==='skipped')raw.testResults[0].assertionResults[0].status='skipped';
-    if(kind==='runtime')raw.numRuntimeErrorTestSuites=1;
-    if(kind==='unrelated')raw.testResults[0].assertionResults[0].fullName='unrelated';
-    writeFileSync(path,JSON.stringify(raw));
-  }
-  writeFileSync(f.options.evidence,JSON.stringify(f.evidence));expect(()=>verifyZoomLayoutConformance(f.options,f.deps)).toThrow();
 });
 registerFramingNativeEvidenceTests(fixture,repo);
 it.each(['identity','config','upstreams','source'] as const)('fixed_executor_invalid_ingress_%s_fails_before_writes',async kind=>{
@@ -497,3 +485,5 @@ it.each(['post-health','inverse','running','foreign'] as const)('mixed_%s_requir
     expect(recovery.indexOf('admission:close')).toBeLessThan(recovery.indexOf('drain'));expect(recovery).not.toContain('migration');
     expect(f.active()).toEqual(f.ingressConfig);for(const s of ['web','worker-stt','worker-llm','worker-video'])expect(f.models[s]!.Image).toBe(f.images.c0.images[s==='web'?'web':'worker'].id);}
 });
+
+registerZoomLayoutDatabaseEvidenceTests(fixture,fixedFixture);

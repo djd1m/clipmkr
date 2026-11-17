@@ -64,3 +64,25 @@
 - **WHEN** выполняются финальный QE и подготовка владельцу
 - **THEN** отдельная модель без контекста кодирования сравнивает оригинал, preview и MP4
 - **AND** владелец получает URL записи в проверенной учётке и инструкцию Play/download, а визуальная приёмка отмечается отдельно от автоматического PASS
+
+
+### Requirement: Release qualifies the actual application database before admission pause
+
+Исполнитель MUST до закрытия admissions подтвердить фактическую БД всех четырёх runtime services и отдельно существующую административную учётную запись мигратора. Runtime DATABASE_URL и права приложения MUST оставаться ограниченными и неизменными. Backup MUST использовать явно подтверждённую app DB, а не POSTGRES_DB по умолчанию. Неизвестное или неподходящее подключение MUST отказать до pause и до cleanup, который мог бы остановить здоровый сайт.
+
+#### Scenario: Restricted application role and a different container default database
+- **GIVEN** web и три workers используют одну фактическую app DB, runtime role не имеет DDL, а POSTGRES_DB обозначает другую БД
+- **WHEN** выполняется квалификация выпуска
+- **THEN** app DB определяется через действительные runtime SQL/DNS bindings, отдельно проверяется existing admin connection к той же БД
+- **AND** отказ qualification не вызывает Caddy persist/load, stop, pause или automatic close
+
+#### Scenario: Bound backup and administrative migration
+- **GIVEN** квалифицированы actual app DB и existing admin role, writers остановлены по штатному bounded пути
+- **WHEN** сохраняется backup и применяется033
+- **THEN** pg_dump явно выбирает actual app DB; свежий actual archive имеет terminal exit, SHA и native TOC с подтверждённой DB identity
+- **AND** isolated realPG test восстанавливает только собственный synthetic fixture dump и доказывает поведение helper; восстановление свежего production dump этим тестом не заявляется
+- **AND** existing transactional migrate(pool) из pinned candidate получает transient admin connection через stdin, без admin DSN/password в argv, Docker Config.Env или runtime env
+- **AND** прежний journal и данные сохранены,033 добавлена один раз; runtime DSN/role/grants не меняются
+
+- **AND** initial candidate допускает только pending033; already-applied033 с exact SHA допускает idempotent forward/recovery без новых pending entries; rollback C0 требует033 exact и не вызывает DDL; неизвестные/другие pending entries запрещены
+- **AND** admin authority означает superuser либо effective inherited ownership без SET ROLE, а unqualified journal/intent разрешаются в ожидаемые public objects; runtime search_path не меняется

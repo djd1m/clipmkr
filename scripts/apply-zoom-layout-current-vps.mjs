@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { qualifyZoomLayoutDatabase, backupZoomLayoutDatabase, migrateZoomLayoutDatabase } from './zoom-layout-database.mjs';
 import { verifyZoomLayoutConformance } from './check-zoom-layout-conformance.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const services = ['worker-video','worker-llm','worker-stt'];
@@ -219,15 +220,10 @@ const clients=await q.getWorkers();if(!clients.some(c=>c.addr?.startsWith(w.ip+'
       const sqlProgram=`const {Pool}=require('pg');const p=new Pool({connectionString:process.env.DATABASE_URL});(async()=>{${parserPreflight}const r=await p.query(${JSON.stringify(snapshotSql)});console.log(JSON.stringify(r.rows[0].snapshot));})().catch(()=>{console.error('parser or snapshot preflight refused');process.exitCode=1}).finally(()=>p.end());`;
       before=JSON.parse(docker([...base,'run','--rm','--no-deps','--pull','never','--entrypoint','node','worker-video','-e',sqlProgram]));
       need(before.journal['032_clip_layout.sql']==='23f93ca25da73cf2e69d4dab1ab321d922326acf9de1bdf03cb0439f679f182b','migration032 journal mismatch');
-      const file=resolve(directory,'database-before.dump');
-      const fd=openSync(file,'wx',0o600);
-      try {
-        docker(['exec',binding.containers.db.containerId,'sh','-c','exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc'],undefined,fd);
-        need(lstatSync(file).size>0,'database backup failed');
-      } finally {closeSync(fd);}
+      (dependencies.database?.backup??backupZoomLayoutDatabase)(context.database,resolve(directory,'database-before.dump'));
       writeFileSync(resolve(directory,'snapshot-before.private.json'),JSON.stringify(before),{mode:0o600,flag:'wx'});
     } else if(phase==='migration') {
-      if(mode==='candidate') docker([...base,'run','--rm','--no-deps','--pull','never','--entrypoint','node','worker-video','packages/db/dist/migrate.js']);
+      (dependencies.database?.migrate??migrateZoomLayoutDatabase)(context.database);
       // Rollback retains migration033 and all JSON/media.
     } else if(phase==='integrity') {
       // No app writers/watchdog are running yet: compare the migration in an ephemeral reader.
@@ -270,7 +266,9 @@ export async function applyZoomLayoutCurrentVps(manifestPath, dependencies = {})
   const result=verifyZoomLayoutConformance(m,dependencies);
   // Full checker is always invoked before creating lock/output files or invoking an executor.
   const repo=dependencies.repo??root;
-  const fixed=dependencies.execute?{execute:dependencies.execute,checkIngress:()=>{}}:fixedExecutor({...result,directory:m.directory,mode:m.mode},dependencies);
+  // Qualification is deliberately outside the pause/cleanup scope and before lock/state files.
+  const database=(dependencies.database?.qualify??qualifyZoomLayoutDatabase)({...result,directory:m.directory,mode:m.mode},dependencies);
+  const fixed=dependencies.execute?{execute:dependencies.execute,checkIngress:()=>{}}:fixedExecutor({...result,directory:m.directory,mode:m.mode,database},dependencies);
   const execute=fixed.execute;
   const checkResources=dependencies.checkResources??(b=>unchangedResources(b,dependencies.docker??run,dependencies.machineIdSha256));
   const appState=dependencies.appState??(b=>observedApps(b,dependencies.docker??run));
@@ -288,6 +286,7 @@ export async function applyZoomLayoutCurrentVps(manifestPath, dependencies = {})
     need(JSON.stringify(appState(result.binding))===JSON.stringify(expectedApps),'app binding changed between phases');
   }
   revalidate();
+  database.revalidate(true);
   const lock=resolve(dirname(result.binding.composePath),'zoom-layout-apply.lock'), state=resolve(m.directory,'apply-state.private.json');
   need(!existsSync(state),'attempt directory already used; inspect previous outcome');
   const lockFd=openSync(lock,'wx',0o600);
@@ -298,6 +297,8 @@ export async function applyZoomLayoutCurrentVps(manifestPath, dependencies = {})
     stateFd=openSync(state,'wx',0o600);
     for(const phase of phases) {
       revalidate();
+      if(phase==='pause')database.revalidate(true);
+      if(phase==='backup' || phase==='migration')database.revalidate(false);
       saveState({candidate:m.candidate,mode:m.mode,phase,completed,status:'running'});
       if(phase==='pause')pauseAttempted=true;
       await execute(phase);

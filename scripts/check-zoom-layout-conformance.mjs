@@ -14,10 +14,14 @@ const originalHash = '7b83572176b7c48c38c5d9d3ed141148c482cc11bb98493c07fcef59fe
 const uiHash = '5fdbd7611b7e4a975df03d94a246f9620b64c79580b88748087a655b213f9ee6';
 const oracleHash = '539e37bf812b0ee22d7a88b6345241b85588aa48d6fc4c7dc669a171113949d2'; // Derived oracle, not an owner-approved UI hash.
 const c0Commit = '654361daf6b8cb9d276bc72477d5fc7b43f6c3be';
-const suites = ['zoom-layout-release','screen-layout','screen-layout-conformance','screen-layout-media',
+const suites = ['zoom-layout-release','zoom-layout-database.integration','screen-layout','screen-layout-conformance','screen-layout-media',
   'clip-layout.integration','clip-music-choice.integration','clip-cta-rerender.integration',
   'render','framing','framing-media','teaser','clip-cta-render','browser/clip-layout'].map(n => `tests/${n}.test.ts`);
 const named = [
+  ['zoom-layout-database.integration','actual_database_backup_ignores_container_default_and_restores_exact_rows',1],
+  ['zoom-layout-database.integration','admin033_preserves_restricted_runtime_and_prior_journal',1],
+  ['zoom-layout-release','database_qualification_failure_has_zero_pause_close_or_stop',1],
+  ['zoom-layout-release','database_identity_or_authority_drift_blocks_backup_and_migration',1],
   ['screen-layout', 'v2_parser_is_strict_and_v1_canonical_bytes_are_unchanged', 1],
   ['clip-layout.integration','033_preserves_v1_rows_and_accepts_only_supported_v2_intents',1],
   ['clip-layout.integration','publication_rejects_composition_version_substitution',1],
@@ -306,6 +310,9 @@ export function verifyZoomLayoutConformance(options, dependencies = {}) {
     && framing.argv.at(-1)===dirname(framing.results.path),'framing runner origin missing');
   for(const file of framingSources)need(framing.sourceHashes?.[file]===hash(readFileSync(resolve(repo,file))),'framing source binding mismatch');
   const binding = json(evidence.host);
+  need(binding.database && Object.keys(binding.database).sort().join(',')==='databaseName,databaseOid,systemIdentifier'
+    && typeof binding.database.databaseName==='string' && binding.database.databaseName.length>0
+    && /^[0-9]+$/.test(binding.database.databaseOid) && /^[0-9]+$/.test(binding.database.systemIdentifier),'database identity evidence missing');
   need(binding.repo === '/home/clipmkr' && binding.publicTarget === '77.83.87.178' && binding.origin === 'https://clipmkr.ru'
     && binding.machineIdSha256 === '1afc81d837f8b8d306903c2db510f8ed7a22b71ec65976ba73b7e81ea6689c10', 'wrong current VPS');
   need(binding.composePath === (dependencies.composePath ?? '/root/.config/clipmkr/relocate-workspace-20261109/activation-20261110/app-subset.compose.private.json'), 'wrong compose path');

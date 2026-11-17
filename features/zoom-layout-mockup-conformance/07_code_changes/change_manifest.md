@@ -28,9 +28,11 @@
 
 Сохранение общего файла использует тот же inode и восстанавливает только точно подтверждённую собственную незавершённую запись. Неизвестный результат записи, чужое изменение, постоянный I/O отказ или прерывание процесса требуют осмотра оператором; crash-atomicity не заявляется. На работающем прокси отказ не моделировался.
 
-## Инвентаризация утверждённых targets
+## Инвентаризация текущих targets
 
-| Файл | SHA256 текущего содержимого |
+Измерено после исправления QER-03/04,17.11.2026; это рабочий снимок поверх `a6731d9`, до нового commit/build. Прежняя таблица сохранена в Git. Все33targets соответствуют текущему плану; три новых файла включены явно.
+
+| Файл | SHA256 |
 |---|---|
 | `packages/shared/src/screen-layout.ts` | `b1425805279a487bc5ab5c49d57f6e69ceb1a4ca52eebfc97eacaeda644394f5` |
 | `packages/db/src/clip-layout.ts` | `302a2ea3a63034ed758c5819ebd15daa66007670548609a02fe8a3235dbde59f` |
@@ -56,10 +58,15 @@
 | `tests/render.test.ts` | `a1e7dcc2c4221d37bfeaeeebb3c798ca22ff49682bff3c147c01580bc299416b` |
 | `tests/teaser.test.ts` | `fc370e4a13bffc42128fe6b3e663227a927d989839607075ea79f5dd607cc7ab` |
 | `tests/clip-cta-render.test.ts` | `217076630f1e9d84f3032e9c3ff787fc8bb28f8a7b9ffe2b4c18febeed528efa` |
-| `scripts/check-zoom-layout-conformance.mjs` | `b5dc307bf59a9b5b5fe16751e7fd3fda3682dfd70102591be6232e8fd2304d0c` |
-| `scripts/apply-zoom-layout-current-vps.mjs` | `91685b24b7ba6391a8d595ef6bd12995bc8fc152b7968e20e69ca516bfe244f2` |
-| `tests/zoom-layout-release.test.ts` | `19658f319ecc4f8fcc3311fe3ce9a916e42c059e82d1a1e1f6949f7a021d1753` |
+| `scripts/check-zoom-layout-conformance.mjs` | `84f7da51fb3b234663edeccc9989a803fea31495e06a6a5ed1f1a461ce45892c` |
+| `scripts/apply-zoom-layout-current-vps.mjs` | `ac1353cd8839fe07c1389a9fe4bee91203bda20a750529bc2cabedea9e7bdf09` |
+| `tests/zoom-layout-release.test.ts` | `cd0c972e8f4a25ff4e39ed595c3b3836c701c44f68f00a6a12ed7caef8446b4f` |
 | `scripts/test-zoom-layout-mutations.mjs` | `93c208a2106ac50b76d871180d5b7b196a4d3a4ca10bae54c9e783db4d378c24` |
+| `tests/zoom-layout-framing-evidence.ts` | `571e1dacb8241ab26411bcbd96a4d13dac52f64ec673ef2202f3e74c502c5119` |
+| `scripts/zoom-layout-database.mjs` | `1475da61999c55e8e49b9c86a3ae4511da1a7cfc1d481db3528c78e7f2e2633f` |
+| `tests/zoom-layout-database-evidence.ts` | `2db29fdda35ddb18c20da44e9660a1b6eaac0dacf426642bf4cb24cce934c68b` |
+| `tests/zoom-layout-database.integration.test.ts` | `a30fd8a7cd33d7fdd354306cc677f08681004d27356dac97bce132a6e244c67d` |
+| `packages/db/src/migrate.ts` | `811b03ea40ec002f99c872744eb8a45410c5d5ad508d2395e23078b4b29ab7a3` |
 
 ## Проверка документов17.11
 
@@ -68,3 +75,20 @@
 Адресная проверка оставшегося T06-07 на финальном снимке17.11: `npm test -- tests/zoom-layout-release.test.ts --reporter=json --outputFile=<private>` — exit0,64/64 PASS,0failed/0pending,65,94с. Lint, source-only typecheck, syntax — exit0. Известные промежуточные пары source/active допускаются только при остановленном связанном web и приводятся в CLOSED до drain; чужой drift и running web отвергаются. Это обновляет source-инвентарь выше, но не заменяет предстоящий общий прогон кандидата и origin verification.
 
 Origin verification завершён: T06-01…08 закрыты по source review; это не formal QE и не runtime PASS. `npm run dz -- discrimination-check --test tests/screen-layout.test.ts --base 856c3ed --runner vitest --json --timeout 60000`: exit0,3,76с, measurementValid=true, DISCRIMINATES, baseline assertion failures6 из23 исполнившихся tests. `dz guard check --op code --json`: verdict pass, violations[], проверено no-skill-drift; signature-fresh not-established, это не полный guard PASS.
+
+
+## QER-03/04: актуальное исправление DB выпуска
+
+Фактическая выкладка `a6731d9` отказала до033: backup выбрал container default DB вместо app DB, а runtime мигратор получил42501 на CREATE журнала. Старый runtime18763 и исходный ingress восстановлены без восстановления/миграции БД. Предыдущие build/tests/review и failed attempt сохранены как отдельная история; они не считаются зелёным итогом новой ревизии.
+
+Исправление использует existing explicit pg_dump и canonical migrate(pool): runtime SQL/DNS всех4services + отдельная admin qualification до pause/lock/state; actual app DB dump с SHA/TOC; admin secret только memory/stdin; ограниченный admin job и backend terminal evidence; runtime grants/env неизменны. Нормализуется host(inet_server_addr()); после planned stop сравниваются стабильные network/HostConfig bindings, recovery не запускает старое приложение ради чтения DSN. Типизированные результаты остаются secret-free/private. Макеты, геометрия, исходные pins и migration033 SQL не менялись.
+
+Финальный адресный рабочий снимок: unit94/94 (все прежние79 сохранены),0skip,83,54с; realPG2/2,0skip,36,85с. RealPG использует actual native helper,4собственных transient runtime Node на существующем QE bridge, две собственные logical DB и restricted role; включает stopped runtime/recovery, synthetic native dump/restore, реальный restricted42501, canonical admin033/idempotence, prior journal/rows/grants/env. Ранние ошибки fixture mode и inet адреса сохранены; новый общий прогон ещё предстоит. Предварительный образ — неизменяемый `a6731d9`, текущий host helper; это не результат нового candidate image.
+
+Lint, три syntax checks и diff whitespace — exit0. Host tests typecheck exit2: прежние diagnostics upload-file-identity.ts о недоступном @noble/hashes/sha2.js и unknown byte; в шести изменённых code targets новых diagnostics не выявлено, но это не полный typecheck PASS. Обязательный typecheck нового build ещё предстоит.
+
+Root отдельно подтвердил native Docker endpoint changes after stop и nonzero child error-envelope transport, без остановки production; автор независимо исправил эти пути. Последующая actual live readonly qualification текущего VPS завершилась0 за3,81с с existing `a6731d9` image: реальные четыре runtime и admin соответствуют app DB/cluster, prior journal33entries through032,033 отсутствует. Ни pause, ни backup, ни migration, ни runtime writes при этом не выполнялись. Это предварительный факт о текущем окружении, не замена встроенной свежей qualification финальной выкладки.
+
+Независимый code critic, native QE cycle3, новый immutable commit/build/common suite и выпуск текущего исправления пока PENDING. Cloud/DNS не меняются. Code/spec anti-drift: FR-ZOOM-DB-001→qualification/pre-pause negatives;002→actualDB native dump/own-fixture restore;003→canonical admin033/preserved runtime;004→timeouts/SQLSTATE/terminal owner evidence. MC01–08/original oracle остаются прежними.
+
+Перед native QE bound snapshot дополнен неизменённым canonical migrate.ts (33targets); host helper code не менялся. Предварительная actual live qualification завершилась0/3,81с; свежая qualification внутри исполнителя остаётся обязательной.
