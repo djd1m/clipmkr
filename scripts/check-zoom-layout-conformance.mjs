@@ -290,7 +290,13 @@ export function verifyZoomLayoutConformance(options, dependencies = {}) {
       const actual=validateZoomVitestEvidence(report,log,phase);
       const failed=actual.filter(a=>a.status==='failed'),passed=actual.filter(a=>a.status==='passed');
       need(actual.length>0 && report.numTotalTests===actual.length && report.numFailedTests===failed.length && report.numPassedTests===passed.length && entry[phase].failed===failed.length && entry[phase].passed===passed.length,'framing mutation assertion mismatch');
-      if(phase==='red')need(failed.some(a=>a.fullName.includes(title)) && failed.every(a=>a.failureMessages?.some(m=>/AssertionError|expected/i.test(m))
+      if(phase==='red')need(failed.some(a=>a.fullName.includes(title)) && failed.every(a=>a.failureMessages?.some(m=>/AssertionError|expected/i.test(m)
+        // Removing even rounding makes this exact native yuv420p window unencodable.
+        || (id==='odd-window' && a.fullName==='FR-1 real odd source: exact window encodes as yuv420p without implicit crop rounding'
+          && report.testResults.some(s=>s.name.endsWith('/tests/framing-media.test.ts') && s.assertionResults.includes(a))
+          && /^Error: Command failed: ffmpeg -v error -f lavfi -i color=red:s=1923x1081,format=yuv444p -vf crop=961:854:962:56:exact=1 -frames:v 1 -c:v libx264 -pix_fmt yuv420p -threads 1 \/tmp\/n5-framing-odd-[^/\s]+\/window\.mp4\r?$/m.test(m)
+          && /^\[libx264 @ 0x[0-9a-f]+\] width not divisible by 2 \(961x854\)\r?$/m.test(m)
+          && /Error while opening encoder/.test(m)))
         && !a.failureMessages.some(m=>/SyntaxError|Cannot find|Failed to resolve|Transform failed|ReferenceError/.test(m))),'framing mutation RED must be behavioral');
       else need(passed.some(a=>a.fullName.includes(title)) && failed.length===0 && report.success===true,'framing mutation GREEN missing');
     }
