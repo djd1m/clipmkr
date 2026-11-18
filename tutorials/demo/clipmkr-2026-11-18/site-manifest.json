@@ -77,8 +77,8 @@
         },
         {
           "rel": "video/03-music.ru.vtt",
-          "bytes": 661,
-          "sha256": "f88d3e0995f99e6870984dc62061da4d57a1b8f746d0ff6878798685576a2e6e"
+          "bytes": 658,
+          "sha256": "20e87e2b2b97517a3ec59ca2f7527757574a6deb7b03860ec6e5bbb6bd61dfb1"
         }
       ],
       "clips": [
@@ -235,8 +235,8 @@
     },
     {
       "rel": "video/03-music.ru.vtt",
-      "bytes": 661,
-      "sha256": "f88d3e0995f99e6870984dc62061da4d57a1b8f746d0ff6878798685576a2e6e"
+      "bytes": 658,
+      "sha256": "20e87e2b2b97517a3ec59ca2f7527757574a6deb7b03860ec6e5bbb6bd61dfb1"
     },
     {
       "rel": "video/04-fullscreen.mp4",
@@ -279,7 +279,7 @@
       "sha256": "057167c98c32dfc0930e7613aba82316fe6cde08de5b90d45023159b0d7d914d"
     }
   ],
-  "mediaSha256": "b5534c13c19d4b7da81dde5410d53e38407fb38c02237088dee4f24eae1261d9",
+  "mediaSha256": "2a061f1cfa07fdb8812fd85a8abea8f9c775e11b04276a1cfbcc3553b3977a8a",
   "clips": [
     {
       "id": "01-auto-zoom",

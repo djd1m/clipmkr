@@ -24,8 +24,8 @@
     },
     {
       "rel": "playback.json",
-      "bytes": 6441,
-      "sha256": "b5403682287538613114758008f95ea57c00495cbb9ed34bbdfdc3f308e20a37"
+      "bytes": 6438,
+      "sha256": "c63d3c8268e091fb0b580fd975dc843703dfbc4f8e4b2c3eb9ed36f8dd7f0560"
     },
     {
       "rel": "01-auto-zoom/index.html",
@@ -39,8 +39,8 @@
     },
     {
       "rel": "03-music/index.html",
-      "bytes": 2351,
-      "sha256": "8098fd172ab13a9353c9b6359560eeb54f09715db0906d4ea69496ac5fa159e5"
+      "bytes": 2348,
+      "sha256": "9cdf0d16a717ef93562722106231c7bd308d619f413fcff3c9a6b90a688f6104"
     },
     {
       "rel": "04-fullscreen/index.html",
