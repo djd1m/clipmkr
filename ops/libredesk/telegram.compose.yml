@@ -1,0 +1,37 @@
+services:
+  libredesk-telegram:
+    image: node@sha256:e58326d0d441090181ac150dc2078d3e2cf6a0d42e809aebba3ef5880935ffdd
+    pull_policy: never
+    user: node
+    command: ["node", "/app/telegram-adapter.mjs"]
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?set private bot token}
+      TELEGRAM_SUPPORT_CHAT_ID: ${TELEGRAM_SUPPORT_CHAT_ID:?set numeric private chat ID}
+      LIBREDESK_TELEGRAM_WEBHOOK_SECRET: ${LIBREDESK_TELEGRAM_WEBHOOK_SECRET:?set private signing secret}
+    volumes:
+      - ./telegram-adapter.mjs:/app/telegram-adapter.mjs:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r => { if (r.status !== 204) process.exitCode = 1 }).catch(() => { process.exitCode = 1 })"]
+      interval: 30s
+      start_period: 5s
+      timeout: 3s
+      retries: 3
+    cpus: 0.25
+    mem_limit: 96m
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+    networks:
+      helpdesk:
+        ipv4_address: ${CLIPMKR_SUPPORT_RELAY_IP:?set reserved relay IPv4 address}
+
+networks:
+  helpdesk:
+    external: true
+    name: ${CLIPMKR_SUPPORT_NETWORK:?set current Libredesk Docker network}
