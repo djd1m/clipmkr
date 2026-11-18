@@ -1,6 +1,6 @@
 # Переиспользование
 
-- `CTA_CHOICE_LABELS.subscribe` станет общим источником формулировки. Существующие поля формы и построитель публичной страницы уже потребляют производные словари.
-- `ctaFrameLabel` и `prepareCta` уже выбирают текст, проверяют его размер и строят FFmpeg-наложение. `parseCtaTarget` и публичный обработчик уже обеспечивают прямой HTTPS-переход и показ домена.
-- Стражи `tests/clip-cta.test.ts`, `tests/billing.unit.test.ts` и `tests/clip-cta-render.test.ts`. Существующий mutation anchor `paid-cta-link-text` инвертирует выбор словаря. Проверка paid `open_link` и `watch_full` остаётся отрицательным контролем, даже если строки подписки совпадут.
-- Зависимости, компоненты, миграции и новые имена экспортов не требуются.
+- `readStoredCta`, `parseCtaTarget`, `ctaDisplayHost` и `actions` уже проверяют и показывают ссылку. Вид, хранение и существующий маршрут остаются.
+- `layoutCta`, `ctaZone` и шрифт метки ограничивают ширину и положение надписи. `prepareTeaser` показывает готовый путь передачи текста в FFmpeg через `textfile`, `expansion=none` и закрытую временную директорию рендера.
+- `VideoCtaService.setCta` и существующая квота/блокировка защищают пересборку. Результат продолжает использовать текущий fence и неизменяемый объект; дельта идентичности включает хеш фактически выбранного адреса.
+- Опорные проверки: `tests/clip-cta.test.ts`, `tests/clip-cta-render.test.ts`, `tests/clip-cta-rerender.integration.test.ts`, `tests/cta-media.test.ts`, текущий paid unit и mutation anchor `paid-cta-link-text`. Старый запрет чтения URL для любого рендера заменяется положительной проверкой подписки и отрицательным контролем для других видов.
