@@ -36,7 +36,7 @@ beforeAll(async()=>{
   execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','testsrc2=s=1816x968:r=2:d=8','-threads','1','-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-movflags','+faststart','-y',join(cache,'reference.mp4')]);referenceMp4=readFileSync(join(cache,'reference.mp4'));
   mp4=readFileSync(join(cache,'source.mp4'));const entry='\0zoom-entry',nav='\0zoom-nav',link='\0zoom-link';
   vite=await createServer({configFile:false,root:process.cwd(),cacheDir:join(cache,'vite'),esbuild:{jsx:'automatic'},
-    optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','zod'],exclude:['next/navigation','next/link']},
+    optimizeDeps:{include:['react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime','zod'],exclude:['next/navigation','next/link']},
     resolve:{alias:Object.fromEntries(['enums','cta','tariff','music-catalog','screen-layout','cut-timeline'].map(n=>[`@clipmaker/shared/${n}`,resolve(`packages/shared/src/${n}.ts`)]))},
     server:{host:'127.0.0.1',port:0,watch:null},plugins:[{name:'zoom-browser',enforce:'pre',resolveId(n){if(n===entry)return entry;if(n==='next/navigation')return nav;if(n==='next/link')return link;},
       load(n){if(n===nav)return 'export const useRouter=()=>({push(){},refresh(){}});';if(n===link)return "import React from 'react';export default function Link(p){return React.createElement('a',p)}";
@@ -93,7 +93,11 @@ it.each(['01','02'] as const)('legacy_layout_changes_version_only_after_explicit
   expect(await page.getByText(/Новое оформление — только в черновике/).isVisible()).toBe(true);expect(f.applies).toHaveLength(0);
   f.info.seed={state:'ready',proposal:{x:.8,y:0,width:.2,height:.3},reason:null};await refresh(page);expect(await saved(page)).toEqual(before);
   await page.reload();await mount(page);await editor(page);expect((await saved(page)).layout).toEqual(before.layout);
-  await page.locator(`[data-select-clip="${videoId}"]`).click();await page.locator(`[data-select-clip="${clipId}"]`).click();await editor(page);
+  await page.locator(`[data-select-clip="${videoId}"]`).click();
+  await page.locator(`.clip-card[data-selected=true][data-clip-id="${videoId}"]`).waitFor();
+  await page.locator(`[data-select-clip="${clipId}"]`).click();
+  await page.locator(`.clip-card[data-selected=true][data-clip-id="${clipId}"]`).waitFor();
+  await editor(page);
   expect((await saved(page)).layout).toEqual(before.layout);expect(f.applies).toHaveLength(0);expect(f.info.publishedLayout.requested).toEqual(legacy);
   await page.getByText('Уточнить области',{exact:true}).click();const width=page.getByRole('slider',{name:'Экран: ширина, %'});
   await range(width,'60');expect((await saved(page)).layout.screen.width).toBe(.6);await variant(page,'03');expect((await saved(page)).layout.version).toBe(1);
@@ -121,6 +125,9 @@ it('v2_02_height_control_reaches_reference_aspect_without_applying',()=>run(asyn
   const roi=(await saved(page)).layout.screen;expect(await height.getAttribute('aria-valuetext')).toContain('высоты исходника');expect(Math.abs(roi.width*1816-930)).toBeLessThan(.002);expect(Math.abs(roi.height*968-704)).toBeLessThan(.002);
   await range(width,'60');expect((await saved(page)).layout.screen.height).toBe(roi.height);await range(width,String(930/1816*100));
   const target=page.getByRole('combobox',{name:'Уточняемая область'});await target.selectOption('camera');expect(await height.count()).toBe(0);
+  expect(await page.getByRole('slider',{name:'Камера: высота, %'}).count()).toBe(1);
+  expect((await saved(page)).layout.camera).toBeNull();
+  await page.getByRole('checkbox',{name:'Показывать камеру из выбранной области',exact:true}).check();
   await target.selectOption('screen');expect((await saved(page)).layout.screen).toEqual(roi);expect((await saved(page)).layout.camera).toEqual(f.info.seed.proposal);await page.getByRole('slider',{name:'Экран: положение по вертикали, %'}).press('End');await height.press('End');expect((await saved(page)).layout.screen.y).toBe(0);
   await page.getByRole('button',{name:'Применить оформление',exact:true}).click();await page.getByRole('checkbox',{name:/Я просмотрел/}).check();
   await range(height,'80');expect(await page.getByRole('checkbox',{name:/Я просмотрел/}).isChecked()).toBe(false);await page.getByRole('checkbox',{name:/Я просмотрел/}).check();
