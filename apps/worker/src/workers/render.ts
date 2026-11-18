@@ -77,7 +77,8 @@ export async function handleRenderJob(attempt: Attempt, deps: RenderDependencies
       const rendered = await (deps.render ?? renderClip)({ inputPath: source, outputPath: output, startTime: Number(input.start_seconds),
         endTime: Number(input.end_seconds), cutPlan: cutPlan ?? undefined, format: 'portrait', words: input.words, watermark,
         origin: deps.origin, code: input.code, signal, layout:input.layout, initialLayout,
-        music: input.music, musicTrackId: input.music_track_id, clipIndex: input.index, teaser: input.teaser, title: input.title, cta: input.cta_kind });
+        music: input.music, musicTrackId: input.music_track_id, clipIndex: input.index, teaser: input.teaser, title: input.title,
+        cta: input.cta_kind, ctaUrl: input.cta_url });
       await (deps.thumbnail ?? generateThumbnail)(output, thumb, duration * 0.25);
       signal.throwIfAborted();
       const suffix = input.render_version > 1 ? `-v${input.render_version}` : '';
@@ -92,7 +93,8 @@ export async function handleRenderJob(attempt: Attempt, deps: RenderDependencies
         ...(compacted ? { cut_plan: compacted, compact: `v1:${COMPACT_KEEP_SECONDS}:${COMPACT_XFADE_SECONDS}` } : {}),
         ...(rendered.teaser ? { teaser: { text_sha256: createHash('sha256').update(rendered.teaser.lines.join('\n'), 'utf8').digest('hex'),
           lines: rendered.teaser.lines.length, font_size: rendered.teaser.font_size, version: 'v1' } } : {}),
-        ...(rendered.cta ? { cta: { kind: rendered.cta.kind, font_size: rendered.cta.font_size, start: rendered.cta.start_seconds, version: CTA_VERSION } } : {}),
+        ...(rendered.cta ? { cta: { kind: rendered.cta.kind, font_size: rendered.cta.font_size, start: rendered.cta.start_seconds, version: CTA_VERSION,
+          ...(rendered.cta.text_sha256 ? { text_sha256: rendered.cta.text_sha256 } : {}) } } : {}),
         ...(rendered.music ? { music: rendered.music.track, margin: MUSIC_MARGIN_LU, gain_db: rendered.music.gain_db } : {}),
         ...(rendered.packshot ? { packshot: { ...rendered.packshot, margin: STINGER_MARGIN_LU, envelope: STINGER_ENVELOPE,
           flash: `${FLASH_SHAPE_VERSION}:${FLASH_PEAK}:${FLASH_HALF_WIDTH_SECONDS}` } } : {}) })).digest('hex');

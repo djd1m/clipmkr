@@ -19,7 +19,9 @@ export function CtaFields({ id, kind, url, disabled, onKind, onUrl }: { id: stri
     {kind !== 'none' && <><label htmlFor={`${id}-url`}>Ссылка (https://…)</label>
       <input id={`${id}-url`} type="url" inputMode="url" autoComplete="url" required maxLength={2048} placeholder="https://www.youtube.com/watch?v=…"
         value={url} disabled={disabled} onChange={event => onUrl(event.target.value)} />
-      <small className="muted">Кнопка с этой ссылкой появится на странице клипа; домен увидит зритель.</small></>}
+      <small className="muted">{kind === 'subscribe'
+        ? 'Этот адрес станет кнопкой на странице клипа. Короткая публичная ссылка также появится в финале видео.'
+        : 'Кнопка с этой ссылкой появится на странице клипа, рядом будет виден домен.'}</small></>}
   </div>;
 }
 export function ctaSavedMessage(kind: CtaKind, rerendering: number): string {
@@ -45,8 +47,8 @@ export function VideoCtaForm({ videoId, initialKind, initialUrl, onFeedback }: {
     finally { setBusy(false); }
   }
   return <section className="cta-panel" aria-labelledby="cta-heading"><h2 id="cta-heading">Призыв в конце</h2>
-    <p className="muted">Главная кнопка на странице клипа по короткой ссылке и короткая надпись в последние 2,5 с видео, над адресом.
-      Смена вида пересобирает все готовые клипы записи — по одной пересборке на клип из суточного лимита; смена только ссылки — без пересборки.</p>
+    <p className="muted">Призыв появится на странице клипа и в последние 2,5 с видео.
+      Смена вида призыва или адреса, который виден в финале, пересобирает готовые клипы записи. На каждый клип расходуется одна пересборка из суточного лимита.</p>
     <form onSubmit={event => { event.preventDefault(); void save(); }}>
       <CtaFields id="video-cta" kind={kind} url={url} disabled={busy} onKind={next => { setKind(next); setError(''); setMessage(''); onFeedback?.(null); }}
         onUrl={next => { setUrl(next); setError(''); setMessage(''); onFeedback?.(null); }} />

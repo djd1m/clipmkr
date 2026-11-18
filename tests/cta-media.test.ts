@@ -2,7 +2,8 @@ import { expect, it } from 'vitest';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdtemp, rm } from 'node:fs/promises';
-import { buildFilterChain } from '../apps/worker/src/render/ffmpeg';
+import { join } from 'node:path';
+import { buildFilterChain, renderClip } from '../apps/worker/src/render/ffmpeg';
 import { CTA_PADDING_X, CTA_PADDING_Y, ctaZone, layoutCta, prepareCta } from '../apps/worker/src/render/cta-overlay';
 import { watermarkGeometry } from '../apps/worker/src/render/watermark';
 import { CTA_FRAME_LABELS } from '../packages/shared/src/cta';
@@ -51,3 +52,25 @@ it.skipIf(!supported)('надпись призыва: финальное окн�
     expect(result.watermark).toBeLessThan(1);   // метка не перекрыта
   } finally { await rm(dir, { recursive: true, force: true }); }
 }, 180000);
+
+it.skipIf(!supported).each([false, true])('адрес подписки виден в MP4 только в финале, watermark=%s', async watermark => {
+  const directory = await mkdtemp('/tmp/cta-address-media-');
+  const address = 'https://t.me/demo_channel';
+  try {
+    const input = join(directory, 'source.wav');
+    await exec('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=20', input]);
+    const output = join(directory, 'subscribe.mp4');
+    const outcome = await renderClip({ inputPath: input, outputPath: output, startTime: 0, endTime: 20, cutPlan: [[0, 2], [18, 20]],
+      format: 'portrait', words: [], watermark, origin: 'https://clipmkr.ru', code: 'WWWWWW', cta: 'subscribe', ctaUrl: address });
+    expect(outcome.cta?.text).toBe(address);
+    const layout = layoutCta(address, 1080, ctaZone(1920))!;
+    const crop = `crop=${layout.textWidth}:${layout.plateHeight - 2 * CTA_PADDING_Y}:${layout.x + CTA_PADDING_X}:${layout.y + CTA_PADDING_Y}`;
+    const frame = async (t: number) => (await exec('ffmpeg', ['-v', 'error', '-ss', String(t), '-i', output,
+      '-frames:v', '1', '-vf', `format=gray,${crop}`, '-f', 'rawvideo', '-'], { encoding: 'buffer' })).stdout;
+    const before = await frame(1), after = await frame(3);
+    expect(before.length).toBeGreaterThan(0);
+    expect(after.length).toBe(before.length);
+    expect(before.every(pixel => pixel < 100)).toBe(true);
+    expect(after.filter(pixel => pixel > 220).length).toBeGreaterThan(100);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+}, 90000);

@@ -13,6 +13,7 @@ export interface RenderInput {
   music_track_id: string | null; render_version: number;
   compact: boolean; loudness_median_db: string | null; cut_plan: [number, number][] | null;
   object_key: string; actual_bytes: string; duration_seconds: string; music: boolean; teaser: boolean; title: string; plan: unknown; cta_kind: string | null;
+  cta_url: string | null;
   index: number; start_seconds: string; end_seconds: string; code: string; words: unknown; language: string; segments: unknown;
 }
 // Lock video first, as retry/watchdog do. Never compare the video fence for sibling clips.
@@ -34,7 +35,9 @@ export async function getRenderInput(pool: Pool, attempt: Attempt) {
     const result = await tx.query<RenderInput & {stored_layout:unknown}>(`SELECT c.rendered_layout AS stored_layout,COALESCE(i.layout,c.rendered_layout->'requested') AS layout,
       CASE WHEN NOT $2 AND c.render_version=1 THEN c.initial_layout ELSE NULL END AS initial_layout,
       NOT $2 AND c.render_version=1 AND c.initial_layout IS NULL AS initial_layout_pending,
-      c.music_track_id,c.render_version,v.object_key,v.actual_bytes,v.duration_seconds,v.music,v.teaser,v.cta_kind,v.compact,v.loudness_median_db,c.cut_plan,c.title,CASE WHEN EXISTS (SELECT 1 FROM video_credit_charge cc WHERE cc.video_id=v.id AND cc.state IN ('reserved','settled') AND cc.paid_render) THEN 'paid' ELSE ${effectivePlanSql('a')} END AS plan,
+      c.music_track_id,c.render_version,v.object_key,v.actual_bytes,v.duration_seconds,v.music,v.teaser,v.cta_kind,
+      CASE WHEN v.cta_kind='subscribe' THEN v.cta_url END AS cta_url,
+      v.compact,v.loudness_median_db,c.cut_plan,c.title,CASE WHEN EXISTS (SELECT 1 FROM video_credit_charge cc WHERE cc.video_id=v.id AND cc.state IN ('reserved','settled') AND cc.paid_render) THEN 'paid' ELSE ${effectivePlanSql('a')} END AS plan,
       c.index,c.start_seconds,c.end_seconds,l.code,t.words,t.language,t.segments FROM clip c
       JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
       JOIN clip_link l ON l.clip_id=c.id JOIN transcript t ON t.video_id=v.id

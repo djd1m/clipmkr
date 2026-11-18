@@ -29,7 +29,8 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => ({
 function actions(cta: CtaTarget): string {
   const own = (primary: boolean) => `<a class="${primary ? 'cta' : 'secondary-link'}" href="/">Сделать свои клипы</a>`;
   if (cta.kind === 'none') return own(true);
-  return `<div class="author-cta"><a class="cta" href="${escapeHtml(cta.url)}" rel="noopener noreferrer nofollow" target="_blank">${escapeHtml(CTA_BUTTON_LABELS[cta.kind])}</a>
+  const label = cta.kind === 'subscribe' ? `${cta.url} →` : CTA_BUTTON_LABELS[cta.kind];
+  return `<div class="author-cta"><a class="cta" href="${escapeHtml(cta.url)}" rel="noopener noreferrer nofollow" target="_blank">${escapeHtml(label)}</a>
 <p class="cta-host">Ссылка автора клипа · <span>${escapeHtml(ctaDisplayHost(cta.url))}</span></p></div>${own(false)}`;
 }
 function landing(title: string, preview: string | null, expired: boolean, theme: Theme, cta: CtaTarget = { kind: 'none', url: null }): string {

@@ -43,8 +43,9 @@ export interface RenderOptions {
   cutPlan?: Segment[];
   inputPath: string; outputPath: string; startTime: number; endTime: number;
   format: ClipFormat; words: TranscriptWord[]; watermark: boolean; origin: string; code: string; signal?: AbortSignal; music?: boolean; clipIndex?: number; teaser?: boolean; title?: string;
-  /** Вид призыва из базы (ADR-017, 27b); читается fail-closed, адрес в кадр не идёт. */
+  /** Вид призыва и адрес подписки из базы. */
   cta?: string | null;
+  ctaUrl?: string | null;
 }
 export async function renderClip(options: RenderOptions): Promise<RenderOutcome & {rendered_layout?:LayoutPublished|null;seedProposal?:NormalizedRect|null}> {
   const sourceDuration = options.endTime - options.startTime;
@@ -90,7 +91,10 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
       console.info(JSON.stringify({ event: 'music_track_fallback' }));
     }
     const teaser = options.teaser ? await prepareTeaser(options.title ?? '', width, temp,!!layout,original02?{x:91,y:237,layoutWidth:632}:undefined) : null;
-    const cta = prepareCta(options.cta, width, height, duration, !!teaser, options.watermark,undefined,original02?{top:1481,bottom:1561}:undefined);
+    const ctaTextFile = join(temp, 'cta.txt');
+    const cta = prepareCta(options.cta, width, height, duration, !!teaser, options.watermark, undefined,
+      original02 ? { top: 1481, bottom: 1561 } : undefined, { url: options.ctaUrl, textFile: ctaTextFile });
+    if (cta?.result.text_sha256) await writeFile(ctaTextFile, cta.result.text, { encoding: 'utf8', mode: 0o600 });
     const trackIndex = typeof options.clipIndex === 'number' ? options.clipIndex - 1 : undefined;
     const track = options.musicTrackId == null
       ? (options.music ? selectTrack(trackIndex) : null)

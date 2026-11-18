@@ -15,6 +15,8 @@ import { ClipMusicService } from '../apps/web/src/server/clip-music';
 import { parseScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 const url = process.env.DATABASE_URL;
 const YT = 'https://www.youtube.com/watch?v=ukZyNkgqVho';
+const CHANNEL = 'https://t.me/demo_channel';
+const NEW_CHANNEL = 'https://t.me/next_channel';
 describe.skipIf(!url)('video.setCta: пересборка клипов записи / real PostgreSQL', () => {
   let pool: Pool;
   const schema = `cta_rerender_${randomBytes(8).toString('hex')}`;
@@ -53,6 +55,8 @@ describe.skipIf(!url)('video.setCta: пересборка клипов запи�
   const versions = async (video: string) => (await pool.query<{ render_version: number }>(
     'SELECT render_version FROM clip WHERE video_id=$1 ORDER BY "index"', [video])).rows.map(r => r.render_version);
   const setWatch = (f: { account: string; video: string }) => cta().setCta(f.account, { video_id: f.video, cta_kind: 'watch_full', cta_url: YT });
+  const setSubscribe = (f: { account: string; video: string }, address: string) =>
+    cta().setCta(f.account, { video_id: f.video, cta_kind: 'subscribe', cta_url: address });
   const preconsume = (account: string, used: number) => pool.query(`INSERT INTO quota_counter(scope,scope_key,day,used)
     VALUES('user_rerenders',$1,'2026-09-25',$2)`, [account, used]);
 
@@ -94,8 +98,7 @@ describe.skipIf(!url)('video.setCta: пересборка клипов запи�
     expect(await versions(f.video)).toEqual([2, 2, 2]);
     expect(await stored(f.video)).toEqual({ cta_kind: 'watch_full', cta_url: YT });
     const input = await getRenderInput(pool, jobs[0]!);
-    expect(input).toMatchObject({ cta_kind: 'watch_full', render_version: 2 });
-    expect(input).not.toHaveProperty('cta_url');
+    expect(input).toMatchObject({ cta_kind: 'watch_full', cta_url: null, render_version: 2 });
     // Клипы остаются done со старыми файлами до публикации новых.
     expect((await pool.query("SELECT count(*)::int n FROM clip WHERE video_id=$1 AND status='done' AND object_key LIKE 'old-%'", [f.video])).rows[0].n).toBe(3);
   });
@@ -108,6 +111,55 @@ describe.skipIf(!url)('video.setCta: пересборка клипов запи�
       .resolves.toMatchObject({ rerendering: 0 });
     expect(await charge()).toBe(2); expect(await attempts(f.video)).toHaveLength(2); expect(enqueue).not.toHaveBeenCalled();
     expect(await stored(f.video)).toEqual({ cta_kind: 'watch_full', cta_url: 'https://rutube.ru/video/1/' });
+  });
+
+  it.each([
+    ['адрес A → адрес B', CHANNEL, NEW_CHANNEL],
+    ['адрес → словарь', CHANNEL, `${NEW_CHANNEL}?from=clip`],
+    ['словарь → адрес', `${CHANNEL}#intro`, NEW_CHANNEL],
+  ])('подписка: %s ждёт нового MP4 и учитывает квоту один раз', async (_case, from, to) => {
+    const f = await fixture(2);
+    await pool.query("UPDATE video SET cta_kind='subscribe',cta_url=$2 WHERE id=$1", [f.video, from]);
+    await expect(setSubscribe(f, to)).resolves.toMatchObject({ cta_url: to, rerendering: 2 });
+    await expect(setSubscribe(f, to)).resolves.toMatchObject({ cta_url: to, rerendering: 0 });
+    expect(await stored(f.video)).toEqual({ cta_kind: 'subscribe', cta_url: to });
+    expect(await charge()).toBe(2);
+    expect(await versions(f.video)).toEqual([2, 2]);
+    const jobs = await attempts(f.video);
+    expect(jobs).toHaveLength(2);
+    expect(enqueue).toHaveBeenCalledTimes(2);
+    const published = async () => (await pool.query('SELECT status,object_key FROM clip WHERE video_id=$1 ORDER BY "index"', [f.video])).rows;
+    expect(await published()).toEqual(['old-1', 'old-2'].map(object_key => ({ status: 'done', object_key })));
+    const [job] = jobs;
+    await expect(getRenderInput(pool, job!)).resolves.toMatchObject({ cta_kind: 'subscribe', cta_url: to, render_version: 2 });
+    const object_key = `clips/free/${f.video}/${job!.clip_id}-v2.mp4`;
+    await expect(publishRenderResult(pool, job!, { object_key, thumbnail_key: `thumbs/${f.video}/${job!.clip_id}-v2.jpg`,
+      bytes: 5, watermarked: true, duration_seconds: 20 }, async () => 5)).resolves.toBe(true);
+    expect(await published()).toEqual([{ status: 'done', object_key }, { status: 'done', object_key: 'old-2' }]);
+  });
+
+  it('подписка: разные веб-адреса с одной статической надписью сохраняются даже при исчерпанной квоте', async () => {
+    const f = await fixture(2), next = `${NEW_CHANNEL}?from=clip`;
+    await pool.query("UPDATE video SET cta_kind='subscribe',cta_url=$2 WHERE id=$1", [f.video, `${CHANNEL}#intro`]);
+    await preconsume(f.account, 20);
+    await expect(setSubscribe(f, next)).resolves.toMatchObject({ cta_url: next, rerendering: 0 });
+    expect(await stored(f.video)).toEqual({ cta_kind: 'subscribe', cta_url: next });
+    expect(await versions(f.video)).toEqual([1, 1]);
+    expect(await attempts(f.video)).toHaveLength(0);
+    expect(enqueue).not.toHaveBeenCalled();
+    expect(await charge()).toBe(20);
+  });
+
+  it('подписка: отказ квоты при смене отображаемого адреса откатывает всю операцию', async () => {
+    const f = await fixture(2);
+    await pool.query("UPDATE video SET cta_kind='subscribe',cta_url=$2 WHERE id=$1", [f.video, CHANNEL]);
+    await preconsume(f.account, 19);
+    await expect(setSubscribe(f, NEW_CHANNEL)).rejects.toMatchObject({ status: 429 });
+    expect(await stored(f.video)).toEqual({ cta_kind: 'subscribe', cta_url: CHANNEL });
+    expect(await versions(f.video)).toEqual([1, 1]);
+    expect(await attempts(f.video)).toHaveLength(0);
+    expect(enqueue).not.toHaveBeenCalled();
+    expect(await charge()).toBe(19);
   });
 
   it('уже идёт смена музыки у одного клипа — 409 целиком: ни призыва, ни квоты, ни попыток', async () => {
