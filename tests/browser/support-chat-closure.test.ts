@@ -124,8 +124,12 @@ for (const width of [1440, 390]) {
   }));
 
   it(`ordinary close reopen and parent Escape stay hide-only ${width}`, () => fixture(width, async page => {
-    await open(page); const before = await state(page);
+    await open(page);
+    await page.frameLocator('iframe').getByRole('button', { name: 'Home', exact: true }).click();
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe('IFRAME');
+    const before = await state(page);
     await page.locator('.support-close').click(); await hidden(page);
+    expect((await state(page)).clears.length).toBe(before.clears.length);
     expect(await page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).evaluate(el => el === document.activeElement)).toBe(true);
     await open(page); expect((await state(page)).logouts).toBe(before.logouts);
     await page.keyboard.press('Escape'); await hidden(page);

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { closeSupportWidget, clearSupportIdentity, openVerifiedSupport, supportRequest, type PublicSupport, type SupportAccount, type SafeContext, type WidgetAPI } from '../../lib/support-client';
 import { watchSupportSessionChanges } from '../../lib/support-session-signal';
@@ -8,6 +8,7 @@ export function SupportPanel({ support, account, videoId }: { support: PublicSup
   const router = useRouter();
   const epoch = useRef(0), opener = useRef<HTMLButtonElement>(null);
   const confirmedWidget = useRef<WidgetAPI | null>(null), canSynchronize = useRef(false), opening = useRef(false);
+  const closingFromPointer = useRef(false);
   const [opened, setOpened] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [message, setMessage] = useState('');
   const [context, setContext] = useState<SafeContext | null>(null), [consent, setConsent] = useState(false);
@@ -15,6 +16,12 @@ export function SupportPanel({ support, account, videoId }: { support: PublicSup
   function close() {
     try { closeSupportWidget(opener.current); setOpened(false); }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Не удалось закрыть чат.'); }
+  }
+
+  function allowCloseFocus(event: PointerEvent<HTMLButtonElement>) {
+    if (event.button !== 0) return;
+    closingFromPointer.current = true;
+    window.setTimeout(() => { closingFromPointer.current = false; }, 0);
   }
 
   useEffect(() => {
@@ -34,18 +41,25 @@ export function SupportPanel({ support, account, videoId }: { support: PublicSup
       setMessage('');
     };
     const refresh = () => { void clearSupportIdentity(); router.refresh(); };
-    const onFocus = () => { if (document.visibilityState !== 'hidden') refresh(); };
+    const onFocus = () => {
+      // Clicking our close control returns focus from the vendor iframe before click runs.
+      // That transition hides the widget and retains the authenticated conversation and draft.
+      const ownClose = closingFromPointer.current;
+      closingFromPointer.current = false;
+      if (!ownClose && document.visibilityState !== 'hidden') refresh();
+    };
+    const onVisibility = () => { closingFromPointer.current = false; onFocus(); };
     const unwatch = watchSupportSessionChanges(refresh);
     canSynchronize.current = unwatch !== null;
     window.addEventListener('n5:support-clear', cleared);
     window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       unwatch?.();
       canSynchronize.current = false;
       window.removeEventListener('n5:support-clear', cleared);
       window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
       epoch.current++;
       void clearSupportIdentity();
     };
@@ -91,7 +105,7 @@ export function SupportPanel({ support, account, videoId }: { support: PublicSup
   }
 
   return <section className="auth-card support-card" aria-label="Чат поддержки">
-    {opened && <button type="button" className="support-close" onClick={close} aria-label="Закрыть чат поддержки">Закрыть чат ×</button>}
+    {opened && <button type="button" className="support-close" onPointerDown={allowCloseFocus} onClick={close} aria-label="Закрыть чат поддержки">Закрыть чат ×</button>}
     <h2>Написать в поддержку</h2>
     {support.synthetic && <p role="status">СИНТЕТИЧЕСКИЙ СТЕНД: тестовый чат, сообщения не уходят реальной поддержке.</p>}
     {!available ? <p role="status">Чат поддержки пока недоступен.</p>
