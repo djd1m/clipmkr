@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Clipmkr · Призыв подписаться</title>
+<title>Clipmkr · Адрес канала в конце клипа</title>
 <style>
 :root{color-scheme:dark;--bg:#101513;--panel:#1a211d;--line:#394541;--ink:#eef2ec;--muted:#afbeb4;--button:#dcefd9;--button-text:#0f1a14}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif}
@@ -17,21 +17,21 @@ small,.muted{display:block;color:var(--muted);font-size:14px;margin:8px 0}
 .cta{display:block;text-align:center;background:var(--button);color:var(--button-text);border-radius:9px;padding:11px 8px;text-decoration:none;font-weight:650}
 .poster{display:grid;place-items:center;aspect-ratio:16/7;margin-bottom:10px;border-radius:8px;background:#26342f;color:var(--muted)}
 .frame{aspect-ratio:9/16;width:168px;max-width:100%;margin:auto;position:relative;border-radius:10px;background:#354b40}
-.caption{position:absolute;bottom:23%;left:5%;right:5%;padding:5px 2px;background:#000a;border-radius:4px;text-align:center;font-size:10px;font-weight:750}
+.caption{position:absolute;bottom:18.7%;left:50%;transform:translateX(-50%);padding:3px 4px;background:#0009;text-align:center;white-space:nowrap;font:750 11px/1.15 system-ui,sans-serif}
 @media(max-width:760px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body><main>
-<header><h1>Подписаться на мой канал</h1><p class="muted">Один призыв в настройке, на публичной странице и в финале клипа.</p></header>
+<header><h1>Адрес канала в конце клипа</h1><p class="muted">Зритель видит адрес и может открыть канал со страницы клипа.</p></header>
 <div class="grid">
 <section><h2>Настройка записи</h2>
-<label for="kind">Что сделать зрителю в конце</label><select id="kind"><option>Подписаться на мой канал</option></select>
+<label for="kind">Что сделать зрителю в конце</label><select id="kind"><option>Подписаться</option></select>
 <label for="url">Ссылка (https://…)</label><input id="url" type="url" value="https://t.me/demo_channel" readonly>
-<small>Кнопка с этой ссылкой появится на странице клипа; домен увидит зритель.</small></section>
+<small>Этот адрес станет кнопкой на странице клипа. Короткая публичная ссылка также появится в финале видео.</small></section>
 <section><h2>Страница клипа по короткой ссылке</h2><div class="poster">Обложка клипа</div>
-<a href="https://t.me/demo_channel" class="cta" rel="noopener noreferrer nofollow" target="_blank">Подписаться на мой канал →</a>
+<a href="https://t.me/demo_channel" class="cta" rel="noopener noreferrer nofollow" target="_blank">https://t.me/demo_channel →</a>
 <p class="muted">Ссылка автора клипа · t.me</p></section>
-<section><h2>Финал MP4 без метки</h2><div class="frame"><span class="caption">Подписаться на мой канал</span></div>
-<p class="muted">Надпись видна в последние 2,5 секунды.</p></section>
+<section><h2>Финал MP4 без метки</h2><div class="frame"><span class="caption">https://t.me/demo_channel</span></div>
+<p class="muted">Адрес виден в последние 2,5 секунды. Открыть ссылку можно на странице клипа.</p></section>
 </div>
 </main></body></html>
