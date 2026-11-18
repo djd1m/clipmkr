@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Видеотур Clipmkr · 18 ноября 2026</title>
+  <style>
+:root {
+  color-scheme: dark;
+  --background: #20201f;
+  --panel: #292928;
+  --text: #f3f2ed;
+  --muted: #bebeb4;
+  --line: #454543;
+  --accent: #8fd4a4;
+  font-family: system-ui, sans-serif;
+}
+* { box-sizing: border-box }
+body { margin: 0; color: var(--text); background: var(--background); line-height: 1.55 }
+main, nav { max-width: 940px; margin: auto; padding-inline: clamp(16px, 4vw, 40px) }
+main { padding-block: clamp(28px, 7vw, 64px) 64px }
+nav { padding-top: 24px }
+nav + main { padding-top: 28px }
+a { color: var(--accent); text-underline-offset: .2em }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px }
+h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(34px, 6vw, 66px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -.035em;
+  margin: 12px 0 20px;
+}
+.brand { font-weight: 800; letter-spacing: .1em; color: var(--accent) }
+.intro, .note, main > p, .description { color: var(--muted) }
+.intro, .note { max-width: 70ch }
+ol.tour { margin: 32px 0 20px; list-style: none; padding: 0; border-top: 1px solid var(--line) }
+.tour li { border-bottom: 1px solid var(--line) }
+.episode { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 13px 12px; text-decoration: none }
+.episode:hover { background: var(--panel) }
+.episode strong { display: block; color: var(--text); font-size: 1.12rem }
+.description { display: block; font-size: .9rem; margin-top: 2px }
+.watch { white-space: nowrap; font-variant-numeric: tabular-nums }
+video { display: block; width: 100%; height: auto; background: #111; border-radius: 12px; aspect-ratio: 16/9 }
+.actions { margin-top: 16px }
+.transcript { margin-top: 24px; max-width: 78ch }
+summary { cursor: pointer; color: var(--accent) }
+@media (max-width: 420px) { .episode { gap: 8px; padding-inline: 4px } .episode strong { font-size: 1rem } }
+</style>
+</head>
+<body>
+  <main>
+    <div class="brand">clipmkr</div>
+    <h1>Видеотур 18 ноября</h1>
+    <p class="intro">Семь сценариев за 2:57. Все ролики с русскими субтитрами.</p>
+    <ol class="tour"><li><a class="episode" href="01-auto-zoom/index.html"><span><strong>Автокомпоновка на первой нарезке</strong><span class="description">Первый монтаж демонстрации экрана с одной камерой</span></span><span class="watch">0:23 <span aria-hidden="true">→</span></span></a></li>
+<li><a class="episode" href="02-layout-status/index.html"><span><strong>Раскладка клипа и статус пересборки</strong><span class="description">Три раскладки и статус пересборки под плеером</span></span><span class="watch">0:30 <span aria-hidden="true">→</span></span></a></li>
+<li><a class="episode" href="03-music/index.html"><span><strong>Смена музыки готового клипа</strong><span class="description">Смена дорожки у готового клипа во время монтажа соседнего</span></span><span class="watch">0:26 <span aria-hidden="true">→</span></span></a></li>
+<li><a class="episode" href="04-fullscreen/index.html"><span><strong>Полноэкранный просмотр клипа</strong><span class="description">Полноэкранное воспроизведение с сохранением позиции</span></span><span class="watch">0:22 <span aria-hidden="true">→</span></span></a></li>
+<li><a class="episode" href="05-support-history/index.html"><span><strong>Поддержка и история обращений</strong><span class="description">Своя переписка после входа и повторного открытия чата</span></span><span class="watch">0:23 <span aria-hidden="true">→</span></span></a></li>
+<li><a class="episode" href="06-feature-request/index.html"><span><strong>Планы и предложения</strong><span class="description">Публичные планы и отправка предложения в поддержку</span></span><span class="watch">0:29 <span aria-hidden="true">→</span></span></a></li>
+<li><a class="episode" href="07-telegram-alerts/index.html"><span><strong>Уведомления операторов в Telegram</strong><span class="description">Оповещения сотрудникам о новых сообщениях в поддержке</span></span><span class="watch">0:25 <span aria-hidden="true">→</span></span></a></li></ol>
+    <p class="note">Для демонстрации использованы учебные данные. Ролики без звуковой дорожки.</p>
+  </main>
+</body>
+</html>

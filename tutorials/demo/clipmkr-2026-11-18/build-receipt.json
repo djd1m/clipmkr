@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "ffmpeg": {
+    "path": "ffmpeg",
+    "version": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "filters": [
+      "scale",
+      "pad",
+      "fps",
+      "format",
+      "setpts",
+      "fade",
+      "overlay",
+      "concat"
+    ]
+  },
+  "encodeProfile": {
+    "codec_name": "h264",
+    "pix_fmt": "yuv420p",
+    "r_frame_rate": "30/1"
+  },
+  "artifacts": [
+    {
+      "rel": "index.html",
+      "bytes": 4948,
+      "sha256": "f24e06bf67d01f3b2cb81a166aedf9a56ab4494dc4abf9c8b534e236c0115bd6"
+    },
+    {
+      "rel": "site-manifest.json",
+      "bytes": 11454,
+      "sha256": "16f6bfc386f74b2ae7c7422fd9815f37363f834fd73e5eee67d79034b331b046"
+    },
+    {
+      "rel": "01-auto-zoom/index.html",
+      "bytes": 3036,
+      "sha256": "00c843fd9e308f7671109c5da328c2fe0e5fe10cbdad087f9f094b139e0ff1e1"
+    },
+    {
+      "rel": "video/01-auto-zoom.ru.vtt",
+      "bytes": 169,
+      "sha256": "58da260639dbde69d701ec19856e75e89072ff48db0d6006a9d6100346f83ddd"
+    },
+    {
+      "rel": "02-layout-status/index.html",
+      "bytes": 3069,
+      "sha256": "f5b2af90c4112f1055fe3737c8d7dbbd61c48ad129da273e5400728aa611f325"
+    },
+    {
+      "rel": "video/02-layout-status.ru.vtt",
+      "bytes": 202,
+      "sha256": "7b0801863d9fdeb5877cc39aba2cd19fc2f0507118cbf72c0d6e217c3965050c"
+    },
+    {
+      "rel": "03-music/index.html",
+      "bytes": 2952,
+      "sha256": "e1122a2ab2cf1b33eba80dfdc6a01285775eec2177318966cb22b7bc0669dca6"
+    },
+    {
+      "rel": "video/03-music.ru.vtt",
+      "bytes": 174,
+      "sha256": "bdc5ee652c5eefb367604c57f2ba2d8ebf173c5e8b52003bfbad4a1b45295b89"
+    },
+    {
+      "rel": "04-fullscreen/index.html",
+      "bytes": 2983,
+      "sha256": "19a342b413de49e38fc1e0c0b3f27f52427314faefaebf27835e8a5bc5b3ab92"
+    },
+    {
+      "rel": "video/04-fullscreen.ru.vtt",
+      "bytes": 153,
+      "sha256": "ddf146814cd91f04d7a880d73de00e6a1161f2decf80080ccec2078847b37642"
+    },
+    {
+      "rel": "05-support-history/index.html",
+      "bytes": 3021,
+      "sha256": "97237f6ce96b5886b93e1b39172e8de8ca4814ad46f923c506a98dc6e6d55dfa"
+    },
+    {
+      "rel": "video/05-support-history.ru.vtt",
+      "bytes": 173,
+      "sha256": "d00621f824e5ca38205597f8dff3447d091fb91e8be682e0bc410953378748bf"
+    },
+    {
+      "rel": "06-feature-request/index.html",
+      "bytes": 3032,
+      "sha256": "1acf162ade647bb7c3d32bb64655af7e009212c803e4133d900991e8b7702232"
+    },
+    {
+      "rel": "video/06-feature-request.ru.vtt",
+      "bytes": 192,
+      "sha256": "a4a7213b5264161e43c64ae5bcc413709fadcfe5d90e895637fb6ec6dcbe0eca"
+    },
+    {
+      "rel": "07-telegram-alerts/index.html",
+      "bytes": 3084,
+      "sha256": "7970c12af025cd2e6380a009bd700a0c094e7a537e036a1da598e3df67f578e9"
+    },
+    {
+      "rel": "video/07-telegram-alerts.ru.vtt",
+      "bytes": 203,
+      "sha256": "9f6cf7cd3201a6ea12827a4eb917383536911e38c45b825b5c5681fde6f618ba"
+    }
+  ]
+}

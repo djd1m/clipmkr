@@ -1,0 +1,335 @@
+{
+  "schema": 1,
+  "set": "clipmkr-2026-11-18",
+  "title": "Clipmkr · Видеотур 18 ноября",
+  "demos": [
+    {
+      "slug": "01-auto-zoom",
+      "title": "Автокомпоновка на первой нарезке",
+      "page": "01-auto-zoom/index.html",
+      "media": [
+        {
+          "rel": "video/01-auto-zoom.mp4",
+          "bytes": 230208,
+          "sha256": "1758d643d803aa71a025249125879c348c054a6b1a3cb7ee13e0da7bb2690907"
+        },
+        {
+          "rel": "video/01-auto-zoom.ru.vtt",
+          "bytes": 169,
+          "sha256": "58da260639dbde69d701ec19856e75e89072ff48db0d6006a9d6100346f83ddd"
+        }
+      ],
+      "montageSeconds": 23.36,
+      "clips": [
+        {
+          "id": "01-auto-zoom",
+          "sourceSeconds": 19.76,
+          "seconds": 19.76,
+          "start": 2.4,
+          "file": "02-01-auto-zoom.mp4",
+          "caption": "В первой нарезке виден весь экран, а камера появляется один раз над ним."
+        }
+      ]
+    },
+    {
+      "slug": "02-layout-status",
+      "title": "Раскладка клипа и статус пересборки",
+      "page": "02-layout-status/index.html",
+      "media": [
+        {
+          "rel": "video/02-layout-status.mp4",
+          "bytes": 298854,
+          "sha256": "3dc80ffc82e4a784be5105481094e209e37726fd3c84e2fb41d879011934e961"
+        },
+        {
+          "rel": "video/02-layout-status.ru.vtt",
+          "bytes": 202,
+          "sha256": "7b0801863d9fdeb5877cc39aba2cd19fc2f0507118cbf72c0d6e217c3965050c"
+        }
+      ],
+      "montageSeconds": 29.52,
+      "clips": [
+        {
+          "id": "02-layout-status",
+          "sourceSeconds": 25.92,
+          "seconds": 25.92,
+          "start": 2.4,
+          "file": "02-02-layout-status.mp4",
+          "caption": "Статус виден после закрытия редактора. Прежний клип доступен до публикации новой версии."
+        }
+      ]
+    },
+    {
+      "slug": "03-music",
+      "title": "Смена музыки готового клипа",
+      "page": "03-music/index.html",
+      "media": [
+        {
+          "rel": "video/03-music.mp4",
+          "bytes": 231709,
+          "sha256": "a5b014bdb1c0793040460c477d8ccd7e90e30f04ad99bceddc084231d1f6a883"
+        },
+        {
+          "rel": "video/03-music.ru.vtt",
+          "bytes": 174,
+          "sha256": "bdc5ee652c5eefb367604c57f2ba2d8ebf173c5e8b52003bfbad4a1b45295b89"
+        }
+      ],
+      "montageSeconds": 25.88,
+      "clips": [
+        {
+          "id": "03-music",
+          "sourceSeconds": 22.28,
+          "seconds": 22.28,
+          "start": 2.4,
+          "file": "02-03-music.mp4",
+          "caption": "У готового фрагмента можно поменять музыку, пока соседний ещё собирается."
+        }
+      ]
+    },
+    {
+      "slug": "04-fullscreen",
+      "title": "Полноэкранный просмотр клипа",
+      "page": "04-fullscreen/index.html",
+      "media": [
+        {
+          "rel": "video/04-fullscreen.mp4",
+          "bytes": 203839,
+          "sha256": "419d1e397d5b95a2045b6b49da01e920ac30ea8e184bfce3165df9dd2d79c71f"
+        },
+        {
+          "rel": "video/04-fullscreen.ru.vtt",
+          "bytes": 153,
+          "sha256": "ddf146814cd91f04d7a880d73de00e6a1161f2decf80080ccec2078847b37642"
+        }
+      ],
+      "montageSeconds": 21.52,
+      "clips": [
+        {
+          "id": "04-fullscreen",
+          "sourceSeconds": 17.92,
+          "seconds": 17.92,
+          "start": 2.4,
+          "file": "02-04-fullscreen.mp4",
+          "caption": "Клип продолжает играть после выхода из полноэкранного режима."
+        }
+      ]
+    },
+    {
+      "slug": "05-support-history",
+      "title": "Поддержка и история обращений",
+      "page": "05-support-history/index.html",
+      "media": [
+        {
+          "rel": "video/05-support-history.mp4",
+          "bytes": 238748,
+          "sha256": "e51ce78788680e8bf6a87be29552394f78101d9f0f2d95c8630c12dbda3cfb61"
+        },
+        {
+          "rel": "video/05-support-history.ru.vtt",
+          "bytes": 173,
+          "sha256": "d00621f824e5ca38205597f8dff3447d091fb91e8be682e0bc410953378748bf"
+        }
+      ],
+      "montageSeconds": 22.799999999999997,
+      "clips": [
+        {
+          "id": "05-support-history",
+          "sourceSeconds": 19.2,
+          "seconds": 19.2,
+          "start": 2.4,
+          "file": "02-05-support-history.mp4",
+          "caption": "Войдите и откройте чат. При повторном открытии Clipmkr покажет тот же диалог."
+        }
+      ]
+    },
+    {
+      "slug": "06-feature-request",
+      "title": "Планы и предложения",
+      "page": "06-feature-request/index.html",
+      "media": [
+        {
+          "rel": "video/06-feature-request.mp4",
+          "bytes": 407928,
+          "sha256": "47480d4596daf77ff593232028406701530d7b2d67a7c07fc98660cfa79a8107"
+        },
+        {
+          "rel": "video/06-feature-request.ru.vtt",
+          "bytes": 192,
+          "sha256": "a4a7213b5264161e43c64ae5bcc413709fadcfe5d90e895637fb6ec6dcbe0eca"
+        }
+      ],
+      "montageSeconds": 28.799999999999997,
+      "clips": [
+        {
+          "id": "06-feature-request",
+          "sourceSeconds": 25.2,
+          "seconds": 25.2,
+          "start": 2.4,
+          "file": "02-06-feature-request.mp4",
+          "caption": "Планы публичны. Предложение и ответ команды остаются в вашей переписке в поддержке."
+        }
+      ]
+    },
+    {
+      "slug": "07-telegram-alerts",
+      "title": "Уведомления операторов в Telegram",
+      "page": "07-telegram-alerts/index.html",
+      "media": [
+        {
+          "rel": "video/07-telegram-alerts.mp4",
+          "bytes": 272377,
+          "sha256": "1e7305437c8104f8b4ec5b758ab47eabace454ed9c8ee9fda53adc710cfa684e"
+        },
+        {
+          "rel": "video/07-telegram-alerts.ru.vtt",
+          "bytes": 203,
+          "sha256": "9f6cf7cd3201a6ea12827a4eb917383536911e38c45b825b5c5681fde6f618ba"
+        }
+      ],
+      "montageSeconds": 25.2,
+      "clips": [
+        {
+          "id": "07-telegram-alerts",
+          "sourceSeconds": 21.6,
+          "seconds": 21.6,
+          "start": 2.4,
+          "file": "02-07-telegram-alerts.mp4",
+          "caption": "Группа получает уведомление о каждом сообщении клиента. Ответ оператора остаётся в Libredesk."
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "rel": "video/01-auto-zoom.mp4",
+      "bytes": 230208,
+      "sha256": "1758d643d803aa71a025249125879c348c054a6b1a3cb7ee13e0da7bb2690907"
+    },
+    {
+      "rel": "video/01-auto-zoom.ru.vtt",
+      "bytes": 169,
+      "sha256": "58da260639dbde69d701ec19856e75e89072ff48db0d6006a9d6100346f83ddd"
+    },
+    {
+      "rel": "video/02-layout-status.mp4",
+      "bytes": 298854,
+      "sha256": "3dc80ffc82e4a784be5105481094e209e37726fd3c84e2fb41d879011934e961"
+    },
+    {
+      "rel": "video/02-layout-status.ru.vtt",
+      "bytes": 202,
+      "sha256": "7b0801863d9fdeb5877cc39aba2cd19fc2f0507118cbf72c0d6e217c3965050c"
+    },
+    {
+      "rel": "video/03-music.mp4",
+      "bytes": 231709,
+      "sha256": "a5b014bdb1c0793040460c477d8ccd7e90e30f04ad99bceddc084231d1f6a883"
+    },
+    {
+      "rel": "video/03-music.ru.vtt",
+      "bytes": 174,
+      "sha256": "bdc5ee652c5eefb367604c57f2ba2d8ebf173c5e8b52003bfbad4a1b45295b89"
+    },
+    {
+      "rel": "video/04-fullscreen.mp4",
+      "bytes": 203839,
+      "sha256": "419d1e397d5b95a2045b6b49da01e920ac30ea8e184bfce3165df9dd2d79c71f"
+    },
+    {
+      "rel": "video/04-fullscreen.ru.vtt",
+      "bytes": 153,
+      "sha256": "ddf146814cd91f04d7a880d73de00e6a1161f2decf80080ccec2078847b37642"
+    },
+    {
+      "rel": "video/05-support-history.mp4",
+      "bytes": 238748,
+      "sha256": "e51ce78788680e8bf6a87be29552394f78101d9f0f2d95c8630c12dbda3cfb61"
+    },
+    {
+      "rel": "video/05-support-history.ru.vtt",
+      "bytes": 173,
+      "sha256": "d00621f824e5ca38205597f8dff3447d091fb91e8be682e0bc410953378748bf"
+    },
+    {
+      "rel": "video/06-feature-request.mp4",
+      "bytes": 407928,
+      "sha256": "47480d4596daf77ff593232028406701530d7b2d67a7c07fc98660cfa79a8107"
+    },
+    {
+      "rel": "video/06-feature-request.ru.vtt",
+      "bytes": 192,
+      "sha256": "a4a7213b5264161e43c64ae5bcc413709fadcfe5d90e895637fb6ec6dcbe0eca"
+    },
+    {
+      "rel": "video/07-telegram-alerts.mp4",
+      "bytes": 272377,
+      "sha256": "1e7305437c8104f8b4ec5b758ab47eabace454ed9c8ee9fda53adc710cfa684e"
+    },
+    {
+      "rel": "video/07-telegram-alerts.ru.vtt",
+      "bytes": 203,
+      "sha256": "9f6cf7cd3201a6ea12827a4eb917383536911e38c45b825b5c5681fde6f618ba"
+    }
+  ],
+  "mediaSha256": "248931cefe09a08f4add0d1e68525f839bdf188aa91663bec28e322caa9c2fea",
+  "montageSeconds": 29.52,
+  "clips": [
+    {
+      "id": "01-auto-zoom",
+      "sourceSeconds": 19.76,
+      "seconds": 19.76,
+      "start": 2.4,
+      "file": "02-01-auto-zoom.mp4",
+      "caption": "В первой нарезке виден весь экран, а камера появляется один раз над ним."
+    },
+    {
+      "id": "02-layout-status",
+      "sourceSeconds": 25.92,
+      "seconds": 25.92,
+      "start": 2.4,
+      "file": "02-02-layout-status.mp4",
+      "caption": "Статус виден после закрытия редактора. Прежний клип доступен до публикации новой версии."
+    },
+    {
+      "id": "03-music",
+      "sourceSeconds": 22.28,
+      "seconds": 22.28,
+      "start": 2.4,
+      "file": "02-03-music.mp4",
+      "caption": "У готового фрагмента можно поменять музыку, пока соседний ещё собирается."
+    },
+    {
+      "id": "04-fullscreen",
+      "sourceSeconds": 17.92,
+      "seconds": 17.92,
+      "start": 2.4,
+      "file": "02-04-fullscreen.mp4",
+      "caption": "Клип продолжает играть после выхода из полноэкранного режима."
+    },
+    {
+      "id": "05-support-history",
+      "sourceSeconds": 19.2,
+      "seconds": 19.2,
+      "start": 2.4,
+      "file": "02-05-support-history.mp4",
+      "caption": "Войдите и откройте чат. При повторном открытии Clipmkr покажет тот же диалог."
+    },
+    {
+      "id": "06-feature-request",
+      "sourceSeconds": 25.2,
+      "seconds": 25.2,
+      "start": 2.4,
+      "file": "02-06-feature-request.mp4",
+      "caption": "Планы публичны. Предложение и ответ команды остаются в вашей переписке в поддержке."
+    },
+    {
+      "id": "07-telegram-alerts",
+      "sourceSeconds": 21.6,
+      "seconds": 21.6,
+      "start": 2.4,
+      "file": "02-07-telegram-alerts.mp4",
+      "caption": "Группа получает уведомление о каждом сообщении клиента. Ответ оператора остаётся в Libredesk."
+    }
+  ]
+}
