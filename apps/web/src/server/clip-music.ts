@@ -22,7 +22,8 @@ export class ClipMusicService {
       const clip = (await tx.query(`SELECT c.*,${retentionDeadlineSql()} AS retention_deadline FROM clip c JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id WHERE c.id=$1 FOR UPDATE OF c`, [input.clip_id])).rows[0];
       const active = await tx.query(`SELECT 1 FROM job_attempt WHERE clip_id=$1 AND stage='render'
         AND status IN ('running','deferred')`, [input.clip_id]);
-      if (video.status !== 'done' || clip.status !== 'done' || active.rowCount) {
+      const canRerender = video.status === 'done' || video.status === 'rendering';
+      if (!canRerender || clip.status !== 'done' || active.rowCount) {
         throw new UploadError('conflict', 'Клип ещё собирается', 409);
       }
       const now = this.clock();

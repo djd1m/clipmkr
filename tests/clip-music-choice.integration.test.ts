@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, afterAll, describe, it, expect, vi } from 'vitest';
 import { randomUUID, randomBytes } from 'node:crypto';
-import { createPool, transaction, type Pool, type Attempt } from '../packages/db/src';
+import { createPool, leaseAttempt, transaction, type Pool, type Attempt } from '../packages/db/src';
 import { migrate } from '../packages/db/src/migrate';
 import { ensureTestDatabase } from '../scripts/test-db.mjs';
 import { loadLimits } from '../packages/shared/src/config';
@@ -41,6 +41,31 @@ describe.skipIf(!url)('clip music choice / real PostgreSQL', () => {
   const chosen = (clip: string) => ({ clip_id: clip, track });
   async function job(clip: string) { return (await pool.query<Attempt>('SELECT * FROM job_attempt WHERE clip_id=$1 ORDER BY fence DESC LIMIT 1', [clip])).rows[0]!; }
   async function charge() { return Number((await pool.query("SELECT COALESCE(sum(used),0) AS used FROM quota_counter WHERE scope='user_rerenders'")).rows[0].used); }
+  it('ready clip accepts a track while a sibling render remains active', async () => {
+    const f = await fixture();
+    const siblingId = (await pool.query(`INSERT INTO clip(video_id,"index",start_seconds,end_seconds,title,status,watermarked)
+      VALUES($1,2,21,41,'Второй клип','queued',true) RETURNING id`, [f.video])).rows[0].id;
+    await pool.query("UPDATE video SET status='rendering',finished_at=NULL,clips_total=2 WHERE id=$1", [f.video]);
+    await pool.query('INSERT INTO clip_link(clip_id,code) VALUES($1,$2)', [siblingId, randomBytes(5).toString('hex')]);
+    const sibling = await leaseAttempt(pool, f.video, 'render', 1, siblingId);
+    if (!sibling) throw new Error('Второй клип не получил свою попытку');
+
+    await expect(service().setMusic(f.account, chosen(f.clip))).resolves.toEqual({ clip_id: f.clip, rerendering:true });
+    await expect(service().setMusic(f.account, chosen(f.clip))).rejects.toMatchObject({ status:409 });
+    const musicAttempt = await job(f.clip);
+    expect(musicAttempt).toMatchObject({ status:'running',rerender:true });
+    expect(await charge()).toBe(1);
+    expect((await pool.query('SELECT status,object_key FROM clip WHERE id=$1',[f.clip])).rows[0])
+      .toEqual({ status:'done',object_key:'old-paid-key' });
+    expect(await transaction(pool, tx => lockRender(tx, sibling))).toBe(true);
+
+    expect(await publishRenderResult(pool,musicAttempt,{object_key:`clips/free/${f.video}/${f.clip}-v2.mp4`,
+      thumbnail_key:`thumbs/${f.video}/${f.clip}-v2.jpg`,bytes:5,watermarked:true,duration_seconds:20,
+      rendered_music_track_id:track},async()=>5)).toBe(true);
+    expect((await pool.query('SELECT status,clips_done,clips_total FROM video WHERE id=$1',[f.video])).rows[0])
+      .toEqual({ status:'rendering',clips_done:1,clips_total:2 });
+    expect(await transaction(pool, tx => lockRender(tx, sibling))).toBe(true);
+  });
   it.each([[1,'01'],[1,'02'],[2,'01'],[2,'02']] as const)('music_rerender_preserves_each_published_composition_version v%s-%s',async(version,variant)=>{
     const f=await fixture();
     const requested=parseScreenFaceLayout({version,mode:'screen-face',variant,screen:{x:.1,y:.1,width:.8,height:.8},
