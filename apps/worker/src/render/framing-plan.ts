@@ -7,9 +7,10 @@
 // Требование владельца дословно: «если мы делаем 2 этажа, то на обоих должны быть люди
 // (полностью! а не просто кусок ноги или руки)». Отсюда два правила ниже.
 import type { SourceDimensions, CropWindow } from './format.js';
+import type { NormalizedRect } from '@clipmaker/shared/screen-layout';
 
 export interface DetectedFace { cx: number; cy: number; w: number; h: number; score: number }
-export interface FaceSample { t: number; faces: DetectedFace[] }
+export interface FaceSample { t: number; faces: DetectedFace[]; captureCamera?: NormalizedRect }
 export interface FaceReport { width: number; height: number; samples: FaceSample[] }
 
 /**

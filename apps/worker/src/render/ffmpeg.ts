@@ -1,7 +1,7 @@
 import { buildCompactionGraph, mapTime, planDuration, type Segment } from './compaction.js';
 import { planScreenLayout,parseScreenFaceLayout,type ScreenFaceLayout,type NormalizedRect } from '@clipmaker/shared/screen-layout';
 import type { LayoutPublished } from '@clipmaker/db';
-import { buildScreenLayoutGraph,resolveLayoutCamera,proposeLayoutCamera } from './screen-layout.js';
+import { buildScreenLayoutGraph,proposeInitialLayout,resolveLayoutCamera,proposeLayoutCamera } from './screen-layout.js';
 import { prepareTeaser } from './teaser.js';
 import { prepareCta } from './cta-overlay.js';
 import { preparePackshot, buildFlashFilter } from './packshot.js';
@@ -16,7 +16,7 @@ import { buildWatermarkDrawtext, watermarkGeometry, SUBTITLE_FONTS } from './wat
 import { execFFmpeg, FFMPEG_TIMEOUT_MS } from './exec.js';
 import { probeVideoStream, probeDuration } from './probe.js';
 import { detectFaces } from './faces.js';
-import { planFraming, planFollow, type FramingPlan, type FollowSegment } from './framing-plan.js';
+import { planFraming, planFollow, type FaceReport, type FramingPlan, type FollowSegment } from './framing-plan.js';
 import { panelWindow, singleWindow, getFollowFilter, type FramingPositions } from './format.js';
 import { prepareMusic, buildMusicAudioGraph, selectTrack, resolveMusicTrack, STINGERS, type RenderOutcome } from './music.js';
 export { buildMusicAudioGraph } from './music.js';
@@ -38,6 +38,7 @@ export function buildFilterChain(format: ClipFormat, assFilePath: string | null,
 }
 export interface RenderOptions {
   layout?:ScreenFaceLayout|null;
+  initialLayout?: {confirmed:ScreenFaceLayout} | {save(proposed:ScreenFaceLayout|null):Promise<ScreenFaceLayout|null>};
   musicTrackId?: string | null;
   cutPlan?: Segment[];
   inputPath: string; outputPath: string; startTime: number; endTime: number;
@@ -54,18 +55,37 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
   }
   const temp = await mkdtemp(join(dirname(options.outputPath), 'render-'));
   try {
-    const layout=options.layout==null?null:parseScreenFaceLayout(options.layout);
+    const { width, height } = FORMAT_DIMENSIONS[options.format];
+    // Keep permanent watermark geometry failures ahead of probing/retryable media errors.
+    if (options.watermark) watermarkGeometry(width, height, options.origin, options.code);
+    const video = await probeVideoStream(options.inputPath, options.signal);
+    const retained = cuts ?? [[options.startTime,options.endTime] as Segment];
+    let layout=options.layout==null?null:parseScreenFaceLayout(options.layout);
+    let initialCameraConfirmed=false;
+    let initialReport:FaceReport|null|undefined;
+    if(!layout && options.initialLayout){
+      if('confirmed' in options.initialLayout){
+        layout=parseScreenFaceLayout(options.initialLayout.confirmed);
+      }else{
+        let proposed:ScreenFaceLayout|null=null;
+        if(video && options.format==='portrait' && video.width>=480 && video.width>=video.height*1.3
+          && (video.sampleAspectRatio===undefined || video.sampleAspectRatio===1)){
+          initialReport=await detectFaces(options.inputPath,options.startTime,options.endTime,options.signal,
+            {screenCapture:true,preserveTail:true});
+          proposed=proposeInitialLayout(initialReport,retained,options.startTime,options.endTime);
+        }
+        options.signal?.throwIfAborted();
+        layout=await options.initialLayout.save(proposed);
+      }
+      initialCameraConfirmed=!!layout?.camera;
+    }
+    if(layout && !video)throw new Error('Экран требует видеодорожку');
     const original02=layout?.variant==='02' && layout.version!==1;
     const words = cuts ? options.words.filter(w => w.start >= options.startTime && w.end <= options.endTime)
       .map(w => ({ ...w, start: mapTime(cuts, w.start), end: mapTime(cuts, w.end) })).filter(w => w.end > w.start) : options.words;
     const subtitles = generateSubtitleFile(words, cuts ? 0 : options.startTime, cuts ? duration : options.endTime, options.format, original02 ? {fontSize:46,marginV:458} : undefined);
     const ass = subtitles ? join(temp, 'subtitles.ass') : null;
     if (ass) await writeFile(ass, subtitles!, { mode: 0o600 });
-    const { width, height } = FORMAT_DIMENSIONS[options.format];
-    // Keep permanent watermark geometry failures ahead of probing/retryable media errors.
-    if (options.watermark) watermarkGeometry(width, height, options.origin, options.code);
-    const video = await probeVideoStream(options.inputPath, options.signal);
-    if(layout && !video)throw new Error('Экран требует видеодорожку');
     if (options.music && options.clipIndex !== undefined && !Number.isSafeInteger(options.clipIndex)) {
       console.info(JSON.stringify({ event: 'music_track_fallback' }));
     }
@@ -84,18 +104,19 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
     let plan: FramingPlan | undefined;
     let follow: FollowSegment[] | undefined;
     let seedProposal:NormalizedRect|null=null;
-    let cameraVisible=false;
+    let cameraVisible=initialCameraConfirmed;
     let cameraReason:string|null=null;
-    if(layout && video){
+    if(layout && video && !initialCameraConfirmed){
       const crop=planScreenLayout(layout,video,true).camera?.source;
       if(crop){
         const report=await detectFaces(options.inputPath,options.startTime,options.endTime,options.signal,
           {crop,preserveTail:layout.version===3});
-        cameraVisible=resolveLayoutCamera(report,cuts??[[options.startTime,options.endTime]],options.startTime,options.endTime);
+        cameraVisible=resolveLayoutCamera(report,retained,options.startTime,options.endTime);
         if(!cameraVisible)cameraReason=report?'camera_unstable':'camera_unavailable';
       }
-    } else if (video) {
-      const report = await detectFaces(options.inputPath, options.startTime, options.endTime, options.signal);
+    } else if (!layout && video) {
+      const report = initialReport===undefined
+        ? await detectFaces(options.inputPath, options.startTime, options.endTime, options.signal) : initialReport;
       if (report) {
         seedProposal=proposeLayoutCamera(report);
         plan = planFraming(report, video, panelWindow(video, 0));

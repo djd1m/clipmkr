@@ -7,7 +7,7 @@ import { Worker, DelayedError, type Job, type ConnectionOptions } from 'bullmq';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { stat } from 'node:fs/promises';
-import { getRenderInput, saveCutPlan, saveLoudnessMedian, setRenderDeferred, retryRender, publishRenderResult, type Pool, type Attempt } from '@clipmaker/db';
+import { getRenderInput, saveCutPlan, saveInitialLayout, saveLoudnessMedian, setRenderDeferred, retryRender, publishRenderResult, type Pool, type Attempt } from '@clipmaker/db';
 import { DEFER_DELAY_MS, parseRenderMessage, type RenderMessage } from '@clipmaker/queue';
 import { handleLayoutSeedJob } from './layout-seed.js';
 import { withSource, type Download, type freeBytes } from '../media/download.js';
@@ -64,9 +64,20 @@ export async function handleRenderJob(attempt: Attempt, deps: RenderDependencies
       if (compacted) console.info(JSON.stringify({ event: 'compaction', cuts: compacted.length - 1,
         saved_s: end - start - duration, saved_pct: 100 * (end - start - duration) / (end - start) }));
       const output = join(dirname(source), 'clip.mp4'), thumb = join(dirname(source), 'thumb.jpg');
+      let initialLayout: Parameters<typeof renderClip>[0]['initialLayout'];
+      if (!input.layout && input.initial_layout) {
+        initialLayout = {confirmed:input.initial_layout};
+      } else if (!input.layout && input.initial_layout_pending) {
+        initialLayout = {save:async proposed => {
+          const decision = await saveInitialLayout(deps.pool, attempt, proposed, signal);
+          if (!decision) throw new Error('Первая раскладка больше не принадлежит этой попытке');
+          return decision.layout;
+        }};
+      }
       const rendered = await (deps.render ?? renderClip)({ inputPath: source, outputPath: output, startTime: Number(input.start_seconds),
         endTime: Number(input.end_seconds), cutPlan: cutPlan ?? undefined, format: 'portrait', words: input.words, watermark,
-        origin: deps.origin, code: input.code, signal, layout:input.layout,music: input.music, musicTrackId: input.music_track_id, clipIndex: input.index, teaser: input.teaser, title: input.title, cta: input.cta_kind });
+        origin: deps.origin, code: input.code, signal, layout:input.layout, initialLayout,
+        music: input.music, musicTrackId: input.music_track_id, clipIndex: input.index, teaser: input.teaser, title: input.title, cta: input.cta_kind });
       await (deps.thumbnail ?? generateThumbnail)(output, thumb, duration * 0.25);
       signal.throwIfAborted();
       const suffix = input.render_version > 1 ? `-v${input.render_version}` : '';

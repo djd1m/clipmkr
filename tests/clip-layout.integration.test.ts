@@ -1,12 +1,13 @@
 import { beforeAll, beforeEach, afterAll, describe, it, expect, vi } from 'vitest';
 import { createHash, randomUUID, randomBytes } from 'node:crypto';
-import { mkdtemp,readdir,copyFile,rm,readFile } from 'node:fs/promises';
+import { mkdtemp,readdir,copyFile,rm,readFile,writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createPool, type Pool, type Attempt } from '../packages/db/src';
+import { createPool, leaseAttempt, type Pool, type Attempt } from '../packages/db/src';
 import { migrate } from '../packages/db/src/migrate';
 import { ClipLayoutRepository } from '../packages/db/src/clip-layout';
 import { ClipLayoutService } from '../apps/web/src/server/clip-layout';
-import { publishRenderResult, getRenderInput, retryRender } from '../packages/db/src/render';
+import { publishRenderResult, getRenderInput, retryRender,saveInitialLayout } from '../packages/db/src/render';
+import { handleRenderJob } from '../apps/worker/src/workers/render';
 import { originalSourceRevision } from '../packages/shared/src/server/original-source';
 import { loadLimits } from '../packages/shared/src/config';
 import { environment } from './fixtures/environment';
@@ -39,6 +40,69 @@ describe.skipIf(!url)('layout intent and seed / real PostgreSQL',()=>{
     expected_source_revision:f.revision,expected_render_version:1,reviewed_full_clip:true,layout});
   const count=async(table:string)=>(await pool.query(`SELECT count(*)::int AS n FROM ${table}`)).rows[0].n as number;
   const charge=async()=>Number((await pool.query(`SELECT COALESCE(sum(used),0) AS n FROM quota_counter WHERE scope='user_rerenders'`)).rows[0].n);
+  async function firstRender(){
+    const f=await fixture();
+    await pool.query(`UPDATE video SET status='rendering',clips_done=0,finished_at=NULL WHERE id=$1`,[f.video]);
+    await pool.query(`UPDATE clip SET status='queued',object_key=NULL,thumbnail_key=NULL WHERE id=$1`,[f.clip]);
+    const attempt=await leaseAttempt(pool,f.video,'render',1,f.clip);
+    if(!attempt)throw new Error('Initial fixture has no render attempt');
+    return { ...f, attempt };
+  }
+  it('first automatic decision survives competing candidates and a retry, then becomes the published layout',async()=>{
+    const f=await firstRender(),compose=parseScreenFaceLayout({...layout,version:3,variant:'02',
+      camera:{x:.8,y:0,width:.2,height:.2}});
+    expect((await getRenderInput(pool,f.attempt))?.initial_layout_pending).toBe(true);
+    expect(await saveInitialLayout(pool,{...f.attempt,fence:f.attempt.fence+1},compose)).toBeNull();
+    const alternatives=[compose,{...compose,camera:null}];
+    const choices=await Promise.all(alternatives.map(candidate=>saveInitialLayout(pool,f.attempt,candidate)));
+    expect(choices[0]).toEqual(choices[1]);
+    const chosen=choices[0]!.layout!;
+    expect(alternatives).toContainEqual(chosen);
+    const next=await retryRender(pool,f.attempt,'ffmpeg_timeout');
+    expect(await saveInitialLayout(pool,f.attempt,null)).toBeNull();
+    expect(await getRenderInput(pool,next!)).toMatchObject({initial_layout_pending:false,initial_layout:chosen});
+    const published={version:1 as const,requested:chosen,resolved:{cameraVisible:!!chosen.camera,reason:null}};
+    const result={object_key:'clip.mp4',thumbnail_key:'clip.jpg',bytes:5,watermarked:true,duration_seconds:20,rendered_layout:published};
+    const wrong=alternatives.find(candidate=>JSON.stringify(candidate)!==JSON.stringify(chosen))!;
+    await expect(publishRenderResult(pool,next!,{...result,rendered_layout:{...published,requested:wrong}},async()=>5)).rejects.toThrow('не совпадает');
+    expect(await publishRenderResult(pool,next!,result,async()=>5)).toBe(true);
+    expect((await service().layoutInfo(f.account,{clip_id:f.clip}))).toMatchObject({publishedRenderVersion:1,publishedLayout:published});
+    expect(await charge()).toBe(0);expect(await count('video_credit_charge')).toBe(1);
+  });
+  it('initial_auto_timeout_choice_survives_put_retry',async()=>{
+    const f=await firstRender(),directory=await mkdtemp('/tmp/clipmkr-auto-retry-');
+    let rendered=0,contract:string|undefined;
+    const queued:Attempt[]=[];
+    try{
+      const deps:Parameters<typeof handleRenderJob>[1]={pool,directory,origin:'https://clipmkr.ru',
+        available:async()=>10_000n,download:async(_key,path)=>{await writeFile(path,'original');},
+        thumbnail:async(_source,path)=>{await writeFile(path,'thumbnail');},
+        enqueue:async attempt=>{queued.push(attempt);},
+        render:async options=>{
+          rendered++;
+          if(rendered===1){
+            expect(options.initialLayout && 'save' in options.initialLayout).toBe(true);
+            if(options.initialLayout && 'save' in options.initialLayout)expect(await options.initialLayout.save(null)).toBeNull();
+          }else expect(options.initialLayout).toBeUndefined();
+          await writeFile(options.outputPath,'clip');
+          return {duration_seconds:20,teaser:null,music:null,packshot:null};
+        },
+        storage:{delete:async()=>{},put:async(key,_path,_type,hash)=>{
+          const {rows:[row]}=await pool.query(`SELECT initial_layout='null'::jsonb AS standard FROM clip WHERE id=$1`,[f.clip]);
+          expect(row.standard).toBe(true);
+          if(key.endsWith('.mp4')){
+            if(contract)expect(hash).toBe(contract);
+            else contract=hash;
+          } else if(rendered===1)throw new Error('Synthetic thumbnail upload failed after clip PUT');
+          return 5;
+        }}};
+      expect(await handleRenderJob(f.attempt,deps)).toBe('failed');
+      expect(queued).toHaveLength(1);expect(contract).toBeTruthy();
+      expect(await handleRenderJob(queued[0]!,deps)).toBe('done');
+      expect(await charge()).toBe(0);expect(await count('job_attempt')).toBe(2);
+      expect(await count('video_credit_charge')).toBe(1);
+    }finally{await rm(directory,{recursive:true,force:true});}
+  });
   it('ownership, stale version/source, invalid schema and review refusal precede quota',async()=>{
     const f=await fixture(),other=await fixture();
     for(const id of [f.clip,randomUUID()])await expect(service().setLayout(other.account,{...input(f),clip_id:id})).rejects.toMatchObject({status:404});
@@ -268,6 +332,8 @@ it.skipIf(!url)('032 migrates populated 031 through canonical journal and preser
       grants:(await pool.query('SELECT * FROM credit_grant')).rows,charges:(await pool.query('SELECT * FROM video_credit_charge')).rows};
     await migrate(pool);await migrate(pool);
     const after=(await pool.query('SELECT * FROM clip WHERE id=$1',[clip])).rows[0];expect(after.rendered_layout).toBeNull();delete after.rendered_layout;
+    expect((await pool.query(`SELECT initial_layout='null'::jsonb AS legacy FROM clip WHERE id=$1`,[clip])).rows[0].legacy).toBe(true);
+    delete after.initial_layout;
     expect(after).toEqual(before.clip[0]);expect((await pool.query('SELECT * FROM account WHERE id=$1',[account])).rows).toEqual(before.account);
     expect((await pool.query('SELECT * FROM video WHERE id=$1',[video])).rows).toEqual(before.video);
     expect((await pool.query('SELECT * FROM credit_grant')).rows).toEqual(before.grants);
@@ -302,7 +368,8 @@ it.skipIf(!url)('033_preserves_v1_rows_and_accepts_only_supported_v2_intents',as
     const published={version:1,requested:v1,resolved:{cameraVisible:false,reason:null}};
     await pool.query('UPDATE clip SET rendered_layout=$2 WHERE id=$1',[clip,JSON.stringify(published)]);
     const tables=['account','video','clip','credit_grant','video_credit_charge','clip_layout_intent'];
-    const snapshot=async()=>Promise.all(tables.map(async table=>(await pool.query(`SELECT * FROM ${table}`)).rows));
+    const snapshot=async()=>Promise.all(tables.map(async table=>(await pool.query(
+      `SELECT to_jsonb(t)-'initial_layout' AS row FROM ${table} AS t`)).rows));
     const before=await snapshot();
     const constraints=async()=>(await pool.query(`SELECT conname,pg_get_constraintdef(oid) AS definition FROM pg_constraint
       WHERE conrelid IN ('clip'::regclass,'clip_layout_intent'::regclass) ORDER BY conname`)).rows;
@@ -314,7 +381,9 @@ it.skipIf(!url)('033_preserves_v1_rows_and_accepts_only_supported_v2_intents',as
     expect((await pool.query("SELECT * FROM _schema_migration WHERE name='032_clip_layout.sql'")).rows).toEqual(journal032);
     expect((await pool.query("SELECT count(*)::int n FROM _schema_migration WHERE name='033_clip_layout_composition_v2.sql'")).rows[0].n).toBe(1);
     const changed=await constraints();
-    expect(changed.filter(c=>c.conname!=='clip_layout_intent_layout_check')).toEqual(oldConstraints.filter(c=>c.conname!=='clip_layout_intent_layout_check'));
+    const kept=changed.filter(c=>!['clip_layout_intent_layout_check','clip_initial_layout_check'].includes(c.conname));
+    expect(kept).toEqual(oldConstraints.filter(c=>c.conname!=='clip_layout_intent_layout_check'));
+    expect(changed.filter(c=>c.conname==='clip_initial_layout_check')).toHaveLength(1);
     expect(changed.find(c=>c.conname==='clip_layout_intent_layout_check')?.definition).not.toBe(oldConstraints.find(c=>c.conname==='clip_layout_intent_layout_check')?.definition);
     for(const variant of ['01','02']){
       const v2=parseScreenFaceLayout({...v1,version:2,variant});

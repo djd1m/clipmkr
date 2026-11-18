@@ -5,7 +5,7 @@ import { mkdtemp, rm,readFile,readdir,writeFile } from 'node:fs/promises';
 import { createServer,type ServerResponse } from 'node:http';
 import { createServer as createTlsServer } from 'node:https';
 import { join } from 'node:path';
-import { buildScreenLayoutGraph,resolveLayoutCamera,proposeLayoutCamera } from '../apps/worker/src/render/screen-layout';
+import { buildScreenLayoutGraph,proposeInitialLayout,resolveLayoutCamera,proposeLayoutCamera } from '../apps/worker/src/render/screen-layout';
 import { detectFaces } from '../apps/worker/src/render/faces';
 import { renderClip,buildFilterChain } from '../apps/worker/src/render/ffmpeg';
 import { buildWatermarkDrawtext, SUBTITLE_FONTS } from '../apps/worker/src/render/watermark';
@@ -162,6 +162,23 @@ it('tail sampling retains the final real observation while a blank tail still ve
   const old = await detectFaces(file('face-tail.mkv'),start,.6);
   expect(old?.samples.map(sample=>sample.t)).toEqual([.04]);
 },30_000);
+
+it('first composition keeps the recorded screen and moves only a fixed window on retained samples',()=>{
+  const camera={x:.8,y:0,width:.2,height:.2};
+  const report=(count:number)=>({width:1000,height:600,samples:Array.from({length:10},(_,index)=>({
+    t:index*.5,faces:[],captureCamera:index<count?camera:undefined
+  }))});
+  expect(proposeInitialLayout(report(7),[[0,3.5]],0,3.5)).toBeNull();
+  expect(proposeInitialLayout(report(5),[[0,5]],0,5)).toBeNull();
+  expect(proposeInitialLayout(report(6),[[0,5]],0,5)).toMatchObject({variant:'02',camera:null});
+  expect(proposeInitialLayout(report(8),[[0,4]],0,4)).toMatchObject({variant:'02',camera});
+  expect(proposeInitialLayout(report(7),[[0,4]],0,4)).toMatchObject({variant:'02',camera:null});
+  const moved=report(10);
+  moved.samples[7]!.captureCamera={...camera,x:.801,width:.199};
+  expect(proposeInitialLayout(moved,[[0,5]],0,5)).toMatchObject({variant:'02',camera:null});
+  expect(proposeInitialLayout(moved,[[0,3.5],[4,5]],0,5)).toMatchObject({variant:'02',camera});
+  expect(proposeInitialLayout(null,[[0,5]],0,5)).toBeNull();
+});
 
 it('native YuNet reports actual blank observations; retained intervals alone govern the whole-clip veto',async()=>{
   const report=await detectFaces(file('source.mkv'),0,.8);

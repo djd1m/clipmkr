@@ -1,16 +1,33 @@
-import { planScreenLayout, type ScreenFaceLayout } from '@clipmaker/shared/screen-layout';
+import { parseScreenFaceLayout, planScreenLayout, type ScreenFaceLayout } from '@clipmaker/shared/screen-layout';
 import type { FaceReport } from './framing-plan.js';
 import type { Segment } from '@clipmaker/shared/cut-timeline';
 
+function retainedSamples(report:FaceReport,retained:Segment[],start:number,end:number) {
+  const samples=[];
+  for(let t=start;t<end-1e-6;t+=.5)if(retained.some(([a,b])=>t>=a && t<b))
+    samples.push(report.samples.find(s=>Math.abs(s.t-t)<.011));
+  return samples;
+}
+
 export function resolveLayoutCamera(report:FaceReport|null,retained:Segment[],start:number,end:number):boolean {
   if(!report || !Array.isArray(report.samples) || !report.samples.length)return false;
-  const expected:number[]=[];
-  for(let t=start;t<end-1e-6;t+=.5)if(retained.some(([a,b])=>t>=a && t<b))expected.push(t);
-  return expected.length>0 && expected.every(t=>{
-    const sample=report.samples.find(s=>Math.abs(s.t-t)<.011);
+  const expected=retainedSamples(report,retained,start,end);
+  return expected.length>0 && expected.every(sample=>{
     return !!sample && sample.faces.some(f=>[f.cx,f.cy,f.w,f.h,f.score].every(Number.isFinite)
       && f.score>=.6 && f.w>0 && f.h>0 && f.cx>=0 && f.cx<=1 && f.cy>=0 && f.cy<=1);
   });
+}
+
+export function proposeInitialLayout(report: FaceReport | null, retained: Segment[], start: number, end: number): ScreenFaceLayout | null {
+  if (!report) return null;
+  const expected = retainedSamples(report, retained, start, end);
+  const windows = expected.flatMap(sample => sample?.captureCamera ? [sample.captureCamera] : []);
+  if (expected.length < 8 || windows.length * 5 < expected.length * 3) return null;
+  const first = windows[0]!;
+  const fixed = windows.length === expected.length && windows.every(camera =>
+    camera.x === first.x && camera.y === first.y && camera.width === first.width && camera.height === first.height);
+  return parseScreenFaceLayout({version:3,mode:'screen-face',variant:'02',
+    screen:{x:0,y:0,width:1,height:1},focus:null,camera:fixed ? first : null});
 }
 export function proposeLayoutCamera(report:FaceReport|null) {
   if(!report || report.samples.length<8)return null;

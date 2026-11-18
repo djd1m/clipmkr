@@ -35,7 +35,7 @@ export const FACE_TIMEOUT_MS = 60_000;
 
 export async function detectFaces(path: string, start: number, end: number,
   signal?: AbortSignal,options?:{crop?:{x:number;y:number;width:number;height:number};remote?:{origin:string;allowHttp:boolean};timeoutMs?:number;
-    authorizeSource?:()=>Promise<boolean>;preserveTail?:boolean}): Promise<FaceReport | null> {
+    authorizeSource?:()=>Promise<boolean>;preserveTail?:boolean;screenCapture?:boolean}): Promise<FaceReport | null> {
   if(signal?.aborted)return null;
   if(options?.remote){
     let url:URL;try{url=new URL(path);}catch{return null;}

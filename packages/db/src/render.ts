@@ -8,6 +8,8 @@ import { parseScreenFaceLayout, parsePublishedLayout, type ScreenFaceLayout } fr
 import type { LayoutPublished } from './clip-layout.js';
 export interface RenderInput {
   layout: ScreenFaceLayout | null;
+  initial_layout: ScreenFaceLayout | null;
+  initial_layout_pending: boolean;
   music_track_id: string | null; render_version: number;
   compact: boolean; loudness_median_db: string | null; cut_plan: [number, number][] | null;
   object_key: string; actual_bytes: string; duration_seconds: string; music: boolean; teaser: boolean; title: string; plan: unknown; cta_kind: string | null;
@@ -29,16 +31,35 @@ export async function lockRender(tx: PoolClient, attempt: Attempt): Promise<bool
 export async function getRenderInput(pool: Pool, attempt: Attempt) {
   return transaction(pool, async tx => {
     if (!await lockRender(tx, attempt)) { auditAttempt('stale_attempt_result', attempt); return null; }
-    const result = await tx.query<RenderInput & {stored_layout:unknown;intent_layout:unknown}>(`SELECT c.rendered_layout AS stored_layout,i.layout AS intent_layout,COALESCE(i.layout,c.rendered_layout->'requested') AS layout,c.music_track_id,c.render_version,v.object_key,v.actual_bytes,v.duration_seconds,v.music,v.teaser,v.cta_kind,v.compact,v.loudness_median_db,c.cut_plan,c.title,CASE WHEN EXISTS (SELECT 1 FROM video_credit_charge cc WHERE cc.video_id=v.id AND cc.state IN ('reserved','settled') AND cc.paid_render) THEN 'paid' ELSE ${effectivePlanSql('a')} END AS plan,
+    const result = await tx.query<RenderInput & {stored_layout:unknown}>(`SELECT c.rendered_layout AS stored_layout,COALESCE(i.layout,c.rendered_layout->'requested') AS layout,
+      CASE WHEN NOT $2 AND c.render_version=1 THEN c.initial_layout ELSE NULL END AS initial_layout,
+      NOT $2 AND c.render_version=1 AND c.initial_layout IS NULL AS initial_layout_pending,
+      c.music_track_id,c.render_version,v.object_key,v.actual_bytes,v.duration_seconds,v.music,v.teaser,v.cta_kind,v.compact,v.loudness_median_db,c.cut_plan,c.title,CASE WHEN EXISTS (SELECT 1 FROM video_credit_charge cc WHERE cc.video_id=v.id AND cc.state IN ('reserved','settled') AND cc.paid_render) THEN 'paid' ELSE ${effectivePlanSql('a')} END AS plan,
       c.index,c.start_seconds,c.end_seconds,l.code,t.words,t.language,t.segments FROM clip c
       JOIN video v ON v.id=c.video_id JOIN account a ON a.id=v.account_id
       JOIN clip_link l ON l.clip_id=c.id JOIN transcript t ON t.video_id=v.id
-      LEFT JOIN clip_layout_intent i ON i.clip_id=c.id AND i.render_version=c.render_version WHERE c.id=$1`, [attempt.clip_id]);
+      LEFT JOIN clip_layout_intent i ON i.clip_id=c.id AND i.render_version=c.render_version WHERE c.id=$1`, [attempt.clip_id,!!attempt.rerender]);
     const row = result.rows[0];
     if (!row) throw new Error('Рендер требует ссылку и транскрипт, созданные до задания');
     if(row.stored_layout!==null)parsePublishedLayout(row.stored_layout);
     const transcript = parseTranscript(row, Number(row.duration_seconds));
-    return { ...row, layout:row.layout===null?null:parseScreenFaceLayout(row.layout), words: transcript.words };
+    return { ...row, layout:row.layout===null?null:parseScreenFaceLayout(row.layout),
+      initial_layout:row.initial_layout===null?null:parseScreenFaceLayout(row.initial_layout), words: transcript.words };
+  });
+}
+
+export async function saveInitialLayout(pool: Pool, attempt: Attempt, proposed: ScreenFaceLayout | null, signal?: AbortSignal) {
+  if (attempt.rerender) return null;
+  return transaction(pool, async tx => {
+    if (!await lockRender(tx, attempt)) return null;
+    signal?.throwIfAborted();
+    const canonical = proposed === null ? null : parseScreenFaceLayout(proposed);
+    await tx.query(`UPDATE clip SET initial_layout=$2::jsonb
+      WHERE id=$1 AND render_version=1 AND rendered_layout IS NULL AND initial_layout IS NULL`,
+    [attempt.clip_id,JSON.stringify(canonical)]);
+    const decision = (await tx.query<{initial_layout:unknown}>(`SELECT initial_layout FROM clip
+      WHERE id=$1 AND render_version=1 AND rendered_layout IS NULL AND initial_layout IS NOT NULL`,[attempt.clip_id])).rows[0];
+    return decision ? {layout:decision.initial_layout===null ? null : parseScreenFaceLayout(decision.initial_layout)} : null;
   });
 }
 export async function setRenderDeferred(pool: Pool, attempt: Attempt, deferred: boolean) {
@@ -90,8 +111,9 @@ export async function publishRenderResult(pool: Pool, attempt: Attempt, result: 
   const bytes = await publish();
   const accepted = await transaction(pool, async tx => {
     if (!await lockRender(tx, attempt)) { auditAttempt('stale_attempt_result', attempt); return null; }
-    const expected = (await tx.query<{layout:unknown}>(`SELECT COALESCE(i.layout,c.rendered_layout->'requested') AS layout FROM clip c
-      LEFT JOIN clip_layout_intent i ON i.clip_id=c.id AND i.render_version=c.render_version WHERE c.id=$1`,[attempt.clip_id])).rows[0]?.layout;
+    const expected = (await tx.query<{layout:unknown}>(`SELECT COALESCE(i.layout,c.rendered_layout->'requested',
+      CASE WHEN NOT $2 AND c.render_version=1 THEN NULLIF(c.initial_layout,'null'::jsonb) END) AS layout FROM clip c
+      LEFT JOIN clip_layout_intent i ON i.clip_id=c.id AND i.render_version=c.render_version WHERE c.id=$1`,[attempt.clip_id,!!attempt.rerender])).rows[0]?.layout;
     if(expected!=null) {
       if(!result.rendered_layout
         || JSON.stringify(parseScreenFaceLayout(expected))!==JSON.stringify(parsePublishedLayout(result.rendered_layout).requested))
