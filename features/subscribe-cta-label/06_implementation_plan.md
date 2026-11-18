@@ -23,3 +23,5 @@ EXPECTED_CODE_TARGETS:
 - tests/clip-cta-render.test.ts
 - tests/clip-cta-rerender.integration.test.ts
 - tests/cta-media.test.ts
+- tests/clip-cta-worker.test.ts
+- tests/browser/ux-simplification.test.ts
