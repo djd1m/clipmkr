@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Планы Clipmkr</title>
+<style>
+:root{color-scheme:dark;--paper:#0e1311;--surface:#1a211d;--text:#eef2ec;--muted:#a9b4ac;--line:#3f4b45;--action:#dcefd9;--action-text:#0f1a14;--focus:#f2b552}
+:root[data-theme="light"]{color-scheme:light;--paper:#f7f8f3;--surface:#fff;--text:#202a27;--muted:#56615a;--line:#dce1d7;--action:#305d45;--action-text:#fff;--focus:#9c5e0a}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--text);font:1rem/1.55 system-ui,sans-serif}a{color:inherit;text-underline-offset:.25rem}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}[hidden]{display:none!important}
+header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.75rem max(1rem,calc((100vw - 47rem)/2));border-bottom:1px solid var(--line)}
+header strong{font-size:1.25rem;letter-spacing:-.035em}main{max-width:49rem;margin:auto;padding:1.5rem 1rem 2rem}
+h1,h2,h3,p{margin:0}h1{font-size:clamp(2rem,6vw,3rem);line-height:1.12;letter-spacing:-.045em}h2{font-size:1.25rem;margin-bottom:.65rem}h3{font-size:1rem}
+button,.button{border:1px solid var(--action);color:var(--action-text);background:var(--action);border-radius:.56rem;padding:.6rem .9rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-weight:650;text-decoration:none;cursor:pointer}
+button.secondary,.button.secondary{background:transparent;color:var(--text);border-color:var(--line)}
+.intro{display:flex;justify-content:space-between;align-items:end;gap:1rem;margin:1rem 0 1.5rem;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;min-height:2.75rem;color:var(--muted)}
+.card{padding:1rem;border:1px solid var(--line);border-radius:.85rem;background:var(--surface);margin-bottom:1.25rem}
+.card h3+p{margin-top:.25rem;color:var(--muted)}
+#proposal .button{margin-top:1rem}
+#proposal .card p+p{margin-top:.75rem}
+</style>
+<body>
+<header><strong>clipmkr</strong><button class="secondary" type="button" id="theme">Светлая тема</button></header>
+<main>
+  <section id="plans">
+    <a class="back" href="/dashboard/account">← Аккаунт</a>
+    <div class="intro"><h1>Планы Clipmkr</h1><button type="button" id="suggest">Предложить функцию</button></div>
+    <section><h2>В работе</h2><article class="card"><h3>Полноэкранный просмотр клипа</h3><p>Открыть видео на весь экран прямо из плеера.</p></article></section>
+    <section><h2>Запланировано</h2><article class="card"><h3>Оформление клипов из стримов</h3><p>Сохранить демонстрацию и камеру стримера в вертикальном кадре.</p></article></section>
+    <section><h2>Готово</h2><article class="card"><h3>Автокомпоновка демонстрации</h3><p>При первой нарезке Clipmkr сохраняет весь экран и переносит камеру.</p></article></section>
+  </section>
+  <section id="proposal" hidden>
+    <button class="secondary" type="button" id="back">← Планы Clipmkr</button>
+    <div class="intro"><h1>Предложить функцию</h1></div>
+    <article class="card">
+      <p>Расскажите в чате, что хотите сделать и чего сейчас не хватает.</p>
+      <p>Ответ и уточнения сохранятся в вашей переписке с поддержкой.</p>
+      <a class="button" href="/support?topic=feature">Открыть чат поддержки</a>
+    </article>
+  </section>
+</main>
+<script>
+const plans = document.getElementById('plans');
+const proposal = document.getElementById('proposal');
+const suggest = document.getElementById('suggest');
+const back = document.getElementById('back');
+function showProposal(show) { plans.hidden = show; proposal.hidden = !show; (show ? back : suggest).focus(); }
+suggest.addEventListener('click', () => showProposal(true));
+back.addEventListener('click', () => showProposal(false));
+const theme = document.getElementById('theme');
+theme.addEventListener('click', () => {
+ const light = document.documentElement.dataset.theme !== 'light';
+ document.documentElement.dataset.theme = light ? 'light' : 'dark';
+ theme.textContent = light ? 'Тёмная тема' : 'Светлая тема';
+});
+if (new URLSearchParams(location.search).has('proposal')) showProposal(true);
+</script>
