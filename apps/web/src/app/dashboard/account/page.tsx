@@ -36,6 +36,7 @@ export default async function DashboardAccountPage() {
       {config.payments.mode === 'live' && config.payments.testMode && <p className="workspace-test">TEST · Тестовая оплата</p>}
       <LimitsPanel remaining={remaining} />
       <p><Link href="/support">Поддержка</Link></p>
+      <p><Link href="/roadmap">Планы Clipmkr</Link></p>
       <details><summary>Удаление аккаунта</summary><AccountDeletion /></details>
     </section></div>
     <p><Link href="/dashboard">← В кабинет</Link></p>

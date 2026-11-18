@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation';
 import { closeSupportWidget, clearSupportIdentity, openVerifiedSupport, supportRequest, type PublicSupport, type SupportAccount, type SafeContext, type WidgetAPI } from '../../lib/support-client';
 import { watchSupportSessionChanges } from '../../lib/support-session-signal';
 
-export function SupportPanel({ support, account, videoId }: { support: PublicSupport; account: SupportAccount; videoId?: string }) {
+export function SupportPanel({ support, account, videoId, featureProposal = false }: {
+  support: PublicSupport; account: SupportAccount; videoId?: string; featureProposal?: boolean;
+}) {
   const router = useRouter();
   const epoch = useRef(0), opener = useRef<HTMLButtonElement>(null);
   const confirmedWidget = useRef<WidgetAPI | null>(null), canSynchronize = useRef(false), opening = useRef(false);
@@ -104,13 +106,16 @@ export function SupportPanel({ support, account, videoId }: { support: PublicSup
     }
   }
 
-  return <section className="auth-card support-card" aria-label="Чат поддержки">
+  return <section className="auth-card support-card" aria-label={featureProposal ? 'Предложение функции' : 'Чат поддержки'}>
     {opened && <button type="button" className="support-close" onPointerDown={allowCloseFocus} onClick={close} aria-label="Закрыть чат поддержки">Закрыть чат ×</button>}
-    <h2>Написать в поддержку</h2>
+    {featureProposal ? <>
+      <p>Расскажите в чате, что хотите сделать и чего сейчас не хватает.</p>
+      <p>Ответ и уточнения сохранятся в вашей переписке с поддержкой.</p>
+    </> : <h2>Написать в поддержку</h2>}
     {support.synthetic && <p role="status">СИНТЕТИЧЕСКИЙ СТЕНД: тестовый чат, сообщения не уходят реальной поддержке.</p>}
     {!available ? <p role="status">Чат поддержки пока недоступен.</p>
       : account?.verified ? <>
-        <p>Здесь можно задать вопрос и вернуться к ответу позже.</p>
+        {!featureProposal && <p>Здесь можно задать вопрос и вернуться к ответу позже.</p>}
         <p className="muted">При открытии чата передадим Libredesk почту аккаунта, чтобы показать ваши обращения.</p>
         <button ref={opener} disabled={busy} onClick={() => void open()}>{busy ? 'Открываем переписку…' : 'Открыть чат поддержки'}</button>
       </> : account ? <>
@@ -121,18 +126,20 @@ export function SupportPanel({ support, account, videoId }: { support: PublicSup
         <nav className="support-links" aria-label="Доступ к чату"><a className="button" href="/#auth">Войти</a><a className="button secondary" href="/forgot">Восстановить доступ</a></nav>
       </>}
     {error && <p role="alert">{error}</p>}
-    <details>
+    {(!featureProposal || support.contactEmail) && <details>
       <summary>Дополнительные способы связи</summary>
       {support.contactEmail && <p><a href={`mailto:${support.contactEmail}`}>Написать на почту</a></p>}
-      <p>Можно скопировать состояние и идентификатор записи для обращения.</p>
-      <button className="secondary" disabled={busy} onClick={async () => {
-        setBusy(true); setError(''); setConsent(false); const version = epoch.current;
-        try { const result = await supportRequest<{ context: SafeContext }>('/api/support/context', videoId ? { videoId } : {}); if (version === epoch.current) setContext(result.context); }
-        catch (cause) { setContext(null); setError(cause instanceof Error ? cause.message : 'Контекст недоступен.'); } finally { setBusy(false); }
-      }}>Показать контекст</button>
-      {context && <><pre className="support-preview">{JSON.stringify(context, null, 2)}</pre><label className="support-check"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> Разрешаю скопировать этот контекст для обращения</label>
-        <button disabled={!consent || busy} onClick={async () => { try { await navigator.clipboard.writeText(JSON.stringify(context, null, 2)); setMessage('Контекст скопирован. При желании вставьте его в обращение.'); } catch { setError('Не удалось скопировать. Выделите текст контекста и скопируйте вручную после согласия.'); } }}>Скопировать контекст</button></>}
-    </details>
+      {!featureProposal && <>
+        <p>Можно скопировать состояние и идентификатор записи для обращения.</p>
+        <button className="secondary" disabled={busy} onClick={async () => {
+          setBusy(true); setError(''); setConsent(false); const version = epoch.current;
+          try { const result = await supportRequest<{ context: SafeContext }>('/api/support/context', videoId ? { videoId } : {}); if (version === epoch.current) setContext(result.context); }
+          catch (cause) { setContext(null); setError(cause instanceof Error ? cause.message : 'Контекст недоступен.'); } finally { setBusy(false); }
+        }}>Показать контекст</button>
+        {context && <><pre className="support-preview">{JSON.stringify(context, null, 2)}</pre><label className="support-check"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> Разрешаю скопировать этот контекст для обращения</label>
+          <button disabled={!consent || busy} onClick={async () => { try { await navigator.clipboard.writeText(JSON.stringify(context, null, 2)); setMessage('Контекст скопирован. При желании вставьте его в обращение.'); } catch { setError('Не удалось скопировать. Выделите текст контекста и скопируйте вручную после согласия.'); } }}>Скопировать контекст</button></>}
+      </>}
+    </details>}
     {message && <p role="status">{message}</p>}
   </section>;
 }
