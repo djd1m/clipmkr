@@ -20,21 +20,21 @@ beforeAll(async () => {
   widget = createHttpServer((request, response) => {
     if (new URL(request.url!, 'http://fixture').pathname === '/widget.js') {
       response.setHeader('Content-Type', 'text/javascript');
-      response.end(`window.initLibredesk=()=>{const frame=document.createElement('iframe');frame.id='libredesk-widget-${inbox}';
+      response.end(`window.initLibredesk=(settings)=>{const frame=document.createElement('iframe');frame.id='libredesk-widget-${inbox}';
         frame.src=${JSON.stringify(widgetOrigin + '/widget?inbox_id=' + inbox)};frame.title='Local support widget';
         frame.style.cssText='display:none;position:fixed;right:20px;top:100px;width:400px;height:600px;z-index:9999;background:white';
         if(innerWidth<600)frame.style.cssText+=';right:0;top:0;width:100vw;height:100vh';
         const s=window.fixtureState;
         const onMessage=event=>{if(event.source===frame.contentWindow&&event.origin===${JSON.stringify(widgetOrigin)}&&event.data?.type==='VUE_APP_READY')
-          frame.contentWindow.postMessage({type:'SESSION_DATA'},${JSON.stringify(widgetOrigin)})};addEventListener('message',onMessage);
+          frame.contentWindow.postMessage({type:'SET_JWT_TOKEN',jwt:settings.userJWT},${JSON.stringify(widgetOrigin)})};addEventListener('message',onMessage);
         window.Libredesk={show(){s.nativeVisible=true;frame.style.display='block';frame.style.opacity='1';frame.style.pointerEvents='auto'},
           hide(){s.hides++;s.nativeVisible=false;frame.style.opacity='0';frame.style.pointerEvents='none';frame.style.display='none'},
           logout(){s.logouts++},setUser(){throw new Error('This fixture never identifies accounts')},destroy(){removeEventListener('message',onMessage);frame.remove()}};
-        document.body.append(frame);return window.Libredesk;};window.initLibredesk();`); return;
+        document.body.append(frame);return window.Libredesk;};window.initLibredesk(window.LibredeskSettings);`); return;
     }
     if (new URL(request.url!, 'http://fixture').pathname !== '/widget') { response.writeHead(404).end(); return; }
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
-    response.end('<!doctype html><html lang="ru"><body><h1>Локальный виджет</h1><button>Home</button><script>addEventListener("message",event=>{if(event.source===parent&&event.data?.type==="SESSION_DATA")parent.postMessage({type:"WIDGET_LOADED"},event.origin)});parent.postMessage({type:"VUE_APP_READY"},"*")</script></body></html>');
+    response.end('<!doctype html><html lang="ru"><body><h1>Локальный виджет</h1><button>Home</button><script>addEventListener("message",event=>{if(event.source===parent&&event.data?.type==="SET_JWT_TOKEN"&&event.data.jwt==="fixture") {parent.postMessage({type:"STORE_SESSION",token:"fixture"},event.origin);parent.postMessage({type:"WIDGET_LOADED"},event.origin)}});parent.postMessage({type:"VUE_APP_READY"},"*")</script></body></html>');
   });
   await new Promise<void>(resolve => widget.listen(0, '127.0.0.1', resolve));
   const widgetAddress = widget.address();
@@ -56,7 +56,7 @@ beforeAll(async () => {
           addEventListener('n5:support-clear',()=>{const frame=document.getElementById('libredesk-widget-${inbox}');s.clears.push({nativeVisible:s.nativeVisible,
             frameVisible:!!frame&&getComputedStyle(frame).display!=='none'&&getComputedStyle(frame).opacity!=='0',
             closePresent:!!document.querySelector('.support-close')})});
-          const support={mode:'test',baseURL:${JSON.stringify(widgetOrigin)},inboxID:'${inbox}',identifiedEnabled:false,contactEmail:null,synthetic:true};
+          const support={mode:'test',baseURL:${JSON.stringify(widgetOrigin)},inboxID:'${inbox}',identifiedEnabled:true,contactEmail:null,synthetic:true};
           function View(){const[account,setAccount]=useState({id:'synthetic-A',email:'a@test.invalid',verified:true});
             window.fixtureSwitch=()=>setAccount({id:'synthetic-B',email:'b@test.invalid',verified:true});
             return h('main',{className:'container support-shell'},h('h1',null,'Поддержка и доступ'),h(SupportPanel,{support,account}));}
@@ -83,6 +83,7 @@ async function fixture(width: number, run: (page: Page) => Promise<void>) {
   page.on('pageerror', error => errors.push(error.message));
   await context.route('**/*', route => {
     const request = route.request(), url = new URL(request.url());
+    if (url.origin === origin && url.pathname === '/api/support/session' && request.method() === 'POST') return route.fulfill({ json: { mode: 'verified', jwt: 'fixture' } });
     if (request.method() !== 'GET' || ![origin, widgetOrigin].includes(url.origin)) {
       writes.push(request.method() + ' ' + url.pathname); return route.abort();
     }

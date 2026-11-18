@@ -22,20 +22,23 @@ beforeAll(async () => {
     }
     if (path === '/widget.js') {
       response.setHeader('Content-Type', 'text/javascript');
-      response.end(`window.initLibredesk=()=>{const frame=document.createElement('iframe');frame.id='libredesk-widget-${inbox}';
+      response.end(`window.initLibredesk=(settings)=>{const frame=document.createElement('iframe');frame.id='libredesk-widget-${inbox}';
         frame.src=${JSON.stringify(widgetOrigin + '/widget?inbox_id=' + inbox)};frame.title='Local support widget';
         frame.style.cssText='display:none;position:fixed;right:0;top:100px;width:320px;height:500px;background:white';
         window.fixtureState||={shows:0,hides:0,logouts:0,ready:false};const s=window.fixtureState;
         const send=data=>frame.contentWindow.postMessage(data,${JSON.stringify(widgetOrigin)});
         const clearCookie=()=>{document.cookie='fixture-native-session=;Max-Age=0;path=/'};
         const onMessage=event=>{if(event.source!==frame.contentWindow||event.origin!==${JSON.stringify(widgetOrigin)})return;
-          if(event.data?.type==='VUE_APP_READY')send({type:'SESSION_DATA',sessionToken:document.cookie.split('; ').find(x=>x.startsWith('fixture-native-session='))?.split('=')[1]||''});
+          if(event.data?.type==='VUE_APP_READY'){
+            if(settings.userJWT)send({type:'SET_JWT_TOKEN',jwt:settings.userJWT});
+            else send({type:'SESSION_DATA',sessionToken:document.cookie.split('; ').find(x=>x.startsWith('fixture-native-session='))?.split('=')[1]||''});
+          }
           if(event.data?.type==='STORE_SESSION')document.cookie='fixture-native-session='+event.data.token+';path=/';
           if(event.data?.type==='WIDGET_LOADED')s.ready=true;};addEventListener('message',onMessage);
         const api=window.Libredesk={show(){s.shows++;frame.style.display='block'},hide(){s.hides++;frame.style.display='none'},
           setUser(jwt){send({type:'SET_JWT_TOKEN',jwt})},logout(){s.logouts++;clearCookie();send({type:'CLEAR_SESSION'})},
           destroy(){removeEventListener('message',onMessage);frame.remove()}};
-        document.body.append(frame);return api;};window.initLibredesk();`); return;
+        document.body.append(frame);return api;};window.initLibredesk(window.LibredeskSettings);`); return;
     }
     if (path !== '/widget') { response.writeHead(404).end(); return; }
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -45,8 +48,9 @@ beforeAll(async () => {
           if(event.data.sessionToken){const identity=event.data.sessionToken==='fixture-A'?'A':'B';await fetch('/auth-me?identity='+identity);await fetch('/history?identity='+identity);document.getElementById('identity').textContent=identity;}
           parent.postMessage({type:'WIDGET_LOADED'},event.origin);
         }
-        if(event.data?.type==='SET_JWT_TOKEN'){try{await fetch('/exchange?delay='+(exchanges++?1000:0),{method:'POST'});
-          const identity=event.data.jwt==='fixture-A'?'A':'B';await fetch('/history?identity='+identity);document.getElementById('identity').textContent=identity;
+        if(event.data?.type==='SET_JWT_TOKEN'){try{await fetch('/exchange?delay='+(event.data.jwt==='fixture-late-A'?1500:0),{method:'POST'});
+          if(event.data.jwt==='fixture-invalid'){parent.postMessage({type:'WIDGET_LOADED'},event.origin);return;}
+          const identity=event.data.jwt.endsWith('-A')?'A':'B';await fetch('/history?identity='+identity);document.getElementById('identity').textContent=identity;
           parent.postMessage({type:'STORE_SESSION',token:event.data.jwt},event.origin);parent.postMessage({type:'WIDGET_LOADED'},event.origin);}catch{}}
         if(event.data?.type==='CLEAR_SESSION'){document.getElementById('identity').textContent='anonymous';setTimeout(()=>parent.postMessage({type:'WIDGET_LOADED'},event.origin),250);}
       });parent.postMessage({type:'VUE_APP_READY'},'*');},350);</script></body></html>`);
@@ -66,8 +70,10 @@ beforeAll(async () => {
         if (id !== entry) return;
         return `import {createElement as h,useState} from 'react';import {createRoot} from 'react-dom/client';
           import {SupportPanel} from '/apps/web/src/app/support/SupportPanel.tsx';
+          import {notifySupportSessionChange} from '/apps/web/src/lib/support-session-signal.ts';
+          window.changeSession=notifySupportSessionChange;
           const support={mode:'test',baseURL:${JSON.stringify(widgetOrigin)},inboxID:'${inbox}',identifiedEnabled:true,contactEmail:null,synthetic:true};
-          function View(){const[account,setAccount]=useState({id:location.search.includes('account=B')?'synthetic-B':'synthetic-A',email:'fixture@test.invalid',verified:true});
+          function View(){const[account,setAccount]=useState({id:location.search.includes('account=B')?'synthetic-B':'synthetic-A',email:'fixture@test.invalid',verified:!location.search.includes('unverified')});
             window.fixtureSwitch=()=>setAccount({id:'synthetic-B',email:'b@test.invalid',verified:true});
             return h('main',null,h('h1',null,'Поддержка'),h(SupportPanel,{support,account}));}
           const root=createRoot(document.getElementById('root'));root.render(h(View));`;
@@ -87,98 +93,93 @@ afterAll(async () => {
   if (widget) await new Promise<void>((resolve, reject) => widget.close(error => error ? reject(error) : resolve()));
   rmSync(cacheDir, { recursive: true, force: true });
 });
-async function fixture(width: number, run: (page: Page, counts: { sessions: number; exchanges: number; readsA: number }) => Promise<void>) {
+type Control = { sessions: number; exchanges: number; readsA: number; nextJwt?: string };
+async function fixture(width: number, run: (page: Page, counts: Control) => Promise<void>) {
   const context = await browser.newContext({ viewport: { width, height: 900 } }), page = await context.newPage();
-  page.setDefaultTimeout(5000); const errors: string[] = [], counts = { sessions: 0, exchanges: 0, readsA: 0 };
+  page.setDefaultTimeout(6000);
+  const errors: string[] = [], counts: Control = { sessions: 0, exchanges: 0, readsA: 0 };
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => { const url = new URL(request.url());
     if (url.pathname === '/exchange') counts.exchanges++;
     if (['/auth-me', '/history'].includes(url.pathname) && url.searchParams.get('identity') === 'A') counts.readsA++;
   });
   await context.route('**/api/support/session', route => {
-    counts.sessions++; return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ mode: 'verified', jwt: new URL(page.url()).searchParams.get('account') === 'B' ? 'fixture-B' : 'fixture-A' }) });
+    counts.sessions++;
+    const expected = route.request().postDataJSON().accountId;
+    expect(['synthetic-A', 'synthetic-B']).toContain(expected);
+    const jwt = counts.nextJwt ?? (expected === 'synthetic-B' ? 'fixture-B' : 'fixture-A');
+    counts.nextJwt = undefined;
+    return route.fulfill({ json: { mode: 'verified', jwt } });
   });
   try {
     await page.goto(origin + '/fixture.html');
-    await page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).waitFor();
-    expect(counts.sessions).toBe(0); expect(await page.locator('iframe').count()).toBe(0);
-    await run(page, counts); expect(errors).toEqual([]);
+    await panelButton(page).waitFor();
+    expect(counts.sessions).toBe(0);
+    expect(await page.locator('iframe').count()).toBe(0);
+    await run(page, counts);
+    expect(errors).toEqual([]);
   } finally { await context.close(); }
 }
-for (const width of [1440, 390]) {
-  it(`cold first identify reaches child exchange once ${width}`, () => fixture(width, async (page, counts) => {
-    await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).check();
-    await page.getByRole('button', { name: 'Представить аккаунт в чате' }).click();
-    await expect.poll(() => counts.exchanges, { timeout: 2000 }).toBe(1);
-    expect(counts.sessions).toBe(1);
-    await expect.poll(() => page.frameLocator('iframe').locator('#identity').textContent()).toBe('A');
-    expect(await page.getByText('Аккаунт представлен в чате.', { exact: true }).isVisible()).toBe(true);
-    await page.frameLocator('iframe').getByLabel('Draft').evaluate((input: HTMLInputElement) => { input.value = 'draft'; });
-    await page.locator('.support-close').click();
-    expect(await page.locator('iframe').isVisible()).toBe(false);
-    expect(await page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).evaluate(el => el === document.activeElement)).toBe(true);
-    expect(counts.exchanges).toBe(1);
-    // Authority refresh logs out the native identity and clears opt-in before B can act.
-    await page.evaluate(() => Reflect.get(window, 'fixtureSwitch')());
-    await expect.poll(() => page.frameLocator('iframe').locator('#identity').textContent()).toBe('anonymous');
-    expect(await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).isChecked()).toBe(false);
-    expect(counts.sessions).toBe(1);
-  }));
-  it(`cold anonymous and warm hide-only reopen preserve draft ${width}`, () => fixture(width, async (page, counts) => {
-    const open = () => page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).click();
-    await open(); await page.locator('.support-close').waitFor();
-    expect(counts.sessions).toBe(0); expect(counts.exchanges).toBe(0);
-    const frame = page.frameLocator('iframe');
-    await frame.getByLabel('Draft').evaluate((input: HTMLInputElement) => { input.value = 'draft'; });
-    const logouts = await page.evaluate(() => Reflect.get(window, 'fixtureState').logouts);
-    await page.locator('.support-close').click(); await open(); await page.locator('.support-close').waitFor();
-    expect(await frame.getByLabel('Draft').inputValue()).toBe('draft');
-    expect(await page.evaluate(() => Reflect.get(window, 'fixtureState').logouts)).toBe(logouts);
-    expect(await frame.locator('#identity').textContent()).toBe('anonymous');
-    expect(counts.sessions).toBe(0); expect(counts.exchanges).toBe(0);
-  }));
-  it(`cold anonymous clears persisted vendor identity before child reads it ${width}`, () => fixture(width, async (page, counts) => {
-    await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).check();
-    await page.getByRole('button', { name: 'Представить аккаунт в чате' }).click();
-    await expect.poll(() => page.frameLocator('iframe').locator('#identity').textContent()).toBe('A');
-    await expect.poll(() => page.evaluate(() => document.cookie.includes('fixture-native-session=fixture-A'))).toBe(true);
-    const readsA = counts.readsA;
-    // Full navigation drops the SDK while its host session cookie survives, as in the owned native proof.
-    await page.goto(origin + '/fixture.html?account=B');
-    await page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).waitFor();
-    expect(await page.evaluate(() => Reflect.get(window, 'Libredesk') === undefined)).toBe(true);
-    expect(await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).isChecked()).toBe(false);
-    await page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).click();
-    await page.locator('.support-close').waitFor();
-    expect(counts.readsA, 'anonymous B must not request A auth/history during child bootstrap').toBe(readsA);
-    expect(await page.frameLocator('iframe').locator('#identity').textContent()).toBe('anonymous');
-    expect(counts.sessions).toBe(1);
-  }));
-  it(`warm anonymous reset retires the old child before showing the new one ${width}`, () => fixture(width, async (page, counts) => {
-    const identify = () => page.getByRole('button', { name: 'Представить аккаунт в чате' }).click();
-    await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).check();
-    await identify(); await expect.poll(() => page.frameLocator('iframe').locator('#identity').textContent()).toBe('A');
-    await page.locator('.support-close').click();
-    await identify(); await expect.poll(() => counts.exchanges).toBe(2);
-    await page.locator('.support-close').click();
-    const readsA = counts.readsA;
-    await page.getByRole('button', { name: 'Открыть чат поддержки', exact: true }).click();
-    await page.locator('.support-close').waitFor();
-    await page.waitForTimeout(1200); // The retired child's delayed identity response/ready must not restore A.
-    expect(counts.readsA, 'late old identity work must not fetch A history after anonymous reset').toBe(readsA);
-    expect(await page.frameLocator('iframe').locator('#identity').textContent()).toBe('anonymous');
-    expect(counts.sessions).toBe(2);
-  }));
-  it(`cold identified B clears A before native bootstrap ${width}`, () => fixture(width, async (page, counts) => {
-    await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).check();
-    await page.getByRole('button', { name: 'Представить аккаунт в чате' }).click();
-    await expect.poll(() => page.frameLocator('iframe').locator('#identity').textContent()).toBe('A');
-    await expect.poll(() => page.evaluate(() => document.cookie.includes('fixture-native-session=fixture-A'))).toBe(true);
-    const readsA = counts.readsA;
-    await page.goto(origin + '/fixture.html?account=B');
-    await page.getByLabel('Разрешаю представить мой аккаунт', { exact: false }).check();
-    await page.getByRole('button', { name: 'Представить аккаунт в чате' }).click();
-    await expect.poll(() => page.frameLocator('iframe').locator('#identity').textContent()).toBe('B');
-    expect(counts.readsA).toBe(readsA); expect(counts.sessions).toBe(2);
-  }));
-}
+const panelButton = (page: Page) => page.getByRole('button', { name: 'Открыть чат поддержки', exact: true });
+const open = async (page: Page, identity: string) => {
+  await panelButton(page).click();
+  await page.locator('.support-close').waitFor();
+  expect(await page.frameLocator('iframe').locator('#identity').textContent()).toBe(identity);
+};
+
+it('main button opens confirmed chat and reopens it without losing the draft', () => fixture(390, async (page, counts) => {
+  await open(page, 'A');
+  expect(counts.exchanges).toBe(1);
+  const draft = page.frameLocator('iframe').getByLabel('Draft');
+  await draft.evaluate((input: HTMLInputElement) => { input.value = 'draft'; });
+  await page.locator('.support-close').click();
+  expect(await page.locator('iframe').isVisible()).toBe(false);
+  expect(await panelButton(page).evaluate(element => element === document.activeElement)).toBe(true);
+  await open(page, 'A');
+  expect(await draft.inputValue()).toBe('draft');
+  expect(counts.exchanges).toBe(1);
+  expect(counts.sessions).toBe(2);
+}));
+
+it('cold B with a persisted vendor cookie never requests A history', () => fixture(1440, async (page, counts) => {
+  await open(page, 'A');
+  expect(await page.evaluate(() => document.cookie.includes('fixture-native-session=fixture-A'))).toBe(true);
+  const readsA = counts.readsA;
+  await page.goto(origin + '/fixture.html?account=B');
+  await open(page, 'B');
+  expect(counts.readsA).toBe(readsA);
+}));
+
+it('cross-tab change cancels an in-flight A exchange before B relaunches', () => fixture(1440, async (page, counts) => {
+  const otherTab = await page.context().newPage();
+  await otherTab.goto(origin + '/fixture.html?account=B');
+  await panelButton(otherTab).waitFor();
+  counts.nextJwt = 'fixture-late-A';
+  await panelButton(page).click();
+  await expect.poll(() => counts.exchanges).toBe(1);
+  expect(await page.locator('iframe').count()).toBe(1);
+  await otherTab.evaluate(() => Reflect.get(window, 'changeSession')());
+  await expect.poll(() => page.locator('iframe').count()).toBe(0);
+  await page.evaluate(() => Reflect.get(window, 'fixtureSwitch')());
+  await open(page, 'B');
+  expect(counts.readsA).toBe(0);
+  expect(counts.exchanges).toBe(2);
+}));
+
+it('widget-ready after a rejected identity keeps the iframe hidden and retry uses a fresh instance', () => fixture(390, async (page, counts) => {
+  counts.nextJwt = 'fixture-invalid';
+  await panelButton(page).click();
+  await expect.poll(() => counts.exchanges).toBe(1);
+  expect(await page.locator('iframe').isVisible()).toBe(false);
+  await page.getByRole('alert').waitFor({timeout:10000});
+  expect(await page.locator('iframe').count()).toBe(0);
+  await open(page, 'A');
+  expect(counts.exchanges).toBe(2);
+}), 15000);
+
+it('unconfirmed account sees email verification and no widget request', () => fixture(390, async (page, counts) => {
+  await page.goto(origin + '/fixture.html?unverified');
+  await page.getByRole('link', { name: 'Подтвердить почту', exact: true }).waitFor();
+  expect(await panelButton(page).count()).toBe(0);
+  expect(counts.sessions).toBe(0);
+}));

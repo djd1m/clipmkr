@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { observeSignup } from '../lib/acquisition-analytics';
 import { clearSupportIdentity } from '../lib/support-client';
+import { notifySupportSessionChange } from '../lib/support-session-signal';
 import { rpc } from '../lib/rpc';
 import { useAuthFlow } from './AuthFlow';
 import { safeNextPath } from '../lib/payment-return';
@@ -76,6 +77,7 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
     try {
       if (!authenticated.current) {
         clearSupportIdentity();
+        notifySupportSessionChange();
         const response = await fetch(`/api/auth/${operation}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(operation === 'register' ? { 'X-Clipmkr-Registration': 'outcomes-v1' } : {}) },
           body: JSON.stringify({ email: form.get('email'), password: form.get('password') }) });
         const payload: unknown = await response.json();
@@ -91,6 +93,7 @@ export function AuthForm({ mode, onModeChange, focusRequest, onAvailabilityChang
           throw new Error('Не удалось подтвердить вход. Повторите или выберите «Войти»');
         }
         pendingRegistration.current = operation === 'register' && (body.registration === 'created' || body.registration === 'existing') ? body.registration : null;
+        notifySupportSessionChange();
         authenticated.current = true; setSignedIn(true);
       }
       const explicit = String(form.get('partner_code') ?? '').trim();

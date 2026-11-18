@@ -25,11 +25,11 @@ export function supportRoute(action:'session'|'context') {
   return async(request:Request)=>{
     try {
       const r=getRuntime();
-      const {body}=await supportBody(request,action==='session'?z.object({}).strict():z.object({videoId:uuid.optional()}).strict(),{
+      const {body}=await supportBody<{accountId?:string;videoId?:string}>(request,action==='session'?z.object({accountId:uuid.optional()}).strict():z.object({videoId:uuid.optional()}).strict(),{
         publicOrigin:r.config.publicOrigin,trustedProxyHops:r.config.trustedProxyHops,allowIP:ip=>allowMutation(r.redis,ip,r.config.sessionSecret)});
       if(r.config.support.mode==='disabled')throw new SupportError('unavailable',503,'Поддержка пока недоступна');
       const cookie=readSessionCookie(request),hash=cookie?r.auth.tokenHash(cookie):null;
-      return supportJSON(action==='session'?await widgetSession(r.pool,r.config.support,hash):await supportContext(r.pool,hash,'videoId' in body && typeof body.videoId==='string'?body.videoId:undefined));
+      return supportJSON(action==='session'?await widgetSession(r.pool,r.config.support,hash,body.accountId):await supportContext(r.pool,hash,body.videoId));
     }catch(error){return supportFailure(error);}
   };
 }

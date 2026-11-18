@@ -2,7 +2,10 @@ export type PublicSupport = { mode: 'disabled' | 'test' | 'libredesk'; baseURL: 
 export type SupportAccount = { id: string; email: string; verified: boolean } | null;
 export type SafeContext = { accountId?: string; videoId?: string; status?: string; failureCode?: string; at: string };
 export type WidgetAPI = { show(): void; hide?(): void; setUser(jwt: string): void; logout(): void; destroy?(): void };
-declare global { interface Window { Libredesk?: WidgetAPI; initLibredesk?: (settings: { baseURL: string; inboxID: string; hideLauncher: boolean }) => WidgetAPI; n5SupportUnavailable?: boolean; LibredeskSettings?: { baseURL: string; inboxID: string; hideLauncher: boolean }; } }
+type WidgetSettings = { baseURL: string; inboxID: string; hideLauncher: boolean; userJWT?: string };
+type VerifiedBootstrap = { jwt: string; current: () => boolean };
+declare global { interface Window { Libredesk?: WidgetAPI; initLibredesk?: (settings: WidgetSettings) => WidgetAPI; n5SupportUnavailable?: boolean; LibredeskSettings?: WidgetSettings; } }
+const verifiedSupportWidgets = new WeakSet<WidgetAPI>();
 export class SupportError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
 }
@@ -42,38 +45,63 @@ function clearNativeSupportIdentity(): Promise<boolean> {
 }
 export function clearSupportIdentity(): Promise<boolean> {
   if (typeof window === 'undefined') return Promise.resolve(true);
-  try { return clearNativeSupportIdentity(); }
+  try {
+    const previous = window.Libredesk;
+    const cleanup = clearNativeSupportIdentity();
+    if (previous && verifiedSupportWidgets.has(previous) && !retireSupportWidget(previous)) return Promise.resolve(false);
+    return cleanup;
+  }
   finally {
     delete window.LibredeskSettings;
     window.dispatchEvent(new Event('n5:support-clear'));
   }
 }
+function retireSupportWidget(widget: WidgetAPI): boolean {
+  try {
+    if (!widget.destroy || !window.initLibredesk) return failSupportCleanup();
+    widget.destroy();
+    if (window.Libredesk === widget) delete window.Libredesk;
+    return true;
+  } catch { return failSupportCleanup(); }
+}
 const readySupportFrames = new WeakSet<HTMLIFrameElement>();
-export function loadSupportWidget(settings: PublicSupport, anonymousCleanup?: Promise<boolean>): Promise<WidgetAPI> {
+export function loadSupportWidget(settings: PublicSupport, identityCleanup?: Promise<boolean>, verified?: VerifiedBootstrap): Promise<WidgetAPI> {
   if (settings.mode === 'disabled' || !settings.baseURL || !settings.inboxID) return Promise.reject(new Error('Чат поддержки пока не подключён.'));
   if (window.n5SupportUnavailable) return Promise.reject(new Error('Не удалось очистить чат. Перезагрузите страницу перед новым обращением.'));
   return new Promise((resolve, reject) => {
     let script: HTMLScriptElement | null = null;
     const initialAPI = window.Libredesk;
-    let cleanedAPI = initialAPI, bootstrapPending = false, canStart = !anonymousCleanup, retired = false;
+    let cleanedAPI = initialAPI, bootstrapPending = false, canStart = !identityCleanup;
+    let authenticatedFrame: HTMLIFrameElement | undefined;
     const baseURL = new URL(settings.baseURL!);
     let settled = false;
     const cleanup = () => {
       clearTimeout(timer); observer.disconnect(); window.removeEventListener('message', onMessage);
+      if (verified) window.removeEventListener('n5:support-clear', cancelVerified);
       if (script) { script.onload = null; script.onerror = null; }
     };
     const fail = (cleanupFailure = false) => {
       if (settled) return; settled = true; cleanup();
       script?.remove(); delete window.LibredeskSettings;
+      if (verified && window.Libredesk && verifiedSupportWidgets.has(window.Libredesk)) {
+        const widget = window.Libredesk;
+        void clearNativeSupportIdentity();
+        retireSupportWidget(widget);
+      }
       reject(new Error(cleanupFailure ? 'Не удалось очистить чат. Перезагрузите страницу перед новым обращением.' : 'Не удалось загрузить чат. Используйте доступный способ связи ниже.'));
     };
+    const cancelVerified = () => fail();
     const ready = (event?: MessageEvent) => {
       if (settled) return;
       const api = window.Libredesk, frame = document.getElementById(`libredesk-widget-${settings.inboxID}`);
       if (!canStart || !api || typeof api.show !== 'function' || typeof api.setUser !== 'function' || typeof api.logout !== 'function') return;
+      if (verified) {
+        verifiedSupportWidgets.add(api);
+        if (!verified.current()) { fail(); return; }
+      }
       // A fresh SDK must clear persisted host cookies before VUE_APP_READY reads them,
       // including explicit identify: setUser's remote acknowledgement arrives later.
-      if (api !== cleanedAPI) {
+      if (!verified && api !== cleanedAPI) {
         cleanedAPI = api; bootstrapPending = true;
         void clearNativeSupportIdentity().then(clean => {
           if (settled) return;
@@ -87,22 +115,28 @@ export function loadSupportWidget(settings: PublicSupport, anonymousCleanup?: Pr
       try { source = new URL((frame as HTMLIFrameElement).src); } catch { return; }
       if (source.origin !== baseURL.origin || source.pathname !== '/widget' || source.searchParams.get('inbox_id') !== settings.inboxID) return;
       const iframe = frame as HTMLIFrameElement;
-      if (event?.source === iframe.contentWindow && event.origin === baseURL.origin && event.data?.type === 'WIDGET_LOADED') readySupportFrames.add(iframe);
+      if (event?.source === iframe.contentWindow && event.origin === baseURL.origin) {
+        if (verified && event.data?.type === 'STORE_SESSION') authenticatedFrame = iframe;
+        if (event.data?.type === 'WIDGET_LOADED' && (!verified || authenticatedFrame === iframe)) readySupportFrames.add(iframe);
+      }
       if (bootstrapPending || !readySupportFrames.has(iframe)) return;
+      if (verified) delete window.LibredeskSettings;
       settled = true; cleanup(); resolve(api);
     };
     const onMessage = (event: MessageEvent) => ready(event);
     const observer = new MutationObserver(() => ready());
     const timer = setTimeout(fail, 8000);
     window.addEventListener('message', onMessage);
+    if (verified) window.addEventListener('n5:support-clear', cancelVerified);
     observer.observe(document.documentElement, { childList: true, subtree: true });
     const start = () => {
       if (settled) return;
+      if (verified && !verified.current()) { fail(); return; }
       canStart = true;
       if (!window.Libredesk) {
-        window.LibredeskSettings = { baseURL: settings.baseURL!, inboxID: settings.inboxID!, hideLauncher: true };
-        if (retired) {
-          try { window.initLibredesk!(window.LibredeskSettings); }
+        window.LibredeskSettings = { baseURL: settings.baseURL!, inboxID: settings.inboxID!, hideLauncher: true, ...(verified ? { userJWT: verified.jwt } : {}) };
+        if (window.initLibredesk) {
+          try { window.initLibredesk(window.LibredeskSettings); }
           catch { failSupportCleanup(); fail(true); return; }
         } else {
           script = document.createElement('script');
@@ -112,25 +146,22 @@ export function loadSupportWidget(settings: PublicSupport, anonymousCleanup?: Pr
       }
       ready();
     };
-    if (anonymousCleanup) {
+    if (identityCleanup) {
       const oldFrame = document.getElementById(`libredesk-widget-${settings.inboxID}`);
       // A prior child's delayed identity callbacks have no correlated reset ACK.
       // Retire that child; native destroy keeps remote conversations intact.
-      if (initialAPI && oldFrame?.tagName === 'IFRAME' && oldFrame.isConnected) {
-        try {
-          if (!initialAPI.destroy || !window.initLibredesk) throw new Error('Native reset unavailable');
-          initialAPI.destroy();
-          if (window.Libredesk === initialAPI) delete window.Libredesk;
-          retired = true;
-        } catch { failSupportCleanup(); fail(true); }
-      }
-      void anonymousCleanup.then(clean => {
+      if (initialAPI && (verified || (oldFrame?.tagName === 'IFRAME' && oldFrame.isConnected)) && !retireSupportWidget(initialAPI)) fail(true);
+      void identityCleanup.then(clean => {
         if (settled) return;
         if (!clean) { fail(true); return; }
         start();
       }, () => { if (!settled) { failSupportCleanup(); fail(true); } });
     } else start();
   });
+}
+
+export function openVerifiedSupport(settings: PublicSupport, jwt: string, current: () => boolean): Promise<WidgetAPI> {
+  return loadSupportWidget(settings, clearNativeSupportIdentity(), { jwt, current });
 }
 
 // Shared anonymous transition, also exercised by the widget regression fixture.

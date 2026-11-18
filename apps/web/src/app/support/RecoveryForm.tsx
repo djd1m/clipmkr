@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { CREDIT_SKUS, type CreditSku } from '@clipmaker/shared/tariff';
 import { useAuthFlow } from '../AuthFlow';
 import { clearSupportIdentity, supportRequest, SupportError, takeFragmentToken, validPassword, type SupportAccount } from '../../lib/support-client';
+import { notifySupportSessionChange } from '../../lib/support-session-signal';
 import { selectedPackagePath } from '../../lib/payment-return';
 export function RecoveryForm({ mode, account = null, mailAvailable, billingSku }: { mode: 'verify' | 'forgot' | 'reset'; account?: SupportAccount; mailAvailable: boolean; billingSku?: CreditSku }) {
   const token = useRef('');
@@ -48,7 +49,9 @@ export function RecoveryForm({ mode, account = null, mailAvailable, billingSku }
           const password = String(data.get('password') ?? '');
           if (!validPassword(password)) throw new Error('Пароль: от 8 символов и не более 72 байт UTF-8.');
           if (password !== data.get('repeat')) throw new Error('Пароли не совпадают.');
-          clearSupportIdentity(); await supportRequest('/api/auth/reset', { token: token.current, password });
+          clearSupportIdentity(); notifySupportSessionChange();
+          await supportRequest('/api/auth/reset', { token: token.current, password });
+          notifySupportSessionChange();
           token.current = ''; setHasToken(false); form.reset(); setSuccess('Пароль изменён. Войдите с новым паролем.');
         }
       } catch (cause) {

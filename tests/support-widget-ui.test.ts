@@ -61,10 +61,12 @@ describe('official widget API-shaped synthetic fixture', () => {
     const browser: FakeBrowser = { Libredesk: { hide: vi.fn(), show: vi.fn(), setUser: vi.fn(), logout: () => { throw new Error(); } }, LibredeskSettings: {}, dispatchEvent: vi.fn() }; vi.stubGlobal('window', browser);
     expect(() => clearSupportIdentity()).not.toThrow(); expect(browser.LibredeskSettings).toBeUndefined(); expect(browser.dispatchEvent).toHaveBeenCalled();
   });
-  it('SSR never loads SDK or requests JWT and leaves opt-in/copy unchecked', () => {
+  it('SSR renders one verified entry without opening the widget or requesting JWT', () => {
     const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
     const html = renderToStaticMarkup(createElement(SupportPanel, { support: settings, account: { id: 'synthetic-A', email: 'a@example.test', verified: true } }));
-    expect(fetch).not.toHaveBeenCalled(); expect(html).toContain('СИНТЕТИЧЕСКИЙ СТЕНД'); expect(html).not.toContain('checked=""'); expect(html).not.toContain('<script'); expect(html).toContain('10 часов'); expect(html).toContain('Представить аккаунт в чате');
+    expect(fetch).not.toHaveBeenCalled(); expect(html).toContain('СИНТЕТИЧЕСКИЙ СТЕНД'); expect(html).not.toContain('<script');
+    expect(html).toContain('Открыть чат поддержки'); expect(html).toContain('передадим Libredesk почту аккаунта');
+    expect(html).not.toContain('Представить аккаунт в чате'); expect(html).not.toContain('a@example.test');
   });
 });
 
@@ -227,11 +229,10 @@ describe('chat close preserves the vendor session', () => {
     api.show(); expect(api.show).toHaveBeenCalledTimes(1);
     expect(api.logout).not.toHaveBeenCalled(); expect(api.destroy).not.toHaveBeenCalled(); expect(api.setUser).not.toHaveBeenCalled();
   });
-  it('describes human support and anonymous privacy even for a logged in account', () => {
-    const html = renderToStaticMarkup(createElement(SupportPanel, { support: { ...settings, identifiedEnabled: false }, account: { id: 'A', email: 'private@example.test', verified: true } }));
-    expect(html).toContain('Открыть чат поддержки'); expect(html).toContain('отвечает человек');
-    expect(html).toContain('не передаёт туда почту'); expect(html).not.toContain('private@example.test');
-    expect(html).not.toContain('Открыть анонимный чат');
+  it('does not offer anonymous fallback when verified support is unavailable', () => {
+    const html = renderToStaticMarkup(createElement(SupportPanel, { support: { ...settings, identifiedEnabled: false, contactEmail: 'support@example.test' }, account: { id: 'A', email: 'private@example.test', verified: true } }));
+    expect(html).toContain('Чат поддержки пока недоступен.'); expect(html).toContain('Написать на почту');
+    expect(html).not.toContain('Открыть чат поддержки'); expect(html).not.toContain('private@example.test');
   });
 });
 

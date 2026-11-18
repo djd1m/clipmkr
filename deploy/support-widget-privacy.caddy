@@ -1,0 +1,4 @@
+# Импортируется внутри route действующего support.clipmkr.ru.
+# У гостевой cookie нет подтверждённой связи с аккаунтом Clipmkr.
+@clipmkr-widget-api path /api/v1/widget/*
+request_header @clipmkr-widget-api -X-Libredesk-Visitor-Token

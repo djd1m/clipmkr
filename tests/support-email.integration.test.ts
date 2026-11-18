@@ -227,9 +227,10 @@ describe.skipIf(!databaseUrl)('support PostgreSQL authority',()=>{
   const a=await account();const config={mode:'test' as const,baseURL:'http://support.test',inboxID:randomUUID(),identifiedEnabled:true,contactEmail:null,synthetic:true,secret:randomBytes(32).toString('hex')};
   expect((await widgetSession(pool,config,a.authority.sessionHash)).mode).toBe('anonymous');
   await pool.query('UPDATE account SET email_verified_at=clock_timestamp() WHERE id=$1',[a.id]);
-  const session=await widgetSession(pool,config,a.authority.sessionHash);expect(session.mode).toBe('verified');
+  const session=await widgetSession(pool,config,a.authority.sessionHash,a.id);expect(session.mode).toBe('verified');
   if(session.mode==='verified'){const payload=JSON.parse(Buffer.from(session.jwt.split('.')[1]!,'base64url').toString());expect(payload.external_user_id).toBe(a.id);expect(payload.email).toBe(a.email);expect(payload.user_id).toBeUndefined();expect(payload.exp-payload.iat).toBe(60);}
   const foreign=await account();
+  expect((await widgetSession(pool,config,a.authority.sessionHash,foreign.id)).mode).toBe('anonymous');
   const video=(await pool.query("INSERT INTO video(account_id,idempotency_key,source,declared_bytes,status) VALUES($1,'context','upload',1,'failed') RETURNING id",[foreign.id])).rows[0].id;
   await expect(supportContext(pool,a.authority.sessionHash,randomUUID())).rejects.toMatchObject({status:404,code:'not_found'});
   await expect(supportContext(pool,a.authority.sessionHash,video)).rejects.toMatchObject({status:404,code:'not_found'});

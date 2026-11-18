@@ -1,12 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { clearSupportIdentity } from '../../lib/support-client';
+import { notifySupportSessionChange } from '../../lib/support-session-signal';
 import { clearClipLayoutDrafts } from '../../lib/clip-layout-draft';
 export function SignOut() {
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   return <><button className="secondary" disabled={busy} onClick={async () => {
-    setBusy(true); setError(''); clearSupportIdentity();
+    setBusy(true); setError(''); clearSupportIdentity(); notifySupportSessionChange();
     try { const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); if (!response.ok) throw new Error();
+      notifySupportSessionChange();
       const cleared=clearClipLayoutDrafts();
       if(!cleared)console.warn('layout_draft_cleanup_unavailable');
       window.location.assign('/#auth'); }
