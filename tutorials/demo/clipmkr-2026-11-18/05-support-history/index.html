@@ -1,43 +1,9 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Поддержка и история обращений</title><style>
-:root {
-  color-scheme: dark;
-  --background: #20201f;
-  --panel: #292928;
-  --text: #f3f2ed;
-  --muted: #bebeb4;
-  --line: #454543;
-  --accent: #8fd4a4;
-  font-family: system-ui, sans-serif;
-}
-* { box-sizing: border-box }
-body { margin: 0; color: var(--text); background: var(--background); line-height: 1.55 }
-main, nav { max-width: 940px; margin: auto; padding-inline: clamp(16px, 4vw, 40px) }
-main { padding-block: clamp(28px, 7vw, 64px) 64px }
-nav { padding-top: 24px }
-nav + main { padding-top: 28px }
-a { color: var(--accent); text-underline-offset: .2em }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px }
-h1 {
-  font-family: Georgia, serif;
-  font-size: clamp(34px, 6vw, 66px);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -.035em;
-  margin: 12px 0 20px;
-}
-.brand { font-weight: 800; letter-spacing: .1em; color: var(--accent) }
-.intro, .note, main > p, .description { color: var(--muted) }
-.intro, .note { max-width: 70ch }
-ol.tour { margin: 32px 0 20px; list-style: none; padding: 0; border-top: 1px solid var(--line) }
-.tour li { border-bottom: 1px solid var(--line) }
-.episode { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 13px 12px; text-decoration: none }
-.episode:hover { background: var(--panel) }
-.episode strong { display: block; color: var(--text); font-size: 1.12rem }
-.description { display: block; font-size: .9rem; margin-top: 2px }
-.watch { white-space: nowrap; font-variant-numeric: tabular-nums }
-video { display: block; width: 100%; height: auto; background: #111; border-radius: 12px; aspect-ratio: 16/9 }
-.actions { margin-top: 16px }
-.transcript { margin-top: 24px; max-width: 78ch }
-summary { cursor: pointer; color: var(--accent) }
-@media (max-width: 420px) { .episode { gap: 8px; padding-inline: 4px } .episode strong { font-size: 1rem } }
-</style></head><body><nav><a href="../index.html">← Все демонстрации</a></nav><main><h1>Поддержка и история обращений</h1><p>После входа открываем свою переписку в Libredesk и возвращаемся к ней позже.</p><video controls preload="metadata" width="1280" height="720"><source src="../video/05-support-history.mp4" type="video/mp4"><track kind="subtitles" src="../video/05-support-history.ru.vtt" srclang="ru" label="Русский"></video><p class="actions"><a href="../video/05-support-history.mp4" download>Скачать MP4</a></p><details class="transcript"><summary>Текстовая версия</summary><ol><li><strong>Своя переписка в поддержке</strong> — Войдите и откройте чат. При повторном открытии Clipmkr покажет тот же диалог.</li></ol></details></main></body></html>
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Поддержка и история обращений</title><link rel="stylesheet" href="../player.css"></head><body>
+<nav><a href="../index.html">← Все демонстрации</a></nav>
+<main><h1>Поддержка и история обращений</h1><p class="intro">На рабочем Clipmkr синтетическая QA-учётка открывает свой диалог Libredesk, закрывает чат и открывает его снова. После склейки показан новый сеанс той же QA-учётки и тот же ответ.</p><p class="origin">Рабочий Clipmkr и Libredesk · существующая синтетическая переписка · ed654d7216e4</p>
+<div class="embed"><iframe src="../player.html?episode=05-support-history" title="Видео — Поддержка и история обращений" allow="fullscreen" allowfullscreen></iframe></div>
+<div class="actions"><a href="../video/05-support-history.mp4" download>Скачать MP4</a><a href="../video/05-support-history.ru.vtt" download>Скачать субтитры</a></div>
+<p class="note">Вход выполнен за кадром перед записью каждого сеанса. Имя оператора скрыто в записи. Чат показывает ранее созданную синтетическую переписку. Новых сообщений нет.</p><details><summary>Текстовая версия</summary><ol><li><strong>0:00</strong> Откройте чат поддержки.</li><li><strong>0:04</strong> Видны прежнее обращение и ответ.</li><li><strong>0:09</strong> Закройте чат.</li><li><strong>0:11</strong> Чат снова открывает переписку.</li><li><strong>0:16</strong> Новый сеанс после повторного входа.</li><li><strong>0:20</strong> Видны тот же диалог и ответ.</li></ol></details></main></body></html>

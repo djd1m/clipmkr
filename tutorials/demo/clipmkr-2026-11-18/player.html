@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Проигрыватель видеотура Clipmkr</title>
+  <link rel="stylesheet" href="player.css">
+  <script defer src="player.js"></script>
+</head>
+<body class="player-page">
+  <main class="frame">
+    <video controls playsinline preload="metadata"></video>
+    <p class="captions" aria-label="Субтитры"></p>
+    <div class="controls">
+      <button type="button" aria-pressed="true" id="toggle-captions" disabled>Субтитры</button>
+      <button type="button" id="fullscreen" hidden>На весь экран</button>
+    </div>
+    <p id="problem" role="alert" hidden>Не удалось открыть ролик. MP4 доступен для скачивания на странице эпизода.</p>
+  </main>
+</body>
+</html>
