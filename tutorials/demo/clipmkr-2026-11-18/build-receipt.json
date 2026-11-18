@@ -5,7 +5,7 @@
     {
       "rel": "index.html",
       "bytes": 3123,
-      "sha256": "5c57c7bf70017f53287c97393ecd16a7790bdd18ce93a46be02d8f7589198048"
+      "sha256": "f3a782b1d9ef10a0a31757460d78bb435b55f297125e7d780241a59a50c39d23"
     },
     {
       "rel": "player.html",
@@ -24,43 +24,43 @@
     },
     {
       "rel": "playback.json",
-      "bytes": 6438,
-      "sha256": "c63d3c8268e091fb0b580fd975dc843703dfbc4f8e4b2c3eb9ed36f8dd7f0560"
+      "bytes": 6522,
+      "sha256": "9ab309af4194e784b23626881f62636368177c482133eae86c9f76721f9c0b23"
     },
     {
       "rel": "01-auto-zoom/index.html",
       "bytes": 2061,
-      "sha256": "937aac2e4f1c7ae028bbd526c721631dfcc813405515383d49de75cfbbc72fdc"
+      "sha256": "ba25f8c11e45aa8528c6fdeeb41fa664b53a2dfd2c8e86d1f83db44bd4bcc529"
     },
     {
       "rel": "02-layout-status/index.html",
-      "bytes": 2470,
-      "sha256": "13b5a7856d687861492e1453fd8d478e6852792fcec22db7d6f1037435701d36"
+      "bytes": 2414,
+      "sha256": "e91c3c2787d309b1acd9040fabc08df2653995fe30dfcfb280fef27ad8155c0f"
     },
     {
       "rel": "03-music/index.html",
-      "bytes": 2348,
-      "sha256": "9cdf0d16a717ef93562722106231c7bd308d619f413fcff3c9a6b90a688f6104"
+      "bytes": 2346,
+      "sha256": "373db0be62033dfba6239f0f6196648f80e19d01f6381d99b7e7f4ca949b36ad"
     },
     {
       "rel": "04-fullscreen/index.html",
       "bytes": 1859,
-      "sha256": "a960689c946a158c29df5c51aad3f888de4d11757b7447a81d4ab45eaad85258"
+      "sha256": "2220abcdd79fea98585879aebad1b37edc9f932b00f61b121e11e5522a4ff8ca"
     },
     {
       "rel": "05-support-history/index.html",
       "bytes": 2302,
-      "sha256": "cf946935db557be899a2f008a23476198681769c49570a981446cf2133f9c5ce"
+      "sha256": "c8603ab0dcb51c5667791b621900e25068f1bdf09478dbd2aa85c58f20945c20"
     },
     {
       "rel": "06-feature-request/index.html",
       "bytes": 2287,
-      "sha256": "1b497a466cf79225f5cfb1157ee7d078e2bc42361e67a4c71451164c2ad8187c"
+      "sha256": "dd7f59fb50de2312c6e02995d28e5fdea1a0b389b7dbe067538465bb7d1cd05c"
     },
     {
       "rel": "07-telegram-alerts/index.html",
-      "bytes": 2282,
-      "sha256": "00fd93552732802e4c3525f619ae59c6424c6e9cbaa7d84c2a5df58f17ca68bb"
+      "bytes": 2316,
+      "sha256": "06ce7084fe9604dca359361105e9bc2d8580ff8ef10b7bc2683e07388ed52f10"
     }
   ]
 }
