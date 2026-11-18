@@ -56,7 +56,7 @@ describe('разбор адреса призыва', () => {
     expect(readStoredCta('bogus', YT)).toEqual({ kind: 'none', url: null });
     expect(readStoredCta('open_link', YT)).toEqual({ kind: 'open_link', url: YT });
   });
-  it('надписи — только из кода: у каждого вида своя, свободного текста нет', () => {
+  it('названия видов и статические надписи кнопок заданы в словарях', () => {
     expect(Object.keys(CTA_CHOICE_LABELS).sort()).toEqual([...CTA_KIND].sort());
     expect(Object.keys(CTA_BUTTON_LABELS).sort()).toEqual(CTA_KIND.filter(kind => kind !== 'none').sort());
   });
@@ -165,6 +165,18 @@ const anchors = (html: string) => [...html.matchAll(/<a\b([^>]*)>([^<]*)<\/a>/g)
 const ctaAnchors = (html: string) => anchors(html).filter(a => /class="cta"/.test(a.attrs));
 
 describe('/c/{code}: кнопка призыва автора', () => {
+  it.each([
+    ['https://t.me/demo_channel', 'https://t.me/demo_channel'],
+    ['https://t.me/a?source=clips&x=1#about', 'https://t.me/a?source=clips&amp;x=1#about'],
+  ])('подписка показывает и открывает %s', async (url, escaped) => {
+    const { response, html } = await landingHtml({ cta_kind: 'subscribe', cta_url: url });
+    expect(response.status).toBe(200);
+    expect(ctaAnchors(html)).toEqual([{
+      attrs: ` class="cta" href="${escaped}" rel="noopener noreferrer nofollow" target="_blank"`,
+      text: `${escaped} →`,
+    }]);
+    expect(html).toContain('Ссылка автора клипа · <span>t.me</span>');
+  });
   it('с призывом: главная кнопка — внешняя ссылка автора с rel, домен и пометка видны, «Сделать свои клипы» вторична', async () => {
     const { response, html } = await landingHtml({ cta_kind: 'watch_full', cta_url: `${YT}&t=5` });
     expect(response.status).toBe(200); expect(response.headers.get('location')).toBeNull();
@@ -190,13 +202,14 @@ describe('/c/{code}: кнопка призыва автора', () => {
     const { html } = await landingHtml({ cta_kind: 'open_link', cta_url: 'javascript:alert(1)' });
     expect(html).not.toContain('javascript:'); expect(ctaAnchors(html)[0]!.attrs).toContain('href="/"');
   });
-  it('XSS: кавычки, угловые скобки и апостроф в query/hash не выходят из атрибута', async () => {
+  it.each(['open_link', 'subscribe'])('XSS (%s): кавычки, угловые скобки и апостроф в query/hash экранированы', async cta_kind => {
     const url = parseCtaUrl(`https://evil.example/p?q="><script>alert(1)</script>#'onmouseover='alert(1)`);
-    const { html } = await landingHtml({ cta_kind: 'open_link', cta_url: url });
+    const { html } = await landingHtml({ cta_kind, cta_url: url });
     expect(html).not.toContain('<script>'); expect(html).not.toContain(`'onmouseover`);
     const href = ctaAnchors(html)[0]!.attrs.match(/href="([^"]*)"/)![1]!;
     expect(href).not.toMatch(/[<>"']/);
     expect(href.replaceAll('&amp;', '&').replaceAll('&#39;', "'")).toBe(url);
+    if (cta_kind === 'subscribe') expect(ctaAnchors(html)[0]!.text).toBe(`${href} →`);
     expect(html).toContain('<span>evil.example</span>');
   });
   it('первый экран: FIRST_SCREEN_ACTIONS для /c/ — .cta, и .cta ровно один в обоих вариантах', async () => {

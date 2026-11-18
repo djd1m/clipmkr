@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import * as exec from '../apps/worker/src/render/exec';
 import * as probe from '../apps/worker/src/render/probe';
 import { buildFilterChain, renderClip } from '../apps/worker/src/render/ffmpeg';
 import { CTA_FONT_SIZE, CTA_MIN_FONT_SIZE, CTA_SECONDS, ctaPlateHeight, ctaWindowStart, ctaZone, layoutCta, prepareCta } from '../apps/worker/src/render/cta-overlay';
 import { watermarkGeometry, watermarkPlateTop } from '../packages/shared/src/watermark';
-import { CTA_FRAME_LABELS, ctaPixelsChange } from '../packages/shared/src/cta';
+import { CTA_FRAME_LABELS, ctaPixelsChange, subscriptionFrameUrl } from '../packages/shared/src/cta';
 import { SUBTITLE_MARGIN_V, SUBTITLE_OUTLINE, SUBTITLE_SHADOW, generateSubtitleFile } from '../apps/worker/src/render/subtitles';
 import { buildFlashFilter } from '../apps/worker/src/render/packshot';
 import { quotaMessages } from '../apps/web/src/lib/limits-contract';
@@ -14,6 +15,7 @@ import { ctaSavedMessage } from '../apps/web/src/app/videos/CtaFields';
 // Фича 27b clip-cta (ADR-017): надпись призыва в кадре — геометрия, окно, закрытый набор, fail-closed.
 afterEach(() => { vi.restoreAllMocks(); });
 const W = 1080, H = 1920, ORIGIN = 'https://clipmkr.ru', CODE = 'WWWWWW';
+const CHANNEL = 'https://t.me/demo_channel';
 
 describe('геометрия надписи призыва', () => {
   it('полоса — между низом субтитров и верхом метки, числами', () => {
@@ -60,21 +62,44 @@ describe('окно показа и закрытый набор', () => {
     expect(prepareCta(kind, W, H, 20, false, true)).toBeNull();
     expect(log).not.toHaveBeenCalled();
   });
-  it('текст — только из словаря, адреса в фильтре нет', () => {
-    const prepared = prepareCta('watch_full', W, H, 30, true, true)!;
+  it('просмотр выпуска сохраняет надпись словаря, а SELECT рендера ограничивает ссылку подпиской', () => {
+    const prepared = prepareCta('watch_full', W, H, 30, true, true, undefined, undefined, { url: CHANNEL, textFile: 'cta.txt' })!;
     expect(prepared.result).toEqual({ kind: 'watch_full', text: 'Полный выпуск — по ссылке', font_size: 72, start_seconds: 27.5 });
     expect(prepared.filter).toContain("drawtext=text='Полный выпуск — по ссылке':expansion=none");
     expect(prepared.filter.match(/enable='gte\(t,27\.5\)'/g)).toHaveLength(2);
     expect(prepared.filter).not.toMatch(/https?:|youtube|textfile/);
-    // Воркер не получает адрес автора вовсе: в SELECT рендера его нет.
-    expect(readFileSync('packages/db/src/render.ts', 'utf8')).not.toContain('cta_url');
-    expect(readFileSync('packages/db/src/render.ts', 'utf8')).toContain('v.cta_kind');
+    expect(readFileSync('packages/db/src/render.ts', 'utf8')).toMatch(/CASE\s+WHEN\s+v\.cta_kind\s*=\s*'subscribe'\s+THEN\s+v\.cta_url\s+END\s+AS\s+cta_url/i);
   });
-  it('пиксели меняет только вид: смена одного адреса — без пересборки', () => {
-    expect(ctaPixelsChange('watch_full', 'watch_full')).toBe(false);
+  it('пиксели меняет вид или отображаемый адрес, одинаковая надпись оставляет пиксели прежними', () => {
+    expect(ctaPixelsChange('watch_full', 'watch_full', CHANNEL, 'https://t.me/new')).toBe(false);
     expect(ctaPixelsChange('none', 'watch_full')).toBe(true); expect(ctaPixelsChange('watch_full', 'none')).toBe(true);
     expect(ctaPixelsChange('watch_full', 'subscribe')).toBe(true);
     expect(ctaPixelsChange('bogus', 'none')).toBe(false);
+    expect(ctaPixelsChange('subscribe', 'subscribe', CHANNEL, 'https://T.ME/demo_channel')).toBe(false);
+    expect(ctaPixelsChange('subscribe', 'subscribe', CHANNEL, 'https://t.me/new')).toBe(true);
+    expect(ctaPixelsChange('subscribe', 'subscribe', CHANNEL, `${CHANNEL}?a=1`)).toBe(true);
+    expect(ctaPixelsChange('subscribe', 'subscribe', `${CHANNEL}#old`, `${CHANNEL}?a=1`)).toBe(false);
+  });
+});
+
+describe('адрес подписки для кадра', () => {
+  it('канонизирует HTTPS и обрезает допуск на той же границе ширины, что разметка', () => {
+    expect(subscriptionFrameUrl('subscribe', 'HTTPS://T.ME/A_~@-1')).toBe('https://t.me/A_~@-1');
+    const lastFitting = `https://t.me/${'W'.repeat(28)}`;
+    const tooWide = `${lastFitting}W`;
+    expect(subscriptionFrameUrl('subscribe', lastFitting)).toBe(lastFitting);
+    expect(subscriptionFrameUrl('subscribe', tooWide)).toBeNull();
+    for (const zone of [ctaZone(H), { top: 1481, bottom: 1561 }]) {
+      expect(layoutCta(lastFitting, W, zone)?.fontSize).toBe(CTA_MIN_FONT_SIZE);
+      expect(layoutCta(tooWide, W, zone)).toBeNull();
+    }
+  });
+  it.each([
+    `${CHANNEL}?secret=value`, `${CHANNEL}#anchor`, `${CHANNEL}?`, `${CHANNEL}#`, 'https://t.me:443/channel', 'https://t.me:8443/channel',
+    'https://t.me/%64emo', 'https://t.me/канал', 'https://t.me/a:b', 'https://user@t.me/a', 'https://t.me/a\\b',
+    'https://127.0.0.1/a', 'https://[::1]/a', 'https://server/a', 'https://demo.local/a', 'https://demo.home.arpa/a',
+  ])('выбирает словарь для %s', url => {
+    expect(subscriptionFrameUrl('subscribe', url)).toBeNull();
   });
 });
 
@@ -102,6 +127,27 @@ describe('цепочка фильтров', () => {
       // Без призыва форма результата прежняя: ключа cta нет вовсе (эталоны music.test.ts).
       expect(off).not.toHaveProperty('cta'); expect(legacy).not.toHaveProperty('cta');
       expect(graphs[1]).toBe(graphs[2]); expect(graphs[1]).not.toContain('Подписывайтесь');
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+  it.each([false, true])('renderClip: адрес подписки читается из файла 0600 при watermark=%s', async watermark => {
+    vi.spyOn(probe, 'probeDuration').mockResolvedValue(20);
+    vi.spyOn(probe, 'probeVideoStream').mockResolvedValue(null);
+    const dir = await mkdtemp('/tmp/cta-render-');
+    let textFile = '';
+    const ffmpeg = vi.spyOn(exec, 'execFFmpeg').mockImplementation(async args => {
+      expect(args.join(' ')).not.toContain(CHANNEL);
+      const graph = args[args.indexOf('-filter_complex') + 1]!;
+      textFile = /drawtext=textfile='([^']+\/cta\.txt)':expansion=none/.exec(graph)?.[1] ?? '';
+      expect(await readFile(textFile, 'utf8')).toBe(CHANNEL);
+      expect((await stat(textFile)).mode & 0o777).toBe(0o600);
+    });
+    try {
+      const on = await renderClip({ inputPath: `${dir}/in.mp4`, outputPath: `${dir}/out.mp4`, startTime: 0, endTime: 20,
+        format: 'portrait', words: [], watermark, origin: ORIGIN, code: CODE, cta: 'subscribe', ctaUrl: CHANNEL });
+      expect(ffmpeg).toHaveBeenCalledOnce();
+      expect(on.cta).toMatchObject({ kind: 'subscribe', text: CHANNEL, start_seconds: 17.5,
+        text_sha256: createHash('sha256').update(CHANNEL).digest('hex') });
+      await expect(readFile(textFile)).rejects.toMatchObject({ code: 'ENOENT' });
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 });

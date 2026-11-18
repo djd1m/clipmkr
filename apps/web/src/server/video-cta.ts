@@ -6,11 +6,11 @@ import { effectiveMusic } from '@clipmaker/shared/music-catalog';
 import { CTA_URL_MAX, CtaError, ctaPixelsChange, parseCtaTarget, type CtaTarget } from '@clipmaker/shared/cta';
 import { UploadError, quotaError } from './upload-contract';
 // video.setCta — 17-я процедура канона §5 (ADR-017). 27a: сохранение вида и адреса. 27b: если меняются ПИКСЕЛИ
-// (сменился вид, в том числе none ↔ не-none) — пересборка ВСЕХ готовых клипов записи одной транзакцией:
+// (сменился вид или отображаемый адрес подписки) — пересборка ВСЕХ готовых клипов записи одной транзакцией:
 //   1) одна проверка «что-то из записи уже собирается» по ВСЕЙ записи — 409 целиком ДО квоты;
 //   2) квота user_rerenders ОДНИМ вызовом на N клипов — нехватка остатка откатывает всё, включая призыв;
 //   3) сохранение призыва, версии клипов и попытки — в ОДНОЙ транзакции, постановка в очередь — после коммита.
-// Смена одного адреса пикселей не меняет (адрес в кадр не вшивается) — сохраняется без пересборки и без квоты.
+// Адрес, который не меняет надпись, сохраняется без пересборки и без квоты.
 // Сервер по адресу не ходит (нет SSRF).
 export const setCtaSchema = z.object({ video_id: z.string().uuid(), cta_kind: z.enum(CTA_KIND),
   cta_url: z.string().max(CTA_URL_MAX + 1).nullable().optional() }).strict();
@@ -27,14 +27,14 @@ export class VideoCtaService {
     const videoId = parsed.data.video_id;
     const jobs = await transaction(this.pool, async tx => {
       // Тот же порядок блокировок, что у рендера, повтора, сторожа и смены музыки: сначала video.
-      const video = (await tx.query<{ cta_kind: string; music: boolean; retention_from: Date | null; plan: unknown }>(
-        `SELECT v.cta_kind,v.music,${retentionFromSql('v', 'a')} AS retention_from,${effectivePlanSql('a')} AS plan FROM video v JOIN account a ON a.id=v.account_id
+      const video = (await tx.query<{ cta_kind: string; cta_url: string | null; music: boolean; retention_from: Date | null; plan: unknown }>(
+        `SELECT v.cta_kind,v.cta_url,v.music,${retentionFromSql('v', 'a')} AS retention_from,${effectivePlanSql('a')} AS plan FROM video v JOIN account a ON a.id=v.account_id
         WHERE v.id=$1 AND v.account_id=$2 AND v.deleted_at IS NULL AND a.status='active' FOR UPDATE OF v`, [videoId, account])).rows[0];
       // Чужая и несуществующая запись неразличимы: одинаковый 404.
       if (!video) throw new UploadError('not_found', 'Запись не найдена', 404);
       // updated_at НЕ трогаем: по нему экран отличает «выполняется» от «нет ответа» (300 с молчания).
       const save = () => tx.query('UPDATE video SET cta_kind=$2,cta_url=$3 WHERE id=$1', [videoId, cta.kind, cta.url]);
-      if (!ctaPixelsChange(video.cta_kind, cta.kind)) { await save(); return []; }
+      if (!ctaPixelsChange(video.cta_kind, cta.kind, video.cta_url, cta.url)) { await save(); return []; }
       const busy = await tx.query(`SELECT 1 FROM job_attempt WHERE video_id=$1 AND stage='render' AND status IN ('running','deferred')
         UNION ALL SELECT 1 FROM clip WHERE video_id=$1 AND status='rendering' LIMIT 1`, [videoId]);
       if (busy.rowCount) throw new UploadError('conflict', 'Клипы записи ещё собираются. Сменить призыв можно, когда сборка закончится', 409);

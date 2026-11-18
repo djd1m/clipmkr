@@ -1,7 +1,7 @@
 import { CTA_KIND, readCtaKind, type CtaKind } from './enums.js';
+import { FORMAT_DIMENSIONS } from './formats.js';
+import { measureText, WatermarkGeometryError } from './watermark.js';
 // Призыв к действию в конце клипа (ADR-017, FR-RESULT-006).
-// Текст — только из этого закрытого словаря: свободный текст автора на нашем домене был бы
-// поверхностью фишинга, а в 27b он же уйдёт в пиксели и в чужие ленты навсегда.
 export const CTA_URL_MAX = 2048;
 export const CTA_CHOICE_LABELS = {
   none: 'Без призыва', watch_full: 'Смотреть полный выпуск', subscribe: 'Подписаться', open_link: 'Перейти по ссылке',
@@ -9,7 +9,7 @@ export const CTA_CHOICE_LABELS = {
 export const CTA_BUTTON_LABELS = {
   watch_full: 'Смотреть полный выпуск →', subscribe: 'Подписаться →', open_link: 'Перейти по ссылке →',
 } as const satisfies Record<Exclude<CtaKind, 'none'>, string>;
-// Надпись В КАДРЕ (27b): короткая, адрес в пиксели не идёт — путь зрителя: метка → /c/КОД → кнопка.
+// Статическая надпись в кадре с меткой: метка → /c/КОД → кнопка.
 export const CTA_FRAME_LABELS = {
   watch_full: 'Полный выпуск — по ссылке', subscribe: 'Подписывайтесь — ссылка ниже', open_link: 'Подробнее — по ссылке',
 } as const satisfies Record<Exclude<CtaKind, 'none'>, string>;
@@ -23,9 +23,9 @@ export const CTA_FRAME_LABELS_PAID = {
 export function ctaFrameLabel(kind: Exclude<CtaKind, 'none'>, watermark: boolean): string | null {
   return watermark ? CTA_FRAME_LABELS[kind] : CTA_FRAME_LABELS_PAID[kind];
 }
-/** Меняются ли ПИКСЕЛИ клипа при смене призыва: только вид (адрес в кадр не вшивается). */
-export function ctaPixelsChange(from: unknown, to: unknown): boolean {
-  return readCtaKind(from) !== readCtaKind(to);
+/** Изменение вида или адреса, который попадёт в финал клипа. */
+export function ctaPixelsChange(from: unknown, to: unknown, fromUrl?: unknown, toUrl?: unknown): boolean {
+  return readCtaKind(from) !== readCtaKind(to) || subscriptionFrameUrl(from, fromUrl) !== subscriptionFrameUrl(to, toUrl);
 }
 export const CTA_CHOICES = CTA_KIND.map(kind => ({ kind, label: CTA_CHOICE_LABELS[kind] }));
 
@@ -68,6 +68,33 @@ export function readStoredCta(kind: unknown, url: unknown): CtaTarget {
   const safeKind = readCtaKind(kind);
   if (safeKind === 'none') return { kind: 'none', url: null };
   try { return { kind: safeKind, url: parseCtaUrl(url) }; } catch { return { kind: 'none', url: null }; }
+}
+
+const SIDE_MARGIN = 0.05;
+const PADDING_X = 24;
+export const CTA_FRAME_GEOMETRY = {
+  fontSize: 72, minFontSize: 48, fontStep: 4, paddingX: PADDING_X, paddingY: 12, sideMargin: SIDE_MARGIN,
+  availableTextWidth: (width: number) => width - 2 * Math.ceil(width * SIDE_MARGIN) - 2 * PADDING_X,
+} as const;
+
+const FRAME_URL = /^https:\/\/((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\/[a-z0-9._~@\/-]*)?$/i;
+const NONPUBLIC_HOST = /(?:^|\.)(?:localhost|local|internal|test|invalid|example|onion|home\.arpa)$/i;
+
+/** Адрес для надписи в портретном кадре. null означает статический словарь. */
+export function subscriptionFrameUrl(kind: unknown, raw: unknown): string | null {
+  if (kind !== 'subscribe' || typeof raw !== 'string' || raw.length > CTA_URL_MAX) return null;
+  const host = FRAME_URL.exec(raw)?.[1];
+  if (!host || NONPUBLIC_HOST.test(host)) return null;
+  const { url } = readStoredCta(kind, raw);
+  if (!url) return null;
+  // В каждой используемой полосе CTA помещается плашка с минимальным кеглем.
+  const { minFontSize, availableTextWidth } = CTA_FRAME_GEOMETRY;
+  try {
+    return measureText(url, minFontSize) <= availableTextWidth(FORMAT_DIMENSIONS.portrait.width) ? url : null;
+  } catch (error) {
+    if (error instanceof WatermarkGeometryError) return null;
+    throw error;
+  }
 }
 
 /** Видимое доменное имя назначения: зритель видит, куда уходит. IDN уже в punycode (new URL). */

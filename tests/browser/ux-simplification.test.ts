@@ -16,6 +16,7 @@ import { createPool, type Pool } from '../../packages/db/src/index';
 import { migrate } from '../../packages/db/src/migrate';
 import { AuthService } from '../../apps/web/src/server/auth';
 import { PgAuthStore } from '../../apps/web/src/server/auth-store';
+import { createShortLinkHandler } from '../../apps/web/src/server/short-link-handler';
 import { environment } from '../fixtures/environment';
 import { SHOP_ID, SECRET } from '../fixtures/fake-yookassa-server';
 
@@ -73,6 +74,41 @@ async function stats(page:Page,base=partner){let ensure=0;await page.route('**/a
 for(const [name,engine] of Object.entries({chromium,webkit}))describe(`UX components ${name}`,()=>{
   let browser:Browser;beforeAll(async()=>{browser=await engine.launch();});afterAll(async()=>{await browser?.close();});
   async function run(work:(page:Page)=>Promise<void>){const context=await browser.newContext({viewport:{width:390,height:900}});const page=await context.newPage();page.setDefaultTimeout(10000);const unexpectedDialogs:string[]=[];page.on('dialog',d=>{unexpectedDialogs.push(d.type());console.info('Unexpected component dialog:',d.type());void d.dismiss();});try{await work(page);expect(unexpectedDialogs).toEqual([]);}catch(error){writeFileSync(join(qaEvidence,`failure-${name}-${Date.now()}.html`),await page.content(),{mode:0o600});throw error;}finally{await context.close();}}
+  if (name === 'chromium') it('public_subscribe_shows_address_and_opens_it_at_320px', () => run(async page => {
+    const publicUrl = `${origin}/c/CTDUUG`;
+    const shortAddress = 'https://t.me/demo_channel';
+    const longAddress = `${shortAddress}?source=${'a'.repeat(150)}`;
+    let address = shortAddress;
+    const handler = createShortLinkHandler({ referralSecret: 'test-secret', trustedProxyHops: 1,
+      links: { find: async code => ({ id: A, code, account_id: B, title: 'Клип', status: 'done', thumbnail_key: null,
+        expires_at: null, retention_from: null, plan: 'free', cta_kind: 'subscribe', cta_url: address }), recordView: async () => {} },
+      auth: { authenticate: async () => null }, preview: async () => null, allowRead: async () => true });
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.route(publicUrl, async route => {
+      const response = await handler(new Request(publicUrl, { headers: { 'x-forwarded-for': '192.0.2.5, 127.0.0.1' } }), 'CTDUUG');
+      const headers: Record<string, string> = {};
+      response.headers.forEach((value, key) => { headers[key] = value; });
+      await route.fulfill({ status: response.status, headers, body: await response.text() });
+    });
+    await page.context().route('https://t.me/**', route => route.fulfill({ status: 200, body: 'Destination fixture' }));
+    for (const url of [shortAddress, longAddress]) {
+      address = url;
+      expect((await page.goto(publicUrl))?.status()).toBe(200);
+      const button = page.getByRole('link', { name: `${url} →`, exact: true });
+      expect(await button.getAttribute('href')).toBe(url);
+      expect(await page.locator('.cta-host').textContent()).toBe('Ссылка автора клипа · t.me');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+      if (url === longAddress) expect(await button.evaluate(element => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return new Set(Array.from(range.getClientRects(), rect => rect.y)).size;
+      })).toBeGreaterThan(1);
+      const [popup] = await Promise.all([page.waitForEvent('popup'), button.click()]);
+      await popup.waitForURL(url);
+      expect(await popup.locator('body').textContent()).toBe('Destination fixture');
+      await popup.close();
+    }
+  }));
   it('mobile_fullscreen_keeps_the_same_player_and_position',()=>run(async page=>{
     await scene(page,{...initial,initialClips:[clip,{...clip,clip_id:B,index:2,status:'failed',available:false}]});
     const card=page.locator(`.clip-card[data-clip-id="${A}"]`);
@@ -299,7 +335,7 @@ for(const [name,engine] of Object.entries({chromium,webkit}))describe(`UX compon
     }
   }));
   it('music_and_cta_consequences_visible',()=>run(async page=>{let music=0,cta=0;await page.route('**/api/trpc/clip.setMusic',r=>{music++;return r.fulfill({status:429,json:{error:{message:'Пересборки на сегодня исчерпаны'}}});});await page.route('**/api/trpc/video.setCta',r=>{cta++;return r.fulfill({status:429,json:{error:{message:'Суточный лимит'}}});});await scene(page);await edit(page);for(const width of [390,1440])for(const theme of ['dark','light'])for(const layout of ['workspace','studio']){await page.setViewportSize({width,height:900});await preferences(page,theme,layout);expect(await page.locator('.clip-context:not([hidden]) .music-consequences').isVisible()).toBe(true);expect(await page.locator('.clip-context:not([hidden]) .music-consequences').textContent()).toContain('суточном');}
-    await page.locator('.clip-context:not([hidden]) section[aria-label="Музыка клипа"] select').selectOption('auto');expect(music).toBe(0);await page.getByRole('button',{name:'Применить музыку',exact:true}).click();await poll(()=>music).toBe(1);expect(await page.getByRole('alert').textContent()).toContain('исчерпаны');await page.locator('.cta-disclosure > summary').click();expect(await page.locator('.cta-panel > p').textContent()).toContain('смена только ссылки — без пересборки');await page.locator('#video-cta-kind').selectOption('subscribe');await page.locator('#video-cta-url').fill('https://qa.test');expect(cta).toBe(0);await page.getByRole('button',{name:'Сохранить призыв'}).click();await poll(()=>cta).toBe(1);expect(await page.locator('#video-cta-url').inputValue()).toBe('https://qa.test');}));
+    await page.locator('.clip-context:not([hidden]) section[aria-label="Музыка клипа"] select').selectOption('auto');expect(music).toBe(0);await page.getByRole('button',{name:'Применить музыку',exact:true}).click();await poll(()=>music).toBe(1);expect(await page.getByRole('alert').textContent()).toContain('исчерпаны');await page.locator('.cta-disclosure > summary').click();expect(await page.locator('.cta-panel > p').textContent()).toContain('адреса, который виден в финале');await page.locator('#video-cta-kind').selectOption('subscribe');expect(await page.locator('.cta-fields small').textContent()).toContain('Короткая публичная ссылка также появится в финале видео');await page.locator('#video-cta-url').fill('https://qa.test');expect(cta).toBe(0);await page.getByRole('button',{name:'Сохранить призыв'}).click();await poll(()=>cta).toBe(1);expect(await page.locator('#video-cta-url').inputValue()).toBe('https://qa.test');}));
   it('scoped_css_and_preserved_routes / same-state geometry palette falsifiers',()=>run(async page=>{
     await scene(page,{...initial,initialClips:[1,2,3,4].map((index)=>({...clip,clip_id:`00000000-0000-4000-8000-00000000000${index}`,index,title:'Очень длинное название '.repeat(4)}))});
     for(const width of [320,390,1440])for(const theme of ['dark','light'])for(const layout of ['workspace','studio']){await page.setViewportSize({width,height:1000});await preferences(page,theme,layout);await assertApprovedScene(page,{scene:'result',width,theme,layout});expect((await domRules(page)).filter((r:{severity:string})=>r.severity==='error')).toEqual([]);expect(await textZoomRule(page)).toEqual([]);}
