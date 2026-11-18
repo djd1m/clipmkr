@@ -561,3 +561,19 @@ html:has(.public-entry), body:has(.public-entry) { background:var(--workspace-pa
 .public-entry .public-referral-notice { padding: .8rem; margin: 0 0 1rem; border-left: 3px solid var(--workspace-accent); background: var(--workspace-surface); font-size: .82rem; }
 .public-entry .public-referral-notice p { margin: .4rem 0 0; color: var(--workspace-muted); font-size: .76rem; }
 .auth-flow-referral-code { display: block; margin-top: .3rem; overflow-wrap: anywhere; }
+
+
+[data-clip-player] [data-clip-view-close][hidden] { display:none; }
+.clip-view-open { margin-block-end:var(--space-2); }
+.clip-preview[data-clip-player].clip-view-expanded {
+  position:fixed; inset:0; z-index:2147483646; width:100%; height:100dvh; max-height:none;
+  display:grid; place-items:center; aspect-ratio:auto; background:var(--media-bg); margin:0;
+}
+[data-clip-player] video:is(:fullscreen, .clip-view-expanded video) {
+  width:100% !important; height:100% !important; max-width:none !important; max-height:none !important;
+  object-fit:contain; background:var(--media-bg);
+}
+.clip-view-expanded .score-badge { display:none; }
+.clip-view-expanded .clip-view-close {
+  position:absolute; top:max(var(--space-4),env(safe-area-inset-top)); right:max(var(--space-4),env(safe-area-inset-right));
+}

@@ -73,6 +73,38 @@ async function stats(page:Page,base=partner){let ensure=0;await page.route('**/a
 for(const [name,engine] of Object.entries({chromium,webkit}))describe(`UX components ${name}`,()=>{
   let browser:Browser;beforeAll(async()=>{browser=await engine.launch();});afterAll(async()=>{await browser?.close();});
   async function run(work:(page:Page)=>Promise<void>){const context=await browser.newContext({viewport:{width:390,height:900}});const page=await context.newPage();page.setDefaultTimeout(10000);const unexpectedDialogs:string[]=[];page.on('dialog',d=>{unexpectedDialogs.push(d.type());console.info('Unexpected component dialog:',d.type());void d.dismiss();});try{await work(page);expect(unexpectedDialogs).toEqual([]);}catch(error){writeFileSync(join(qaEvidence,`failure-${name}-${Date.now()}.html`),await page.content(),{mode:0o600});throw error;}finally{await context.close();}}
+  it('mobile_fullscreen_keeps_the_same_player_and_position',()=>run(async page=>{
+    await scene(page,{...initial,initialClips:[clip,{...clip,clip_id:B,index:2,status:'failed',available:false}]});
+    const card=page.locator(`.clip-card[data-clip-id="${A}"]`);
+    const control=card.getByRole('button',{name:'На весь экран',exact:true});
+    const player=card.locator('video');
+    const original=await player.elementHandle();
+    expect(await page.getByRole('button',{name:'На весь экран',exact:true}).count()).toBe(1);
+    await page.waitForFunction(video=>video instanceof HTMLVideoElement && video.readyState>=1,original);
+    await player.evaluate(video=>{(video as HTMLVideoElement).currentTime=1;});
+    if(name==='chromium'){
+      await control.click();
+      await page.waitForFunction(video=>document.fullscreenElement===video,original);
+      await page.evaluate(()=>document.exitFullscreen());
+      expect(await player.evaluate(video=>(video as HTMLVideoElement).currentTime)).toBeCloseTo(1,1);
+    }
+    await page.evaluate(()=>{
+      Object.defineProperty(document,'fullscreenEnabled',{value:false,configurable:true});
+      Object.defineProperty(HTMLVideoElement.prototype,'webkitSupportsFullscreen',{value:false,configurable:true});
+    });
+    await control.click();
+    const expanded=page.getByRole('dialog',{name:'Полноэкранный просмотр клипа'});
+    await expanded.waitFor();
+    const bounds=await expanded.boundingBox();
+    expect(bounds).toMatchObject({x:0,y:0,width:390,height:900});
+    expect(await expanded.locator('video').evaluate((video,known)=>video===known,original)).toBe(true);
+    expect(await expanded.locator('video').evaluate(video=>(video as HTMLVideoElement).currentTime)).toBeCloseTo(1,1);
+    expect(await expanded.getByRole('button',{name:'Закрыть просмотр ×'}).evaluate(button=>button===document.activeElement)).toBe(true);
+    await page.keyboard.press('Escape');
+    await expanded.waitFor({state:'hidden'});
+    expect(await control.evaluate(button=>button===document.activeElement)).toBe(true);
+    expect(await player.evaluate(video=>(video as HTMLVideoElement).paused)).toBe(true);
+  }));
   for(const opening of ['initial','reopen'])it(`qe_r1_guest_focus_${opening}_before_fill`,()=>run(async page=>{
     const c=await scene(page);await share(page);await page.getByRole('button',{name:'Отправить клип гостю',exact:true}).click();
     if(opening==='reopen'){await page.getByRole('button',{name:'Закрыть',exact:true}).click();await page.getByRole('button',{name:'Отправить клип гостю',exact:true}).click();}

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { rpc } from '../../lib/rpc';
 import type { ClipScreen } from '../../lib/screen-contract';
 import { useClipDownload } from './useClipDownload';
+import { enterClipFullscreen } from '../../../public/clip-fullscreen.js';
 /** `onSendToGuest` is passed only while the guest form is on screen (consent text hash present); without it «Гостю» is disabled.
  *  The card never creates a guest pack: consent is given only in the form (ADR-008). */
 export function ClipCard({ clip, videoId, layoutActive=true, onLayoutLeaveGuard, onMusicQueued, onMusicApplyStart, onMusicFailed, musicPending = false, musicNotice, musicResolution, contextRoot, onEditClip, onSendToGuest, paymentsOn = false, creditMode=false, selected = true, onSelect }: {
@@ -58,18 +59,21 @@ export function ClipCard({ clip, videoId, layoutActive=true, onLayoutLeaveGuard,
     </div>
   </section>;
   // Порядок и media wrapper одинаковы для полного и частичного результата.
-  return <><article className="clip-card workspace-selected-layout studio-clip" data-clip-id={clip.clip_id} data-selected={selected}>
+  return <><article className="clip-card workspace-selected-layout studio-clip" data-clip-id={clip.clip_id} data-selected={selected} data-clip-view>
     <header className="clip-heading">
       <div className="eyebrow">ФРАГМЕНТ {String(clip.index).padStart(2, '0')} · {(clip.duration_seconds == null ? clip.end - clip.start : Number(clip.duration_seconds)).toFixed(1)} с</div>
       <h3>{clip.title}</h3>
     </header>
-    <div className="clip-preview">{clip.available ? <video ref={videoRef} key={fileVersion} controls playsInline preload="metadata" onPlay={() => onSelect?.(clip.clip_id)}
+    <div className="clip-preview" data-clip-player>{clip.available ? <><video ref={videoRef} key={fileVersion} controls playsInline preload="metadata" onPlay={() => onSelect?.(clip.clip_id)}
       poster={`/api/clips/${clip.clip_id}/thumbnail?v=${fileVersion}`} src={`/api/clips/${clip.clip_id}/file?v=${fileVersion}`} aria-label={clip.title} />
+      <button type="button" className="clip-view-close" data-clip-view-close hidden>Закрыть просмотр ×</button></>
       : <p>{expired ? 'Срок хранения закончился' : clip.status === 'failed' ? 'Не удалось собрать клип' : 'Собираем клип…'}</p>}
       {scored && <span className="score-badge" aria-hidden="true">{scored.score}</span>}</div>
     <div className="clip-body">
       {error && <p role="alert">{error}</p>}
       {previewError && <p role="alert">{previewError}</p>}
+      {clip.available && !expired && <button type="button" className="secondary clip-view-open" data-open-clip-view
+        onClick={event => enterClipFullscreen(event.currentTarget)}>На весь экран</button>}
       {!expired && downloadAction}
       {copyMessage && <p role="status" className="video-id">{copyMessage}</p>}
       {musicFeedback && <p role="alert">{musicFeedback}</p>}

@@ -80,6 +80,9 @@ describe('guest page', () => {
     expect(html).toContain('name="viewport"'); expect(html).toContain('@media(max-width:600px)');
     expect(html).toContain('&lt;script&gt;Анна'); expect(html).not.toContain('<img src=x');
     expect(html).toContain('Скачать все'); expect(html).toContain(`/api/clips/${clip}/file?g=${code}`);
+    expect(html).toContain('<body data-guest-clip-page>');
+    expect(html).toMatch(/<script type="module" nonce="[^"]+" src="\/clip-fullscreen\.js"><\/script>/);
+    expect(html).toContain('data-open-clip-view>На весь экран');
     expect(html).not.toContain('object_key'); expect(html).not.toContain('X-Amz');
     expect(f.guests.recordOpen).toHaveBeenCalledWith(expect.objectContaining({ id: packId }), null, '192.0.2.0/24');
   });

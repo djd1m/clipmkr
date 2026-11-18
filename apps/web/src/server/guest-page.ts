@@ -42,8 +42,13 @@ h1,h2,h3,p,label,button,a,input,select,textarea{overflow-wrap:anywhere;hyphens:n
 main,nav{padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}nav{padding-top:max(1rem,env(safe-area-inset-top))}main{padding-bottom:max(1rem,env(safe-area-inset-bottom))}
 button,.download,.cta{min-height:2.75rem;min-width:2.75rem}
 video{max-height:min(70svh,31.25rem);object-fit:contain}
+[data-clip-player] [data-clip-view-close][hidden]{display:none}
+[data-open-clip-view]{display:flex;align-items:center;margin-bottom:.5rem}
+[data-clip-player].clip-view-expanded{position:fixed;inset:0;z-index:10;width:100%;height:100dvh;display:grid;place-items:center;background:var(--media-bg)}
+[data-clip-player] video:is(:fullscreen,.clip-view-expanded video){width:100%;height:100%;max-height:none;object-fit:contain}
+.clip-view-expanded [data-clip-view-close]{position:absolute;top:max(1rem,env(safe-area-inset-top));right:max(1rem,env(safe-area-inset-right))}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
-${LEGAL_FOOTER_CSS}</style></head><body><main>
+${LEGAL_FOOTER_CSS}</style></head><body data-guest-clip-page><main>
 <a href="/">КлипМейкер</a><h1>${escapeHtml(pack.guest_name)}, ${pluralRu(pack.clips.length, ['ваш', 'ваши', 'ваши'])} ${pack.clips.length} ${pluralRu(pack.clips.length, ['момент', 'момента', 'моментов'])} из выпуска</h1>
 <p>${allExpired?'Срок хранения закончился. История отмеченных фрагментов сохранена.':'Ведущий отметил эти клипы для вас. Скачайте и опубликуйте их у себя.'}</p>
 <p>Ссылка действует до <time datetime="${pack.expires_at!.toISOString()}">${escapeHtml(pack.expires_at!.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }))} МСК</time>. Файлы могут стать недоступны раньше по сроку хранения.</p>
@@ -58,8 +63,10 @@ ${LEGAL_FOOTER_CSS}</style></head><body><main>
       : clip.status === 'rendering' || clip.status === 'queued' ? 'Клип ещё обрабатывается.'
       : expired ? 'Срок хранения закончился' : 'Файл пока недоступен.';
     const unknown = clip.retention_state === 'unknown' ? '<p>Дата хранения уточняется.</p>' : '';
-    return `<article><h2>${escapeHtml(clip.title)}</h2>${available
-      ? `${unknown}${until}<video controls playsinline preload="none" src="${base}/file?${query}" poster="${base}/thumbnail?${query}"></video>
+    return `<article data-clip-view><h2>${escapeHtml(clip.title)}</h2>${available
+      ? `${unknown}${until}<div data-clip-player><video controls playsinline preload="none" src="${base}/file?${query}" poster="${base}/thumbnail?${query}"></video>
+<button type="button" data-clip-view-close hidden>Закрыть просмотр ×</button></div>
+<button type="button" data-open-clip-view>На весь экран</button>
 <a class="download" href="${base}/file?${query}&amp;download=1" download>Скачать</a>`
       : `${unknown}<p>${state}</p>`}</article>`;
   }).join('')}</div><footer><a href="/">Сделать свои клипы</a>
@@ -68,6 +75,7 @@ ${paymentsOn ? (creditMode ? `<section aria-label="Пакеты кредитов
 <button id="pro-interest">Нужен тариф побольше</button><p id="interest-status" role="status"></p>
 <a id="interest-login" href="/" hidden>Войти в аккаунт</a></section>`}
 <p>Чтобы отозвать публикацию, свяжитесь с ведущим, который прислал эту ссылку: он может закрыть доступ к пакету.</p></footer>
+<script type="module" nonce="${nonce}" src="/clip-fullscreen.js"></script>
 <script nonce="${nonce}">${paymentsOn ? '' : `document.getElementById('pro-interest').addEventListener('click',async function(){
 this.disabled=true;const status=document.getElementById('interest-status');status.textContent='Записываем…';
 try{const response=await fetch('/api/trpc/interest.create',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_screen:'guest_page'})});
