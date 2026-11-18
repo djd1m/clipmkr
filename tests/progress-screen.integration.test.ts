@@ -32,6 +32,39 @@ describe.skipIf(!dbUrl)('PostgreSQL: экраны и доступ к клипа�
     const clips = (await screen.clips(owner, video)).clips;
     expect(clips.map(c => c.available)).toEqual([true, false]); expect(clips[0]?.explanations?.completeness).toBe('Закончено');
   });
+  it('статус раскладки относится к актуальной попытке и опубликованной версии', async () => {
+    const screen = new ScreenService(pool);
+    const v = randomUUID(), c = randomUUID(), author = randomUUID(), series = 3;
+    await pool.query("INSERT INTO account(id,email,password_hash,plan,status) VALUES($1,$2,'test-only','free','active')", [author, `${author}@example.test`]);
+    await pool.query(`INSERT INTO video(id,account_id,idempotency_key,source,declared_bytes,actual_bytes,object_key,status)
+      VALUES($1,$2,$3,'upload',100,100,'source','done')`, [v, author, randomUUID()]);
+    await pool.query(`INSERT INTO clip(id,video_id,"index",start_seconds,end_seconds,title,watermarked,
+      status,object_key,render_version,render_fence) VALUES($1,$2,1,0,20,'Готовый клип',false,'done','clip-v1.mp4',2,1)`, [c,v]);
+    await pool.query('INSERT INTO clip_link(clip_id,code) VALUES($1,$2)',[c,randomBytes(5).toString('hex')]);
+    await pool.query(`INSERT INTO job_attempt(video_id,clip_id,stage,series_no,attempt_no,fence,status,unit,unit_count,started_at,rerender)
+      VALUES($1,$2,'render',$3,1,1,'running','none',0,now(),true)`, [v,c,series]);
+    const state = async () => (await screen.clips(author,v)).clips[0];
+    expect(await state()).toMatchObject({available:true,rerendering:true,published_render_version:1});
+    expect((await state())?.layout_rerender_state).toBeUndefined();
+    const layout={version:1,mode:'screen-face',variant:'03',screen:{x:0,y:0,width:1,height:1},focus:null,camera:null};
+    await pool.query(`INSERT INTO clip_layout_intent(clip_id,request_key,source_revision,base_render_version,render_version,series_no,layout)
+      VALUES($1,$2,$3,1,2,$4,$5::jsonb)`,[c,randomUUID(),'a'.repeat(64),series+1,JSON.stringify(layout)]);
+    expect((await state())?.layout_rerender_state).toBeUndefined();
+    await pool.query('UPDATE clip_layout_intent SET series_no=$2 WHERE clip_id=$1',[c,series]);
+    expect(await state()).toMatchObject({available:true,layout_rerender_state:'pending',published_render_version:1});
+    await pool.query("UPDATE job_attempt SET status='deferred',wait_reason='no_disk' WHERE clip_id=$1",[c]);
+    expect((await state())?.layout_rerender_state).toBe('pending');
+    await pool.query("UPDATE job_attempt SET status='failed',wait_reason=NULL,failure_reason='ffmpeg_failed' WHERE clip_id=$1",[c]);
+    expect(await state()).toMatchObject({available:true,layout_rerender_state:'failed',rerender_failure:'ffmpeg_failed'});
+    await pool.query("UPDATE job_attempt SET status='succeeded',failure_reason=NULL WHERE clip_id=$1",[c]);
+    expect((await state())?.layout_rerender_state).toBeUndefined();
+    await pool.query("UPDATE clip SET object_key='clip-v2.mp4' WHERE id=$1",[c]);
+    expect(await state()).toMatchObject({available:true,layout_rerender_state:'succeeded',published_render_version:2});
+    await pool.query('UPDATE clip SET render_version=3 WHERE id=$1',[c]);
+    expect((await state())?.layout_rerender_state).toBeUndefined();
+    await expect(screen.clips(stranger,v)).rejects.toMatchObject({status:404});
+    await pool.query('UPDATE video SET deleted_at=now() WHERE id=$1',[v]);
+  });
   it('лента (фича 29): стадия отказа — из последней попытки по fence на настоящем PostgreSQL', async () => {
     const screen = new ScreenService(pool);
     const failedVideo = async (attempts: [string, string][]) => {

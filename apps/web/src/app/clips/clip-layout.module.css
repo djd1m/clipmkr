@@ -34,3 +34,14 @@
 .legacy p{margin:0 0 .5rem}
 .draft{font-size:.8rem;color:var(--workspace-accent)}
 @media(max-width:720px){.choice .option{padding:.7rem}}
+
+.cardStatus[data-layout-status]{display:flex;align-items:baseline;flex-wrap:wrap;gap:.125rem .6rem;margin-top:.375rem;font-size:.8125rem;line-height:1.4;color:var(--workspace-muted)}
+.cardStatus[data-layout-status=succeeded]{color:var(--workspace-accent)}
+.cardStatus[data-layout-status=failed]{color:var(--danger)}
+.cardStatusMark{display:inline-grid;place-items:center;width:.75rem;height:.75rem;margin-inline-end:.4rem;vertical-align:-.1rem}
+.cardStatus[data-layout-status=pending] .cardStatusMark{border:.1rem solid var(--workspace-accent);border-block-start-color:transparent;border-radius:50%;animation:layout-status-spin .85s linear infinite}
+.cardStatus[data-layout-status=failed] .cardStatusMark{border:1px solid currentColor;border-radius:50%;font-size:.6rem;font-weight:700;line-height:1}
+.cardStatus button.cardStatusAction{display:inline-flex;min-height:1.5rem;max-width:100%;padding:.125rem 0;border:0;background:transparent;color:var(--workspace-accent);font:inherit;font-weight:600;text-decoration:underline;overflow-wrap:anywhere}
+.cardStatus[data-layout-status] button.cardStatusAction:hover:not(:disabled){background:transparent;text-decoration-thickness:.12em}
+@keyframes layout-status-spin{to{transform:rotate(1turn)}}
+@media (prefers-reduced-motion:reduce){.cardStatus[data-layout-status=pending] .cardStatusMark{animation:none}}

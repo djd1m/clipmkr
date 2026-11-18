@@ -53,24 +53,26 @@ beforeAll(async()=>{
 },30_000);
 afterAll(async()=>{await chromiumBrowser?.close();await webkitBrowser?.close();await vite?.close();rmSync(cache,{recursive:true,force:true});});
 async function fixture(page:Page){
-  const state={info:info(),applies:[] as Record<string,unknown>[],prepares:0};
+  const state={info:info(),applies:[] as Record<string,unknown>[],prepares:0,listedClip:clip,listLayoutOnApply:false};
   await page.route('**/api/videos/*/original?metadata=1',r=>r.fulfill({json:{videoId,state:'ready',available:true,sourceRevision:revision,media:{kind:'video',mime:'video/mp4',extension:'mp4',bytes:String(mp4.length),durationSeconds:8}}}));
   await page.route('**/api/trpc/**',async route=>{
     const method=new URL(route.request().url()).pathname.split('/').at(-1);let value:unknown;
-    if(method==='video.get')value=video;else if(method==='clip.list')value={clips:[clip,{...clip,clip_id:videoId,index:2,title:'Другой клип'}]};
+    if(method==='video.get')value=video;else if(method==='clip.list')value={clips:[state.listedClip,{...clip,clip_id:videoId,index:2,title:'Другой клип'}]};
     else if(method==='clip.layoutInfo')value=state.info;
     else if(method==='clip.prepareLayout'){state.prepares++;state.info.seed.state='pending';value={state:'pending',seedRevision:'b'.repeat(64)};}
     else if(method==='clip.setLayout'){
       const request=route.request().postDataJSON();state.applies.push(request);state.info.renderVersion++;
       state.info.activeIntent={request_key:request.request_key,render_version:state.info.renderVersion,layout:request.layout,status:'pending'};
+      if(state.listLayoutOnApply) state.listedClip={...state.listedClip,render_version:state.info.renderVersion,
+        rerendering:true,layout_rerender_state:'pending'};
       value={request_key:request.request_key,render_version:state.info.renderVersion,status:'pending'};
     }else throw Error(`Unexpected mutation ${method}`);
     await route.fulfill({json:{result:{data:{data:value}}}});
   });
   await page.goto(origin+'/fixture');await mount(page);return state;
 }
-async function mount(page:Page){await page.waitForFunction(()=>Reflect.get(window,'zoomReady'));
-  await page.evaluate(p=>Reflect.get(window,'mountZoom')(p),{videoId,initialVideo:video,initialClips:[clip,{...clip,clip_id:videoId,index:2,title:'Другой клип'}]});await page.waitForSelector('.clip-card');}
+async function mount(page:Page,first=clip){await page.waitForFunction(()=>Reflect.get(window,'zoomReady'));
+  await page.evaluate(p=>Reflect.get(window,'mountZoom')(p),{videoId,initialVideo:video,initialClips:[first,{...clip,clip_id:videoId,index:2,title:'Другой клип'}]});await page.waitForSelector('.clip-card');}
 async function editor(page:Page,waitForFrame=true){const edit=page.getByRole('button',{name:'Изменить оформление',exact:true});if(!await edit.isVisible())await page.locator('.clip-card[data-selected=true] > .clip-body > details > summary').click();
   await edit.click();const summary=page.getByText('Экран + камера',{exact:true}).filter({visible:true});if(!await summary.evaluate(n=>(n.parentElement as HTMLDetailsElement).open))await summary.click();
   if(waitForFrame)await expect.poll(()=>page.getByRole('button',{name:'Применить оформление',exact:true}).isEnabled()).toBe(true);}
@@ -83,6 +85,58 @@ async function range(slider:ReturnType<Page['getByRole']>,value:string){await sl
   Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(n,value);n.dispatchEvent(new Event('input',{bubbles:true}));},value);}
 async function saved(page:Page){return page.evaluate(k=>JSON.parse(sessionStorage.getItem(k)??'null'),storageKey);}
 async function run(work:(page:Page)=>Promise<void>,engine:()=>Browser=()=>chromiumBrowser){const page=await engine().newPage({viewport:{width:1440,height:1000}});try{await work(page);}finally{await page.close();}}
+it('composition status stays on its card after closing, switching and reload',async()=>run(async page=>{
+  page.setDefaultTimeout(8000);
+  await page.setViewportSize({width:390,height:844});
+  const f=await fixture(page);
+  f.listLayoutOnApply=true;
+  const card=page.locator(`[data-clip-id="${clipId}"]`);
+  const status=card.locator('[data-layout-status]');
+  const player=card.locator('video');
+  await player.evaluate(node=>Reflect.set(window,'previousLayoutPlayer',node));
+  await editor(page);
+  await variant(page,'01');
+  expect(await status.count()).toBe(0);
+  await confirm(page);
+  await page.getByRole('button',{name:'Закрыть панель',exact:true}).click();
+  await expect.poll(()=>status.innerText()).toContain('Обновляем оформление');
+  expect(await status.evaluate(node=>node.parentElement?.querySelector('h3')?.textContent)).toBe(clip.title);
+  expect(await player.evaluate(node=>node===Reflect.get(window,'previousLayoutPlayer'))).toBe(true);
+  expect(await player.getAttribute('src')).toContain('?v=1');
+  expect(await card.getByRole('button',{name:'Скачать клип'}).isEnabled()).toBe(true);
+  await page.locator(`[data-select-clip="${videoId}"]`).click();
+  expect(await page.locator(`[data-clip-id="${videoId}"] [data-layout-status]`).count()).toBe(0);
+  await page.locator(`[data-select-clip="${clipId}"]`).click();
+  expect(await status.isVisible()).toBe(true);
+
+  await page.reload();
+  await mount(page,f.listedClip);
+  expect(await status.innerText()).toContain('Обновляем оформление');
+  f.listedClip={...f.listedClip,rerendering:false,layout_rerender_state:'succeeded',published_render_version:2};
+  await expect.poll(()=>status.innerText(),{timeout:8000}).toContain('Оформление обновлено');
+  expect(await player.getAttribute('src')).toContain('?v=2');
+  await expect.poll(()=>status.count(),{timeout:6000}).toBe(0);
+  await page.reload();
+  await mount(page,f.listedClip);
+  expect(await status.count()).toBe(0);
+
+  f.listedClip={...f.listedClip,render_version:3,layout_rerender_state:'failed',rerender_failure:'ffmpeg_failed'};
+  await expect.poll(()=>status.innerText(),{timeout:8000}).toContain('Не удалось обновить оформление');
+  const open=card.getByRole('button',{name:'Открыть редактор',exact:true});
+  for (const theme of ['dark','light']) {
+    await page.locator('html').evaluate((node,value)=>{node.dataset.theme=value;},theme);
+    await open.hover();
+    expect(await open.evaluate(node=>getComputedStyle(node).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+  }
+  await open.focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('heading',{name:'Оформление клипа',exact:true}).waitFor();
+  expect(f.applies).toHaveLength(1);
+  expect(await player.getAttribute('src')).toContain('?v=2');
+  await page.getByRole('button',{name:'Закрыть панель',exact:true}).click();
+  expect(await open.evaluate(node=>node===document.activeElement)).toBe(true);
+}),45000);
+
 it.each(['01','02'] as const)('legacy_layout_changes_version_only_after_explicit_upgrade %s',chosen=>run(async page=>{
   const f=await fixture(page),legacy=parseScreenFaceLayout({version:1,mode:'screen-face',variant:chosen,screen:{x:0,y:0,width:.8,height:1},focus:null,camera:null});
   f.info.publishedLayout={version:1,requested:legacy,resolved:{cameraVisible:false,reason:null}};await editor(page);

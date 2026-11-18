@@ -185,7 +185,7 @@ export function VideoDetail({ videoId, initialVideo, initialClips, initialPacks 
       {clips.length > 0 && !originalOpen && <p className="workspace-section-label workspace-selected-caption">Выбранный клип</p>}
       <div className="workspace-result-regions" style={!clips.length ? {gridTemplateColumns:"minmax(0,1fr)"} : undefined}>
         <div className="clip-grid studio-clips"><div ref={setOriginalHost} /><div hidden={originalOpen}>{clips.map(clip => <ClipCard videoId={videoId} onLayoutLeaveGuard={guard=>{if(guard)leaveGuards.current.set(clip.clip_id,guard);else leaveGuards.current.delete(clip.clip_id);}} creditMode={creditMode} key={clip.clip_id} clip={clip}
-          contextRoot={contextHost} onEditClip={setEditingClipId} selected={clip.clip_id === selectedClipId} onSelect={selectClip}
+          contextRoot={contextHost} onEditClip={setEditingClipId} onLayoutApplied={() => refreshRead.current()} selected={clip.clip_id === selectedClipId} onSelect={selectClip}
           paymentsOn={paymentsOn} onSendToGuest={sendToGuest}
           musicPending={musicStates[clip.clip_id]?.pending} musicNotice={musicStates[clip.clip_id]?.notice} musicResolution={musicStates[clip.clip_id]?.resolution}
           onMusicApplyStart={(track, version) => applyStart(clip.clip_id, track, version)}

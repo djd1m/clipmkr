@@ -41,8 +41,8 @@ function write(value:Envelope):boolean {
     return sessionStorage.getItem(key(value.accountScope,value.clipId))===raw;}catch{return false;}
 }
 
-export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard}:{videoId:string;clip:ClipScreen;active:boolean;
-  onLeaveGuard?:(guard:(()=>boolean)|null)=>void}) {
+export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard,onApplied}:{videoId:string;clip:ClipScreen;active:boolean;
+  onLeaveGuard?:(guard:(()=>boolean)|null)=>void;onApplied?:()=>void}) {
   const id=useId(),details=useRef<HTMLDetailsElement>(null),dialog=useRef<HTMLDialogElement>(null),applyButton=useRef<HTMLButtonElement>(null);
   const [open,setOpen]=useState(false),[info,setInfo]=useState<ClipLayoutInfo|null>(null),[draft,setDraft]=useState<ScreenFaceLayout>(initial);
   const [target,setTarget]=useState<'screen'|'camera'>('screen'),[busy,setBusy]=useState(false),[confirming,setConfirming]=useState(false);
@@ -193,7 +193,7 @@ export function ClipLayoutChoice({videoId,clip,active,onLeaveGuard}:{videoId:str
       const latest=envelope.current;if(latest?.submitted?.request_key===response.request_key)
         save({...latest,submitted:{...latest.submitted,acceptedRenderVersion:response.render_version}});
       operation.current=response.status;announce(response.status==='failed'?'Пересборка завершилась отказом. Черновик сохранён.':'Пересборка принята; прежний клип доступен');
-      closeConfirmation();details.current?.querySelector('summary')?.focus();
+      closeConfirmation();details.current?.querySelector('summary')?.focus();onApplied?.();
     }catch(cause){
       const latest=envelope.current;
       // Existing server code distinguishes new-admission refusal from a same-key body conflict.
