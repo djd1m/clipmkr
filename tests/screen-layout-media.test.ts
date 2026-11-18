@@ -109,6 +109,60 @@ it('sampled_absence_vetoes_camera_for_whole_clip', async () => {
   for (const rgb of await samples('veto', 540, 1088)) expect(Math.max(...rgb) - Math.min(...rgb)).toBeLessThanOrEqual(1);
 }, 60_000);
 
+it('v3 moves the camera once without changing visible screen around it', async () => {
+  const camera = { x: 97.5 / 128, y: 1.5 / 96, width: 29 / 128, height: 29 / 96 };
+  for (const variant of ['01','02','03'] as const) {
+    const choice: ScreenFaceLayout = { ...layout, version: 3, variant, camera,
+      screen: { x: 0, y: 0, width: 1, height: 1 },
+      focus: variant === '03' ? { x: .08, y: .02, width: .84, height: .92 } : null };
+    const name = `relocated-${variant}`;
+    const geometry = await render(name, choice);
+    const { source: original, destination: displayed } = geometry.screen;
+    const at = (x: number, y: number) => samples(name,
+      displayed.x + (x - original.x) * displayed.width / original.width,
+      displayed.y + (y - original.y) * displayed.height / original.height);
+    expect(geometry.camera).not.toBeNull();
+    expect(geometry.cameraMask).toEqual({ x: 98, y: 2, width: 28, height: 28 });
+    for (const pixel of await at(112,16)) for (const channel of pixel) expect(channel).toBeCloseTo(24,-1);
+    // Check beyond the scaler's interpolation at the edge; exact bounds are asserted above.
+    samePixels(await at(94,16),await samples('source',94,16),'screen next to the mask');
+    samePixels(await at(84,40),await samples('source',84,40));
+    const output = geometry.camera!.destination;
+    samePixels(await samples(name,output.x+output.width/2,output.y+output.height/2),await samples('source',112,16));
+  }
+
+  const veto: ScreenFaceLayout = { ...layout, version: 3, camera, screen: { x:0,y:0,width:1,height:1 } };
+  const rejected = await render('relocation-veto',veto,false);
+  expect(rejected.camera).toBeNull(); expect(rejected.cameraMask).toBeNull();
+  const destination = rejected.screen.destination;
+  samePixels(await samples('relocation-veto',destination.x+destination.width*112/128,
+    destination.y+destination.height*16/96),await samples('source',112,16));
+  const adjacent = buildScreenLayoutGraph({ ...veto, screen:layout.screen },source,true).geometry;
+  expect(adjacent.camera).not.toBeNull(); expect(adjacent.cameraMask).toBeNull();
+},60_000);
+
+it('tail sampling retains the final real observation while a blank tail still vetoes the camera',async()=>{
+  // NASA portrait from scikit-image v0.25.2, cropped to remove the uniform and suit insignia.
+  const input = 'tests/fixtures/camera-tail-portrait.png';
+  await ffmpeg(['-loop','1','-framerate','25','-i',input,'-t','1','-c:v','ffv1','-y',file('face-tail.mkv')]);
+  await ffmpeg(['-i',file('face-tail.mkv'),'-vf',"drawbox=t=fill:c=black:enable='gte(t,0.32)'",
+    '-c:v','ffv1','-y',file('blank-tail.mkv')]);
+  const start = .04;
+  for (const end of [.6,.8]) {
+    const retained: [number,number][] = [[start,.18],[.53,end]];
+    const available = await detectFaces(file('face-tail.mkv'),start,end,undefined,{preserveTail:true});
+    const unavailable = await detectFaces(file('blank-tail.mkv'),start,end,undefined,{preserveTail:true});
+    expect(available?.samples.map(sample=>sample.t)).toEqual([.04,.54]);
+    expect(unavailable?.samples.map(sample=>sample.t)).toEqual([.04,.54]);
+    expect(unavailable?.samples[0]?.faces.some(face=>face.score>=.6)).toBe(true);
+    expect(unavailable?.samples.at(-1)?.faces).toEqual([]);
+    expect(resolveLayoutCamera(available,retained,start,end)).toBe(true);
+    expect(resolveLayoutCamera(unavailable,retained,start,end)).toBe(false);
+  }
+  const old = await detectFaces(file('face-tail.mkv'),start,.6);
+  expect(old?.samples.map(sample=>sample.t)).toEqual([.04]);
+},30_000);
+
 it('native YuNet reports actual blank observations; retained intervals alone govern the whole-clip veto',async()=>{
   const report=await detectFaces(file('source.mkv'),0,.8);
   expect(report).not.toBeNull();expect(report!.samples).toHaveLength(2);expect(report!.samples.every(s=>s.faces.length===0)).toBe(true);
@@ -382,10 +436,10 @@ it('v2_overlay_bounding_boxes_preserve_content_and_existing_footer_contracts',as
   expect(wm.top).toBe(watermarkPlateTop(1920));expect(wm.top-1561).toBe(12);
 },90_000);
 
-it('v2-02 renderClip retains cut-plan subtitle timing, title, CTA and watermark in their qualified bands',async()=>{
+it.each([2,3])('v%s-02 renderClip retains cut-plan subtitle timing, title, CTA and watermark in their qualified bands',async version=>{
   await ffmpeg(['-f','lavfi','-i','color=c=0xb45028:s=128x96:r=2:d=22','-f','lavfi','-i','sine=frequency=700:duration=22',
     '-c:v','ffv1','-c:a','pcm_s16le','-y',file('v2-long.mkv')]);
-  const chosen=parseScreenFaceLayout({...layout,version:2,screen:{x:0,y:0,width:.75,height:1},camera:null});
+  const chosen=parseScreenFaceLayout({...layout,version,screen:{x:0,y:0,width:.75,height:1},camera:null});
   const result=await renderClip({inputPath:file('v2-long.mkv'),outputPath:file('v2-actual.mp4'),startTime:0,endTime:22,
     cutPlan:[[0,10],[12,22]],format:'portrait',layout:chosen,words:[{word:'Первая строка подписи',start:18,end:19},{word:'Вторая строка подписи',start:19,end:20}],
     watermark:true,origin:'https://clipmkr.ru',code:'WWWWWW',teaser:true,title:'Важный экран',cta:'subscribe'});

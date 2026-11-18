@@ -312,7 +312,10 @@ it('pristine external publication refreshes settings while unknown replay keeps 
 }));
 it('native preview visits retained segments and both canvas regions use the current decoded source frame',()=>run(async page=>{
   const f=await fixture(page);f.info.seed={state:'ready',proposal:{x:.75,y:0,width:.25,height:.3},reason:null};await editor(page);
-  const chosen={version:2 as const,mode:'screen-face' as const,variant:'02' as const,screen:{x:0,y:0,width:1,height:1},focus:null,camera:f.info.seed.proposal};await variant(page,'02');
+  const chosen={version:3 as const,mode:'screen-face' as const,variant:'02' as const,screen:{x:0,y:0,width:1,height:1},focus:null,camera:f.info.seed.proposal};await variant(page,'02');
+  await page.getByText('Уточнить области',{exact:true}).click();
+  await page.getByRole('checkbox',{name:'Показывать камеру из выбранной области',exact:true}).check();
+  expect((await saved(page)).layout).toEqual(chosen);
   const geometry=planScreenLayout(chosen,{width:320,height:180},true);expect(geometry.camera).not.toBeNull();
   const slider=page.getByRole('slider',{name:/Позиция в клипе/});
   for(const [output,source] of [[.08,.08],[2.48,2.48],[2.96,4.04],[3.44,4.52],[6.88,7.96]]){
@@ -331,7 +334,38 @@ it('native preview visits retained segments and both canvas regions use the curr
     expect(Math.abs(pixels[0]!.expected[0]!-(40+frame%160))).toBeLessThanOrEqual(4);
     expect(Math.abs(pixels[1]!.expected[1]!-(80+frame%120))).toBeLessThanOrEqual(4);
   }
+  const canvas=page.getByLabel('Предпросмотр оформления клипа');
+  const embedded = await canvas.evaluate((node:HTMLCanvasElement,screen)=>{
+    const x=Math.floor(screen.x+screen.width*.85),y=Math.floor(screen.y+screen.height*.1);
+    return [...node.getContext('2d')!.getImageData(x,y,1,1).data].slice(0,3);
+  },geometry.screen.destination);
+  expect(embedded).toEqual([24,24,24]);
+  await page.getByRole('button',{name:'Применить оформление',exact:true}).click();
+  expect(await page.getByRole('checkbox',{name:/Окно камеры остаётся в выделенной области/}).isChecked()).toBe(false);
+  expect(await page.getByRole('button',{name:'Подтвердить пересборку',exact:true}).isEnabled()).toBe(false);
   expect(f.applies).toHaveLength(0);
+  await page.keyboard.press('Escape');
+  await confirm(page);
+  expect(f.applies[0]!.layout).toEqual(chosen);
+  f.info.activeIntent={...f.info.activeIntent!,status:'succeeded'};
+  f.info.publishedRenderVersion=f.info.renderVersion;
+  f.info.publishedLayout={version:1,requested:chosen,resolved:{cameraVisible:false,reason:'camera_unstable'}};
+  await refresh(page);
+  await expect.poll(()=>canvas.evaluate((node:HTMLCanvasElement,screen)=>{
+    const x=Math.floor(screen.x+screen.width*.85),y=Math.floor(screen.y+screen.height*.1);
+    return node.getContext('2d')!.getImageData(x,y,1,1).data[1];
+  },geometry.screen.destination)).toBeGreaterThan(35);
+}));
+it('new camera selection upgrades legacy 01 and drops its unused focus without changing the stored layout',()=>run(async page=>{
+  const f=await fixture(page);
+  const legacy=parseScreenFaceLayout({version:1,mode:'screen-face',variant:'01',screen:{x:0,y:0,width:1,height:1},
+    focus:{x:.2,y:.2,width:.4,height:.4},camera:null});
+  f.info.publishedLayout={version:1,requested:legacy,resolved:{cameraVisible:false,reason:null}};
+  await editor(page);
+  await page.getByText('Уточнить области',{exact:true}).click();
+  await page.getByRole('checkbox',{name:'Показывать камеру из выбранной области',exact:true}).check();
+  expect((await saved(page)).layout).toMatchObject({version:3,variant:'01',focus:null,camera:{x:.7,y:.05,width:.25,height:.3}});
+  expect(f.info.publishedLayout.requested).toEqual(legacy);
 }));
 it('every_media_play_pauses_the_other_two including already selected published player',()=>run(async page=>{
   await fixture(page);await editor(page);const published=page.locator('.clip-card[data-selected=true] video'),preview=page.getByLabel('Исходник для предпросмотра');

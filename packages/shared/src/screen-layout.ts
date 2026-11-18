@@ -14,7 +14,10 @@ export interface ScreenFaceLayoutV2 extends Omit<ScreenFaceLayoutV1, 'version' |
   variant: '01' | '02';
   focus: null;
 }
-export type ScreenFaceLayout = ScreenFaceLayoutV1 | ScreenFaceLayoutV2;
+export interface ScreenFaceLayoutV3 extends Omit<ScreenFaceLayoutV1, 'version'> {
+  version: 3;
+}
+export type ScreenFaceLayout = ScreenFaceLayoutV1 | ScreenFaceLayoutV2 | ScreenFaceLayoutV3;
 interface Rect { x: number; y: number; width: number; height: number }
 interface Source { width: number; height: number; sampleAspectRatio?: number }
 interface Placement { source: Rect; destination: Rect }
@@ -23,6 +26,7 @@ export interface ScreenLayoutGeometry {
   height: number;
   screen: Placement;
   camera: Placement | null;
+  cameraMask: Rect | null;
   protectedAction: Rect;
   reason: 'whole_screen' | 'unsupported_geometry' | null;
   cameraReason: 'camera_unavailable' | 'no_safe_camera_slot' | null;
@@ -59,9 +63,10 @@ function inside(a: Rect, b: Rect): boolean {
 }
 export function parseScreenFaceLayout(value: unknown): ScreenFaceLayout {
   if (!object(value, ['version', 'mode', 'variant', 'screen', 'focus', 'camera'])
-    || (value.version !== 1 && value.version !== 2) || value.mode !== 'screen-face'
+    || (value.version !== 1 && value.version !== 2 && value.version !== 3) || value.mode !== 'screen-face'
     || !['01', '02', '03'].includes(value.variant as string)
-    || (value.version === 2 && (value.variant === '03' || value.focus !== null))) throw new Error('Непригодное оформление');
+    || (value.version === 2 && value.variant === '03')
+    || (value.version !== 1 && value.variant !== '03' && value.focus !== null)) throw new Error('Непригодное оформление');
   const screen = rect(value.screen), focus = value.focus === null ? null : rect(value.focus);
   if (focus && !inside(focus, screen)) throw new Error('Фокус вне экрана');
   return { version: value.version, mode: 'screen-face', variant: value.variant,
@@ -110,6 +115,18 @@ function mapRect(r: Rect, from: Rect, to: Rect): Rect {
     width: r.width * to.width / from.width, height: r.height * to.height / from.height };
 }
 
+function visibleCameraMask(window: NormalizedRect, screen: Rect, source: Source): Rect | null {
+  const snap = (value: number, tolerance: number) => {
+    const nearest = Math.round(value);
+    return Math.abs(nearest - value) <= tolerance + 1e-9 ? nearest : value;
+  };
+  const x = Math.max(screen.x, Math.ceil(snap(window.x * source.width, source.width * .5e-6)));
+  const y = Math.max(screen.y, Math.ceil(snap(window.y * source.height, source.height * .5e-6)));
+  const xEnd = Math.min(right(screen), Math.floor(snap(right(window) * source.width, source.width * 1e-6)));
+  const yEnd = Math.min(bottom(screen), Math.floor(snap(bottom(window) * source.height, source.height * 1e-6)));
+  return xEnd > x && yEnd > y ? { x, y, width: xEnd - x, height: yEnd - y } : null;
+}
+
 /** Input dimensions already include autorotation. cameraAvailable is a controlled observation,
  * not detector confidence; no I/O, detection, source identity or legacy dispatch occurs here. */
 export function planScreenLayout(value: ScreenFaceLayout, source: Source, cameraAvailable = false): ScreenLayoutGeometry {
@@ -121,17 +138,18 @@ export function planScreenLayout(value: ScreenFaceLayout, source: Source, camera
   const { width, height } = FORMAT_DIMENSIONS.portrait;
   const pane = { x: 0, y: 400, width, height: 800 };
   const unsupportedSar = source.sampleAspectRatio !== undefined && source.sampleAspectRatio !== 1;
-  const requestedScreen = pixels(layout.screen, source, layout.version === 2);
+  const fullCanvas = layout.version !== 1 && layout.variant !== '03';
+  const requestedScreen = pixels(layout.screen, source, fullCanvas);
   const requestedFocus = layout.variant === '03' && layout.focus ? pixels(layout.focus, source) : null;
   const unsupported = unsupportedSar || !requestedScreen || (layout.variant === '03' && layout.focus !== null && !requestedFocus);
-  const crop = unsupportedSar || !requestedScreen ? pixels(whole, source, layout.version === 2)! : requestedScreen;
+  const crop = unsupportedSar || !requestedScreen ? pixels(whole, source, fullCanvas)! : requestedScreen;
   const focus = unsupported ? null : requestedFocus;
   let screen: Placement = { source: crop, destination: contain(crop, pane, source.sampleAspectRatio) };
   let camera: Placement | null = null;
   let cameraReason: ScreenLayoutGeometry['cameraReason'] = 'camera_unavailable';
   const reason = unsupported ? 'unsupported_geometry' : layout.variant === '03' && !focus ? 'whole_screen' : null;
-  const cameraCrop = layout.camera && cameraAvailable && !unsupported ? pixels(layout.camera, source, layout.version === 2) : null;
-  if (layout.version === 2) {
+  const cameraCrop = layout.camera && cameraAvailable && !unsupported ? pixels(layout.camera, source, fullCanvas) : null;
+  if (fullCanvas) {
     const slot = layout.variant === '01'
       ? { x: 0, y: height * .27, width, height: height * .3333 }
       : { x: 0, y: height * .28, width, height: height * .426 };
@@ -181,5 +199,8 @@ export function planScreenLayout(value: ScreenFaceLayout, source: Source, camera
     else cameraReason = 'no_safe_camera_slot';
   }
   if (camera) cameraReason = null;
-  return { width, height, screen, camera, protectedAction: mapRect(focus ?? crop, screen.source, screen.destination), reason, cameraReason };
+  const cameraMask = layout.version === 3 && layout.camera && camera
+    ? visibleCameraMask(layout.camera, screen.source, source) : null;
+  return { width, height, screen, camera, cameraMask,
+    protectedAction: mapRect(focus ?? crop, screen.source, screen.destination), reason, cameraReason };
 }

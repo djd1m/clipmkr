@@ -37,15 +37,19 @@ export function buildScreenLayoutGraph(layout: ScreenFaceLayout,
   cameraAvailable = false, inputLabel = 'vc') {
   if (!/^[A-Za-z0-9_:]+$/.test(inputLabel)) throw new Error('Непригодная метка потока');
   const geometry = planScreenLayout(layout, source, cameraAvailable);
-  const { screen, camera } = geometry;
+  const { screen, camera, cameraMask } = geometry;
+  const paneHeight = layout.version === 3 && layout.variant !== '03' ? 1920 : layout.version === 2 ? 1920 : 800;
+  const offsetY = paneHeight === 1920 ? 0 : 400;
+  const mask = cameraMask
+    ? `format=yuv444p,drawbox=x=${cameraMask.x}:y=${cameraMask.y}:w=${cameraMask.width}:h=${cameraMask.height}:c=0x181818:t=fill,` : '';
   const cropScale = (p: typeof screen) => `crop=${p.source.width}:${p.source.height}:${p.source.x}:${p.source.y}:exact=1,` +
     `scale=${p.destination.width}:${p.destination.height},setsar=1`;
   const graph = [
     `[${inputLabel}]split=${camera ? 3 : 2}[sl_base][sl_screen]${camera ? '[sl_camera]' : ''}`,
-    `[sl_base]scale=1080:${layout.version === 2 ? 1920 : 800},setsar=1,drawbox=c=0x181818:t=fill[sl_bg]`,
-    `[sl_screen]${cropScale(screen)}[sl_content]`,
-    `[sl_bg][sl_content]overlay=x=${screen.destination.x}:y=${screen.destination.y - (layout.version === 2 ? 0 : 400)}:` +
-      `repeatlast=0:eof_action=pass:shortest=1${layout.version === 2 ? '' : ',pad=1080:1920:0:400:color=0x181818'}[sl_canvas]`,
+    `[sl_base]scale=1080:${paneHeight},setsar=1,drawbox=c=0x181818:t=fill[sl_bg]`,
+    `[sl_screen]${mask}${cropScale(screen)}[sl_content]`,
+    `[sl_bg][sl_content]overlay=x=${screen.destination.x}:y=${screen.destination.y - offsetY}:` +
+      `repeatlast=0:eof_action=pass:shortest=1${offsetY ? ',pad=1080:1920:0:400:color=0x181818' : ''}[sl_canvas]`,
   ];
   if (camera) {
     graph.push(`[sl_camera]${cropScale(camera)}[sl_live_camera]`,

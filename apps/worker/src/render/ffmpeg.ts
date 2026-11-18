@@ -55,7 +55,7 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
   const temp = await mkdtemp(join(dirname(options.outputPath), 'render-'));
   try {
     const layout=options.layout==null?null:parseScreenFaceLayout(options.layout);
-    const original02=layout?.version===2 && layout.variant==='02';
+    const original02=layout?.variant==='02' && layout.version!==1;
     const words = cuts ? options.words.filter(w => w.start >= options.startTime && w.end <= options.endTime)
       .map(w => ({ ...w, start: mapTime(cuts, w.start), end: mapTime(cuts, w.end) })).filter(w => w.end > w.start) : options.words;
     const subtitles = generateSubtitleFile(words, cuts ? 0 : options.startTime, cuts ? duration : options.endTime, options.format, original02 ? {fontSize:46,marginV:458} : undefined);
@@ -89,7 +89,8 @@ export async function renderClip(options: RenderOptions): Promise<RenderOutcome 
     if(layout && video){
       const crop=planScreenLayout(layout,video,true).camera?.source;
       if(crop){
-        const report=await detectFaces(options.inputPath,options.startTime,options.endTime,options.signal,{crop});
+        const report=await detectFaces(options.inputPath,options.startTime,options.endTime,options.signal,
+          {crop,preserveTail:layout.version===3});
         cameraVisible=resolveLayoutCamera(report,cuts??[[options.startTime,options.endTime]],options.startTime,options.endTime);
         if(!cameraVisible)cameraReason=report?'camera_unstable':'camera_unavailable';
       }

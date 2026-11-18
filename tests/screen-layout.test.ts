@@ -178,7 +178,9 @@ it('v2_parser_is_strict_and_v1_canonical_bytes_are_unchanged', () => {
       if(field==='camera' && roi===null)continue;
       expect(()=>parseScreenFaceLayout({...v2,[field]:roi})).toThrow();
     }
-    for (const invalid of [{...v2,version:'2'}, {...v2,version:3}, {...v2,variant:'03'},
+    expect(parseScreenFaceLayout({...v2,version:3})).toEqual({...v2,version:3});
+    expect(()=>parseScreenFaceLayout({...v2,version:3,focus:whole})).toThrow();
+    for (const invalid of [{...v2,version:'2'}, {...v2,version:4}, {...v2,variant:'03'},
       {...v2,version:undefined}, {...v2,focus:whole}, {...v2,extra:true}, {...v2,screen:{...whole,width:Infinity}}]) {
       expect(()=>parseScreenFaceLayout(invalid)).toThrow();
     }

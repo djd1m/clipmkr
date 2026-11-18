@@ -57,7 +57,8 @@ def main():
     scale = LONG_SIDE / max(width, height)
     small = (max(2, int(width*scale)), max(2, int(height*scale)))
     detector = cv2.FaceDetectorYN.create(model, '', small, SCORE, NMS, TOPK)
-    filters.append(f'fps={1.0/step:.6f}')
+    tail = ':eof_action=pass' if options.get('preserveTail') else ''
+    filters.append(f'fps={1.0/step:.6f}{tail}')
     frame_bytes = width * height * 3
     authorize('decode')
     proc = subprocess.Popen(['ffmpeg', '-v', 'error', *policy, '-ss', f'{start:.3f}', '-t', f'{max(0.0, end-start):.3f}',

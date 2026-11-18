@@ -323,10 +323,12 @@ it.skipIf(!url)('033_preserves_v1_rows_and_accepts_only_supported_v2_intents',as
       await pool.query('UPDATE clip SET rendered_layout=$2 WHERE id=$1',[clip,JSON.stringify(envelope)]);
       expect(parsePublishedLayout((await pool.query('SELECT rendered_layout FROM clip WHERE id=$1',[clip])).rows[0].rendered_layout)).toEqual(envelope);
     }
-    for(const invalid of [{...v1,version:'1'},{...v1,version:'2'},{...v1,version:3},{...v1,version:null},
+    const v3=parseScreenFaceLayout({...v1,version:3,variant:'03',focus:{x:.25,y:.25,width:.5,height:.5}});
+    await insert(v3,5);
+    for(const invalid of [{...v1,version:'1'},{...v1,version:'2'},{...v1,version:4},{...v1,version:null},
       {mode:'screen-face'},{version:2,mode:'screen-face',variant:'01'}, {...v1,version:2,variant:'03'},
-      {...v1,version:2,focus:{}},{...v1,version:2,mode:'other'},{}])
-      await expect(insert(invalid,5)).rejects.toMatchObject({code:'23514'});
-    expect((await pool.query('SELECT layout FROM clip_layout_intent WHERE clip_id=$1 ORDER BY render_version',[clip])).rows.map(r=>parseScreenFaceLayout(r.layout).version)).toEqual([1,2,2]);
+      {...v1,version:2,focus:{}},{...v1,version:2,mode:'other'},{...v1,version:3,focus:{}},{}])
+      await expect(insert(invalid,6)).rejects.toMatchObject({code:'23514'});
+    expect((await pool.query('SELECT layout FROM clip_layout_intent WHERE clip_id=$1 ORDER BY render_version',[clip])).rows.map(r=>parseScreenFaceLayout(r.layout).version)).toEqual([1,2,2,3]);
   } finally {await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await pool.end();await rm(dir,{recursive:true,force:true});}
 },30_000);

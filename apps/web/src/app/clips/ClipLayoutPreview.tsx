@@ -5,11 +5,11 @@ import { mapOutputTime, mapTime, planDuration, type Segment } from '@clipmaker/s
 import styles from './clip-layout.module.css';
 
 /** One authorized decoder supplies both regions; source frames never leave this canvas. */
-export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{videoId:string;layout:ScreenFaceLayout;
-  segments:Segment[];active:boolean;onState:(state:'loading'|'ready'|'unsupported')=>void}) {
+export function ClipLayoutPreview({videoId,layout,cameraAvailable,segments,active,onState}:{videoId:string;layout:ScreenFaceLayout;
+  cameraAvailable:boolean;segments:Segment[];active:boolean;onState:(state:'loading'|'ready'|'unsupported')=>void}) {
   const video=useRef<HTMLVideoElement>(null),canvas=useRef<HTMLCanvasElement>(null);
   const [position,setPosition]=useState(0),[playing,setPlaying]=useState(false);
-  const latest=useRef({layout,segments});latest.current={layout,segments};
+  const latest=useRef({layout,cameraAvailable,segments});latest.current={layout,cameraAvailable,segments};
   const draw=useRef<()=>void>(()=>{}),duration=planDuration(segments);
   useEffect(()=>{
     const node=video.current,screen=canvas.current;if(!node || !screen || !active)return;
@@ -18,11 +18,21 @@ export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{vide
     function paint():boolean{
       if(disposed || !node || !screen || node.readyState<2 || !node.videoWidth)return false;
       try {
-        const g=planScreenLayout(latest.current.layout,{width:node.videoWidth,height:node.videoHeight},true);
+        const { layout, cameraAvailable } = latest.current;
+        const g=planScreenLayout(layout,{width:node.videoWidth,height:node.videoHeight},cameraAvailable);
         const ctx=screen.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
-        ctx.fillStyle='#181818';ctx.fillRect(0,0,1080,1920);ctx.save();ctx.beginPath();ctx.rect(0,latest.current.layout.version===2?0:400,1080,latest.current.layout.version===2?1920:800);ctx.clip();
-        for(const placement of [g.screen,g.camera])if(placement){const {source:s,destination:d}=placement;
-          ctx.drawImage(node,s.x,s.y,s.width,s.height,d.x,d.y,d.width,d.height);}
+        const fullCanvas=layout.version!==1 && layout.variant!=='03';
+        ctx.fillStyle='#181818';ctx.fillRect(0,0,1080,1920);ctx.save();ctx.beginPath();ctx.rect(0,fullCanvas?0:400,1080,fullCanvas?1920:800);ctx.clip();
+        const {source:s,destination:d}=g.screen;
+        ctx.drawImage(node,s.x,s.y,s.width,s.height,d.x,d.y,d.width,d.height);
+        if(g.cameraMask){
+          const m=g.cameraMask,sx=d.width/s.width,sy=d.height/s.height;
+          ctx.fillRect(d.x+(m.x-s.x)*sx,d.y+(m.y-s.y)*sy,m.width*sx,m.height*sy);
+        }
+        if(g.camera){
+          const {source:s,destination:d}=g.camera;
+          ctx.drawImage(node,s.x,s.y,s.width,s.height,d.x,d.y,d.width,d.height);
+        }
         ctx.restore();return true;
       }catch{node.pause();onState('unsupported');return false;}
     }
@@ -51,7 +61,7 @@ export function ClipLayoutPreview({videoId,layout,segments,active,onState}:{vide
       node.removeEventListener('error',failed);node.removeEventListener('play',play);node.removeEventListener('pause',pause);
       node.pause();node.removeAttribute('src');node.load();draw.current=()=>{};};
   },[videoId,active,onState]);
-  useEffect(()=>{draw.current();},[layout]);
+  useEffect(()=>{draw.current();},[layout,cameraAvailable]);
   async function toggle(){const node=video.current;if(!node)return;if(!node.paused){node.pause();return;}
     if(position>=duration-.025){node.currentTime=segments[0]![0];setPosition(0);}
     try{await node.play();}catch{onState('unsupported');}}
