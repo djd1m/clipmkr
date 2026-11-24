@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ru" data-theme="dark" data-side="before">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Clipmkr · Сравнение экранов UX-001</title>
+<style>
+:root {
+  color-scheme: dark;
+  --paper: #181c19;
+  --panel: #222823;
+  --inset: #131714;
+  --line: #49534b;
+  --ink: #eef1e8;
+  --muted: #bbc7b9;
+  --accent: #d9edaa;
+  --selected: #d9edaa;
+  --selected-ink: #253018;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f1f2eb;
+  --panel: #fbfcf7;
+  --inset: #e9ebe1;
+  --line: #a6afa1;
+  --ink: #212b22;
+  --muted: #4d5d4f;
+  --accent: #355922;
+  --selected: #355922;
+  --selected-ink: #fff;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.5 "Trebuchet MS", Verdana, sans-serif; }
+button, select { font: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.wrap { width: min(100% - 2.5rem, 94rem); margin-inline: auto; }
+.masthead { padding-block: 2.2rem 1.5rem; border-bottom: 1px solid var(--line); }
+.brand { margin: 0 0 .25rem; color: var(--accent); font: 700 .8rem/1.3 "Courier New", monospace; letter-spacing: .11em; text-transform: uppercase; }
+h1, h2, h3, p { margin: 0; }
+h1 { font: 400 clamp(2.2rem, 5vw, 4rem)/1.05 Georgia, serif; letter-spacing: -.035em; }
+.intro { max-width: 68ch; margin-top: .75rem; color: var(--muted); }
+main { padding-block: 1.3rem 3rem; }
+.controls { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: .8rem 1.2rem; margin-bottom: 1.15rem; }
+.scenes, .options, .comparison-switch { display: flex; flex-wrap: wrap; align-items: end; gap: .45rem; }
+button, select { min-height: 2.65rem; padding: .45rem .72rem; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: .42rem; }
+button { cursor: pointer; }
+button:hover, select:hover { border-color: var(--accent); }
+button[aria-pressed="true"] { background: var(--selected); color: var(--selected-ink); border-color: var(--selected); }
+label { display: grid; gap: .22rem; font-size: .84rem; color: var(--muted); }
+label select { font-size: .95rem; }
+.comparison-heading { display: flex; flex-wrap: wrap; gap: .45rem 1rem; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-block: .85rem; }
+h2 { font: 400 clamp(1.45rem, 3.4vw, 2rem)/1.14 Georgia, serif; }
+.frames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; align-items: start; }
+.frame { min-width: 0; margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: .6rem; overflow: hidden; }
+.frame figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .2rem 1rem; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
+.frame figcaption strong { font-size: 1rem; }
+.frame figcaption span { color: var(--muted); font-size: .86rem; }
+.frame a { display: block; background: var(--inset); }
+.frame a:focus-visible { outline-offset: -4px; }
+.frame img { display: block; width: 100%; height: auto; margin-inline: auto; }
+:root[data-size="390"] .frame img { max-width: 390px; }
+.frame a:hover img { filter: brightness(.96); }
+.frame a:hover .full-label { text-decoration: underline; }
+.full-label { display: block; padding: .48rem .8rem; background: var(--panel); border-top: 1px solid var(--line); font-size: .9rem; }
+.comparison-switch { display: none; margin-bottom: .55rem; }
+.change-list { max-width: 86ch; margin-block: 1.2rem; }
+h3 { font-size: 1rem; }
+.change-list ul { margin-block: .5rem 0; padding-inline-start: 1.35rem; }
+.change-list li + li { margin-top: .4rem; }
+.source { border-top: 1px solid var(--line); padding-top: .85rem; color: var(--muted); font-size: .88rem; }
+.source p { max-width: 96ch; }
+.source p + p { margin-top: .45rem; }
+@media (max-width: 50rem) {
+  .wrap { width: min(100% - 1.5rem, 94rem); }
+  .masthead { padding-block: 1.3rem 1rem; }
+  .controls { margin-bottom: .85rem; }
+  .options { gap: .45rem .75rem; }
+  .frames { display: block; }
+  .comparison-switch { display: flex; }
+  :root[data-side="before"] .frame[data-frame="after"],
+  :root[data-side="after"] .frame[data-frame="before"] { display: none; }
+  :root[data-size="390"] .frame { max-width: 392px; }
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="brand">Clipmkr · UX-001</p>
+    <h1>Как сейчас / как будет</h1>
+    <p class="intro">Четыре экрана кабинета. «Сейчас» показывает текущие компоненты, «Предлагается» — макет для согласования.</p>
+  </div>
+</header>
+<main class="wrap">
+  <div class="controls">
+    <nav class="scenes" aria-label="Экраны кабинета">
+      <button type="button" data-scene="upload" aria-pressed="true">Загрузка</button>
+      <button type="button" data-scene="record" aria-pressed="false">Клипы записи</button>
+      <button type="button" data-scene="stats" aria-pressed="false">Статистика блогера</button>
+      <button type="button" data-scene="report" aria-pressed="false">Отчёт владельца</button>
+    </nav>
+    <div class="options">
+      <label>Ширина кадра
+        <select id="size"><option value="1440">Компьютер · 1440</option><option value="390">Телефон · 390</option></select>
+      </label>
+      <label>Тема
+        <select id="theme"><option value="dark">Тёмная</option><option value="light">Светлая</option></select>
+      </label>
+    </div>
+  </div>
+  <section aria-labelledby="comparison-title">
+    <div class="comparison-heading">
+      <h2 id="comparison-title">Загрузка</h2>
+      <label id="record-options" hidden>Состояние записи
+        <select id="record">
+          <option value="partial">Часть готова · можно повторить</option>
+          <option value="ready">Готово</option>
+        </select>
+      </label>
+    </div>
+    <div class="comparison-switch" role="group" aria-label="Версия экрана">
+      <button type="button" data-side="before" aria-pressed="true">Сейчас</button>
+      <button type="button" data-side="after" aria-pressed="false">Предлагается</button>
+    </div>
+    <div class="frames">
+      <figure class="frame" data-frame="before">
+        <figcaption><strong>Сейчас</strong><span>Компоненты Clipmkr</span></figcaption>
+        <a target="_blank" rel="noopener"><img alt=""><span class="full-label">Полноразмерный кадр ↗</span></a>
+      </figure>
+      <figure class="frame" data-frame="after">
+        <figcaption><strong>Предлагается</strong><span>Макет UX-001</span></figcaption>
+        <a target="_blank" rel="noopener"><img alt=""><span class="full-label">Полноразмерный кадр ↗</span></a>
+      </figure>
+    </div>
+    <div class="change-list">
+      <h3>Что меняется на экране</h3>
+      <ul id="changes"></ul>
+    </div>
+  </section>
+  <footer class="source">
+    <p>Кадры «Сейчас» собраны локально из React-компонентов Clipmkr. В обеих версиях используются синтетические данные. Шапка, оформление карточки клипа и служебные ссылки внизу показаны с разной детализацией. На согласование вынесены изменения из списка под кадрами.</p>
+  </footer>
+  <noscript><p>Включите JavaScript, чтобы переключать экраны, ширину и тему.</p></noscript>
+</main>
+<script>
+const scenes = {
+  upload: {
+    title: 'Загрузка',
+    notes: [
+      '«До 2 ГБ» появляется один раз в строке форматов и лимитов. В монтажной убирается повтор имени файла.',
+      'Выбор файла, запуск и предварительный расход видны сразу. Настройки музыки, заголовка, пауз и призыва уже находятся под раскрытием.',
+      'При передаче строка показывает подтверждённый процент. Пауза, повторный выбор файла, продолжение и ошибки остаются на экране в соответствующих состояниях.',
+    ],
+  },
+  record: {
+    title: 'Клипы записи',
+    notes: {
+      partial: [
+        'Число клипов выводится один раз в сводке «Готово 2 из 3». Причина остановки, «Повторить» и расход видны сразу.',
+        'Стадии обработки доступны по раскрытию «Этапы обработки». Плеер, полноэкранный просмотр, скачивание, срок хранения, список клипов и действия с исходником остаются на экране.',
+      ],
+      ready: [
+        'Число клипов выводится один раз в сводке «Готово 3 из 3». Стадии обработки доступны по раскрытию «Этапы обработки».',
+        'На экране остаются плеер, полноэкранный просмотр, скачивание, срок хранения, список клипов и действия с исходником. Оформление и отправка доступны через «Ещё».',
+      ],
+    },
+  },
+  stats: {
+    title: 'Статистика блогера',
+    notes: [
+      'Открытый текст с правилами подсчёта заменён раскрытием рядом с цифрами.',
+      'Автоматическая реферальная ссылка, копирование, период «За всё время», основные показатели и подтверждённая выручка видны сразу.',
+      'Дополнительные показатели и фильтр по ссылке уже находятся под отдельным раскрытием.',
+    ],
+  },
+  report: {
+    title: 'Месячный отчёт владельца',
+    notes: [
+      'Общие определения и повторяющиеся оговорки о долге и выплатах перенесены в одно раскрытие «Как считаем показатели и вознаграждение».',
+      'На экране видны месяц по Москве, показатели, ставка и предварительная оценка. При отсутствии ставки оценка не рассчитывается.',
+      'Раскрытие подробностей по ссылкам и переход к точному поиску через «Блогеры» доступны.',
+    ],
+  },
+};
+const root = document.documentElement;
+const size = document.querySelector('#size');
+const theme = document.querySelector('#theme');
+const record = document.querySelector('#record');
+const sceneButtons = [...document.querySelectorAll('[data-scene]')];
+const sideButtons = [...document.querySelectorAll('button[data-side]')];
+const params = new URLSearchParams(location.search);
+const selectValue = (control, requested, fallback) => {
+  control.value = [...control.options].some(option => option.value === requested) ? requested : fallback;
+};
+let scene = Object.hasOwn(scenes, params.get('scene')) ? params.get('scene') : 'upload';
+let side = params.get('side') === 'after' ? 'after' : 'before';
+selectValue(size, params.get('size'), matchMedia('(max-width: 50rem)').matches ? '390' : '1440');
+selectValue(theme, params.get('theme'), 'dark');
+selectValue(record, params.get('record'), 'partial');
+
+function render() {
+  const current = scenes[scene];
+  const frameId = scene === 'record' ? 'record-' + record.value : scene;
+  const variant = scene === 'record' ? ' · ' + record.selectedOptions[0].textContent : '';
+  root.dataset.theme = theme.value;
+  root.dataset.size = size.value;
+  root.dataset.side = side;
+  document.querySelector('#comparison-title').textContent = current.title;
+  document.querySelector('#record-options').hidden = scene !== 'record';
+  sceneButtons.forEach(button => button.setAttribute('aria-pressed', button.dataset.scene === scene));
+  sideButtons.forEach(button => button.setAttribute('aria-pressed', button.dataset.side === side));
+  document.querySelectorAll('.frame').forEach(frame => {
+    const name = frame.dataset.frame;
+    const label = frame.querySelector('strong').textContent;
+    const path = 'comparison-assets/' + name + '/' + frameId + '-' + theme.value + '-' + size.value + '.png';
+    const link = frame.querySelector('a');
+    const image = frame.querySelector('img');
+    link.href = path;
+    link.setAttribute('aria-label', label + ' · открыть PNG в новой вкладке');
+    image.alt = current.title + variant + ' · ' + label;
+    image.src = path;
+  });
+  const notes = scene === 'record' ? current.notes[record.value] : current.notes;
+  document.querySelector('#changes').replaceChildren(...notes.map(note => {
+    const item = document.createElement('li');
+    item.textContent = note;
+    return item;
+  }));
+}
+
+sceneButtons.forEach(button => button.addEventListener('click', () => {
+  scene = button.dataset.scene;
+  render();
+}));
+sideButtons.forEach(button => button.addEventListener('click', () => {
+  side = button.dataset.side;
+  render();
+}));
+[size, theme, record].forEach(control => control.addEventListener('change', render));
+render();
+</script>
+</body>
+</html>

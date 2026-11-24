@@ -1,0 +1,436 @@
+{
+  "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+  "validatedAgainstUiCommit": "5053cb8",
+  "fixture": {
+    "source": "tests/browser/ux-simplification.test.ts",
+    "shellSources": [
+      {
+        "path": "apps/web/src/app/globals.css",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "c8d22dd422dab8976506f5aab9ae755eb0cddafb5ed8492224330da804b1c23f",
+        "blob": "d1f8c8505f0301dd0a26ad91a20b9094198fb756"
+      },
+      {
+        "path": "apps/web/src/app/WorkspaceHeader.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "1c0c99ba202652da5c4132e41e0bbf9e4ef1825b18af3bfc1d6d60b4d93b0a4c",
+        "blob": "29997d0d475dc8d8f2be79c2e4b5abbafef421e4"
+      },
+      {
+        "path": "apps/web/src/app/WorkspaceSettings.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "c2ea03030300039fd99a6ccc08ae2ebdf48b47a74bf70bb0e7d72b67c39e890e",
+        "blob": "aeffd29534d9080004addea8d2f8696c7e8ab7c2"
+      },
+      {
+        "path": "apps/web/src/app/SupportLauncher.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a727d000677c2fadfe2b1f083669761f5e9eb48daac5942ea82dbaef77aa2571",
+        "blob": "c48c03d574f25b1384629a2b0f0dd372996426f6"
+      },
+      {
+        "path": "apps/web/src/app/dashboard/layout.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+        "blob": "8e07d82c4530e7630c0a43333cf26c631f7caf9a"
+      },
+      {
+        "path": "apps/web/src/app/dashboard/LimitsPanel.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "d138661598c00be04cc9b8620d5eab2aa28c5b2315e2c278b7116448a3c39d48",
+        "blob": "7bda126ac2cbc1fcaf1b3077d6576168b46b610e"
+      },
+      {
+        "path": "apps/web/src/app/videos/VideoList.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+        "blob": "23961d6698b7154f88421d7eda87a9ef918f2f13"
+      },
+      {
+        "path": "apps/web/src/app/videos/[videoId]/OriginalSource.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "4fc57f0ac98e2953e6c2228836539d904e40c98ddb4dc97faf31a3155e7572e3",
+        "blob": "7cea38fcabcc6aa92b39f041cc62a52df8a90dca"
+      },
+      {
+        "path": "apps/web/src/app/videos/[videoId]/OriginalSource.module.css",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "1168c60377bdfa9881db464670de18399230700d0af6b05d69d4d452a4b56faf",
+        "blob": "077f9c8531c5f75ad7aeac3ba087a02419fb911a"
+      },
+      {
+        "path": "apps/web/src/app/clips/ClipCard.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "b8b424cef2a3e027241dcdd519a7b50dde13e84934ef8c8e1f9cd61417836a29",
+        "blob": "95963409cfcf6fc014fabb4c769db49e5a79ed5e"
+      },
+      {
+        "path": "apps/web/src/lib/screen-contract.ts",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "469195ed1cd938eff1c164f967a52444a84471f3ce0c22aa397073c20d3c0424",
+        "blob": "845dcc519ff9248ba5db3808a5517603c94c4351"
+      },
+      {
+        "path": "apps/web/src/server/screen.ts",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "32a739ec0c5d507a2fa92df7384bb116351af95e384f856ccafcbde2f7912f46",
+        "blob": "6271aafc7b8bcf730f20a0c9709a1aacd3e5563c"
+      },
+      {
+        "path": "apps/web/src/app/dashboard/page.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "e8f34e77033c563d289fb2b43ef1a539f3a3f94185f8aaf1d10a05cabe44ebe9",
+        "blob": "7ebef5d60ef358992393c3b2c522803ba027cac7"
+      },
+      {
+        "path": "apps/web/src/app/dashboard/partner/page.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "da57187ffa61061117e2e491824c84930fb43293ed3af2adc4da89ff0fe5d77c",
+        "blob": "206e9e10cba3f516aad444909a3852bf2ffe7649"
+      },
+      {
+        "path": "apps/web/src/app/dashboard/videos/[videoId]/page.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a4036b5c994e9548c2e9a6c7f2a64caa96b1848030405ff129b38bd2c82bec6e",
+        "blob": "5eeadaa0cdb14309989b00ec3a077e4a0c72ceca"
+      },
+      {
+        "path": "apps/web/src/app/dashboard/bloggers/page.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "04ad85b2927798e6ef9e17f4a78ee084e6431c9c57582bba87a055fa1f5b0c4c",
+        "blob": "6b34ea7bd6d557adf684a8d8711e111c31af6d31"
+      },
+      {
+        "path": "tests/browser/ux-simplification.test.ts",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "52d17a64d83cae3799f231c7c751004d47889bbe6ee4405ec79774540b5908b0",
+        "blob": "a182940554e60efe1cbed96f3fbf445fbacd8909"
+      }
+    ],
+    "browser": "Chromium 148.0.7778.96",
+    "layout": "workspace",
+    "viewportHeight": 900,
+    "media": [
+      {
+        "name": "razgovor-demo.mp4",
+        "sha256": "883e831d5a688be843656188e7ec41169ced03ae032056fd10243174d2802d3f"
+      },
+      {
+        "name": "clip-preview.mp4",
+        "sha256": "c2a249303152ffaaccd53511eed70a110a8f79c07d66a2de66986fbccb86c8e9"
+      },
+      {
+        "name": "clip-poster.jpg",
+        "sha256": "1c2a8ae8db02e27a5e1d257eecac6aad48b7313bfe3c10d710e7082c40a7585c"
+      }
+    ],
+    "limitations": [
+      "Vite монтирует текущие React-компоненты и CSS. Next.js Link и навигация заменены адаптером штатной фикстуры, а API — локальными ответами.",
+      "Общие шапка и подвал взяты из приложения. Маршруты Next.js, которые загружают данные на сервере, заменены их JSX-обёртками. Список записей в сценарии загрузки пуст.",
+      "Показано отображение выбранных состояний. Реальный вход, обработка, оплата и отчёты в среде эксплуатации не запускались."
+    ],
+    "method": "Компоненты Clipmkr смонтированы через Vite по примеру тестовой фикстуры. API заменены синтетическими ответами. Кадры сняты Playwright целиком."
+  },
+  "screenshots": [
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 390,
+      "height": 2406,
+      "file": "record-partial-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "66df7f997fea3a7183cfb6fc649f24fa8bdbf570e73002e1b40e15f0fc540f71"
+    },
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1730,
+      "file": "record-partial-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "50e53b1298e9ffc275d92268990deb4c53af79f10c7fb8ddd9e33bf3471eb5b8"
+    },
+    {
+      "scene": "record-partial",
+      "theme": "light",
+      "width": 390,
+      "height": 2406,
+      "file": "record-partial-light-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "ac81c3a0cc5076d6f177c2515c93f64784b0888ca1c86bc687e74507c5f3fa4c"
+    },
+    {
+      "scene": "record-partial",
+      "theme": "light",
+      "width": 1440,
+      "height": 1730,
+      "file": "record-partial-light-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "a7abbed8b07d395506c45081456b7a48f14062147f2349a0cb660c0f88defe71"
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 390,
+      "height": 2003,
+      "file": "record-ready-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "c8a40490ea1028f0ed1b95ec9a21228feaaedac56c0469f0dcef9411adf47be7"
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1406,
+      "file": "record-ready-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "4446c52771750e1b94b55e103d23abc4480e3934be1ad2acce868a26ee799be3"
+    },
+    {
+      "scene": "record-ready",
+      "theme": "light",
+      "width": 390,
+      "height": 2003,
+      "file": "record-ready-light-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "f58c69888d49e31d0c68d4cffb76bd3443b066c7366c9e78770d789ed71d491b"
+    },
+    {
+      "scene": "record-ready",
+      "theme": "light",
+      "width": 1440,
+      "height": 1406,
+      "file": "record-ready-light-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "eacef6f6d1b24f9ec7c6acb2d143174d095e3a8fe279bf5d0a376f5961251232"
+    },
+    {
+      "scene": "report",
+      "theme": "dark",
+      "width": 390,
+      "height": 2077,
+      "file": "report-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
+        "blob": "8452a5293ebbe966541988acb8154539b85887c7"
+      },
+      "synthetic": "Владелец: ноябрь 2026, два вымышленных блогера, одна ставка 20%, оборот 8 400 ₽ и 1 200 ₽.",
+      "sha256": "c50315761aae73fca7d23a6dc9dd44febc3d7c7d16dc85aa5ee8c5363aa0142a"
+    },
+    {
+      "scene": "report",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1511,
+      "file": "report-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
+        "blob": "8452a5293ebbe966541988acb8154539b85887c7"
+      },
+      "synthetic": "Владелец: ноябрь 2026, два вымышленных блогера, одна ставка 20%, оборот 8 400 ₽ и 1 200 ₽.",
+      "sha256": "a2e87613b09f9349cee98ceedf7c43fb44a4d618a70ae13f1df394d60d80949d"
+    },
+    {
+      "scene": "report",
+      "theme": "light",
+      "width": 390,
+      "height": 2077,
+      "file": "report-light-390.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
+        "blob": "8452a5293ebbe966541988acb8154539b85887c7"
+      },
+      "synthetic": "Владелец: ноябрь 2026, два вымышленных блогера, одна ставка 20%, оборот 8 400 ₽ и 1 200 ₽.",
+      "sha256": "72015ea81e5524b53eff24576856705262978ed577433d93558bf3bcd5abfb10"
+    },
+    {
+      "scene": "report",
+      "theme": "light",
+      "width": 1440,
+      "height": 1511,
+      "file": "report-light-1440.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/bloggers/BloggerAdmin.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "7d753f157703da956d7c0f85e435941f1a0f7d66d22370572edae9d75cdb00f5",
+        "blob": "8452a5293ebbe966541988acb8154539b85887c7"
+      },
+      "synthetic": "Владелец: ноябрь 2026, два вымышленных блогера, одна ставка 20%, оборот 8 400 ₽ и 1 200 ₽.",
+      "sha256": "4ff218ec9b705895c569f0c97fd60b9fe232eaac6a593a8531dafab908d9373f"
+    },
+    {
+      "scene": "stats",
+      "theme": "dark",
+      "width": 390,
+      "height": 1323,
+      "file": "stats-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+        "blob": "8f9c0122cdee7ab43182f51297191df80142a18c"
+      },
+      "synthetic": "Блогер: активная демонстрационная ссылка, 148 переходов, 32 регистрации, 18 загрузок, 5 покупок, 8 400 ₽.",
+      "sha256": "519a4c23dd52cf28f46bb6fb90a7b43cac97ac2bcaf3bc02d748d5848d379128"
+    },
+    {
+      "scene": "stats",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1064,
+      "file": "stats-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+        "blob": "8f9c0122cdee7ab43182f51297191df80142a18c"
+      },
+      "synthetic": "Блогер: активная демонстрационная ссылка, 148 переходов, 32 регистрации, 18 загрузок, 5 покупок, 8 400 ₽.",
+      "sha256": "875f126b5f1bdb0d5b6ea54275143ce7e7d194e98a02469a139d65094f3244b4"
+    },
+    {
+      "scene": "stats",
+      "theme": "light",
+      "width": 390,
+      "height": 1323,
+      "file": "stats-light-390.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+        "blob": "8f9c0122cdee7ab43182f51297191df80142a18c"
+      },
+      "synthetic": "Блогер: активная демонстрационная ссылка, 148 переходов, 32 регистрации, 18 загрузок, 5 покупок, 8 400 ₽.",
+      "sha256": "20596a53474b9837eb49738c23c70a416e4f49280b3beab94e346d4a56955347"
+    },
+    {
+      "scene": "stats",
+      "theme": "light",
+      "width": 1440,
+      "height": 1064,
+      "file": "stats-light-1440.png",
+      "source": {
+        "path": "apps/web/src/app/dashboard/PartnerPanel.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "27a56b2d93af2a95b4c932f61170571041392ee2e54a87899031d0e4921a396e",
+        "blob": "8f9c0122cdee7ab43182f51297191df80142a18c"
+      },
+      "synthetic": "Блогер: активная демонстрационная ссылка, 148 переходов, 32 регистрации, 18 загрузок, 5 покупок, 8 400 ₽.",
+      "sha256": "f29ed955c7131e3c0dceb79dafac525c94b80a22f57558f1198fb8d7ab652407"
+    },
+    {
+      "scene": "upload",
+      "theme": "dark",
+      "width": 390,
+      "height": 1465,
+      "file": "upload-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/upload/Uploader.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "5ada7654570599adad767672065d431006b9cd9469bdf06a59ff56d1a32bcf51",
+        "blob": "9d2027177b72bcc2f0c88a5ed3a4a46509b439c7"
+      },
+      "synthetic": "Обычный пользователь: 84 кредита, выбран синтетический razgovor-demo.mp4 длительностью 36 минут; загрузка не запущена.",
+      "sha256": "c38d7d9b312a72dc5664898c19bdeebd9454ee1b6641adc4b314254d7dbddd83"
+    },
+    {
+      "scene": "upload",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1245,
+      "file": "upload-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/upload/Uploader.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "5ada7654570599adad767672065d431006b9cd9469bdf06a59ff56d1a32bcf51",
+        "blob": "9d2027177b72bcc2f0c88a5ed3a4a46509b439c7"
+      },
+      "synthetic": "Обычный пользователь: 84 кредита, выбран синтетический razgovor-demo.mp4 длительностью 36 минут; загрузка не запущена.",
+      "sha256": "ae935e8ea349f4fd04fb7b4dcdab862a2ff512013a2b99abbeae58c10de4f15d"
+    },
+    {
+      "scene": "upload",
+      "theme": "light",
+      "width": 390,
+      "height": 1465,
+      "file": "upload-light-390.png",
+      "source": {
+        "path": "apps/web/src/app/upload/Uploader.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "5ada7654570599adad767672065d431006b9cd9469bdf06a59ff56d1a32bcf51",
+        "blob": "9d2027177b72bcc2f0c88a5ed3a4a46509b439c7"
+      },
+      "synthetic": "Обычный пользователь: 84 кредита, выбран синтетический razgovor-demo.mp4 длительностью 36 минут; загрузка не запущена.",
+      "sha256": "bd0a715777c0669bab37819332e6136d3159c271bff6bdb6a274eaac173ff918"
+    },
+    {
+      "scene": "upload",
+      "theme": "light",
+      "width": 1440,
+      "height": 1245,
+      "file": "upload-light-1440.png",
+      "source": {
+        "path": "apps/web/src/app/upload/Uploader.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "5ada7654570599adad767672065d431006b9cd9469bdf06a59ff56d1a32bcf51",
+        "blob": "9d2027177b72bcc2f0c88a5ed3a4a46509b439c7"
+      },
+      "synthetic": "Обычный пользователь: 84 кредита, выбран синтетический razgovor-demo.mp4 длительностью 36 минут; загрузка не запущена.",
+      "sha256": "cc1a81c7a36e759d6a8bc3ae5a11856e61a9f021fc041a8d249672b548da7205"
+    }
+  ]
+}
