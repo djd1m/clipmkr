@@ -219,6 +219,10 @@ function renderResult() {
   const s = model.state;
   const n = { partial:2, done:3, terminal:2, failed:0, running:0, silent:0, expired:3 }[s];
   const hasMedia = n > 0 && s !== 'expired';
+  const isOwner = model.role === 'owner';
+  const limit = model.role === 'blogger' ? 120 : 90;
+  const charged = !isOwner && ['partial','terminal','failed','running','silent'].includes(s);
+  const clipAvailable = model.clip < n;
   const clips = ['Как появился первый выпуск','Что изменилось в процессе','С чего начать'];
   const status = {
     partial: `<div class="alert" role="alert"><p>Монтаж прервался. Готовые клипы доступны.</p>${btn('Повторить','retry')}</div>`,
@@ -231,10 +235,15 @@ function renderResult() {
   const settled = ['partial','done','terminal'].includes(s);
   return `<div class="row spread">${btn('← Все записи','upload','text')}${details('Подробнее','<p>Идентификатор записи: demo-record</p>') }</div>
     <h1>${s === 'expired' ? 'Срок хранения закончился' : 'Клипы записи'}</h1>
-    <div class="row"><p class="muted">36 мин</p>${hasMedia ? btn(model.original ? '← К клипам' : 'Смотреть исходник', 'original', 'text') : ''}</div>
+    <div class="row"><p class="muted">36 мин</p>${!isOwner ? `<p class="muted">Баланс 84 кредита · запись до ${limit} минут</p>${btn('Пакеты','packages','text')}` : ''}</div>
+    ${hasMedia ? `<div class="row" aria-label="Исходная запись"><strong>Исходник</strong>
+      ${btn(model.original ? '← К клипам' : '▷ Смотреть','original','',`aria-label="${model.original ? 'К клипам' : 'Смотреть исходник'}" aria-pressed="${model.original}"`)}
+      ${btn('↓ Скачать','download-original','','aria-label="Скачать исходник"')}</div>` : ''}
     <section>
       ${settled ? `<h2 role="status">Готово ${n} из 3</h2>` : ''}
       ${status || ''}
+      ${charged ? '<p class="small muted">Объём исходной записи: 2160 секунд · 36 кредитов. За эту запись — один раз.</p>' : ''}
+      ${charged && ['partial','failed'].includes(s) ? btn('Выбрать пакет','packages') : ''}
       ${['running','silent'].includes(s) ? stageList('Монтаж',s === 'running' ? 'выполняется' : 'уточняем статус') : ''}
     </section>
     ${hasMedia && model.original ? '<section class="narrow alert">Предпросмотр исходной записи. В макете медиафайла нет.</section>' : ''}
@@ -244,7 +253,8 @@ function renderResult() {
         <small>Демонстрационный плеер</small>
       </div>
       <div class="stack"><h2>${clips[model.clip]}</h2>
-        ${model.clip < n ? btn('↓ Скачать','download','primary','aria-label="Скачать клип"') : '<p>Клип не удалось собрать.</p>'}
+        ${clipAvailable ? `<div class="row">${btn('На весь экран','fullscreen')}${btn('↓ Скачать','download','primary','aria-label="Скачать клип"')}</div>
+        <p class="muted">Доступно до 08.12.2026, 15:00 МСК</p>` : '<p>Клип не удалось собрать.</p>'}
         ${details('Ещё',`<div class="row">${btn('Изменить оформление','edit')}${btn('Поделиться','share')}</div>`,'id="clip-more"')}
       </div></article>
       <nav class="clip-list" aria-label="Фрагменты"><h2>Фрагменты</h2>${clips.map((clip,i) => btn(`<span>0${i+1} · ${clip}</span><small>${i < n ? [32,41,28][i] + ' с' : 'Не готов'}</small>`,'clip','',`data-index="${i}" aria-current="${i === model.clip}" ${i >= n ? 'aria-disabled="true"' : ''}`)).join('')}</nav></section>` : ''}
@@ -384,6 +394,9 @@ document.addEventListener('click', event => {
       feedback('Макет: показано управление плеером. Медиафайл отсутствует.');
       break;
     case 'download': feedback('Макет: показано скачивание готового клипа. Медиафайл отсутствует.'); break;
+    case 'download-original': feedback('Макет: показано скачивание исходника. Медиафайл отсутствует.'); break;
+    case 'fullscreen': feedback('Макет: показано действие полноэкранного просмотра.'); break;
+    case 'packages': feedback('Макет: показан переход к пакетам.'); break;
     case 'share': feedback('Макет: действие «Поделиться» открывает варианты отправки в приложении.'); break;
     case 'edit': model.editing = true; render(); $('#clip-more').open = true; $('#edit-panel').focus(); break;
     case 'save-edit': feedback('Макет: выбранная компоновка сохранена в примере.'); break;
