@@ -1,0 +1,13 @@
+flowchart LR
+  subgraph browser["Кабинет Clipmkr · браузер"]
+    upload["Uploader · лимиты, цена и передача"]
+    result["VideoDetail · сводка и этапы"]
+    clip["ClipCard · плеер, скачивание и редактор"]
+    partner["PartnerPanel · автоссылка и воронка"]
+    owner["BloggerAdmin · отчёт и назначения"]
+    result --> clip
+  end
+  upload --> multipart["Действующий upload-контракт"]
+  result --> video["VideoScreen и ClipScreen"]
+  partner --> stats["Текущая проекция партнёра"]
+  owner --> report["Текущий месячный отчёт владельца"]
