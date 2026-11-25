@@ -1,0 +1,1144 @@
+{
+  "schemaVersion": 1,
+  "title": "Clipmkr · динамика проекта за 18–25 ноября 2026",
+  "period": {
+    "to": "2026-11-25",
+    "from": "2026-11-18"
+  },
+  "generatedOn": "2026-11-25",
+  "scope": "Только Clipmkr, 18–25 ноября 2026 включительно",
+  "state": "done",
+  "readingTimeMinutes": 12,
+  "statusDefinitions": {
+    "done": "Завершён конкретный результат на указанном уровне проверки.",
+    "in_progress": "Часть результата подтверждена, приёмка ещё открыта.",
+    "planned": "Запланировано либо есть исследование или макет, реализация ещё открыта.",
+    "blocked": "Есть явный незакрытый блокер.",
+    "paused": "Отклонено, отложено или остановлено. Решение указано в карточке."
+  },
+  "stateMeaning": "Готовность отчёта. Статус каждой карточки относится к указанному действию или материалу.",
+  "evidenceCutoff": "2026-11-25T14:03:00Z",
+  "coverageNote": "18–25 ноября включительно по UTC. Дата 18 ноября намеренно пересекается с предыдущим отчётом. В закреплённом main 48 коммитов: 42 за 18-е, по 3 за 24-е и 25-е. За 19–23 ноября журнал снимка пуст, объём работы по этому признаку не оценивается. Для отчёта сверены существующие протоколы и Git, новые проверки приложения не запускались.",
+  "summary": [
+    {
+      "id": "s1",
+      "date": "2026-11-18",
+      "status": "done",
+      "title": "Клип готов раньше к просмотру и оформлению",
+      "text": "На сайте с 18 ноября доступны первый рендер с автокомпоновкой, ручной перенос камеры, полный экран, смена музыки при частичном результате, статус пересборки и адрес канала.",
+      "eventIds": [
+        "e01",
+        "e02",
+        "e04",
+        "e05",
+        "e08",
+        "e09"
+      ]
+    },
+    {
+      "id": "s2",
+      "date": "2026-11-18",
+      "status": "done",
+      "title": "Проще вернуться к поддержке и предложить функцию",
+      "text": "Переписка открывается одной кнопкой, планы видны гостям, входящие обращения приходят команде в Telegram.",
+      "eventIds": [
+        "e03",
+        "e06",
+        "e07"
+      ]
+    },
+    {
+      "id": "s3",
+      "date": "2026-11-24",
+      "status": "done",
+      "title": "Видеотур и условия использования кода опубликованы",
+      "text": "Семь эпизодов пересняты с курсором и субтитрами. 24 ноября в репозитории оформлены ELv2 для собственного кода и уведомление MIT для YuNet.",
+      "eventIds": [
+        "e10",
+        "e11"
+      ]
+    },
+    {
+      "id": "s4",
+      "date": "2026-11-25",
+      "status": "done",
+      "title": "UX: от отклонённого макета к конкретной задаче",
+      "text": "Сравнение четырёх экранов отклонено. После подсчёта действий подготовлен отдельный макет скачивания всех готовых клипов, он ждёт согласования.",
+      "eventIds": [
+        "e12",
+        "e13",
+        "e14"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e01",
+      "date": "2026-11-18",
+      "topic": "Компоновка",
+      "title": "Камера переносится без дубля",
+      "status": "done",
+      "statusLabel": "Выпущено и принято владельцем",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "В новых ручных пересборках раскладки 01, 02 и 03 переносят окно камеры в выбранную область вертикального кадра.",
+      "why": "Экран и автор остаются в одном клипе без второго окна камеры.",
+      "checks": [
+        "На опубликованной записи просмотрели и скачали новую версию 02. Владелец подтвердил ручную приёмку 18 ноября.",
+        "47 целевых проверок компоновки и 19 сценариев PostgreSQL прошли."
+      ],
+      "limitations": "Приёмка относится к ручному переносу. Автовыбор при первом рендере подтверждён отдельно.",
+      "sources": [
+        {
+          "path": "features/zoom-full-screen-first-render/08_qe_report.md",
+          "commit": "442f1e78cca95929324bd8a3f2c5b9a605a971e8",
+          "url": "https://github.com/djd1m/clipmkr/blob/442f1e78cca95929324bd8a3f2c5b9a605a971e8/features/zoom-full-screen-first-render/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/zoom-screen-layout/mockup.html",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/zoom-screen-layout/mockup.html",
+          "label": "Три варианта компоновки",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e02",
+      "date": "2026-11-18",
+      "topic": "Компоновка",
+      "title": "Первый клип сам подбирает раскладку демонстрации",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "Для подходящей горизонтальной демонстрации первый рендер сохраняет весь экран и выделяет устойчивое окно камеры отдельно.",
+      "why": "Подходящий клип можно получить сразу, без ручной пересборки.",
+      "checks": [
+        "Рабочая очередь опубликовала первую версию с раскладкой 02 и камерой. Chromium воспроизвёл MP4 1080×1920.",
+        "Контрольный разговорный фрагмент сохранил обычное кадрирование."
+      ],
+      "limitations": "Рабочая проверка начиналась с задания на рендер. При недостатке признаков демонстрации остаётся обычное кадрирование.",
+      "sources": [
+        {
+          "path": "features/zoom-first-render-auto/08_qe_report.md",
+          "commit": "3fbfde39511015ae3ce4a54122d93f4f6a02cb86",
+          "url": "https://github.com/djd1m/clipmkr/blob/3fbfde39511015ae3ce4a54122d93f4f6a02cb86/features/zoom-first-render-auto/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/zoom-screen-layout/mockup.html",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/zoom-screen-layout/mockup.html",
+          "label": "Три варианта компоновки",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e03",
+      "date": "2026-11-18",
+      "topic": "Поддержка",
+      "title": "Своя переписка открывается одной кнопкой",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "Вошедший пользователь с подтверждённой почтой открывает последний диалог через виджет поддержки.",
+      "why": "Ответ оператора можно найти после закрытия виджета и повторного входа.",
+      "checks": [
+        "Chromium при 390 px проверил две синтетические учётные записи и возврат к прежнему ответу после входа. Чужой ответ не появился."
+      ],
+      "limitations": "Тест читал ранее созданные обращения. Отдельные гостевая и подтверждённая истории автоматически не объединяются.",
+      "sources": [
+        {
+          "path": "features/support-history-default/08_qe_report.md",
+          "commit": "04aa2c512655985a2235d032d7d01437fc65c1ad",
+          "url": "https://github.com/djd1m/clipmkr/blob/04aa2c512655985a2235d032d7d01437fc65c1ad/features/support-history-default/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-18-support-and-player.html",
+          "commit": "71a7845fd3603341e5e060b2c3c65d18de786eff",
+          "url": "https://github.com/djd1m/clipmkr/blob/71a7845fd3603341e5e060b2c3c65d18de786eff/docs/design/2026-11-18-support-and-player.html",
+          "label": "Макеты истории поддержки и плеера",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e04",
+      "date": "2026-11-18",
+      "topic": "Просмотр",
+      "title": "Готовый клип можно открыть на весь экран",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "Кнопка доступна в кабинете и на гостевой странице. После выхода плеер сохраняет позицию.",
+      "why": "Вертикальный ролик можно рассмотреть на мобильной ширине.",
+      "checks": [
+        "В Chromium проверен нативный полноэкранный режим, в гостевом сценарии — запасной режим на 390×844; выход сохранил позицию.",
+        "Целевые браузерные проверки прошли в Chromium и WebKit."
+      ],
+      "limitations": "WebKit запускали на VPS. Физического iPhone в этом протоколе нет.",
+      "sources": [
+        {
+          "path": "features/mobile-clip-fullscreen/08_qe_report.md",
+          "commit": "2a48158175ab61120825aa20c9f4283245ad2840",
+          "url": "https://github.com/djd1m/clipmkr/blob/2a48158175ab61120825aa20c9f4283245ad2840/features/mobile-clip-fullscreen/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-18-support-and-player.html",
+          "commit": "71a7845fd3603341e5e060b2c3c65d18de786eff",
+          "url": "https://github.com/djd1m/clipmkr/blob/71a7845fd3603341e5e060b2c3c65d18de786eff/docs/design/2026-11-18-support-and-player.html",
+          "label": "Макеты истории поддержки и плеера",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e05",
+      "date": "2026-11-18",
+      "topic": "Оформление",
+      "title": "Музыку готового клипа можно сменить во время сборки соседнего",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "В «Изменить оформление → Музыка» можно запустить пересборку готового клипа, пока запись ещё обрабатывается.",
+      "why": "Можно оформлять готовый результат сразу.",
+      "checks": [
+        "На сайте реальный воркер опубликовал новую версию с выбранным треком, пока соседний фрагмент ждал.",
+        "19 сценариев PostgreSQL прошли, квота пересборки использована один раз."
+      ],
+      "limitations": "Проверка относится к готовому клипу в частичном результате. Исходный пример с недоступным файлом не использовался.",
+      "sources": [
+        {
+          "path": "features/music-ready-while-rendering/08_qe_report.md",
+          "commit": "cef0b1984215cc2b2243ca8175a4b9ef2e3423fc",
+          "url": "https://github.com/djd1m/clipmkr/blob/cef0b1984215cc2b2243ca8175a4b9ef2e3423fc/features/music-ready-while-rendering/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e06",
+      "date": "2026-11-18",
+      "topic": "Обратная связь",
+      "title": "Планы Clipmkr открыты, предложение ведёт в поддержку",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "Страница планов доступна без входа. Действие «Предложить функцию» ведёт в чат или предлагает гостю войти.",
+      "why": "Пользователь может посмотреть, что запланировано, и обратиться в поддержку с идеей.",
+      "checks": [
+        "На сайте проверены публичный доступ, обе темы и открытие чата после входа."
+      ],
+      "limitations": "При выпуске проверялся существующий синтетический ответ. Карточки планов редактируются вручную.",
+      "sources": [
+        {
+          "path": "features/public-roadmap-feedback/08_qe_report.md",
+          "commit": "2d3b1fb62853a1770522e9adb37fe6fc4ab0e3c4",
+          "url": "https://github.com/djd1m/clipmkr/blob/2d3b1fb62853a1770522e9adb37fe6fc4ab0e3c4/features/public-roadmap-feedback/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "https://clipmkr.ru/roadmap",
+          "commit": null,
+          "url": "https://clipmkr.ru/roadmap",
+          "label": "Открыть публичные планы",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-18-public-feedback.html",
+          "commit": "4fbab5cf64061d65829fd47b1fafc1dbbe5ed67c",
+          "url": "https://github.com/djd1m/clipmkr/blob/4fbab5cf64061d65829fd47b1fafc1dbbe5ed67c/docs/design/2026-11-18-public-feedback.html",
+          "label": "Макет публичных планов",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e07",
+      "date": "2026-11-18",
+      "topic": "Поддержка",
+      "title": "Команда получает уведомления Libredesk в Telegram",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "Первое и следующее входящие сообщения дают уведомление со ссылкой на диалог. Сотрудник отвечает в Libredesk.",
+      "why": "Новые обращения заметны команде, переписка продолжается в рабочем чате.",
+      "checks": [
+        "Два синтетических входящих сообщения подтверждены Telegram Bot API.",
+        "Сотрудник открыл тот же диалог по ссылке и ответил. Ответ появился у пользователя, третьего уведомления бот не отправил."
+      ],
+      "limitations": "Зафиксировано принятие Bot API. Открытие человеком в Telegram-клиенте отдельно не наблюдалось.",
+      "sources": [
+        {
+          "path": "features/libredesk-telegram/08_qe_report.md",
+          "commit": "69e2dc2f42b4a2577ee159e301365f98c6e79c28",
+          "url": "https://github.com/djd1m/clipmkr/blob/69e2dc2f42b4a2577ee159e301365f98c6e79c28/features/libredesk-telegram/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e08",
+      "date": "2026-11-18",
+      "topic": "Оформление",
+      "title": "Статус пересборки виден на карточке клипа",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "При закрытой панели редактирования карточка показывает ход пересборки. Пока новый файл готовится, доступен прежний.",
+      "why": "Можно следить за нужным клипом и пользоваться уже опубликованной версией.",
+      "checks": [
+        "На сайте проверены старт, сохранение старого доступа, переключение версии и исчезновение сообщения об успехе."
+      ],
+      "limitations": "Отказ и восстановление проверили на фикстуре и отдельной PostgreSQL. В рабочей очереди искусственный сбой не создавали.",
+      "sources": [
+        {
+          "path": "features/clip-layout-status/08_qe_report.md",
+          "commit": "63a9f04cb366d12e8a05177240edd581836eb777",
+          "url": "https://github.com/djd1m/clipmkr/blob/63a9f04cb366d12e8a05177240edd581836eb777/features/clip-layout-status/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-18-clip-layout-status.html",
+          "commit": "c5d3389d094a02c178de0f2e0fab89f3fc8d3942",
+          "url": "https://github.com/djd1m/clipmkr/blob/c5d3389d094a02c178de0f2e0fab89f3fc8d3942/docs/design/2026-11-18-clip-layout-status.html",
+          "label": "Макет состояний карточки",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e09",
+      "date": "2026-11-18",
+      "topic": "Публикация",
+      "title": "Адрес канала виден на странице клипа и в финале MP4",
+      "status": "done",
+      "statusLabel": "Выпущено",
+      "category": "product",
+      "evidenceLevel": "production_verified",
+      "what": "Публичная кнопка показывает фактический адрес подписки. Подходящий короткий адрес рисуется в последних 2,5 секунды нового MP4.",
+      "why": "Зритель видит, куда ведёт кнопка, и может прочитать адрес в скачанном ролике.",
+      "checks": [
+        "На опубликованной странице проверено совпадение видимого адреса и назначения ссылки.",
+        "FFmpeg в образе воркера подтвердил надпись; 152 целевых теста прошли."
+      ],
+      "limitations": "Для уже выпущенного MP4 надпись появится после успешной пересборки. В кадр не передаются параметры и фрагмент URL.",
+      "sources": [
+        {
+          "path": "features/subscribe-cta-label/08_qe_report.md",
+          "commit": "8b1adc3224678f9e9512a4ae2da7d6bb4ad9f1ea",
+          "url": "https://github.com/djd1m/clipmkr/blob/8b1adc3224678f9e9512a4ae2da7d6bb4ad9f1ea/features/subscribe-cta-label/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "features/subscribe-cta-label/mockup.html",
+          "commit": "16358b4e2fd92c181cef95b0b97aff6980122aa9",
+          "url": "https://github.com/djd1m/clipmkr/blob/16358b4e2fd92c181cef95b0b97aff6980122aa9/features/subscribe-cta-label/mockup.html",
+          "label": "Согласованный макет адреса",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e10",
+      "date": "2026-11-18",
+      "topic": "Демонстрации",
+      "title": "Пересняты семь эпизодов видеотура",
+      "status": "done",
+      "statusLabel": "Опубликован видеотур",
+      "category": "documentation",
+      "evidenceLevel": "published_material",
+      "what": "Курсор виден в кадре, субтитры идут под видео и отключаются. В эпизоде Telegram до 00:08,83 показана маркированная имитация, затем — настоящий тестовый диалог Libredesk.",
+      "why": "Можно повторить показанные действия во время занятия.",
+      "checks": [
+        "42 браузерных прохода проверили управление субтитрами, перемотку и положение текста. Все семь MP4 декодировались.",
+        "Опубликованы обращения #43, #44 и #45 по инструментам захвата и публикации."
+      ],
+      "limitations": "Пересъёмка использует синтетические записи и переписку. Доказательство доставки уведомлений находится в протоколе интеграции. Локальная правка захвата использована в видеотуре, npm-выпуск этой правки не зафиксирован.",
+      "sources": [
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/index.html",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/index.html",
+          "label": "Смотреть семь эпизодов",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/demo-video-audit-2026-11-18/cursor-delivery.md",
+          "commit": "5053cb84d157d3adb3f04dd4a1399bcb3e17f1b1",
+          "url": "https://github.com/djd1m/clipmkr/blob/5053cb84d157d3adb3f04dd4a1399bcb3e17f1b1/docs/research/demo-video-audit-2026-11-18/cursor-delivery.md",
+          "label": "Финальная пересъёмка",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/demo-video-audit-2026-11-18/delivery.md",
+          "commit": "3b26eac731ca5031dcaac1169dc3d5035563909a",
+          "url": "https://github.com/djd1m/clipmkr/blob/3b26eac731ca5031dcaac1169dc3d5035563909a/docs/research/demo-video-audit-2026-11-18/delivery.md",
+          "label": "Границы семи эпизодов",
+          "workingTree": false
+        },
+        {
+          "path": "https://github.com/djd1m/dz-harness/issues/43",
+          "commit": null,
+          "url": "https://github.com/djd1m/dz-harness/issues/43",
+          "label": "Публичное обращение #43",
+          "workingTree": false
+        },
+        {
+          "path": "https://github.com/djd1m/dz-harness/issues/44",
+          "commit": null,
+          "url": "https://github.com/djd1m/dz-harness/issues/44",
+          "label": "Публичное обращение #44",
+          "workingTree": false
+        },
+        {
+          "path": "https://github.com/djd1m/dz-harness/issues/45",
+          "commit": null,
+          "url": "https://github.com/djd1m/dz-harness/issues/45",
+          "label": "Публичное обращение #45",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e11",
+      "date": "2026-11-24",
+      "topic": "Лицензия",
+      "title": "Оформлены ELv2 и уведомление MIT для YuNet",
+      "status": "done",
+      "statusLabel": "Оформлено в репозитории",
+      "category": "licensing",
+      "evidenceLevel": "source_review_only",
+      "what": "Собственный код Clipmkr предоставляется по Elastic License 2.0 на условиях source-available. Уведомление MIT для YuNet и карта происхождения кода сохранены отдельно.",
+      "why": "Читатель репозитория может увидеть условия использования и происхождение компонентов.",
+      "checks": [
+        "Тексты лицензий сверены побайтно с закреплёнными upstream. Проверены идентичность модели и маршрут копирования уведомления при сборке воркера."
+      ],
+      "limitations": "ELv2 ограничивает предоставление существенной функциональности как размещённого сервиса. Проверки охватывают лицензионные файлы и сборочную схему; юридическая оценка по юрисдикциям и новая сборка образа не проводились.",
+      "sources": [
+        {
+          "path": "LICENSE",
+          "commit": "92e9608440e496475336ba0235919e6ae0fe1c02",
+          "url": "https://github.com/djd1m/clipmkr/blob/92e9608440e496475336ba0235919e6ae0fe1c02/LICENSE",
+          "label": "Elastic License 2.0",
+          "workingTree": false
+        },
+        {
+          "path": "apps/worker/assets/models/LICENSE-yunet.txt",
+          "commit": "92e9608440e496475336ba0235919e6ae0fe1c02",
+          "url": "https://github.com/djd1m/clipmkr/blob/92e9608440e496475336ba0235919e6ae0fe1c02/apps/worker/assets/models/LICENSE-yunet.txt",
+          "label": "Уведомление MIT для YuNet",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/licensing/source-provenance.md",
+          "commit": "92e9608440e496475336ba0235919e6ae0fe1c02",
+          "url": "https://github.com/djd1m/clipmkr/blob/92e9608440e496475336ba0235919e6ae0fe1c02/docs/research/licensing/source-provenance.md",
+          "label": "Карта происхождения кода",
+          "workingTree": false
+        },
+        {
+          "path": "features/license-adoption/08_qe_report.md",
+          "commit": "92e9608440e496475336ba0235919e6ae0fe1c02",
+          "url": "https://github.com/djd1m/clipmkr/blob/92e9608440e496475336ba0235919e6ae0fe1c02/features/license-adoption/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e12",
+      "date": "2026-11-25",
+      "topic": "UX трёх ролей",
+      "title": "Вариант упрощения интерфейса отклонён",
+      "status": "paused",
+      "statusLabel": "Отклонён владельцем",
+      "category": "design",
+      "evidenceLevel": "owner_decision",
+      "what": "24 ноября показали загрузку, результат, статистику блогера и месячный отчёт владельца. 25 ноября владелец отклонил предложение с причиной «Изменения не делают работу удобнее».",
+      "why": "Дальнейшие предложения должны облегчать конкретное действие пользователя.",
+      "checks": [
+        "Сохранены архивные кадры текущего и предложенного интерфейсов, полученные на синтетических данных."
+      ],
+      "limitations": "Приложение продолжает работать на текущем интерфейсе. Время и успешность выполнения задач на новом макете не измерялись.",
+      "sources": [
+        {
+          "path": "docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "label": "Решение владельца",
+          "workingTree": false
+        },
+        {
+          "path": "mockups/ux-default-actions-comparison-20261124/index.html",
+          "commit": "ad43711c90d60cebeb235e7d5c268525ed4d8405",
+          "url": "https://djd1m.github.io/clipmkr/mockups/ux-default-actions-comparison-20261124/index.html",
+          "label": "Архив сравнения",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-24-ux-comparison.md",
+          "commit": "699b6d72289d9f6c01f7a7ba096efe62189d870e",
+          "url": "https://github.com/djd1m/clipmkr/blob/699b6d72289d9f6c01f7a7ba096efe62189d870e/docs/design/2026-11-24-ux-comparison.md",
+          "label": "Как получены кадры",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e13",
+      "date": "2026-11-25",
+      "topic": "UX трёх ролей",
+      "title": "Подсчитаны действия для загрузки, просмотра и скачивания",
+      "status": "done",
+      "statusLabel": "Исследовано",
+      "category": "research",
+      "evidenceLevel": "source_and_fixture",
+      "what": "Запуск загрузки требует двух активаций Clipmkr и выбора файла в ОС. На открытой записи с выбранным готовым клипом для просмотра или скачивания пяти клипов текущий путь требует по девять активаций.",
+      "why": "Появилась исходная мерка, с которой можно сравнивать предложения.",
+      "checks": [
+        "Семь целевых браузерных проверок текущих сценариев прошли, 74 были вне фильтра. Число действий вычислено по коду."
+      ],
+      "limitations": "Метрика не включает системные диалоги, ожидание и скролл. Удобство и успешность задач в пользовательской сессии ещё не измеряли.",
+      "sources": [
+        {
+          "path": "docs/research/ux-default-actions/task-efficiency-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/task-efficiency-20261125.md",
+          "label": "Аудит действий",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/acceptance/core-cjm.md",
+          "label": "Обязательная приёмка",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "e14",
+      "date": "2026-11-25",
+      "topic": "UX трёх ролей",
+      "title": "Подготовлен макет «Скачать все готовые»",
+      "status": "planned",
+      "statusLabel": "Макет на согласовании",
+      "category": "design",
+      "evidenceLevel": "prototype_only",
+      "what": "Кнопка для двух и более доступных клипов показывается на записи с полным или частичным результатом. Для пяти клипов расчёт даёт 9 → 1 активацию Clipmkr для запуска скачивания.",
+      "why": "Меньше переключений между готовыми клипами, когда нужны все их файлы.",
+      "checks": [
+        "В Chromium показаны состояния 3/3 и 2/3 на 390 и 1440 px. Проверены скрытие при нуле или одном файле, доступность одиночного скачивания и сохранение действий частичного результата."
+      ],
+      "limitations": "Это интерактивная фикстура: клик показывает число файлов, запросов за MP4 нет. Согласование владельца и реализация в приложении ожидаются. Получение нескольких файлов зависит от разрешений браузера.",
+      "sources": [
+        {
+          "path": "mockups/download-ready-clips-20261125/index.html",
+          "commit": "ad43711c90d60cebeb235e7d5c268525ed4d8405",
+          "url": "https://djd1m.github.io/clipmkr/mockups/download-ready-clips-20261125/index.html",
+          "label": "Открыть макет скачивания",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-25-download-ready-clips.md",
+          "commit": "96767fba8ca90c0c361203fefb4087508771e02d",
+          "url": "https://github.com/djd1m/clipmkr/blob/96767fba8ca90c0c361203fefb4087508771e02d/docs/design/2026-11-25-download-ready-clips.md",
+          "label": "Сценарии и снимки макета",
+          "workingTree": false
+        },
+        {
+          "path": "features/download-ready-clips/design-review.md",
+          "commit": "96767fba8ca90c0c361203fefb4087508771e02d",
+          "url": "https://github.com/djd1m/clipmkr/blob/96767fba8ca90c0c361203fefb4087508771e02d/features/download-ready-clips/design-review.md",
+          "label": "Независимое ревью макета",
+          "workingTree": false
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "l1",
+      "date": "2026-11-25",
+      "status": "done",
+      "title": "Удобство видно по задаче",
+      "what": "Сокращение элементов в макете не убедило владельца. Новый кандидат связан с целью «забрать все клипы» и конкретным числом действий.",
+      "why": "Можно оценить влияние изменения на привычный путь.",
+      "checks": [
+        "Решение владельца и разбор пути зафиксированы 25 ноября."
+      ],
+      "limitations": "Расчёт активаций предстоит проверить на реальной задаче.",
+      "sources": [
+        {
+          "path": "docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "label": "Решение владельца",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/ux-default-actions/task-efficiency-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/task-efficiency-20261125.md",
+          "label": "Аудит действий",
+          "workingTree": false
+        }
+      ],
+      "eventIds": [
+        "e12",
+        "e13",
+        "e14"
+      ]
+    },
+    {
+      "id": "l2",
+      "date": "2026-11-25",
+      "status": "done",
+      "title": "Показывать, что именно подтверждает демонстрация",
+      "what": "Видеотур маркирует имитацию Telegram. Подтверждения доставки и открытие точного диалога описаны в протоколе интеграции.",
+      "why": "У зрителя есть способ сверить показанное действие с проверкой.",
+      "checks": [
+        "Граница имитации указана для первых 8,83 секунды эпизода 07."
+      ],
+      "limitations": "Ширина браузерной фикстуры не заменяет физическое устройство.",
+      "sources": [
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/index.html",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/index.html",
+          "label": "Смотреть семь эпизодов",
+          "workingTree": false
+        },
+        {
+          "path": "features/libredesk-telegram/08_qe_report.md",
+          "commit": "69e2dc2f42b4a2577ee159e301365f98c6e79c28",
+          "url": "https://github.com/djd1m/clipmkr/blob/69e2dc2f42b4a2577ee159e301365f98c6e79c28/features/libredesk-telegram/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ],
+      "eventIds": [
+        "e04",
+        "e07",
+        "e10"
+      ]
+    }
+  ],
+  "nextSteps": [
+    {
+      "id": "n1",
+      "date": "2026-11-25",
+      "status": "planned",
+      "title": "Оценить вариант массового скачивания",
+      "what": "Владелец сверяет макет с привычным экраном и оценивает задачу скачивания всех готовых клипов.",
+      "why": "Согласовать конкретное изменение до реализации.",
+      "checks": [
+        "Рассмотреть готовый и частичный результаты и проверить запуск нескольких скачиваний после реализации."
+      ],
+      "limitations": "Макет опубликован, согласование и реальная доставка файлов открыты.",
+      "sources": [
+        {
+          "path": "mockups/download-ready-clips-20261125/index.html",
+          "commit": "ad43711c90d60cebeb235e7d5c268525ed4d8405",
+          "url": "https://djd1m.github.io/clipmkr/mockups/download-ready-clips-20261125/index.html",
+          "label": "Открыть макет скачивания",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-25-download-ready-clips.md",
+          "commit": "96767fba8ca90c0c361203fefb4087508771e02d",
+          "url": "https://github.com/djd1m/clipmkr/blob/96767fba8ca90c0c361203fefb4087508771e02d/docs/design/2026-11-25-download-ready-clips.md",
+          "label": "Сценарии и снимки макета",
+          "workingTree": false
+        }
+      ],
+      "statusLabel": "На согласовании"
+    },
+    {
+      "id": "n2",
+      "date": "2026-11-25",
+      "status": "planned",
+      "title": "Проверять UX на действиях пользователя",
+      "what": "Текущий интерфейс служит основой. Следующий кандидат из аудита — «Следующий готовый» с запуском просмотра одним действием.",
+      "why": "Проверить, сокращается ли просмотр последовательности готовых клипов.",
+      "checks": [
+        "Расчёт для пяти клипов: 9 → 5 при старте с первого готового."
+      ],
+      "limitations": "Это предложение из аудита, макет и реализация не зафиксированы.",
+      "sources": [
+        {
+          "path": "docs/research/ux-default-actions/task-efficiency-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/task-efficiency-20261125.md",
+          "label": "Аудит действий",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "label": "Решение владельца",
+          "workingTree": false
+        }
+      ],
+      "statusLabel": "Кандидат из исследования"
+    },
+    {
+      "id": "n3",
+      "date": "2026-11-25",
+      "status": "planned",
+      "title": "Подготовить объединение данных с Cloud.ru",
+      "what": "Есть проект требований и плана для двух наборов данных. Следующая граница — подтвердить схему, коллизии, сохранность файлов и восстановление из копий.",
+      "why": "Сохранить существующие данные обеих площадок.",
+      "checks": [
+        "Прочитанные журналы миграций и описания схем совпали."
+      ],
+      "limitations": "Перенос, окно остановки и переключение DNS не зафиксированы.",
+      "sources": [
+        {
+          "path": "docs/plans/2026-11-05-ui-recovery-cloud-delivery.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/plans/2026-11-05-ui-recovery-cloud-delivery.md",
+          "label": "План подготовки",
+          "workingTree": false
+        },
+        {
+          "path": "features/cloud-data-consolidation/01_requirements.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/features/cloud-data-consolidation/01_requirements.md",
+          "label": "Проект требований",
+          "workingTree": false
+        }
+      ],
+      "statusLabel": "Подготовка"
+    },
+    {
+      "id": "n4",
+      "date": "2026-11-25",
+      "status": "planned",
+      "title": "Стримы: исследовать смены сцен и пресеты",
+      "what": "Базовая композиция «экран и камера» уже выпущена. Синхронизация при сменах сцен и варианты пресетов относятся к отдельному исследованию.",
+      "why": "Обойтись действующим рендером там, где он уже закрывает задачу.",
+      "checks": [
+        "Стримерский пилот описывает сценарии со сменой сцены, паузами и синхронизацией."
+      ],
+      "limitations": "Новый выпуск расширенного режима не подтверждён.",
+      "sources": [
+        {
+          "path": "features/zoom-first-render-auto/08_qe_report.md",
+          "commit": "3fbfde39511015ae3ce4a54122d93f4f6a02cb86",
+          "url": "https://github.com/djd1m/clipmkr/blob/3fbfde39511015ae3ce4a54122d93f4f6a02cb86/features/zoom-first-render-auto/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/streamer-facecam/streamer-cjm-and-pilot.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/streamer-facecam/streamer-cjm-and-pilot.md",
+          "label": "Исследование стримерского пути",
+          "workingTree": false
+        }
+      ],
+      "statusLabel": "Исследование"
+    },
+    {
+      "id": "n5",
+      "date": "2026-11-25",
+      "status": "paused",
+      "title": "Сохранить отложенные сценарии",
+      "what": "Отправка клипа себе в Telegram, загрузка по ссылке VK Видео или Rutube и вход через Telegram значатся в отложенных требованиях.",
+      "why": "Видеть границу текущего кабинета и возможных расширений.",
+      "checks": [
+        "Для импорта по ссылке доступность скачивания с платформ остаётся неподтверждённой."
+      ],
+      "limitations": "За период нет подтверждения выпуска этих сценариев и обещанных дат.",
+      "sources": [
+        {
+          "path": "docs/BACKLOG.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/BACKLOG.md",
+          "label": "Отложенные продуктовые механики",
+          "workingTree": false
+        }
+      ],
+      "statusLabel": "Отложено"
+    }
+  ],
+  "guardrails": [
+    "Период включает девять подтверждённых выпусков 18 ноября. Видеотур, лицензия и UX-материалы учтены по их собственным статусам.",
+    "Приёмка сценариев ограничена указанными в протоколах шагами и средами.",
+    "Макет 24 ноября архивный. Кандидат массового скачивания 25 ноября ждёт решения владельца."
+  ],
+  "story": [
+    {
+      "title": "От демонстрации до готового клипа",
+      "minutes": 3,
+      "eventIds": [
+        "e01",
+        "e02",
+        "e04",
+        "e05",
+        "e08",
+        "e09"
+      ]
+    },
+    {
+      "title": "Переписка, планы и уведомления",
+      "minutes": 2,
+      "eventIds": [
+        "e03",
+        "e06",
+        "e07"
+      ]
+    },
+    {
+      "title": "Видеотур и лицензия",
+      "minutes": 2,
+      "eventIds": [
+        "e10",
+        "e11"
+      ]
+    },
+    {
+      "title": "Почему владелец отклонил макет и что ему показали дальше",
+      "minutes": 4,
+      "eventIds": [
+        "e12",
+        "e13",
+        "e14"
+      ]
+    },
+    {
+      "title": "Открытые задачи",
+      "minutes": 1,
+      "eventIds": [
+        "e14"
+      ]
+    }
+  ],
+  "designReferences": [
+    {
+      "id": "cjm",
+      "title": "CJM A в составе выбранного D и три роли",
+      "statusLabel": "Действующая рамка приёмки",
+      "description": "Владелец выбрал D, то есть путь A и облегчённый гостевой сценарий. Приёмка охватывает загрузку до просмотра и скачивания, оплату и кабинет блогера со статистикой для блогера и владельца.",
+      "sources": [
+        {
+          "path": "docs/CJM_Variants.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/CJM_Variants.md",
+          "label": "Выбор D = A + B-лайт",
+          "workingTree": false
+        },
+        {
+          "path": "docs/CJM_Variants.html",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/CJM_Variants.html",
+          "label": "Схемы пользовательских путей",
+          "workingTree": false
+        },
+        {
+          "path": "docs/acceptance/core-cjm.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/acceptance/core-cjm.md",
+          "label": "Обязательная приёмка",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "zoom",
+      "title": "Раскладки Zoom 01, 02 и 03",
+      "statusLabel": "Ручной перенос принят 18 ноября",
+      "description": "Макет задаёт три варианта размещения экрана и лица. Протокол показывает результат ручной пересборки; первый рендер проверен отдельным протоколом.",
+      "sources": [
+        {
+          "path": "docs/research/zoom-screen-layout/mockup.html",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/zoom-screen-layout/mockup.html",
+          "label": "Три варианта компоновки",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-full-screen-first-render/08_qe_report.md",
+          "commit": "442f1e78cca95929324bd8a3f2c5b9a605a971e8",
+          "url": "https://github.com/djd1m/clipmkr/blob/442f1e78cca95929324bd8a3f2c5b9a605a971e8/features/zoom-full-screen-first-render/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "features/zoom-first-render-auto/08_qe_report.md",
+          "commit": "3fbfde39511015ae3ce4a54122d93f4f6a02cb86",
+          "url": "https://github.com/djd1m/clipmkr/blob/3fbfde39511015ae3ce4a54122d93f4f6a02cb86/features/zoom-first-render-auto/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "support-player",
+      "title": "История поддержки и полный экран",
+      "statusLabel": "Макеты 18 ноября",
+      "description": "Показаны открытие своей переписки и действие рядом с плеером. Для обеих функций опубликованы отдельные протоколы.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-18-support-and-player.html",
+          "commit": "71a7845fd3603341e5e060b2c3c65d18de786eff",
+          "url": "https://github.com/djd1m/clipmkr/blob/71a7845fd3603341e5e060b2c3c65d18de786eff/docs/design/2026-11-18-support-and-player.html",
+          "label": "Макеты истории поддержки и плеера",
+          "workingTree": false
+        },
+        {
+          "path": "features/support-history-default/08_qe_report.md",
+          "commit": "04aa2c512655985a2235d032d7d01437fc65c1ad",
+          "url": "https://github.com/djd1m/clipmkr/blob/04aa2c512655985a2235d032d7d01437fc65c1ad/features/support-history-default/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        },
+        {
+          "path": "features/mobile-clip-fullscreen/08_qe_report.md",
+          "commit": "2a48158175ab61120825aa20c9f4283245ad2840",
+          "url": "https://github.com/djd1m/clipmkr/blob/2a48158175ab61120825aa20c9f4283245ad2840/features/mobile-clip-fullscreen/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "title": "Публичный роадмап и предложения",
+      "statusLabel": "Выпущено 18 ноября",
+      "description": "Публичная карточка планов и вход в поддержку с предложением.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-18-public-feedback.html",
+          "commit": "4fbab5cf64061d65829fd47b1fafc1dbbe5ed67c",
+          "url": "https://github.com/djd1m/clipmkr/blob/4fbab5cf64061d65829fd47b1fafc1dbbe5ed67c/docs/design/2026-11-18-public-feedback.html",
+          "label": "Макет публичных планов",
+          "workingTree": false
+        },
+        {
+          "path": "features/public-roadmap-feedback/08_qe_report.md",
+          "commit": "2d3b1fb62853a1770522e9adb37fe6fc4ab0e3c4",
+          "url": "https://github.com/djd1m/clipmkr/blob/2d3b1fb62853a1770522e9adb37fe6fc4ab0e3c4/features/public-roadmap-feedback/08_qe_report.md",
+          "label": "Протокол выпуска и проверок",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "title": "Статус пересборки и подписка",
+      "statusLabel": "Макеты выпущенных изменений",
+      "description": "Карточка показывает ход пересборки. На странице клипа и в новом MP4 виден адрес подписки.",
+      "sources": [
+        {
+          "path": "docs/design/2026-11-18-clip-layout-status.html",
+          "commit": "c5d3389d094a02c178de0f2e0fab89f3fc8d3942",
+          "url": "https://github.com/djd1m/clipmkr/blob/c5d3389d094a02c178de0f2e0fab89f3fc8d3942/docs/design/2026-11-18-clip-layout-status.html",
+          "label": "Макет состояний карточки",
+          "workingTree": false
+        },
+        {
+          "path": "features/subscribe-cta-label/mockup.html",
+          "commit": "16358b4e2fd92c181cef95b0b97aff6980122aa9",
+          "url": "https://github.com/djd1m/clipmkr/blob/16358b4e2fd92c181cef95b0b97aff6980122aa9/features/subscribe-cta-label/mockup.html",
+          "label": "Согласованный макет адреса",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "title": "Сравнение экранов 24 ноября",
+      "statusLabel": "Отклонено 25 ноября",
+      "description": "Архив содержит кадры текущего и предложенного интерфейсов для обычного пользователя, блогера и владельца.",
+      "sources": [
+        {
+          "path": "mockups/ux-default-actions-comparison-20261124/index.html",
+          "commit": "ad43711c90d60cebeb235e7d5c268525ed4d8405",
+          "url": "https://djd1m.github.io/clipmkr/mockups/ux-default-actions-comparison-20261124/index.html",
+          "label": "Архив сравнения",
+          "workingTree": false
+        },
+        {
+          "path": "docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+          "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/research/ux-default-actions/owner-feedback-20261125.md",
+          "label": "Решение владельца",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/comparison-assets/before/record-ready-dark-390.png",
+          "commit": "699b6d72289d9f6c01f7a7ba096efe62189d870e",
+          "url": "https://github.com/djd1m/clipmkr/blob/699b6d72289d9f6c01f7a7ba096efe62189d870e/docs/design/comparison-assets/before/record-ready-dark-390.png",
+          "label": "Снимок текущего экрана",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/comparison-assets/after/record-ready-dark-390.png",
+          "commit": "699b6d72289d9f6c01f7a7ba096efe62189d870e",
+          "url": "https://github.com/djd1m/clipmkr/blob/699b6d72289d9f6c01f7a7ba096efe62189d870e/docs/design/comparison-assets/after/record-ready-dark-390.png",
+          "label": "Снимок отклонённого экрана",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "bulk",
+      "title": "Скачать все готовые",
+      "statusLabel": "Макет на согласовании",
+      "description": "Два состояния записи, две ширины экрана и демонстрационная кнопка со счётчиком. Реальное скачивание ожидает решения и реализации.",
+      "sources": [
+        {
+          "path": "mockups/download-ready-clips-20261125/index.html",
+          "commit": "ad43711c90d60cebeb235e7d5c268525ed4d8405",
+          "url": "https://djd1m.github.io/clipmkr/mockups/download-ready-clips-20261125/index.html",
+          "label": "Открыть макет скачивания",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/2026-11-25-download-ready-clips.md",
+          "commit": "96767fba8ca90c0c361203fefb4087508771e02d",
+          "url": "https://github.com/djd1m/clipmkr/blob/96767fba8ca90c0c361203fefb4087508771e02d/docs/design/2026-11-25-download-ready-clips.md",
+          "label": "Сценарии и снимки макета",
+          "workingTree": false
+        },
+        {
+          "path": "docs/design/download-ready-clips-assets/after-record-partial-dark-390.png",
+          "commit": "96767fba8ca90c0c361203fefb4087508771e02d",
+          "url": "https://github.com/djd1m/clipmkr/blob/96767fba8ca90c0c361203fefb4087508771e02d/docs/design/download-ready-clips-assets/after-record-partial-dark-390.png",
+          "label": "Снимок частичного результата",
+          "workingTree": false
+        }
+      ]
+    },
+    {
+      "id": "demo",
+      "title": "Видеотур из семи эпизодов",
+      "statusLabel": "Опубликован 18 ноября",
+      "description": "Видна последовательность действий. Субтитры находятся под кадром. Имитация Telegram подписана.",
+      "sources": [
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/index.html",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/index.html",
+          "label": "Смотреть семь эпизодов",
+          "workingTree": false
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/site-manifest.json",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/site-manifest.json",
+          "label": "Манифест опубликованного видеотура",
+          "workingTree": false
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/01-auto-zoom.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/01-auto-zoom.mp4",
+          "label": "01. Автокомпоновка",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/01-auto-zoom.mp4"
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/02-layout-status.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/02-layout-status.mp4",
+          "label": "02. Раскладка и статус",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/02-layout-status.mp4"
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/03-music.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/03-music.mp4",
+          "label": "03. Смена музыки",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/03-music.mp4"
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/04-fullscreen.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/04-fullscreen.mp4",
+          "label": "04. Полноэкранный просмотр",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/04-fullscreen.mp4"
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/05-support-history.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/05-support-history.mp4",
+          "label": "05. История поддержки",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/05-support-history.mp4"
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/06-feature-request.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/06-feature-request.mp4",
+          "label": "06. Предложение функции",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/06-feature-request.mp4"
+        },
+        {
+          "path": "tutorials/demo/clipmkr-2026-11-18/video/07-telegram-alerts.mp4",
+          "commit": "cca10245ff81e0208397c4e8c48c0cef695870c7",
+          "url": "https://github.com/djd1m/clipmkr/blob/cca10245ff81e0208397c4e8c48c0cef695870c7/tutorials/demo/clipmkr-2026-11-18/video/07-telegram-alerts.mp4",
+          "label": "07. Уведомления Telegram и Libredesk",
+          "workingTree": false,
+          "playUrl": "https://djd1m.github.io/clipmkr/tutorials/demo/clipmkr-2026-11-18/video/07-telegram-alerts.mp4"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "project": "Clipmkr",
+    "repository": "djd1m/clipmkr",
+    "mainCommit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+    "designCommit": "96767fba8ca90c0c361203fefb4087508771e02d",
+    "archivedUxCommit": "699b6d72289d9f6c01f7a7ba096efe62189d870e",
+    "pagesCommit": "ad43711c90d60cebeb235e7d5c268525ed4d8405",
+    "productReleaseCount": 9,
+    "mainCommitsByDate": {
+      "2026-11-18": 42,
+      "2026-11-24": 3,
+      "2026-11-25": 3
+    },
+    "previousReport": {
+      "path": "https://djd1m.github.io/clipmkr/2026-11-12-18/",
+      "commit": null,
+      "url": "https://djd1m.github.io/clipmkr/2026-11-12-18/",
+      "label": "Отчёт 12–18 ноября",
+      "workingTree": false
+    },
+    "modelMatrix": {
+      "path": "docs/model-matrix.md",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "url": "https://github.com/djd1m/clipmkr/blob/99113c49b1bda3eafb4ca1897506e97ce70c4bf3/docs/model-matrix.md",
+      "label": "Матрица моделей",
+      "workingTree": false
+    }
+  }
+}
