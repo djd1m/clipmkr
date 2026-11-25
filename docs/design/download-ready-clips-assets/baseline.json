@@ -1,0 +1,77 @@
+{
+  "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+  "screenshots": [
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 390,
+      "height": 2406,
+      "file": "before-record-partial-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "66df7f997fea3a7183cfb6fc649f24fa8bdbf570e73002e1b40e15f0fc540f71",
+      "headings": [
+        "Клипы записи"
+      ]
+    },
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1730,
+      "file": "before-record-partial-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "50e53b1298e9ffc275d92268990deb4c53af79f10c7fb8ddd9e33bf3471eb5b8",
+      "headings": [
+        "Клипы записи"
+      ]
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 390,
+      "height": 2003,
+      "file": "before-record-ready-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "c8a40490ea1028f0ed1b95ec9a21228feaaedac56c0469f0dcef9411adf47be7",
+      "headings": [
+        "Готовые клипы"
+      ]
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1406,
+      "file": "before-record-ready-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "4446c52771750e1b94b55e103d23abc4480e3934be1ad2acce868a26ee799be3",
+      "headings": [
+        "Готовые клипы"
+      ]
+    }
+  ]
+}

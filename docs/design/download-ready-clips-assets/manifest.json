@@ -1,0 +1,346 @@
+{
+  "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+  "beforeCommit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+  "browser": "Chromium 148.0.7778.96",
+  "viewportHeight": 900,
+  "deviceScaleFactor": 1,
+  "fixtureTime": "2026-11-24T12:00:00Z",
+  "commonSources": [
+    {
+      "path": "apps/web/src/app/globals.css",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "c8d22dd422dab8976506f5aab9ae755eb0cddafb5ed8492224330da804b1c23f",
+      "blob": "d1f8c8505f0301dd0a26ad91a20b9094198fb756"
+    },
+    {
+      "path": "apps/web/src/app/WorkspaceHeader.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "1c0c99ba202652da5c4132e41e0bbf9e4ef1825b18af3bfc1d6d60b4d93b0a4c",
+      "blob": "29997d0d475dc8d8f2be79c2e4b5abbafef421e4"
+    },
+    {
+      "path": "apps/web/src/app/WorkspaceSettings.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "c2ea03030300039fd99a6ccc08ae2ebdf48b47a74bf70bb0e7d72b67c39e890e",
+      "blob": "aeffd29534d9080004addea8d2f8696c7e8ab7c2"
+    },
+    {
+      "path": "apps/web/src/app/SupportLauncher.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "a727d000677c2fadfe2b1f083669761f5e9eb48daac5942ea82dbaef77aa2571",
+      "blob": "c48c03d574f25b1384629a2b0f0dd372996426f6"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/layout.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "4e8c7d343a69f816e9238ea51d5f753d5483dc9b4b8b07e4f24e1a1fe2f3af65",
+      "blob": "8e07d82c4530e7630c0a43333cf26c631f7caf9a"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/LimitsPanel.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "d138661598c00be04cc9b8620d5eab2aa28c5b2315e2c278b7116448a3c39d48",
+      "blob": "7bda126ac2cbc1fcaf1b3077d6576168b46b610e"
+    },
+    {
+      "path": "apps/web/src/app/videos/VideoList.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "aeb6a34a821aa1975df21a1d419ccd3c7e5a7e66ec0fc0567b1f13b8597a4eec",
+      "blob": "23961d6698b7154f88421d7eda87a9ef918f2f13"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/OriginalSource.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "4fc57f0ac98e2953e6c2228836539d904e40c98ddb4dc97faf31a3155e7572e3",
+      "blob": "7cea38fcabcc6aa92b39f041cc62a52df8a90dca"
+    },
+    {
+      "path": "apps/web/src/app/videos/[videoId]/OriginalSource.module.css",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "1168c60377bdfa9881db464670de18399230700d0af6b05d69d4d452a4b56faf",
+      "blob": "077f9c8531c5f75ad7aeac3ba087a02419fb911a"
+    },
+    {
+      "path": "apps/web/src/app/clips/ClipCard.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "b8b424cef2a3e027241dcdd519a7b50dde13e84934ef8c8e1f9cd61417836a29",
+      "blob": "95963409cfcf6fc014fabb4c769db49e5a79ed5e"
+    },
+    {
+      "path": "apps/web/src/lib/screen-contract.ts",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "469195ed1cd938eff1c164f967a52444a84471f3ce0c22aa397073c20d3c0424",
+      "blob": "845dcc519ff9248ba5db3808a5517603c94c4351"
+    },
+    {
+      "path": "apps/web/src/server/screen.ts",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "32a739ec0c5d507a2fa92df7384bb116351af95e384f856ccafcbde2f7912f46",
+      "blob": "6271aafc7b8bcf730f20a0c9709a1aacd3e5563c"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/page.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "e8f34e77033c563d289fb2b43ef1a539f3a3f94185f8aaf1d10a05cabe44ebe9",
+      "blob": "7ebef5d60ef358992393c3b2c522803ba027cac7"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/partner/page.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "da57187ffa61061117e2e491824c84930fb43293ed3af2adc4da89ff0fe5d77c",
+      "blob": "206e9e10cba3f516aad444909a3852bf2ffe7649"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/videos/[videoId]/page.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "a4036b5c994e9548c2e9a6c7f2a64caa96b1848030405ff129b38bd2c82bec6e",
+      "blob": "5eeadaa0cdb14309989b00ec3a077e4a0c72ceca"
+    },
+    {
+      "path": "apps/web/src/app/dashboard/bloggers/page.tsx",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "04ad85b2927798e6ef9e17f4a78ee084e6431c9c57582bba87a055fa1f5b0c4c",
+      "blob": "6b34ea7bd6d557adf684a8d8711e111c31af6d31"
+    },
+    {
+      "path": "tests/browser/ux-simplification.test.ts",
+      "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+      "sha256": "52d17a64d83cae3799f231c7c751004d47889bbe6ee4405ec79774540b5908b0",
+      "blob": "a182940554e60efe1cbed96f3fbf445fbacd8909"
+    }
+  ],
+  "media": [
+    {
+      "name": "razgovor-demo.mp4",
+      "sha256": "883e831d5a688be843656188e7ec41169ced03ae032056fd10243174d2802d3f"
+    },
+    {
+      "name": "clip-preview.mp4",
+      "sha256": "c2a249303152ffaaccd53511eed70a110a8f79c07d66a2de66986fbccb86c8e9"
+    },
+    {
+      "name": "clip-poster.jpg",
+      "sha256": "1c2a8ae8db02e27a5e1d257eecac6aad48b7313bfe3c10d710e7082c40a7585c"
+    }
+  ],
+  "before": [
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 390,
+      "height": 2406,
+      "file": "before-record-partial-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "66df7f997fea3a7183cfb6fc649f24fa8bdbf570e73002e1b40e15f0fc540f71",
+      "headings": [
+        "Клипы записи"
+      ]
+    },
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1730,
+      "file": "before-record-partial-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "50e53b1298e9ffc275d92268990deb4c53af79f10c7fb8ddd9e33bf3471eb5b8",
+      "headings": [
+        "Клипы записи"
+      ]
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 390,
+      "height": 2003,
+      "file": "before-record-ready-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "c8a40490ea1028f0ed1b95ec9a21228feaaedac56c0469f0dcef9411adf47be7",
+      "headings": [
+        "Готовые клипы"
+      ]
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1406,
+      "file": "before-record-ready-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "0904cb70a80849cdc72fef6cc40cc76675760109",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "4446c52771750e1b94b55e103d23abc4480e3934be1ad2acce868a26ee799be3",
+      "headings": [
+        "Готовые клипы"
+      ]
+    }
+  ],
+  "after": [
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 390,
+      "height": 2453,
+      "file": "after-record-partial-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "a99782462094ed01b2a9b25f60784d39d81362693890b4f6e76fad6f8b6d74f5",
+      "headings": [
+        "Клипы записи"
+      ],
+      "position": {
+        "x": 17.59375,
+        "y": 913.484375,
+        "width": 256.5625,
+        "height": 46.796875
+      },
+      "requested": [
+        "11111111-1111-4111-8111-111111111111",
+        "22222222-2222-4222-8222-222222222222"
+      ],
+      "status": "В макете запрошено файлов: 2. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах.",
+      "downloadRequests": 0,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "scene": "record-partial",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1777,
+      "file": "after-record-partial-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, два из трёх клипов доступны, повтор монтажа доступен, 36 кредитов списаны один раз. Видео — синтетическая однотонная заглушка.",
+      "sha256": "bea812d169bcee6a13f9872c00d19db39eeb0cd6dc7bf3e7f54671ce6f751747",
+      "headings": [
+        "Клипы записи"
+      ],
+      "position": {
+        "x": 155.59375,
+        "y": 822.40625,
+        "width": 256.5625,
+        "height": 46.796875
+      },
+      "requested": [
+        "11111111-1111-4111-8111-111111111111",
+        "22222222-2222-4222-8222-222222222222"
+      ],
+      "status": "В макете запрошено файлов: 2. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах.",
+      "downloadRequests": 0,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 390,
+      "height": 2049,
+      "file": "after-record-ready-dark-390.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "c48a36836e6f69aefbbd29febe7f6ab6017d375e5685977e35b27d42ce685a2e",
+      "headings": [
+        "Готовые клипы"
+      ],
+      "position": {
+        "x": 17.59375,
+        "y": 509.96875,
+        "width": 256.5625,
+        "height": 46.796875
+      },
+      "requested": [
+        "11111111-1111-4111-8111-111111111111",
+        "22222222-2222-4222-8222-222222222222",
+        "33333333-3333-4333-8333-333333333333"
+      ],
+      "status": "В макете запрошено файлов: 3. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах.",
+      "downloadRequests": 0,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "scene": "record-ready",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1453,
+      "file": "after-record-ready-dark-1440.png",
+      "source": {
+        "path": "apps/web/src/app/videos/[videoId]/VideoDetail.tsx",
+        "commit": "99113c49b1bda3eafb4ca1897506e97ce70c4bf3",
+        "sha256": "a00796c3d72818bee38ce0b83143be6729875d33ceb6680c962863404117c4b4",
+        "blob": "ad29cc5596ef9e6200bc481e01a32926be5323b5"
+      },
+      "synthetic": "Обычный пользователь: запись 36 минут, три клипа длительностью 32, 41 и 28 секунд. Видео — синтетическая однотонная заглушка.",
+      "sha256": "34d7c36f86e7d9d131c3cfa4a532d8c7fa4355ab85f4ea2357afbe9e5fb08130",
+      "headings": [
+        "Готовые клипы"
+      ],
+      "position": {
+        "x": 155.59375,
+        "y": 498.484375,
+        "width": 256.5625,
+        "height": 46.796875
+      },
+      "requested": [
+        "11111111-1111-4111-8111-111111111111",
+        "22222222-2222-4222-8222-222222222222",
+        "33333333-3333-4333-8333-333333333333"
+      ],
+      "status": "В макете запрошено файлов: 3. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах.",
+      "downloadRequests": 0,
+      "horizontalOverflow": false,
+      "pageErrors": []
+    }
+  ],
+  "edgeCases": [
+    {
+      "width": 390,
+      "eligible": 1,
+      "bulkButtons": 0,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "eligible": 0,
+      "bulkButtons": 0,
+      "pageErrors": []
+    }
+  ]
+}
