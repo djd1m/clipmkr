@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скачать все готовые клипы · Clipmkr</title>
+<style>
+  :root { color-scheme: dark; font: 16px/1.5 system-ui, sans-serif; background: #121218; color: #f1edf3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  main { width: min(100% - 32px, 1410px); margin: 0 auto; padding-block: 28px 48px; }
+  p { margin: 0; }
+  h1 { margin: 3px 0 8px; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.12; }
+  .context, figcaption { color: #c9c1cd; }
+  .description { max-width: 66ch; }
+  .controls { display: flex; align-items: end; flex-wrap: wrap; gap: 12px 20px; margin: 20px 0 12px; }
+  label { display: grid; gap: 4px; font-weight: 650; }
+  select { font: inherit; padding: 7px 10px; border: 1px solid #77717b; border-radius: 6px; background: #23222a; }
+  .result:not(:empty) { position: fixed; z-index: 1; inset: auto 16px 16px; width: min(calc(100% - 32px), 68ch); margin-inline: auto; padding: 10px 14px; border: 1px solid #77717b; border-radius: 6px; background: #23222a; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: center; gap: 12px; }
+  .pair[data-width="390"] { max-width: 792px; }
+  figure { margin: 0; min-width: 0; }
+  figcaption { font-weight: 650; margin-bottom: 5px; }
+  .shot { position: relative; }
+  img { display: block; width: 100%; height: auto; box-shadow: 0 0 0 1px #4f4853; }
+  .demo-target { position: absolute; margin: 0; padding: 0; border: 0; border-radius: 3px; cursor: pointer; color: transparent; background: transparent; }
+  .demo-target:hover, .demo-target:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+  .narrow-hint { color: #c9c1cd; margin-top: 10px; }
+  @media (max-width: 620px) { .pair { grid-template-columns: minmax(0, 390px); justify-content: start; gap: 22px; } }
+  @media (min-width: 621px) { .narrow-hint { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="context">Предложение. Синтетические данные.</p>
+  <h1>Скачать все готовые клипы</h1>
+  <p class="description">При пяти готовых клипах путь от открытой записи до запуска всех скачиваний сокращается с 9 действий до 1. <a href="#demo">Перейти к кнопке на макете</a>.</p>
+  <div class="controls">
+    <label>Состояние записи
+      <select id="state">
+        <option value="record-ready">Готовы 3 из 3</option>
+        <option value="record-partial">Готовы 2 из 3</option>
+      </select>
+    </label>
+    <label>Ширина экрана
+      <select id="width">
+        <option value="1440">1440 px</option>
+        <option value="390">390 px</option>
+      </select>
+    </label>
+  </div>
+  <p class="result" id="result" role="status"></p>
+  <div class="pair" id="pair" data-width="1440">
+    <figure>
+      <figcaption>Сейчас</figcaption>
+      <div class="shot"><img id="before" alt="Текущая страница записи Clipmkr" src="download-ready-clips-assets/before-record-ready-dark-1440.png"></div>
+    </figure>
+    <figure>
+      <figcaption>Предложение</figcaption>
+      <div class="shot">
+        <img id="after" alt="Страница записи Clipmkr с кнопкой скачивания всех готовых клипов" src="download-ready-clips-assets/after-record-ready-dark-1440.png">
+        <button class="demo-target" id="demo" type="button" aria-label="Скачать все готовые (3)" hidden></button>
+      </div>
+    </figure>
+  </div>
+  <p class="narrow-hint">Оба кадра показаны в одном масштабе.</p>
+</main>
+<script id="scenario-data" type="application/json">[{"scene":"record-partial","width":390,"height":2453,"beforeHeight":2406,"before":"before-record-partial-dark-390.png","after":"after-record-partial-dark-390.png","count":2,"position":{"x":17.59375,"y":913.484375,"width":256.5625,"height":46.796875},"status":"В макете запрошено файлов: 2. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах."},{"scene":"record-partial","width":1440,"height":1777,"beforeHeight":1730,"before":"before-record-partial-dark-1440.png","after":"after-record-partial-dark-1440.png","count":2,"position":{"x":155.59375,"y":822.40625,"width":256.5625,"height":46.796875},"status":"В макете запрошено файлов: 2. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах."},{"scene":"record-ready","width":390,"height":2049,"beforeHeight":2003,"before":"before-record-ready-dark-390.png","after":"after-record-ready-dark-390.png","count":3,"position":{"x":17.59375,"y":509.96875,"width":256.5625,"height":46.796875},"status":"В макете запрошено файлов: 3. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах."},{"scene":"record-ready","width":1440,"height":1453,"beforeHeight":1406,"before":"before-record-ready-dark-1440.png","after":"after-record-ready-dark-1440.png","count":3,"position":{"x":155.59375,"y":498.484375,"width":256.5625,"height":46.796875},"status":"В макете запрошено файлов: 3. Если браузер блокирует несколько скачиваний, используйте кнопки на отдельных клипах."}]</script>
+<script>
+  const frames = JSON.parse(document.getElementById('scenario-data').textContent);
+  const state = document.getElementById('state');
+  const width = document.getElementById('width');
+  const pair = document.getElementById('pair');
+  const before = document.getElementById('before');
+  const after = document.getElementById('after');
+  const demo = document.getElementById('demo');
+  const result = document.getElementById('result');
+  const assets = 'download-ready-clips-assets/';
+  let selected;
+  function show() {
+    selected = frames.find(frame => frame.scene === state.value && frame.width === Number(width.value));
+    pair.dataset.width = width.value;
+    before.src = assets + selected.before;
+    after.src = assets + selected.after;
+    before.width = after.width = selected.width;
+    before.height = selected.beforeHeight;
+    after.height = selected.height;
+    demo.setAttribute('aria-label', 'Скачать все готовые (' + selected.count + ')');
+    demo.style.left = selected.position.x / selected.width * 100 + '%';
+    demo.style.top = selected.position.y / selected.height * 100 + '%';
+    demo.style.width = selected.position.width / selected.width * 100 + '%';
+    demo.style.height = selected.position.height / selected.height * 100 + '%';
+    demo.hidden = false;
+    result.textContent = '';
+  }
+  demo.addEventListener('click', () => { result.textContent = selected.status; });
+  state.addEventListener('change', show);
+  width.addEventListener('change', show);
+  if (matchMedia('(max-width: 620px)').matches) width.value = '390';
+  show();
+</script>
+</body>
+</html>
